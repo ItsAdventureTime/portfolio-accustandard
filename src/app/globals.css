@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --color-brand-blue: #1d4ed8;
+  --color-brand-blue-dark: #1e3a8a;
+  --color-brand-red: #dc2626;
+  --color-brand-red-dark: #991b1b;
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+}
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-surface: #1e293b;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.brand-header-bg {
+  background: linear-gradient(135deg, var(--color-brand-blue-dark) 0%, var(--color-brand-blue) 100%);
+}
+
+.brand-accent-red {
+  color: var(--color-brand-red);
+}
+
+.brand-badge-red {
+  background-color: #fef2f2;
+  color: var(--color-brand-red);
+  border: 1px solid #fecaca;
+}
+
+.brand-badge-blue {
+  background-color: #eff6ff;
+  color: var(--color-brand-blue);
+  border: 1px solid #bfdbfe;
+}
+
+/* Printable Document CSS rules */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}

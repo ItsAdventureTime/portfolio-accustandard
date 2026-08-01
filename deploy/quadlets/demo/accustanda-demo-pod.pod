@@ -1,0 +1,6 @@
+[Unit]
+Description=Accustanda Bridge Dashboard Demo Pod
+
+[Pod]
+PodName=accustanda-demo-pod
+PublishPort=3001:3000

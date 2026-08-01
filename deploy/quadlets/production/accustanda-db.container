@@ -1,0 +1,17 @@
+[Unit]
+Description=Accustanda Bridge Dashboard Production PostgreSQL Database
+
+[Container]
+ContainerName=accustanda-db
+Pod=accustanda-pod.pod
+Image=postgres:alpine
+Environment=POSTGRES_USER=accustanda
+Environment=POSTGRES_PASSWORD=accustandapass
+Environment=POSTGRES_DB=accustanda_db
+Volume=%h/bridge-ph/accustanda/db:/var/lib/postgresql/data:Z
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

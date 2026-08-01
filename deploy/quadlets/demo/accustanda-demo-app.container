@@ -1,0 +1,16 @@
+[Unit]
+Description=Accustanda Bridge Dashboard Demo Container
+After=accustanda-demo-db.service
+
+[Container]
+ContainerName=accustanda-demo-app
+Pod=accustanda-demo-pod.pod
+Image=localhost/accustanda-bridge-dashboard:demo
+Environment=NODE_ENV=production
+Environment=DATABASE_URL=postgres://accustanda:accustandapass@localhost:5432/accustanda_demo_db
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
