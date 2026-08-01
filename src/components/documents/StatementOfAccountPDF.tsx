@@ -39,7 +39,7 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData }> = ({ data }) => 
   const totalCurrentBalance = data.rows.reduce((sum, r) => sum + r.invoiceBalance, 0);
 
   return (
-    <div className="print-page max-w-5xl mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-xs font-sans">
+    <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-xs font-sans shrink-0">
       {/* Header */}
       <div className="flex justify-between items-start mb-6 border-b border-gray-300 pb-4">
         <div>

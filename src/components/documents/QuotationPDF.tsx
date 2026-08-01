@@ -27,7 +27,7 @@ export interface QuotationData {
 
 export const QuotationPDF: React.FC<{ data: QuotationData }> = ({ data }) => {
   return (
-    <div className="print-page max-w-4xl mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans">
+    <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans shrink-0">
       {/* Header */}
       <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
         <div>

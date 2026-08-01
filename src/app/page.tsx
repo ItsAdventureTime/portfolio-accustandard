@@ -997,7 +997,13 @@ export default function DashboardHome() {
               </button>
             </div>
 
-            <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
+            {/* Mobile Scroll Hint Banner */}
+            <div className="md:hidden bg-blue-50 border border-blue-200 text-blue-900 p-2.5 rounded-lg text-xs flex items-center justify-between font-medium">
+              <span>📱 Mobile Document Preview — Swipe horizontally to view full A4 Document</span>
+              <span className="font-bold">➔ Swipe</span>
+            </div>
+
+            <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
               <QuotationPDF data={quotationData} />
             </div>
           </div>
@@ -1032,7 +1038,13 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
+            {/* Mobile Scroll Hint Banner */}
+            <div className="md:hidden bg-blue-50 border border-blue-200 text-blue-900 p-2.5 rounded-lg text-xs flex items-center justify-between font-medium">
+              <span>📱 Mobile Document Preview — Swipe horizontally to view full A4 Document</span>
+              <span className="font-bold">➔ Swipe</span>
+            </div>
+
+            <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
               <StatementOfAccountPDF data={soaData} />
             </div>
           </div>
