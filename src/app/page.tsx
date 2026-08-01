@@ -30,7 +30,8 @@ import {
   Layers3,
   ShieldCheck,
   Sparkles,
-  Server
+  Server,
+  TrendingDown
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
@@ -41,6 +42,12 @@ export default function DashboardHome() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [viewAsRole, setViewAsRole] = useState<string>('Chairman (DCS)');
   const [searchQuery, setSearchQuery] = useState('');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showNotification = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   // Sample Quotation Data matching photo_2026-08-01_23-55-26.jpg
   const sampleQuotation: QuotationData = {
@@ -110,7 +117,15 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans relative">
+      {/* Toast Notification Alert */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-bounce">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-xs font-semibold">{toastMessage}</span>
+        </div>
+      )}
+
       {/* Soft Slate Top Shell Header */}
       <header className="soft-slate-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
         {/* Brand Lockup matching photo_2026-08-01_23-55-07.jpg */}
@@ -141,7 +156,10 @@ export default function DashboardHome() {
           <span className="text-slate-700 font-medium hidden md:inline">Impersonate ("View As"):</span>
           <select
             value={viewAsRole}
-            onChange={(e) => setViewAsRole(e.target.value)}
+            onChange={(e) => {
+              setViewAsRole(e.target.value);
+              showNotification(`Role switched to ${e.target.value}`);
+            }}
             className="bg-white text-slate-900 font-semibold rounded px-2.5 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
           >
             <option value="Admin">Admin (Bridge)</option>
@@ -170,7 +188,7 @@ export default function DashboardHome() {
         </div>
       </header>
 
-      {/* Top Horizontal Navigation Bar */}
+      {/* Top Horizontal Navigation Bar with Live Item Counter Badges */}
       <nav className="soft-slate-nav-strip px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
         <button
           onClick={() => setActiveTab('overview')}
@@ -181,7 +199,8 @@ export default function DashboardHome() {
           }`}
         >
           <Layers className="w-4 h-4 text-blue-600" />
-          Executive Overview
+          <span>Executive Overview</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">4</span>
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
@@ -192,7 +211,8 @@ export default function DashboardHome() {
           }`}
         >
           <Package className="w-4 h-4 text-blue-600" />
-          Inventory (QC & Pampanga)
+          <span>Inventory (QC & Pampanga)</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-bold">2,400</span>
         </button>
         <button
           onClick={() => setActiveTab('quotations')}
@@ -203,7 +223,8 @@ export default function DashboardHome() {
           }`}
         >
           <FileText className="w-4 h-4 text-blue-600" />
-          Quotation Routing
+          <span>Quotation Routing</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-800 rounded-full font-bold">1</span>
         </button>
         <button
           onClick={() => setActiveTab('soa')}
@@ -214,7 +235,8 @@ export default function DashboardHome() {
           }`}
         >
           <FileCheck className="w-4 h-4 text-blue-600" />
-          Statement of Account (SOA)
+          <span>Statement of Account (SOA)</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">3</span>
         </button>
         <button
           onClick={() => setActiveTab('purchasing')}
@@ -225,7 +247,7 @@ export default function DashboardHome() {
           }`}
         >
           <Building2 className="w-4 h-4 text-blue-600" />
-          Purchasing & 3-Way Match
+          <span>Purchasing & 3-Way Match</span>
         </button>
         <button
           onClick={() => setActiveTab('rfp')}
@@ -236,7 +258,7 @@ export default function DashboardHome() {
           }`}
         >
           <CreditCard className="w-4 h-4 text-blue-600" />
-          Request for Payment (RFP)
+          <span>Request for Payment (RFP)</span>
         </button>
         <button
           onClick={() => setActiveTab('admin')}
@@ -247,7 +269,7 @@ export default function DashboardHome() {
           }`}
         >
           <UserCheck className="w-4 h-4 text-blue-600" />
-          Admin & Audit Trail
+          <span>Admin & Audit Trail</span>
         </button>
       </nav>
 
@@ -256,15 +278,21 @@ export default function DashboardHome() {
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Soft Slate KPI Metric Cards */}
+            {/* Visually Compelling Metric Tiles with SVG Sparklines */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="soft-slate-card p-5">
+              <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Quezon City Stock</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-slate-900">1,480 <span className="text-xs font-normal text-slate-500">Units</span></p>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3 overflow-hidden">
+                {/* SVG Mini Sparkline */}
+                <div className="my-2 h-6 w-full">
+                  <svg className="w-full h-full stroke-blue-600 fill-none stroke-2" viewBox="0 0 100 25">
+                    <path d="M0,20 Q25,5 50,15 T100,5" />
+                  </svg>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '75%' }}></div>
                 </div>
                 <div className="mt-2.5 flex justify-between text-[11px]">
@@ -273,13 +301,18 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5">
+              <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pampanga Stock</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-slate-900">920 <span className="text-xs font-normal text-slate-500">Units</span></p>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3 overflow-hidden">
+                <div className="my-2 h-6 w-full">
+                  <svg className="w-full h-full stroke-emerald-600 fill-none stroke-2" viewBox="0 0 100 25">
+                    <path d="M0,15 Q25,20 50,10 T100,2" />
+                  </svg>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '84%' }}></div>
                 </div>
                 <div className="mt-2.5 flex justify-between text-[11px]">
@@ -288,31 +321,39 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5">
+              <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-amber-600">4 <span className="text-xs font-normal text-amber-700">Docs</span></p>
-                <div className="mt-3 text-[11px] text-slate-500 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                <div className="my-2 text-[11px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
                   <span>Routing to: <strong className="text-slate-900">{viewAsRole}</strong></span>
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                  <span>Awaiting Sign-off</span>
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5">
+              <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Gross Margin Avg</span>
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-emerald-700">34.8%</p>
-                <div className="mt-3 text-[11px] text-slate-500">
+                <div className="my-2 h-6 w-full">
+                  <svg className="w-full h-full stroke-emerald-600 fill-none stroke-2" viewBox="0 0 100 25">
+                    <path d="M0,22 Q25,18 50,8 T100,2" />
+                  </svg>
+                </div>
+                <div className="mt-1 text-[11px] text-slate-500">
                   <span>Batch FEFO cost basis tracking</span>
                 </div>
               </div>
             </div>
 
-            {/* Approval Stepper Tracker */}
+            {/* Interactive COSO Segregation of Duties Stepper Tracker */}
             <div className="soft-slate-card p-5 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
@@ -389,10 +430,16 @@ export default function DashboardHome() {
                       <td><span className="badge-amber px-2 py-0.5 rounded text-xs font-semibold animate-pulse"><Clock className="w-3 h-3 inline" /> Pending DCS</span></td>
                       <td className="text-right font-bold text-slate-900">₱31,500.00</td>
                       <td className="text-center space-x-1.5">
-                        <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition">
+                        <button
+                          onClick={() => showNotification('Quotation QRN20240415037 Approved!')}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                        >
                           Approve
                         </button>
-                        <button className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition">
+                        <button
+                          onClick={() => showNotification('Quotation QRN20240415037 Rejected.')}
+                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                        >
                           Reject
                         </button>
                       </td>
@@ -406,10 +453,16 @@ export default function DashboardHome() {
                       <td><span className="badge-blue px-2 py-0.5 rounded text-xs font-semibold">Awaiting Tier</span></td>
                       <td className="text-right font-bold text-slate-900">₱142,000.00</td>
                       <td className="text-center space-x-1.5">
-                        <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition">
+                        <button
+                          onClick={() => showNotification('Purchase Order PO-2026-0891 Approved!')}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                        >
                           Approve
                         </button>
-                        <button className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition">
+                        <button
+                          onClick={() => showNotification('Purchase Order PO-2026-0891 Rejected.')}
+                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                        >
                           Reject
                         </button>
                       </td>
@@ -583,7 +636,7 @@ export default function DashboardHome() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={(scannedCode) => {
-          alert(`Scanned Barcode: ${scannedCode}`);
+          showNotification(`Scanned Barcode SKU: ${scannedCode}`);
         }}
       />
     </div>
