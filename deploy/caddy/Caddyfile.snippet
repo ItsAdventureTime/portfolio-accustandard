@@ -1,19 +1,16 @@
-# Caddy Reverse Proxy Configuration Snippet for Accustanda Dashboard
+# Caddy Reverse Proxy Configuration Snippet for DelegateOps (delegateops.business)
 
-# Demo Environment
-demo-accustanda.bridge.ph {
-    reverse_proxy localhost:3001
-    encode gzip zstd
-    header {
-        Strict-Transport-Security "max-age=31536000;"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "SAMEORIGIN"
+delegateops.business {
+    # Demo Site: https://delegateops.business/accustanda/demo
+    handle_path /accustanda/demo* {
+        reverse_proxy localhost:3001
     }
-}
 
-# Production Environment
-accustanda.bridge.ph {
-    reverse_proxy localhost:3000
+    # Production Site: https://delegateops.business/accustanda
+    handle_path /accustanda* {
+        reverse_proxy localhost:3000
+    }
+
     encode gzip zstd
     header {
         Strict-Transport-Security "max-age=31536000;"

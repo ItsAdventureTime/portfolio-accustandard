@@ -7,6 +7,7 @@ ContainerName=accustanda-app
 Pod=accustanda-pod.pod
 Image=localhost/accustanda-bridge-dashboard:latest
 Environment=NODE_ENV=production
+Environment=NEXT_PUBLIC_BASE_PATH=/accustanda
 Environment=DATABASE_URL=postgres://accustanda:accustandapass@localhost:5432/accustanda_db
 
 [Service]
