@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
-/* 2026 Clinical & Corporate Enterprise Design System - Accustanda Rx D */
+/* 2026 Enterprise Masterclass Design Tokens - Accustanda Rx D */
 :root {
-  --bg-app: #090d16;
-  --bg-card: #111827;
-  --bg-card-hover: #1f2937;
-  --border-subtle: #1f2937;
+  --bg-app: #080d1a;
+  --bg-sidebar: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --border-subtle: #1e293b;
   --border-accent: #3b82f6;
   
   --text-primary: #f8fafc;
@@ -33,16 +34,22 @@ body {
 
 /* Translucent Glassmorphism Header Shell */
 .glass-header {
-  background: rgba(17, 24, 39, 0.85);
+  background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.8);
 }
 
-/* Tactile Bento Metric Tile */
+/* Enterprise Sidebar Shell */
+.enterprise-sidebar {
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+/* Tactile Bento Card */
 .bento-card {
-  background: linear-gradient(145deg, #111827 0%, #0b0f19 100%);
-  border: 1px solid rgba(31, 41, 55, 0.8);
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(51, 65, 85, 0.7);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -53,37 +60,37 @@ body {
   box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.15);
 }
 
-/* Clinical Enterprise Data Table */
-.clinical-table {
+/* High Density Enterprise Table */
+.enterprise-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.8125rem;
 }
 
-.clinical-table th {
-  background-color: #111827;
+.enterprise-table th {
+  background-color: #1e293b;
   color: #94a3b8;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #334155;
 }
 
-.clinical-table td {
+.enterprise-table td {
   padding: 0.875rem 1rem;
-  border-bottom: 1px solid rgba(31, 41, 55, 0.6);
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
   color: #f1f5f9;
-  background-color: rgba(11, 15, 25, 0.5);
+  background-color: rgba(15, 23, 42, 0.4);
   transition: background-color 0.15s ease;
 }
 
-.clinical-table tr:hover td {
-  background-color: #1f2937;
+.enterprise-table tr:hover td {
+  background-color: #1e293b;
 }
 
-/* Pill Status Badges */
+/* Status Pill Badges */
 .pill-badge {
   display: inline-flex;
   align-items: center;
