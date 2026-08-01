@@ -491,8 +491,8 @@ export default function DashboardHome() {
         </div>
       </header>
 
-      {/* Predictable Horizontal Top Navigation Bar */}
-      <nav className="wayfinding-nav-strip px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
+      {/* Predictable Horizontal Top Navigation Bar (Hidden on Mobile <md to avoid duplicate menus) */}
+      <nav className="hidden md:flex wayfinding-nav-strip px-4 md:px-6 overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
         <button
           onClick={() => setActiveTab('overview')}
           className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
@@ -713,7 +713,8 @@ export default function DashboardHome() {
             </div>
 
             {/* Pending Approvals Data Grid */}
-            <div className="wayfinding-card p-0 overflow-hidden">
+            {/* Desktop View: Tabular Approval Grid (Hidden on Mobile <sm) */}
+            <div className="wayfinding-card p-0 overflow-hidden hidden sm:block">
               <div className="p-4 bg-slate-100 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-600" />
@@ -779,6 +780,67 @@ export default function DashboardHome() {
                 </table>
               </div>
             </div>
+
+            {/* Mobile View: Stacked Approval Cards (Visible only on Mobile <sm) */}
+            <div className="space-y-3 sm:hidden">
+              <div className="p-3 bg-slate-100 border border-slate-300 rounded-lg flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase text-slate-900 flex items-center gap-1.5">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <span>Pending Approvals ({approvalsList.length})</span>
+                </h3>
+                <span className="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">{viewAsRole}</span>
+              </div>
+
+              {approvalsList.map((doc) => (
+                <div key={doc.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-amber-500">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono font-extrabold text-blue-700 text-sm block">{doc.qrn}</span>
+                      <span className="text-xs font-bold text-slate-900 mt-0.5 block">{doc.type}</span>
+                    </div>
+                    <span className="text-sm font-extrabold text-slate-900">
+                      ₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 text-[10px] bg-slate-50 p-2.5 rounded border border-slate-200 text-center font-semibold">
+                    <div>
+                      <span className="text-[9px] text-slate-500 block uppercase">Reviewer</span>
+                      <span className={`px-1.5 py-0.5 rounded ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                        {doc.reviewerStatus}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-500 block uppercase">GM Status</span>
+                      <span className={`px-1.5 py-0.5 rounded ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                        {doc.gmStatus}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-slate-500 block uppercase">DCS Status</span>
+                      <span className={`px-1.5 py-0.5 rounded ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                        {doc.dcsStatus}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      onClick={() => handleApproveDoc(doc.id, doc.qrn)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded text-xs font-extrabold shadow transition text-center"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRejectDoc(doc.id, doc.qrn)}
+                      className="w-full bg-red-600 hover:bg-red-500 text-white py-2 rounded text-xs font-extrabold shadow transition text-center"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -811,7 +873,8 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            <div className="wayfinding-card p-0 overflow-hidden">
+            {/* Desktop View: Tabular Grid (Hidden on Mobile <sm) */}
+            <div className="wayfinding-card p-0 overflow-hidden hidden sm:block">
               <div className="table-responsive-wrapper">
                 <table className="wayfinding-grid">
                   <thead>
@@ -860,6 +923,56 @@ export default function DashboardHome() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Mobile View: Stacked Stock Cards (Visible only on Mobile <sm) */}
+            <div className="space-y-3 sm:hidden">
+              {filteredInventory.map((item) => (
+                <div key={item.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-blue-600">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono font-extrabold text-blue-700 text-sm block">{item.sku}</span>
+                      <h4 className="font-bold text-slate-900 text-xs mt-0.5">{item.description}</h4>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${item.location === 'Quezon City' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                      {item.location}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded border border-slate-200">
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-semibold block uppercase">Batch / Lot</span>
+                      <span className="font-mono font-semibold text-slate-800">{item.lotNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-500 font-semibold block uppercase">Expiry Date</span>
+                      <span className={`font-semibold ${item.status === 'NEAR_EXPIRY' ? 'text-amber-700' : 'text-slate-800'}`}>
+                        {item.expiryDate}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs pt-1">
+                    <div className="flex gap-3">
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">On Hand</span>
+                        <span className="font-extrabold text-slate-900">{item.onHand} {item.unit}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Available</span>
+                        <span className="font-extrabold text-emerald-700">{item.onHand - item.reserved} {item.unit}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteStock(item.id, item.sku)}
+                      className="px-3 py-1 bg-red-50 text-red-700 font-semibold rounded border border-red-200 hover:bg-red-100 transition text-xs flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
