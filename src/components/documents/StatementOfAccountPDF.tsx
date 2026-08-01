@@ -3,6 +3,7 @@
 import React from 'react';
 
 export interface SOAItemRow {
+  id?: string;
   salesInvoiceNo: string;
   drNo: string;
   siDate: string;

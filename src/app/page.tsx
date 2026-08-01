@@ -31,11 +31,51 @@ import {
   ShieldCheck,
   Sparkles,
   Server,
-  TrendingDown
+  Trash2,
+  Edit,
+  X
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
+
+// Types for Simulator Engine
+interface InventoryItem {
+  id: string;
+  sku: string;
+  description: string;
+  location: 'Quezon City' | 'Pampanga';
+  lotNumber: string;
+  expiryDate: string;
+  onHand: number;
+  reserved: number;
+  unit: string;
+  status: 'NORMAL' | 'NEAR_EXPIRY' | 'LOW_STOCK';
+}
+
+interface ApprovalDoc {
+  id: string;
+  qrn: string;
+  type: 'Sales Quotation' | 'Purchase Order' | 'Request for Payment';
+  maker: string;
+  reviewerStatus: 'APPROVED' | 'PENDING' | 'REJECTED';
+  gmStatus: 'APPROVED' | 'PENDING' | 'AWAITING';
+  dcsStatus: 'APPROVED' | 'PENDING' | 'AWAITING';
+  totalAmount: number;
+}
+
+interface SOARowItem {
+  id: string;
+  salesInvoiceNo: string;
+  drNo: string;
+  siDate: string;
+  dueDate: string;
+  ageDays: number;
+  invoiceAmount: number;
+  amountPaid: number;
+  invoiceBalance: number;
+  runningBalance: number;
+}
 
 export default function DashboardHome() {
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'quotations' | 'soa' | 'purchasing' | 'rfp' | 'admin'>('overview');
@@ -44,13 +84,118 @@ export default function DashboardHome() {
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Modals for CRUD Simulator
+  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
+  const [isAddQuotationOpen, setIsAddQuotationOpen] = useState(false);
+  const [isAddSOARowOpen, setIsAddSOARowOpen] = useState(false);
+  const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
+
+  // Toast Helper
   const showNotification = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Sample Quotation Data matching photo_2026-08-01_23-55-26.jpg
-  const sampleQuotation: QuotationData = {
+  // Audit Log State
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; time: string; user: string; action: string }>>([
+    { id: '1', time: '02:55 PM', user: 'Sales Officer (Mark)', action: 'Created Quotation QRN20240415037 for Allied Care Experts' },
+    { id: '2', time: '03:10 PM', user: 'Marketing Officer (RMT)', action: 'Reviewed and Approved Quotation QRN20240415037' },
+    { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037' },
+  ]);
+
+  const addAuditLog = (action: string) => {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setAuditLogs((prev) => [{ id: Date.now().toString(), time: timeStr, user: viewAsRole, action }, ...prev]);
+  };
+
+  // Interactive Inventory List State
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>([
+    {
+      id: 'inv-1',
+      sku: 'ACC-BACT-01',
+      description: 'Calibration Sticks Bact Alert',
+      location: 'Pampanga',
+      lotNumber: 'LOT-2026-A9',
+      expiryDate: '2027-11-30',
+      onHand: 45,
+      reserved: 5,
+      unit: 'Kits',
+      status: 'NORMAL',
+    },
+    {
+      id: 'inv-2',
+      sku: 'ACC-REAG-04',
+      description: 'Blood Chemistry Reagents Kit',
+      location: 'Quezon City',
+      lotNumber: 'LOT-2026-B2',
+      expiryDate: '2026-09-15',
+      onHand: 120,
+      reserved: 20,
+      unit: 'Boxes',
+      status: 'NEAR_EXPIRY',
+    },
+    {
+      id: 'inv-3',
+      sku: 'ACC-HEMA-09',
+      description: 'Hematology Lyse Reagent 5L',
+      location: 'Quezon City',
+      lotNumber: 'LOT-2026-C8',
+      expiryDate: '2028-03-20',
+      onHand: 200,
+      reserved: 10,
+      unit: 'Bottles',
+      status: 'NORMAL',
+    },
+    {
+      id: 'inv-4',
+      sku: 'ACC-URIN-12',
+      description: 'Urine Analyzer Test Strips 100s',
+      location: 'Pampanga',
+      lotNumber: 'LOT-2026-D4',
+      expiryDate: '2027-06-10',
+      onHand: 85,
+      reserved: 0,
+      unit: 'Canisters',
+      status: 'NORMAL',
+    },
+  ]);
+
+  // Interactive Pending Approvals List State
+  const [approvalsList, setApprovalsList] = useState<ApprovalDoc[]>([
+    {
+      id: 'app-1',
+      qrn: 'QRN20240415037',
+      type: 'Sales Quotation',
+      maker: 'Sales Officer',
+      reviewerStatus: 'APPROVED',
+      gmStatus: 'APPROVED',
+      dcsStatus: 'PENDING',
+      totalAmount: 31500.0,
+    },
+    {
+      id: 'app-2',
+      qrn: 'PO-2026-0891',
+      type: 'Purchase Order',
+      maker: 'Purchasing Officer',
+      reviewerStatus: 'APPROVED',
+      gmStatus: 'PENDING',
+      dcsStatus: 'AWAITING',
+      totalAmount: 142000.0,
+    },
+    {
+      id: 'app-3',
+      qrn: 'RFP-2026-0104',
+      type: 'Request for Payment',
+      maker: 'Bookkeeper (Aila)',
+      reviewerStatus: 'APPROVED',
+      gmStatus: 'APPROVED',
+      dcsStatus: 'PENDING',
+      totalAmount: 18500.0,
+    },
+  ]);
+
+  // Interactive Quotation PDF State
+  const [quotationData, setQuotationData] = useState<QuotationData>({
     qrn: 'QRN20240415037',
     dateStr: 'April 15, 2024',
     clientName: 'Ms. Katherine Porciuncula',
@@ -69,10 +214,10 @@ export default function DashboardHome() {
     validityDays: 30,
     signatoryName: 'Katherine M. Payumo, RMT',
     signatoryTitle: 'Product Marketing Manager',
-  };
+  });
 
-  // Sample SOA Data matching photo_2026-08-01_23-55-13.jpg
-  const sampleSOA: SOAData = {
+  // Interactive Statement of Account State
+  const [soaData, setSoaData] = useState<SOAData>({
     statementDate: '10-Jul-26',
     clientName: 'GATCHALIAN MEDICAL LABORATORY',
     terms: '30 Days',
@@ -114,7 +259,128 @@ export default function DashboardHome() {
     ],
     preparedBy: 'Marrione Fuentes',
     preparedByTitle: 'Accounting Officer',
+  });
+
+  // New Stock Form Handler
+  const [newStockSku, setNewStockSku] = useState('');
+  const [newStockDesc, setNewStockDesc] = useState('');
+  const [newStockLoc, setNewStockLoc] = useState<'Quezon City' | 'Pampanga'>('Quezon City');
+  const [newStockLot, setNewStockLot] = useState('');
+  const [newStockQty, setNewStockQty] = useState(50);
+
+  const handleAddStock = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStockSku || !newStockDesc) return;
+    const newItem: InventoryItem = {
+      id: `inv-${Date.now()}`,
+      sku: newStockSku.toUpperCase(),
+      description: newStockDesc,
+      location: newStockLoc,
+      lotNumber: newStockLot || `LOT-2026-${Math.floor(100 + Math.random() * 900)}`,
+      expiryDate: '2027-12-31',
+      onHand: Number(newStockQty),
+      reserved: 0,
+      unit: 'Units',
+      status: 'NORMAL',
+    };
+    setInventoryList((prev) => [newItem, ...prev]);
+    addAuditLog(`Added Stock Item ${newItem.sku} (${newItem.description}) to ${newItem.location}`);
+    showNotification(`Successfully added ${newItem.sku} to ${newItem.location}!`);
+    setIsAddStockOpen(false);
+    setNewStockSku('');
+    setNewStockDesc('');
   };
+
+  // Delete Stock Handler
+  const handleDeleteStock = (id: string, sku: string) => {
+    setInventoryList((prev) => prev.filter((item) => item.id !== id));
+    addAuditLog(`Removed Stock Item ${sku}`);
+    showNotification(`Stock Item ${sku} removed from inventory.`);
+  };
+
+  // Handle Document Approval / Rejection
+  const handleApproveDoc = (id: string, qrn: string) => {
+    setApprovalsList((prev) =>
+      prev.map((doc) => {
+        if (doc.id === id) {
+          if (viewAsRole.includes('Marketing')) return { ...doc, reviewerStatus: 'APPROVED' };
+          if (viewAsRole.includes('General Manager')) return { ...doc, gmStatus: 'APPROVED' };
+          if (viewAsRole.includes('Chairman') || viewAsRole.includes('Admin')) return { ...doc, dcsStatus: 'APPROVED' };
+        }
+        return doc;
+      })
+    );
+    addAuditLog(`Approved ${qrn} under role [${viewAsRole}]`);
+    showNotification(`Document ${qrn} approved by ${viewAsRole}!`);
+  };
+
+  const handleRejectDoc = (id: string, qrn: string) => {
+    setApprovalsList((prev) => prev.filter((doc) => doc.id !== id));
+    addAuditLog(`Rejected ${qrn} under role [${viewAsRole}]`);
+    showNotification(`Document ${qrn} rejected.`);
+  };
+
+  // Add SOA Invoice Row Handler
+  const [newSiNo, setNewSiNo] = useState('');
+  const [newDrNo, setNewDrNo] = useState('');
+  const [newInvoiceAmt, setNewInvoiceAmt] = useState(15000);
+
+  const handleAddSOARow = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSiNo || !newDrNo) return;
+    const amt = Number(newInvoiceAmt);
+    const lastRunning = soaData.rows.length > 0 ? soaData.rows[soaData.rows.length - 1].runningBalance : 0;
+    const newRow: SOARowItem = {
+      id: `soa-${Date.now()}`,
+      salesInvoiceNo: newSiNo,
+      drNo: newDrNo,
+      siDate: '01-Aug-26',
+      dueDate: '8/31/2026',
+      ageDays: 1,
+      invoiceAmount: amt,
+      amountPaid: 0,
+      invoiceBalance: amt,
+      runningBalance: lastRunning + amt,
+    };
+    setSoaData((prev) => ({ ...prev, rows: [...prev.rows, newRow] }));
+    addAuditLog(`Added Invoice SI #${newSiNo} / DR #${newDrNo} for ₱${amt.toLocaleString()} to SOA`);
+    showNotification(`Added Invoice SI #${newSiNo} to SOA statement!`);
+    setIsAddSOARowOpen(false);
+    setNewSiNo('');
+    setNewDrNo('');
+  };
+
+  const handleDeleteSOARow = (id: string, siNo: string) => {
+    setSoaData((prev) => ({ ...prev, rows: prev.rows.filter((r) => r.id !== id) }));
+    addAuditLog(`Removed Invoice SI #${siNo} from SOA`);
+    showNotification(`Invoice SI #${siNo} removed.`);
+  };
+
+  // Simulated PO Over-Receiving Alert Receiver
+  const [receivingQtyInput, setReceivingQtyInput] = useState(150);
+  const approvedPOQty = 100;
+  const [poErrorMsg, setPoErrorMsg] = useState<string | null>(null);
+
+  const handleTestPOReceiving = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (Number(receivingQtyInput) > approvedPOQty) {
+      setPoErrorMsg(`HARD-BLOCKED: Attempting to receive ${receivingQtyInput} units exceeds approved PO limit of ${approvedPOQty} units!`);
+      addAuditLog(`PO Over-Receiving Hard-Blocked (${receivingQtyInput} > ${approvedPOQty})`);
+    } else {
+      setPoErrorMsg(null);
+      addAuditLog(`Successfully received ${receivingQtyInput} units for PO-2026-0891`);
+      showNotification(`Received ${receivingQtyInput} units. 3-Way Match Verified!`);
+      setIsPOReceivingModalOpen(false);
+    }
+  };
+
+  // Filtered Lists
+  const filteredInventory = inventoryList.filter(
+    (item) =>
+      item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans relative">
@@ -143,22 +409,23 @@ export default function DashboardHome() {
           </div>
           <div className="hidden sm:block border-l border-slate-300 pl-3">
             <h1 className="text-xs font-bold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
-              <span>ENTERPRISE ERP DASHBOARD</span>
-              <span className="bg-blue-100 text-blue-800 border border-blue-300 text-[10px] px-1.5 py-0.5 rounded font-mono">v4.0</span>
+              <span>OFFICIAL PRODUCTION SIMULATOR</span>
+              <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] px-1.5 py-0.5 rounded font-mono">LIVE DEMO</span>
             </h1>
-            <p className="text-[11px] text-slate-500">COSO Control-First Multi-Location Supply Chain</p>
+            <p className="text-[11px] text-slate-500">Full Interactive Workflow & Role-Based Internal Control Engine</p>
           </div>
         </div>
 
         {/* View As Impersonation Bar */}
         <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded text-xs shadow-inner">
           <Eye className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-slate-700 font-medium hidden md:inline">Impersonate ("View As"):</span>
+          <span className="text-slate-700 font-medium hidden md:inline">Current User Role:</span>
           <select
             value={viewAsRole}
             onChange={(e) => {
               setViewAsRole(e.target.value);
-              showNotification(`Role switched to ${e.target.value}`);
+              showNotification(`Switched role simulator to: ${e.target.value}`);
+              addAuditLog(`Impersonated role: ${e.target.value}`);
             }}
             className="bg-white text-slate-900 font-semibold rounded px-2.5 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
           >
@@ -188,7 +455,7 @@ export default function DashboardHome() {
         </div>
       </header>
 
-      {/* Top Horizontal Navigation Bar with Live Item Counter Badges */}
+      {/* Top Horizontal Navigation Bar */}
       <nav className="soft-slate-nav-strip px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
         <button
           onClick={() => setActiveTab('overview')}
@@ -200,7 +467,7 @@ export default function DashboardHome() {
         >
           <Layers className="w-4 h-4 text-blue-600" />
           <span>Executive Overview</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">4</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">{approvalsList.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
@@ -212,7 +479,7 @@ export default function DashboardHome() {
         >
           <Package className="w-4 h-4 text-blue-600" />
           <span>Inventory (QC & Pampanga)</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-bold">2,400</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-bold">{inventoryList.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('quotations')}
@@ -223,8 +490,7 @@ export default function DashboardHome() {
           }`}
         >
           <FileText className="w-4 h-4 text-blue-600" />
-          <span>Quotation Routing</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-amber-100 text-amber-800 rounded-full font-bold">1</span>
+          <span>Quotation Generator</span>
         </button>
         <button
           onClick={() => setActiveTab('soa')}
@@ -236,7 +502,7 @@ export default function DashboardHome() {
         >
           <FileCheck className="w-4 h-4 text-blue-600" />
           <span>Statement of Account (SOA)</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">3</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">{soaData.rows.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('purchasing')}
@@ -258,7 +524,7 @@ export default function DashboardHome() {
           }`}
         >
           <CreditCard className="w-4 h-4 text-blue-600" />
-          <span>Request for Payment (RFP)</span>
+          <span>Request for Payment</span>
         </button>
         <button
           onClick={() => setActiveTab('admin')}
@@ -269,7 +535,8 @@ export default function DashboardHome() {
           }`}
         >
           <UserCheck className="w-4 h-4 text-blue-600" />
-          <span>Admin & Audit Trail</span>
+          <span>Audit Log Stream</span>
+          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-800 rounded-full font-bold">{auditLogs.length}</span>
         </button>
       </nav>
 
@@ -278,15 +545,17 @@ export default function DashboardHome() {
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Visually Compelling Metric Tiles with SVG Sparklines */}
+            {/* Metric Tiles with Real Dynamic Calculations */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Quezon City Stock</span>
+                  <span className="font-semibold uppercase tracking-wider">Quezon City Warehouse</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-slate-900">1,480 <span className="text-xs font-normal text-slate-500">Units</span></p>
-                {/* SVG Mini Sparkline */}
+                <p className="text-3xl font-extrabold text-slate-900">
+                  {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.onHand, 0)}{' '}
+                  <span className="text-xs font-normal text-slate-500">Units</span>
+                </p>
                 <div className="my-2 h-6 w-full">
                   <svg className="w-full h-full stroke-blue-600 fill-none stroke-2" viewBox="0 0 100 25">
                     <path d="M0,20 Q25,5 50,15 T100,5" />
@@ -296,17 +565,24 @@ export default function DashboardHome() {
                   <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '75%' }}></div>
                 </div>
                 <div className="mt-2.5 flex justify-between text-[11px]">
-                  <span className="text-emerald-700 font-semibold">Available: 1,120</span>
-                  <span className="text-amber-700 font-semibold">Reserved: 360</span>
+                  <span className="text-emerald-700 font-semibold">
+                    Available: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + (i.onHand - i.reserved), 0)}
+                  </span>
+                  <span className="text-amber-700 font-semibold">
+                    Reserved: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.reserved, 0)}
+                  </span>
                 </div>
               </div>
 
               <div className="soft-slate-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Pampanga Stock</span>
+                  <span className="font-semibold uppercase tracking-wider">Pampanga Warehouse</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-slate-900">920 <span className="text-xs font-normal text-slate-500">Units</span></p>
+                <p className="text-3xl font-extrabold text-slate-900">
+                  {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.onHand, 0)}{' '}
+                  <span className="text-xs font-normal text-slate-500">Units</span>
+                </p>
                 <div className="my-2 h-6 w-full">
                   <svg className="w-full h-full stroke-emerald-600 fill-none stroke-2" viewBox="0 0 100 25">
                     <path d="M0,15 Q25,20 50,10 T100,2" />
@@ -316,8 +592,12 @@ export default function DashboardHome() {
                   <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '84%' }}></div>
                 </div>
                 <div className="mt-2.5 flex justify-between text-[11px]">
-                  <span className="text-emerald-700 font-semibold">Available: 780</span>
-                  <span className="text-amber-700 font-semibold">Reserved: 140</span>
+                  <span className="text-emerald-700 font-semibold">
+                    Available: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + (i.onHand - i.reserved), 0)}
+                  </span>
+                  <span className="text-amber-700 font-semibold">
+                    Reserved: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.reserved, 0)}
+                  </span>
                 </div>
               </div>
 
@@ -326,13 +606,15 @@ export default function DashboardHome() {
                   <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-amber-600">4 <span className="text-xs font-normal text-amber-700">Docs</span></p>
+                <p className="text-3xl font-extrabold text-amber-600">
+                  {approvalsList.length} <span className="text-xs font-normal text-amber-700">Docs</span>
+                </p>
                 <div className="my-2 text-[11px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
-                  <span>Routing to: <strong className="text-slate-900">{viewAsRole}</strong></span>
+                  <span>Simulating Role: <strong className="text-slate-900">{viewAsRole}</strong></span>
                 </div>
                 <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                  <span>Awaiting Sign-off</span>
+                  <span>Interactive COSO Approval Pipeline</span>
                 </div>
               </div>
 
@@ -353,7 +635,7 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Interactive COSO Segregation of Duties Stepper Tracker */}
+            {/* COSO Segregation of Duties Stepper Tracker */}
             <div className="soft-slate-card p-5 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
@@ -396,13 +678,7 @@ export default function DashboardHome() {
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="Search document QRN..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-white border border-slate-300 text-slate-900 rounded px-3 py-1 text-xs focus:outline-none focus:border-blue-500"
-                  />
+                  <span className="text-xs text-slate-500">Test approving/rejecting documents below:</span>
                 </div>
               </div>
 
@@ -421,52 +697,43 @@ export default function DashboardHome() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="font-mono font-bold text-blue-700">QRN20240415037</td>
-                      <td>Sales Quotation</td>
-                      <td>Sales Officer</td>
-                      <td><span className="badge-green px-2 py-0.5 rounded text-xs font-semibold"><Check className="w-3 h-3 inline" /> Approved</span></td>
-                      <td><span className="badge-green px-2 py-0.5 rounded text-xs font-semibold"><Check className="w-3 h-3 inline" /> Approved</span></td>
-                      <td><span className="badge-amber px-2 py-0.5 rounded text-xs font-semibold animate-pulse"><Clock className="w-3 h-3 inline" /> Pending DCS</span></td>
-                      <td className="text-right font-bold text-slate-900">₱31,500.00</td>
-                      <td className="text-center space-x-1.5">
-                        <button
-                          onClick={() => showNotification('Quotation QRN20240415037 Approved!')}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => showNotification('Quotation QRN20240415037 Rejected.')}
-                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
-                        >
-                          Reject
-                        </button>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="font-mono font-bold text-blue-700">PO-2026-0891</td>
-                      <td>Purchase Order</td>
-                      <td>Purchasing Officer</td>
-                      <td><span className="badge-blue px-2 py-0.5 rounded text-xs font-semibold">Reviewed</span></td>
-                      <td><span className="badge-amber px-2 py-0.5 rounded text-xs font-semibold">Pending GM</span></td>
-                      <td><span className="badge-blue px-2 py-0.5 rounded text-xs font-semibold">Awaiting Tier</span></td>
-                      <td className="text-right font-bold text-slate-900">₱142,000.00</td>
-                      <td className="text-center space-x-1.5">
-                        <button
-                          onClick={() => showNotification('Purchase Order PO-2026-0891 Approved!')}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => showNotification('Purchase Order PO-2026-0891 Rejected.')}
-                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
-                        >
-                          Reject
-                        </button>
-                      </td>
-                    </tr>
+                    {approvalsList.map((doc) => (
+                      <tr key={doc.id}>
+                        <td className="font-mono font-bold text-blue-700">{doc.qrn}</td>
+                        <td>{doc.type}</td>
+                        <td>{doc.maker}</td>
+                        <td>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                            {doc.reviewerStatus}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                            {doc.gmStatus}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                            {doc.dcsStatus}
+                          </span>
+                        </td>
+                        <td className="text-right font-bold text-slate-900">₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td className="text-center space-x-1.5">
+                          <button
+                            onClick={() => handleApproveDoc(doc.id, doc.qrn)}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleRejectDoc(doc.id, doc.qrn)}
+                            className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                          >
+                            Reject
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -481,19 +748,29 @@ export default function DashboardHome() {
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Package className="w-4 h-4 text-blue-600" />
-                  Multi-Location Inventory Management
+                  Multi-Location Inventory Management (QC & Pampanga)
                 </h2>
-                <p className="text-xs text-slate-500">Tracking stock across Quezon City and Pampanga warehouses</p>
+                <p className="text-xs text-slate-500">Live Stock Items: {inventoryList.length} SKUs maintained</p>
               </div>
-              <button
-                onClick={() => setIsScannerOpen(true)}
-                className="btn-primary-blue text-xs"
-              >
-                <Camera className="w-4 h-4" />
-                Scan Barcode
-              </button>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Filter inventory SKU or name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white border border-slate-300 text-slate-900 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
+                />
+                <button
+                  onClick={() => setIsAddStockOpen(true)}
+                  className="btn-primary-blue text-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Stock Batch
+                </button>
+              </div>
             </div>
 
+            {/* Inventory Table */}
             <div className="soft-slate-card p-0 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="soft-slate-data-grid">
@@ -505,31 +782,41 @@ export default function DashboardHome() {
                       <th>Batch / Lot</th>
                       <th>Expiry Date</th>
                       <th className="text-right">On Hand</th>
-                      <th className="text-right">Reserved (3-Day Expiry)</th>
+                      <th className="text-right">Reserved (3-Day Limit)</th>
                       <th className="text-right">Available</th>
+                      <th className="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="font-mono font-bold text-blue-700">ACC-BACT-01</td>
-                      <td className="font-medium">Calibration Sticks Bact Alert</td>
-                      <td>Pampanga</td>
-                      <td className="font-mono text-slate-600">LOT-2026-A9</td>
-                      <td><span className="badge-green px-2 py-0.5 rounded text-xs font-semibold">2027-11-30</span></td>
-                      <td className="text-right font-bold text-slate-900">45 Kits</td>
-                      <td className="text-right text-amber-700 font-bold">5 Kits</td>
-                      <td className="text-right text-emerald-700 font-bold">40 Kits</td>
-                    </tr>
-                    <tr>
-                      <td className="font-mono font-bold text-blue-700">ACC-REAG-04</td>
-                      <td className="font-medium">Blood Chemistry Reagents Kit</td>
-                      <td>Quezon City</td>
-                      <td className="font-mono text-slate-600">LOT-2026-B2</td>
-                      <td><span className="badge-amber px-2 py-0.5 rounded text-xs font-semibold">2026-09-15 (Near Expiry)</span></td>
-                      <td className="text-right font-bold text-slate-900">120 Boxes</td>
-                      <td className="text-right text-amber-700 font-bold">20 Boxes</td>
-                      <td className="text-right text-emerald-700 font-bold">100 Boxes</td>
-                    </tr>
+                    {filteredInventory.map((item) => (
+                      <tr key={item.id}>
+                        <td className="font-mono font-bold text-blue-700">{item.sku}</td>
+                        <td className="font-medium">{item.description}</td>
+                        <td>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${item.location === 'Quezon City' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                            {item.location}
+                          </span>
+                        </td>
+                        <td className="font-mono text-slate-600">{item.lotNumber}</td>
+                        <td>
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${item.status === 'NEAR_EXPIRY' ? 'badge-amber' : 'badge-green'}`}>
+                            {item.expiryDate} {item.status === 'NEAR_EXPIRY' && '(Near Expiry)'}
+                          </span>
+                        </td>
+                        <td className="text-right font-bold text-slate-900">{item.onHand} {item.unit}</td>
+                        <td className="text-right text-amber-700 font-bold">{item.reserved} {item.unit}</td>
+                        <td className="text-right text-emerald-700 font-bold">{item.onHand - item.reserved} {item.unit}</td>
+                        <td className="text-center">
+                          <button
+                            onClick={() => handleDeleteStock(item.id, item.sku)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            title="Remove Stock Entry"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -544,9 +831,9 @@ export default function DashboardHome() {
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <FileText className="w-4 h-4 text-blue-600" />
-                  Sales Quotation Generator & Approval Routing
+                  Sales Quotation Generator & 3-Day Stock Reservation Engine
                 </h2>
-                <p className="text-xs text-slate-500">Flow: Client → Sales RFQ → Marketing (Reviewer) → GM → DCS</p>
+                <p className="text-xs text-slate-500">Flow: Client RFQ → Sales → Marketing (Reviewer) → GM → DCS</p>
               </div>
               <button
                 onClick={() => window.print()}
@@ -559,7 +846,7 @@ export default function DashboardHome() {
 
             {/* Rendered Quotation PDF Preview */}
             <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
-              <QuotationPDF data={sampleQuotation} />
+              <QuotationPDF data={quotationData} />
             </div>
           </div>
         )}
@@ -573,20 +860,29 @@ export default function DashboardHome() {
                   <FileCheck className="w-4 h-4 text-blue-600" />
                   Statement of Account (SOA) Module
                 </h2>
-                <p className="text-xs text-slate-500">Client Aging, DR numbers, and Running Balances</p>
+                <p className="text-xs text-slate-500">DR # Tracking, Client Aging, and Running Balances</p>
               </div>
-              <button
-                onClick={() => window.print()}
-                className="btn-danger-red text-xs"
-              >
-                <Download className="w-4 h-4" />
-                Print / Export SOA
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAddSOARowOpen(true)}
+                  className="btn-primary-blue text-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Invoice Row
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="btn-danger-red text-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  Print / Export SOA
+                </button>
+              </div>
             </div>
 
             {/* Rendered SOA PDF Preview */}
             <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
-              <StatementOfAccountPDF data={sampleSOA} />
+              <StatementOfAccountPDF data={soaData} />
             </div>
           </div>
         )}
@@ -594,10 +890,20 @@ export default function DashboardHome() {
         {/* TAB 5: PURCHASING */}
         {activeTab === 'purchasing' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-blue-600" />
-              Purchasing & Receiving Report (3-Way Match & Fraud Control)
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-blue-600" />
+                Purchasing & Receiving Report (3-Way Match & Fraud Control)
+              </h2>
+              <button
+                onClick={() => setIsPOReceivingModalOpen(true)}
+                className="btn-primary-blue text-xs"
+              >
+                <Plus className="w-4 h-4" />
+                Test PO Receiving Rule
+              </button>
+            </div>
+
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-xs text-amber-900 flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
@@ -619,17 +925,223 @@ export default function DashboardHome() {
           </div>
         )}
 
-        {/* TAB 7: ADMIN */}
+        {/* TAB 7: ADMIN & AUDIT LOG STREAM */}
         {activeTab === 'admin' && (
           <div className="space-y-6">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-blue-600" />
-              Admin & System Control Log
+              Immutable System Audit Log Stream ({auditLogs.length} Events Logged)
             </h2>
-            <p className="text-xs text-slate-500">Immutable audit logs and Admin overrides.</p>
+
+            <div className="soft-slate-card p-4 space-y-2 font-mono text-xs">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="p-2 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-blue-700 font-bold">{log.time}</span>
+                    <span className="px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-sans text-[11px] font-semibold">{log.user}</span>
+                    <span className="text-slate-900">{log.action}</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-700 font-bold font-sans">✓ LOGGED</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </main>
+
+      {/* MODAL 1: Add New Stock Batch Modal */}
+      {isAddStockOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">Add New Stock Batch</h3>
+              <button onClick={() => setIsAddStockOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddStock} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">SKU / Barcode Code</label>
+                <input
+                  type="text"
+                  placeholder="e.g. ACC-HEMA-10"
+                  value={newStockSku}
+                  onChange={(e) => setNewStockSku(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Item Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Rapid Dengue NS1 Ag Test Cassette 25s"
+                  value={newStockDesc}
+                  onChange={(e) => setNewStockDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Warehouse Location</label>
+                  <select
+                    value={newStockLoc}
+                    onChange={(e) => setNewStockLoc(e.target.value as any)}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Quezon City">Quezon City</option>
+                    <option value="Pampanga">Pampanga</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Initial Quantity</label>
+                  <input
+                    type="number"
+                    value={newStockQty}
+                    onChange={(e) => setNewStockQty(Number(e.target.value))}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddStockOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-blue">
+                  Add Stock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Add Invoice Row to SOA Modal */}
+      {isAddSOARowOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">Add Invoice Row to SOA</h3>
+              <button onClick={() => setIsAddSOARowOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddSOARow} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Sales Invoice No. (SI #)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 6140"
+                  value={newSiNo}
+                  onChange={(e) => setNewSiNo(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Delivery Receipt No. (DR #)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 6132"
+                  value={newDrNo}
+                  onChange={(e) => setNewDrNo(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Invoice Amount (₱)</label>
+                <input
+                  type="number"
+                  value={newInvoiceAmt}
+                  onChange={(e) => setNewInvoiceAmt(Number(e.target.value))}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddSOARowOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-blue">
+                  Add Invoice Row
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Test PO Over-Receiving Simulator Modal */}
+      {isPOReceivingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">PO Over-Receiving Simulator</h3>
+              <button onClick={() => setIsPOReceivingModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleTestPOReceiving} className="space-y-3 text-xs">
+              <div className="p-3 bg-blue-50 border-l-4 border-blue-600 text-blue-900 rounded">
+                <p className="font-bold">Purchase Order Reference: PO-2026-0891</p>
+                <p>Approved Quantity: <strong>100 Kits</strong></p>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Attempted Receiving Quantity</label>
+                <input
+                  type="number"
+                  value={receivingQtyInput}
+                  onChange={(e) => setReceivingQtyInput(Number(e.target.value))}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500 font-bold"
+                  required
+                />
+              </div>
+
+              {poErrorMsg && (
+                <div className="p-3 bg-red-100 border border-red-400 text-red-900 font-bold rounded flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                  <span>{poErrorMsg}</span>
+                </div>
+              )}
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPOReceivingModalOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Close
+                </button>
+                <button type="submit" className="btn-danger-red">
+                  Simulate Receiving
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Barcode Scanner Modal */}
       <BarcodeScannerModal
@@ -637,6 +1149,7 @@ export default function DashboardHome() {
         onClose={() => setIsScannerOpen(false)}
         onScan={(scannedCode) => {
           showNotification(`Scanned Barcode SKU: ${scannedCode}`);
+          addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
         }}
       />
     </div>
