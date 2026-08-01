@@ -38,6 +38,7 @@ import {
   Home
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
+import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 
@@ -82,6 +83,7 @@ interface SOARowItem {
 export default function DashboardHome() {
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'quotations' | 'soa' | 'purchasing' | 'rfp' | 'admin'>('overview');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [viewAsRole, setViewAsRole] = useState<string>('Chairman (DCS)');
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -456,6 +458,14 @@ export default function DashboardHome() {
 
         {/* Actions & Barcode Trigger */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsCommandPaletteOpen(true)}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs transition"
+          >
+            <Search className="w-3.5 h-3.5 text-blue-600" />
+            <span className="hidden sm:inline font-semibold">Quick Search & Jump</span>
+            <kbd className="bg-white text-slate-700 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs">⌘K</kbd>
+          </button>
           <div className="hidden lg:flex items-center gap-2 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded">
             <Server className="w-3.5 h-3.5 text-emerald-700" />
             <span>QBO API Live Sync</span>
@@ -1167,6 +1177,16 @@ export default function DashboardHome() {
         onScan={(scannedCode) => {
           showNotification(`Scanned Barcode SKU: ${scannedCode}`);
           addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
+        }}
+      />
+
+      {/* Cmd+K Quick Search Command Palette Modal */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onSelectTab={(tabKey) => {
+          setActiveTab(tabKey);
+          showNotification(`Navigated to section: ${tabKey}`);
         }}
       />
     </div>
