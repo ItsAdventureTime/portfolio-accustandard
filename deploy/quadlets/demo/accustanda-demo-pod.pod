@@ -1,5 +1,5 @@
 [Unit]
-Description=Accustanda Bridge Dashboard Demo Pod
+Description=Accustanda Dashboard Demo Pod
 
 [Pod]
 PodName=accustanda-demo-pod

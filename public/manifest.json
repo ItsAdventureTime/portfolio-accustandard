@@ -1,7 +1,7 @@
 {
-  "name": "Accustanda Bridge Dashboard",
+  "name": "Accustanda Dashboard",
   "short_name": "Accustanda",
-  "description": "Control-First ERP & Mobile Barcode Inventory System",
+  "description": "Control-First ERP & Mobile Barcode Inventory System for Accustanda",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",

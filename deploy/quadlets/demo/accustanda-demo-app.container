@@ -1,5 +1,5 @@
 [Unit]
-Description=Accustanda Bridge Dashboard Demo Container
+Description=Accustanda Dashboard Demo Container
 After=accustanda-demo-db.service
 
 [Container]

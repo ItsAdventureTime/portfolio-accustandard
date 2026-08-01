@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Setting up Accustanda Bridge Dashboard Podman Quadlets..."
+echo "==> Setting up Accustanda Dashboard Podman Quadlets..."
 
 # Create Data Directories
 mkdir -p "$HOME/bridge-ph/accustanda-demo/db"

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Accustanda Bridge Dashboard",
+  title: "Accustanda Dashboard",
   description: "Control-First Enterprise Operations ERP & Multi-Location Inventory Dashboard for Accustanda Rx D",
   manifest: "/manifest.json",
   themeColor: "#1d4ed8",

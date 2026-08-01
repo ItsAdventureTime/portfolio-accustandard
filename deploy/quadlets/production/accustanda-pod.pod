@@ -1,5 +1,5 @@
 [Unit]
-Description=Accustanda Bridge Dashboard Production Pod
+Description=Accustanda Dashboard Production Pod
 
 [Pod]
 PodName=accustanda-pod

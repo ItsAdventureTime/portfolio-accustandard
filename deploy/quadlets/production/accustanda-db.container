@@ -1,5 +1,5 @@
 [Unit]
-Description=Accustanda Bridge Dashboard Production PostgreSQL Database
+Description=Accustanda Dashboard Production PostgreSQL Database
 
 [Container]
 ContainerName=accustanda-db

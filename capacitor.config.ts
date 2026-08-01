@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'ph.bridge.accustanda',
-  appName: 'Accustanda Bridge',
+  appId: 'ph.accustanda.app',
+  appName: 'Accustanda',
   webDir: 'out',
   server: {
     androidScheme: 'https'

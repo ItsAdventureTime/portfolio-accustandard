@@ -108,7 +108,7 @@ export default function DashboardHome() {
             <span className="text-xl font-black text-red-600">R<sub className="text-sm">X</sub>D</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight">BRIDGE DASHBOARD</h1>
+            <h1 className="text-lg font-bold tracking-tight">ERP DASHBOARD</h1>
             <p className="text-xs text-blue-200">Control-First Enterprise Operations & Multi-Location ERP</p>
           </div>
         </div>
