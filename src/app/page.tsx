@@ -35,10 +35,12 @@ import {
   Edit,
   X,
   Compass,
-  Home
+  Home,
+  Menu
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
+import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 
@@ -84,6 +86,7 @@ export default function DashboardHome() {
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'quotations' | 'soa' | 'purchasing' | 'rfp' | 'admin'>('overview');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [viewAsRole, setViewAsRole] = useState<string>('Chairman (DCS)');
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -472,10 +475,18 @@ export default function DashboardHome() {
           </div>
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="btn-danger-red text-xs active:scale-95 transition touch-target"
+            className="hidden sm:inline-flex btn-danger-red text-xs active:scale-95 transition touch-target"
           >
             <Camera className="w-4 h-4" />
             <span>Mobile Barcode Scanner</span>
+          </button>
+          {/* Mobile Hamburger Menu Toggle Button */}
+          <button
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="md:hidden p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg touch-target flex items-center justify-center"
+            aria-label="Open Mobile Menu"
+          >
+            <Menu className="w-6 h-6 text-blue-900" />
           </button>
         </div>
       </header>
@@ -1189,6 +1200,70 @@ export default function DashboardHome() {
           showNotification(`Navigated to section: ${tabKey}`);
         }}
       />
+
+      {/* Mobile Navigation Slide-Over Drawer */}
+      <MobileNavDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        activeTab={activeTab}
+        onSelectTab={(tabKey) => {
+          setActiveTab(tabKey);
+          showNotification(`Navigated to: ${tabKey}`);
+        }}
+        viewAsRole={viewAsRole}
+        onChangeRole={(role) => {
+          setViewAsRole(role);
+          showNotification(`Switched role to: ${role}`);
+          addAuditLog(`Impersonated role: ${role}`);
+        }}
+        onOpenScanner={() => setIsScannerOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        approvalsCount={approvalsList.length}
+        inventoryCount={inventoryList.length}
+        soaCount={soaData.rows.length}
+        auditCount={auditLogs.length}
+      />
+
+      {/* Mobile Bottom Navigation Bar (Persistent Thumb Zone Navigation for Mobile <768px) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-300 shadow-2xl px-2 py-1.5 flex justify-around items-center text-[10px] font-semibold text-slate-600 no-print">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
+            activeTab === 'overview' ? 'text-blue-700 font-extrabold bg-blue-50' : 'hover:text-slate-900'
+          }`}
+        >
+          <Layers className="w-5 h-5 mb-0.5 text-blue-600" />
+          <span>Overview</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('inventory')}
+          className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
+            activeTab === 'inventory' ? 'text-emerald-700 font-extrabold bg-emerald-50' : 'hover:text-slate-900'
+          }`}
+        >
+          <Package className="w-5 h-5 mb-0.5 text-emerald-600" />
+          <span>Inventory</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('quotations')}
+          className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
+            activeTab === 'quotations' || activeTab === 'soa' ? 'text-amber-700 font-extrabold bg-amber-50' : 'hover:text-slate-900'
+          }`}
+        >
+          <FileText className="w-5 h-5 mb-0.5 text-amber-600" />
+          <span>Sales</span>
+        </button>
+
+        <button
+          onClick={() => setIsMobileDrawerOpen(true)}
+          className="flex flex-col items-center py-1 px-3 rounded-lg text-slate-700 hover:text-blue-900"
+        >
+          <Menu className="w-5 h-5 mb-0.5 text-blue-900" />
+          <span>More</span>
+        </button>
+      </div>
     </div>
   );
 }
