@@ -114,11 +114,18 @@ export default function DashboardHome() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Functional Glassmorphism Top Navigation Header */}
       <header className="sticky top-0 z-40 glass-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
-        {/* Brand Lockup */}
+        {/* Brand Lockup matching photo_2026-08-01_23-55-07.jpg */}
         <div className="flex items-center space-x-3">
-          <div className="bg-white p-2 rounded-xl shadow-lg flex items-center justify-center border border-slate-200">
-            <span className="text-xl font-black text-blue-900 tracking-tight">ACCUSTANDA</span>
-            <span className="text-xl font-black text-red-600 ml-0.5">R<sub className="text-sm">X</sub>D</span>
+          <div className="bg-white px-3 py-1.5 rounded-xl shadow-lg flex flex-col justify-center border border-slate-200">
+            <div className="flex items-center leading-none">
+              <span className="text-xl font-black text-blue-900 tracking-tighter">ACCUSTANDA</span>
+              <span className="text-xl font-black text-red-600 ml-0.5">R<span className="text-sm font-black italic">x</span></span>
+              <span className="text-xl font-black text-blue-900">D</span>
+            </div>
+            <div className="w-full border-b-2 border-red-600 my-0.5"></div>
+            <span className="text-[7.5px] font-extrabold text-slate-900 tracking-tighter uppercase whitespace-nowrap">
+              MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
+            </span>
           </div>
           <div className="hidden sm:block border-l border-slate-800 pl-3">
             <h1 className="text-xs font-bold tracking-widest uppercase text-slate-200 flex items-center gap-1.5">

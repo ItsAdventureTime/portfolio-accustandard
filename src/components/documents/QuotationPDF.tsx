@@ -31,11 +31,13 @@ export const QuotationPDF: React.FC<{ data: QuotationData }> = ({ data }) => {
       {/* Header */}
       <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
         <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-3xl font-extrabold tracking-tight text-blue-800">ACCUSTANDA</span>
-            <span className="text-3xl font-extrabold text-red-600">R<sub className="text-xl">X</sub>D</span>
+          <div className="flex items-center leading-none">
+            <span className="text-3xl font-black tracking-tighter text-blue-950">ACCUSTANDA</span>
+            <span className="text-3xl font-black text-red-600 ml-0.5">R<span className="text-2xl font-black italic">x</span></span>
+            <span className="text-3xl font-black text-blue-950">D</span>
           </div>
-          <p className="text-[10px] font-bold text-gray-800 tracking-wider">
+          <div className="w-full border-b-2 border-red-600 my-0.5"></div>
+          <p className="text-[10px] font-extrabold text-gray-900 tracking-tight uppercase whitespace-nowrap">
             MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
           </p>
         </div>
