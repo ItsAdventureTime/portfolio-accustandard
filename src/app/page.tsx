@@ -33,7 +33,9 @@ import {
   Server,
   Trash2,
   Edit,
-  X
+  X,
+  Compass,
+  Home
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
@@ -86,7 +88,6 @@ export default function DashboardHome() {
 
   // Modals for CRUD Simulator
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
-  const [isAddQuotationOpen, setIsAddQuotationOpen] = useState(false);
   const [isAddSOARowOpen, setIsAddSOARowOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
 
@@ -224,6 +225,7 @@ export default function DashboardHome() {
     salesperson: 'Sir. Roel Macaraeg',
     rows: [
       {
+        id: 'soa-1',
         salesInvoiceNo: '6087',
         drNo: '6075',
         siDate: '18-Jun-26',
@@ -235,6 +237,7 @@ export default function DashboardHome() {
         runningBalance: 16960.0,
       },
       {
+        id: 'soa-2',
         salesInvoiceNo: '6107',
         drNo: '6097',
         siDate: '26-Jun-26',
@@ -246,6 +249,7 @@ export default function DashboardHome() {
         runningBalance: 18928.0,
       },
       {
+        id: 'soa-3',
         salesInvoiceNo: '6118',
         drNo: '6113',
         siDate: '30-Jun-26',
@@ -291,14 +295,12 @@ export default function DashboardHome() {
     setNewStockDesc('');
   };
 
-  // Delete Stock Handler
   const handleDeleteStock = (id: string, sku: string) => {
     setInventoryList((prev) => prev.filter((item) => item.id !== id));
     addAuditLog(`Removed Stock Item ${sku}`);
-    showNotification(`Stock Item ${sku} removed from inventory.`);
+    showNotification(`Stock Item ${sku} removed.`);
   };
 
-  // Handle Document Approval / Rejection
   const handleApproveDoc = (id: string, qrn: string) => {
     setApprovalsList((prev) =>
       prev.map((doc) => {
@@ -320,7 +322,6 @@ export default function DashboardHome() {
     showNotification(`Document ${qrn} rejected.`);
   };
 
-  // Add SOA Invoice Row Handler
   const [newSiNo, setNewSiNo] = useState('');
   const [newDrNo, setNewDrNo] = useState('');
   const [newInvoiceAmt, setNewInvoiceAmt] = useState(15000);
@@ -350,13 +351,6 @@ export default function DashboardHome() {
     setNewDrNo('');
   };
 
-  const handleDeleteSOARow = (id: string, siNo: string) => {
-    setSoaData((prev) => ({ ...prev, rows: prev.rows.filter((r) => r.id !== id) }));
-    addAuditLog(`Removed Invoice SI #${siNo} from SOA`);
-    showNotification(`Invoice SI #${siNo} removed.`);
-  };
-
-  // Simulated PO Over-Receiving Alert Receiver
   const [receivingQtyInput, setReceivingQtyInput] = useState(150);
   const approvedPOQty = 100;
   const [poErrorMsg, setPoErrorMsg] = useState<string | null>(null);
@@ -374,13 +368,34 @@ export default function DashboardHome() {
     }
   };
 
-  // Filtered Lists
   const filteredInventory = inventoryList.filter(
     (item) =>
       item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.location.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Tab Breadcrumb Title Helper for Zero-Confusion Wayfinding
+  const getTabBreadcrumb = () => {
+    switch (activeTab) {
+      case 'overview':
+        return 'Executive Overview & Pending Approvals Queue';
+      case 'inventory':
+        return 'Multi-Location Inventory Management (Quezon City & Pampanga)';
+      case 'quotations':
+        return 'Sales Quotation Generator & 3-Day Stock Reservation Engine';
+      case 'soa':
+        return 'Statement of Account (SOA) & Client Aging Ledger';
+      case 'purchasing':
+        return 'Purchasing & Receiving Report (3-Way Match Fraud Control)';
+      case 'rfp':
+        return 'Request for Payment (RFP) Non-PO Expenses';
+      case 'admin':
+        return 'Immutable System Audit Log Stream';
+      default:
+        return 'Executive Overview';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans relative">
@@ -392,8 +407,8 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {/* Soft Slate Top Shell Header */}
-      <header className="soft-slate-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
+      {/* Predictable Navigation Top Shell Header */}
+      <header className="wayfinding-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
         {/* Brand Lockup matching photo_2026-08-01_23-55-07.jpg */}
         <div className="flex items-center space-x-3">
           <div className="bg-white px-3 py-1.5 rounded flex flex-col justify-center border border-slate-300 shadow-sm">
@@ -409,17 +424,17 @@ export default function DashboardHome() {
           </div>
           <div className="hidden sm:block border-l border-slate-300 pl-3">
             <h1 className="text-xs font-bold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
-              <span>OFFICIAL PRODUCTION SIMULATOR</span>
-              <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] px-1.5 py-0.5 rounded font-mono">LIVE DEMO</span>
+              <span>ENTERPRISE ERP DASHBOARD</span>
+              <span className="bg-blue-100 text-blue-800 border border-blue-300 text-[10px] px-1.5 py-0.5 rounded font-mono">v4.0</span>
             </h1>
-            <p className="text-[11px] text-slate-500">Full Interactive Workflow & Role-Based Internal Control Engine</p>
+            <p className="text-[11px] text-slate-500">COSO Control-First Multi-Location Supply Chain</p>
           </div>
         </div>
 
         {/* View As Impersonation Bar */}
         <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded text-xs shadow-inner">
           <Eye className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-slate-700 font-medium hidden md:inline">Current User Role:</span>
+          <span className="text-slate-700 font-medium hidden md:inline">Simulate Role:</span>
           <select
             value={viewAsRole}
             onChange={(e) => {
@@ -455,8 +470,8 @@ export default function DashboardHome() {
         </div>
       </header>
 
-      {/* Top Horizontal Navigation Bar */}
-      <nav className="soft-slate-nav-strip px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
+      {/* Predictable Horizontal Top Navigation Bar */}
+      <nav className="wayfinding-nav-strip px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
         <button
           onClick={() => setActiveTab('overview')}
           className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
@@ -540,14 +555,22 @@ export default function DashboardHome() {
         </button>
       </nav>
 
+      {/* Predictable Context Breadcrumb Bar (Zero Confusion Wayfinding) */}
+      <div className="bg-slate-100 border-b border-slate-300 px-4 md:px-6 py-2 flex items-center gap-2 text-xs text-slate-600">
+        <Home className="w-3.5 h-3.5 text-blue-700" />
+        <span className="font-semibold text-slate-800">Accustanda ERP</span>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <span className="font-bold text-blue-800">{getTabBreadcrumb()}</span>
+      </div>
+
       {/* Main Content Area */}
       <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Metric Tiles with Real Dynamic Calculations */}
+            {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="soft-slate-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Quezon City Warehouse</span>
                   <Box className="w-4 h-4 text-blue-600" />
@@ -574,7 +597,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pampanga Warehouse</span>
                   <Box className="w-4 h-4 text-blue-600" />
@@ -601,7 +624,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-600" />
@@ -614,11 +637,11 @@ export default function DashboardHome() {
                 </div>
                 <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                  <span>Interactive COSO Approval Pipeline</span>
+                  <span>COSO 4-Layer Approval Matrix</span>
                 </div>
               </div>
 
-              <div className="soft-slate-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Gross Margin Avg</span>
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
@@ -635,8 +658,8 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* COSO Segregation of Duties Stepper Tracker */}
-            <div className="soft-slate-card p-5 space-y-4">
+            {/* COSO Stepper Tracker */}
+            <div className="wayfinding-card p-5 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -669,7 +692,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Pending Approvals Data Grid */}
-            <div className="soft-slate-card p-0 overflow-hidden">
+            <div className="wayfinding-card p-0 overflow-hidden">
               <div className="p-4 bg-slate-100 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-600" />
@@ -677,13 +700,10 @@ export default function DashboardHome() {
                     Pending Approval Queue (Role View: {viewAsRole})
                   </h3>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Test approving/rejecting documents below:</span>
-                </div>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="soft-slate-data-grid">
+                <table className="wayfinding-grid">
                   <thead>
                     <tr>
                       <th>Document QRN / Ref</th>
@@ -770,10 +790,9 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Inventory Table */}
-            <div className="soft-slate-card p-0 overflow-hidden">
+            <div className="wayfinding-card p-0 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="soft-slate-data-grid">
+                <table className="wayfinding-grid">
                   <thead>
                     <tr>
                       <th>SKU / Barcode</th>
@@ -844,7 +863,6 @@ export default function DashboardHome() {
               </button>
             </div>
 
-            {/* Rendered Quotation PDF Preview */}
             <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
               <QuotationPDF data={quotationData} />
             </div>
@@ -880,7 +898,6 @@ export default function DashboardHome() {
               </div>
             </div>
 
-            {/* Rendered SOA PDF Preview */}
             <div className="bg-slate-300 p-4 md:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm">
               <StatementOfAccountPDF data={soaData} />
             </div>
@@ -933,7 +950,7 @@ export default function DashboardHome() {
               Immutable System Audit Log Stream ({auditLogs.length} Events Logged)
             </h2>
 
-            <div className="soft-slate-card p-4 space-y-2 font-mono text-xs">
+            <div className="wayfinding-card p-4 space-y-2 font-mono text-xs">
               {auditLogs.map((log) => (
                 <div key={log.id} className="p-2 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-3">
