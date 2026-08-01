@@ -41,7 +41,6 @@ export default function DashboardHome() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [viewAsRole, setViewAsRole] = useState<string>('Chairman (DCS)');
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL');
 
   // Sample Quotation Data matching photo_2026-08-01_23-55-26.jpg
   const sampleQuotation: QuotationData = {
@@ -130,9 +129,9 @@ export default function DashboardHome() {
           <div className="hidden sm:block border-l border-slate-800 pl-3">
             <h1 className="text-xs font-bold tracking-widest uppercase text-slate-200 flex items-center gap-1.5">
               <span>ENTERPRISE DASHBOARD</span>
-              <span className="bg-blue-900/60 text-blue-300 text-[10px] px-1.5 py-0.5 rounded font-mono">v4.0</span>
+              <span className="bg-blue-950 text-blue-300 border border-blue-800 text-[10px] px-1.5 py-0.5 rounded font-mono">v4.0</span>
             </h1>
-            <p className="text-[11px] text-slate-400">Control-First Multi-Location ERP & Logistics</p>
+            <p className="text-[11px] text-slate-400">COSO Control-First Multi-Location ERP & Supply Chain</p>
           </div>
         </div>
 
@@ -252,20 +251,19 @@ export default function DashboardHome() {
         </button>
       </nav>
 
-      {/* Main Content Dashboard Viewport */}
+      {/* Main Content Viewport */}
       <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* KPI Metric Cards */}
+            {/* Bento Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="metric-card p-5 rounded-2xl">
+              <div className="bento-card p-5 rounded-2xl">
                 <div className="flex justify-between items-center text-slate-400 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Quezon City Warehouse</span>
                   <Box className="w-4 h-4 text-blue-400" />
                 </div>
                 <p className="text-3xl font-extrabold text-white">1,480 <span className="text-xs font-normal text-slate-400">Units</span></p>
-                {/* Micro Progress Bar */}
                 <div className="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
                   <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '75%' }}></div>
                 </div>
@@ -275,7 +273,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="metric-card p-5 rounded-2xl">
+              <div className="bento-card p-5 rounded-2xl">
                 <div className="flex justify-between items-center text-slate-400 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pampanga Warehouse</span>
                   <Box className="w-4 h-4 text-blue-400" />
@@ -290,7 +288,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="metric-card p-5 rounded-2xl">
+              <div className="bento-card p-5 rounded-2xl">
                 <div className="flex justify-between items-center text-slate-400 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-400" />
@@ -302,7 +300,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="metric-card p-5 rounded-2xl">
+              <div className="bento-card p-5 rounded-2xl">
                 <div className="flex justify-between items-center text-slate-400 text-xs mb-2">
                   <span className="font-semibold uppercase tracking-wider">Gross Margin Avg</span>
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -315,7 +313,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Approval Stepper Tracker (COSO Internal Control) */}
-            <div className="metric-card p-5 rounded-2xl space-y-4">
+            <div className="bento-card p-5 rounded-2xl space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-blue-400" />
@@ -348,7 +346,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Pending Approvals Data Table */}
-            <div className="metric-card p-0 rounded-2xl overflow-hidden">
+            <div className="bento-card p-0 rounded-2xl overflow-hidden">
               <div className="p-4 bg-slate-900 border-b border-slate-800 flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-400" />
@@ -368,7 +366,7 @@ export default function DashboardHome() {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="enterprise-table">
+                <table className="clinical-table">
                   <thead>
                     <tr>
                       <th>Document QRN / Ref</th>
@@ -443,9 +441,9 @@ export default function DashboardHome() {
               </button>
             </div>
 
-            <div className="metric-card p-0 rounded-2xl overflow-hidden">
+            <div className="bento-card p-0 rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="enterprise-table">
+                <table className="clinical-table">
                   <thead>
                     <tr>
                       <th>SKU / Barcode</th>
@@ -562,7 +560,7 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <h2 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-blue-400" />
-              Request for Payment (RFP) - Other Non-PO Expenses
+              Request for Payment (RFP) - Non-PO Expenses
             </h2>
             <p className="text-xs text-slate-400">Select GL Account from maintained list & route for approval.</p>
           </div>
