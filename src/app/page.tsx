@@ -20,7 +20,11 @@ import {
   Search,
   Filter,
   Download,
-  Plus
+  Plus,
+  ArrowRight,
+  RefreshCcw,
+  Check,
+  ChevronRight
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
@@ -99,28 +103,29 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
-      {/* Top Brand & RBAC Control Header */}
-      <header className="brand-header-bg text-white px-6 py-4 shadow-lg flex flex-wrap justify-between items-center gap-4 border-b border-blue-900">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans">
+      {/* IBM Carbon Shell Header Bar */}
+      <header className="carbon-header-shell px-6 py-3 shadow-md flex flex-wrap justify-between items-center gap-4">
+        {/* Brand Lockup */}
         <div className="flex items-center space-x-3">
-          <div className="bg-white p-2 rounded-xl shadow-md flex items-center justify-center">
-            <span className="text-xl font-black text-blue-900">ACCUSTANDA</span>
-            <span className="text-xl font-black text-red-600">R<sub className="text-sm">X</sub>D</span>
+          <div className="bg-white px-2.5 py-1 flex items-center justify-center border border-slate-300">
+            <span className="text-lg font-black text-blue-900 tracking-tight">ACCUSTANDA</span>
+            <span className="text-lg font-black text-red-600 ml-0.5">R<sub className="text-xs">X</sub>D</span>
           </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight">ERP DASHBOARD</h1>
-            <p className="text-xs text-blue-200">Control-First Enterprise Operations & Multi-Location ERP</p>
+          <div className="border-l border-slate-700 pl-3">
+            <h1 className="text-sm font-bold tracking-wide uppercase text-slate-100">ENTERPRISE DASHBOARD</h1>
+            <p className="text-[11px] text-slate-400">COSO Control-First ERP & Inventory System</p>
           </div>
         </div>
 
-        {/* View As Impersonation Bar */}
-        <div className="flex items-center gap-3 bg-blue-950/60 backdrop-blur border border-blue-400/30 px-3.5 py-1.5 rounded-xl text-xs">
+        {/* View As Impersonation Selector (IBM Carbon Style) */}
+        <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 text-xs">
           <Eye className="w-4 h-4 text-amber-400" />
-          <span className="text-blue-200">Admin Impersonation ("View As"):</span>
+          <span className="text-slate-300 font-medium">Impersonate ("View As"):</span>
           <select
             value={viewAsRole}
             onChange={(e) => setViewAsRole(e.target.value)}
-            className="bg-slate-900 text-white font-semibold rounded-lg px-2 py-1 border border-blue-400/40 focus:outline-none"
+            className="bg-slate-800 text-white font-semibold px-2 py-1 border border-slate-600 focus:outline-none focus:border-blue-500"
           >
             <option value="Admin">Admin (Bridge)</option>
             <option value="Chairman (DCS)">Chairman (DCS)</option>
@@ -132,24 +137,30 @@ export default function DashboardHome() {
           </select>
         </div>
 
-        {/* Mobile Camera Barcode Trigger */}
-        <button
-          onClick={() => setIsScannerOpen(true)}
-          className="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-lg transition active:scale-95"
-        >
-          <Camera className="w-4 h-4" />
-          Mobile Barcode Scanner
-        </button>
+        {/* Actions & Barcode Trigger */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>QBO API Live Sync</span>
+          </div>
+          <button
+            onClick={() => setIsScannerOpen(true)}
+            className="carbon-btn-danger text-xs px-3.5 py-2 font-semibold active:scale-95 transition"
+          >
+            <Camera className="w-4 h-4" />
+            Mobile Barcode Scanner
+          </button>
+        </div>
       </header>
 
-      {/* Main Navigation Tabs */}
-      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 py-2.5 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+      {/* IBM Carbon Tab Navigation Shell */}
+      <nav className="bg-slate-900 border-b border-slate-800 px-4 md:px-6 flex overflow-x-auto no-scrollbar whitespace-nowrap text-xs font-semibold text-slate-400">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'overview'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -157,10 +168,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'inventory'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <Package className="w-4 h-4" />
@@ -168,10 +179,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('quotations')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'quotations'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -179,10 +190,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('soa')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'soa'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <FileCheck className="w-4 h-4" />
@@ -190,10 +201,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('purchasing')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'purchasing'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <Building2 className="w-4 h-4" />
@@ -201,10 +212,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('rfp')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'rfp'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <CreditCard className="w-4 h-4" />
@@ -212,113 +223,157 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('admin')}
-          className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
+          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
             activeTab === 'admin'
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'border-blue-500 text-white font-bold bg-slate-800/60'
+              : 'border-transparent hover:text-slate-200 hover:bg-slate-800/30'
           }`}
         >
           <UserCheck className="w-4 h-4" />
-          Admin & Audit Logs
+          Admin & Audit Trail
         </button>
       </nav>
 
-      {/* Main Body */}
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+      {/* Main Content Area (IBM Carbon Layout Grid) */}
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center text-slate-500 text-xs mb-1">
-                  <span>Quezon City Stock</span>
+            {/* IBM Carbon 4-Column Grid Metric Tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="carbon-tile">
+                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
+                  <span className="font-semibold uppercase tracking-wider">Quezon City Stock</span>
                   <Package className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">1,480 Units</p>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">Available: 1,120 | Reserved: 360</p>
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white">1,480</p>
+                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between text-[11px]">
+                  <span className="text-emerald-600 font-semibold">Available: 1,120</span>
+                  <span className="text-amber-600 font-semibold">Reserved: 360</span>
+                </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center text-slate-500 text-xs mb-1">
-                  <span>Pampanga Stock</span>
+              <div className="carbon-tile">
+                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
+                  <span className="font-semibold uppercase tracking-wider">Pampanga Stock</span>
                   <Package className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">920 Units</p>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">Available: 780 | Reserved: 140</p>
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white">920</p>
+                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between text-[11px]">
+                  <span className="text-emerald-600 font-semibold">Available: 780</span>
+                  <span className="text-amber-600 font-semibold">Reserved: 140</span>
+                </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center text-slate-500 text-xs mb-1">
-                  <span>Pending Approvals</span>
+              <div className="carbon-tile">
+                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
+                  <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-500" />
                 </div>
-                <p className="text-2xl font-bold text-amber-600">4 Items</p>
-                <p className="text-[11px] text-slate-500 mt-1">Routing to: {viewAsRole}</p>
+                <p className="text-3xl font-extrabold text-amber-600">4 Docs</p>
+                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
+                  <span>Routing to: <strong className="text-slate-800 dark:text-slate-200">{viewAsRole}</strong></span>
+                </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
-                <div className="flex justify-between items-center text-slate-500 text-xs mb-1">
-                  <span>Gross Margin Avg</span>
+              <div className="carbon-tile">
+                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
+                  <span className="font-semibold uppercase tracking-wider">Gross Margin Avg</span>
                   <TrendingUp className="w-4 h-4 text-emerald-600" />
                 </div>
-                <p className="text-2xl font-bold text-emerald-600">34.8%</p>
-                <p className="text-[11px] text-slate-500 mt-1">Quotation vs Unit Cost basis</p>
+                <p className="text-3xl font-extrabold text-emerald-600">34.8%</p>
+                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500">
+                  <span>Cost basis per batch</span>
+                </div>
               </div>
             </div>
 
-            {/* Pending Approvals Table */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                Pending Maker-Checker-Approver Queue (Role: {viewAsRole})
-              </h2>
+            {/* Approval Stepper Tracker (IBM Carbon Progress Indicator) */}
+            <div className="carbon-tile space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Segregation of Duties — 4-Layer Approval Chain
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+                <div className="p-2.5 bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-600">
+                  <span className="text-[10px] font-bold uppercase text-blue-600">Layer 1: Maker</span>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">Creates Document</p>
+                  <p className="text-[11px] text-slate-500">Sales / Purchasing</p>
+                </div>
+                <div className="p-2.5 bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-600">
+                  <span className="text-[10px] font-bold uppercase text-blue-600">Layer 2: Reviewer</span>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">Checks Accuracy</p>
+                  <p className="text-[11px] text-slate-500">Marketing Officer</p>
+                </div>
+                <div className="p-2.5 bg-blue-50 dark:bg-slate-800 border-l-4 border-blue-600">
+                  <span className="text-[10px] font-bold uppercase text-blue-600">Layer 3: GM</span>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">Business Approval</p>
+                  <p className="text-[11px] text-slate-500">General Manager (Karen)</p>
+                </div>
+                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500">
+                  <span className="text-[10px] font-bold uppercase text-amber-600">Layer 4: DCS</span>
+                  <p className="font-semibold text-amber-900 dark:text-amber-200">Final Approval</p>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-300">Chairman (DCS)</p>
+                </div>
+              </div>
+            </div>
 
-              <div className="overflow-x-auto text-xs">
-                <table className="w-full text-left border-collapse">
+            {/* Pending Approvals Data Table */}
+            <div className="carbon-tile p-0 overflow-hidden">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    Pending Approval Queue (Role View: {viewAsRole})
+                  </h3>
+                </div>
+                <span className="carbon-tag carbon-tag-amber">Launch Rule: Routing to DCS</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="carbon-data-table">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold">
-                      <th className="py-2.5 px-3">Document QRN / Ref</th>
-                      <th className="py-2.5 px-3">Type</th>
-                      <th className="py-2.5 px-3">Maker</th>
-                      <th className="py-2.5 px-3">Reviewer (Marketing)</th>
-                      <th className="py-2.5 px-3">GM Status</th>
-                      <th className="py-2.5 px-3">DCS (Chairman)</th>
-                      <th className="py-2.5 px-3 text-right">Amount</th>
-                      <th className="py-2.5 px-3 text-center">Action</th>
+                    <tr>
+                      <th>QRN / Ref #</th>
+                      <th>Document Type</th>
+                      <th>Maker</th>
+                      <th>Reviewer (Mktg)</th>
+                      <th>GM Status</th>
+                      <th>DCS Status</th>
+                      <th className="text-right">Total Amount</th>
+                      <th className="text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  <tbody>
                     <tr>
-                      <td className="py-3 px-3 font-mono font-bold text-blue-600">QRN20240415037</td>
-                      <td className="py-3 px-3">Sales Quotation</td>
-                      <td className="py-3 px-3">Sales Officer</td>
-                      <td className="py-3 px-3 text-emerald-600 font-semibold">Approved (Mktg)</td>
-                      <td className="py-3 px-3 text-emerald-600 font-semibold">Approved (GM)</td>
-                      <td className="py-3 px-3 text-amber-600 font-bold animate-pulse">Pending DCS</td>
-                      <td className="py-3 px-3 text-right font-bold">₱31,500.00</td>
-                      <td className="py-3 px-3 text-center space-x-1">
-                        <button className="bg-emerald-600 text-white px-2.5 py-1 rounded font-semibold text-[11px] hover:bg-emerald-500">
+                      <td className="font-mono font-bold text-blue-600">QRN20240415037</td>
+                      <td>Sales Quotation</td>
+                      <td>Sales Officer</td>
+                      <td><span className="carbon-tag carbon-tag-green">Approved</span></td>
+                      <td><span className="carbon-tag carbon-tag-green">Approved</span></td>
+                      <td><span className="carbon-tag carbon-tag-amber">Pending DCS</span></td>
+                      <td className="text-right font-bold">₱31,500.00</td>
+                      <td className="text-center space-x-1">
+                        <button className="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 text-xs font-semibold">
                           Approve
                         </button>
-                        <button className="bg-red-600 text-white px-2.5 py-1 rounded font-semibold text-[11px] hover:bg-red-500">
+                        <button className="bg-red-700 hover:bg-red-600 text-white px-2.5 py-1 text-xs font-semibold">
                           Reject
                         </button>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-3 px-3 font-mono font-bold text-blue-600">PO-2026-0891</td>
-                      <td className="py-3 px-3">Purchase Order</td>
-                      <td className="py-3 px-3">Purchasing Officer</td>
-                      <td className="py-3 px-3 text-emerald-600 font-semibold">Reviewed</td>
-                      <td className="py-3 px-3 text-amber-600 font-bold">Pending GM</td>
-                      <td className="py-3 px-3 text-slate-400">Awaiting Tier</td>
-                      <td className="py-3 px-3 text-right font-bold">₱142,000.00</td>
-                      <td className="py-3 px-3 text-center space-x-1">
-                        <button className="bg-emerald-600 text-white px-2.5 py-1 rounded font-semibold text-[11px] hover:bg-emerald-500">
+                      <td className="font-mono font-bold text-blue-600">PO-2026-0891</td>
+                      <td>Purchase Order</td>
+                      <td>Purchasing Officer</td>
+                      <td><span className="carbon-tag carbon-tag-blue">Reviewed</span></td>
+                      <td><span className="carbon-tag carbon-tag-amber">Pending GM</span></td>
+                      <td><span className="carbon-tag carbon-tag-gray">Awaiting Tier</span></td>
+                      <td className="text-right font-bold">₱142,000.00</td>
+                      <td className="text-center space-x-1">
+                        <button className="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 text-xs font-semibold">
                           Approve
                         </button>
-                        <button className="bg-red-600 text-white px-2.5 py-1 rounded font-semibold text-[11px] hover:bg-red-500">
+                        <button className="bg-red-700 hover:bg-red-600 text-white px-2.5 py-1 text-xs font-semibold">
                           Reject
                         </button>
                       </td>
@@ -333,56 +388,61 @@ export default function DashboardHome() {
         {/* TAB 2: INVENTORY */}
         {activeTab === 'inventory' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Multi-Location Inventory Management (QC & Pampanga)
-              </h2>
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Multi-Location Inventory Control
+                </h2>
+                <p className="text-xs text-slate-500">Tracking stock across Quezon City and Pampanga warehouses</p>
+              </div>
               <button
                 onClick={() => setIsScannerOpen(true)}
-                className="bg-blue-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center gap-2"
+                className="carbon-btn-primary text-xs"
               >
                 <Camera className="w-4 h-4" />
                 Scan Barcode
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm text-xs">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500">
-                    <th className="py-2.5 px-3">SKU / Barcode</th>
-                    <th className="py-2.5 px-3">Item Description</th>
-                    <th className="py-2.5 px-3">Location</th>
-                    <th className="py-2.5 px-3">Batch / Lot</th>
-                    <th className="py-2.5 px-3">Expiry Date</th>
-                    <th className="py-2.5 px-3 text-right">On Hand</th>
-                    <th className="py-2.5 px-3 text-right">Reserved (3-Day Limit)</th>
-                    <th className="py-2.5 px-3 text-right">Available</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  <tr>
-                    <td className="py-3 px-3 font-mono font-bold">ACC-BACT-01</td>
-                    <td className="py-3 px-3 font-medium">Calibration Sticks Bact Alert</td>
-                    <td className="py-3 px-3">Pampanga</td>
-                    <td className="py-3 px-3 font-mono">LOT-2026-A9</td>
-                    <td className="py-3 px-3 text-emerald-600 font-semibold">2027-11-30</td>
-                    <td className="py-3 px-3 text-right font-bold">45 Kits</td>
-                    <td className="py-3 px-3 text-right text-amber-600 font-bold">5 Kits</td>
-                    <td className="py-3 px-3 text-right text-emerald-600 font-bold">40 Kits</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-3 font-mono font-bold">ACC-REAG-04</td>
-                    <td className="py-3 px-3 font-medium">Blood Chemistry Reagents Kit</td>
-                    <td className="py-3 px-3">Quezon City</td>
-                    <td className="py-3 px-3 font-mono">LOT-2026-B2</td>
-                    <td className="py-3 px-3 text-amber-600 font-semibold">2026-09-15 (Near Expiry)</td>
-                    <td className="py-3 px-3 text-right font-bold">120 Boxes</td>
-                    <td className="py-3 px-3 text-right text-amber-600 font-bold">20 Boxes</td>
-                    <td className="py-3 px-3 text-right text-emerald-600 font-bold">100 Boxes</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="carbon-tile p-0 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="carbon-data-table">
+                  <thead>
+                    <tr>
+                      <th>SKU / Barcode</th>
+                      <th>Item Description</th>
+                      <th>Location</th>
+                      <th>Batch / Lot</th>
+                      <th>Expiry Date</th>
+                      <th className="text-right">On Hand</th>
+                      <th className="text-right">Reserved (3-Day Limit)</th>
+                      <th className="text-right">Available</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="font-mono font-bold">ACC-BACT-01</td>
+                      <td className="font-semibold">Calibration Sticks Bact Alert</td>
+                      <td>Pampanga</td>
+                      <td className="font-mono">LOT-2026-A9</td>
+                      <td><span className="carbon-tag carbon-tag-green">2027-11-30</span></td>
+                      <td className="text-right font-bold">45 Kits</td>
+                      <td className="text-right text-amber-600 font-bold">5 Kits</td>
+                      <td className="text-right text-emerald-600 font-bold">40 Kits</td>
+                    </tr>
+                    <tr>
+                      <td className="font-mono font-bold">ACC-REAG-04</td>
+                      <td className="font-semibold">Blood Chemistry Reagents Kit</td>
+                      <td>Quezon City</td>
+                      <td className="font-mono">LOT-2026-B2</td>
+                      <td><span className="carbon-tag carbon-tag-amber">2026-09-15 (Near Expiry)</span></td>
+                      <td className="text-right font-bold">120 Boxes</td>
+                      <td className="text-right text-amber-600 font-bold">20 Boxes</td>
+                      <td className="text-right text-emerald-600 font-bold">100 Boxes</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -390,16 +450,16 @@ export default function DashboardHome() {
         {/* TAB 3: QUOTATIONS */}
         {activeTab === 'quotations' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Sales Quotation Generator & Approval Routing
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Sales Quotation Generator & Stock Reservation
                 </h2>
-                <p className="text-xs text-slate-500">Flow: Client → Sales RFQ → Marketing (Reviewer) → GM → DCS</p>
+                <p className="text-xs text-slate-500">Named Flow: Client → Sales RFQ → Marketing (Reviewer) → GM → DCS</p>
               </div>
               <button
                 onClick={() => window.print()}
-                className="bg-red-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center gap-2"
+                className="carbon-btn-danger text-xs"
               >
                 <Download className="w-4 h-4" />
                 Print / Export Quotation
@@ -407,7 +467,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Rendered Quotation PDF Preview */}
-            <div className="bg-slate-200 dark:bg-slate-800 p-3 md:p-6 rounded-2xl overflow-x-auto">
+            <div className="bg-slate-300 dark:bg-slate-900 p-4 md:p-6 border border-slate-400 dark:border-slate-800 overflow-x-auto">
               <QuotationPDF data={sampleQuotation} />
             </div>
           </div>
@@ -416,16 +476,16 @@ export default function DashboardHome() {
         {/* TAB 4: STATEMENT OF ACCOUNT (SOA) */}
         {activeTab === 'soa' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                   Statement of Account (SOA) Module
                 </h2>
                 <p className="text-xs text-slate-500">Client Aging, DR numbers, and Running Balances</p>
               </div>
               <button
                 onClick={() => window.print()}
-                className="bg-red-600 text-white text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center gap-2"
+                className="carbon-btn-danger text-xs"
               >
                 <Download className="w-4 h-4" />
                 Print / Export SOA
@@ -433,7 +493,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Rendered SOA PDF Preview */}
-            <div className="bg-slate-200 dark:bg-slate-800 p-3 md:p-6 rounded-2xl overflow-x-auto">
+            <div className="bg-slate-300 dark:bg-slate-900 p-4 md:p-6 border border-slate-400 dark:border-slate-800 overflow-x-auto">
               <StatementOfAccountPDF data={sampleSOA} />
             </div>
           </div>
@@ -442,14 +502,14 @@ export default function DashboardHome() {
         {/* TAB 5: PURCHASING */}
         {activeTab === 'purchasing' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Purchasing & Receiving Report (3-Way Match & Anti-Fraud Control)
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Purchasing & Receiving Report (3-Way Match)
             </h2>
-            <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/50 p-4 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
+            <div className="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 p-4 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <p className="font-bold">Over-Receiving Rule Enforced:</p>
-                <p>Receiving is strictly hard-blocked beyond approved Purchase Order quantities. Any excess quantity requires a formal, approved PO revision.</p>
+                <p className="font-bold uppercase">PO Over-Receiving Rule Enforced:</p>
+                <p>Receiving is strictly hard-blocked beyond approved Purchase Order quantities. Excess quantities require an approved PO revision.</p>
               </div>
             </div>
           </div>
@@ -458,8 +518,8 @@ export default function DashboardHome() {
         {/* TAB 6: REQUEST FOR PAYMENT */}
         {activeTab === 'rfp' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-              Request for Payment (RFP) - Other Non-PO Expenses
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+              Request for Payment (RFP) - Non-PO Expenses
             </h2>
             <p className="text-xs text-slate-500">Select GL Account from maintained list & route for approval.</p>
           </div>
@@ -468,7 +528,7 @@ export default function DashboardHome() {
         {/* TAB 7: ADMIN */}
         {activeTab === 'admin' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
               Admin & System Control Log
             </h2>
             <p className="text-xs text-slate-500">Immutable audit logs and Admin overrides.</p>
