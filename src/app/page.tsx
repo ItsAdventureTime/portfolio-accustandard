@@ -143,7 +143,7 @@ export default function DashboardHome() {
       </header>
 
       {/* Main Navigation Tabs */}
-      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-2 flex flex-wrap gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 py-2.5 flex overflow-x-auto no-scrollbar whitespace-nowrap gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
         <button
           onClick={() => setActiveTab('overview')}
           className={`px-3.5 py-2 rounded-lg transition flex items-center gap-2 ${
@@ -407,7 +407,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Rendered Quotation PDF Preview */}
-            <div className="bg-slate-200 dark:bg-slate-800 p-6 rounded-2xl">
+            <div className="bg-slate-200 dark:bg-slate-800 p-3 md:p-6 rounded-2xl overflow-x-auto">
               <QuotationPDF data={sampleQuotation} />
             </div>
           </div>
@@ -433,7 +433,7 @@ export default function DashboardHome() {
             </div>
 
             {/* Rendered SOA PDF Preview */}
-            <div className="bg-slate-200 dark:bg-slate-800 p-6 rounded-2xl">
+            <div className="bg-slate-200 dark:bg-slate-800 p-3 md:p-6 rounded-2xl overflow-x-auto">
               <StatementOfAccountPDF data={sampleSOA} />
             </div>
           </div>
