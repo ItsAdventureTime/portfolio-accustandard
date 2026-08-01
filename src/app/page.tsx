@@ -712,7 +712,7 @@ export default function DashboardHome() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="table-responsive-wrapper">
                 <table className="wayfinding-grid">
                   <thead>
                     <tr>
@@ -801,7 +801,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="wayfinding-card p-0 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="table-responsive-wrapper">
                 <table className="wayfinding-grid">
                   <thead>
                     <tr>
@@ -979,7 +979,7 @@ export default function DashboardHome() {
       {/* MODAL 1: Add New Stock Batch Modal */}
       {isAddStockOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold uppercase text-slate-900">Add New Stock Batch</h3>
               <button onClick={() => setIsAddStockOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -1057,7 +1057,7 @@ export default function DashboardHome() {
       {/* MODAL 2: Add Invoice Row to SOA Modal */}
       {isAddSOARowOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold uppercase text-slate-900">Add Invoice Row to SOA</h3>
               <button onClick={() => setIsAddSOARowOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -1121,7 +1121,7 @@ export default function DashboardHome() {
       {/* MODAL 3: Test PO Over-Receiving Simulator Modal */}
       {isPOReceivingModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <h3 className="text-sm font-bold uppercase text-slate-900">PO Over-Receiving Simulator</h3>
               <button onClick={() => setIsPOReceivingModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
