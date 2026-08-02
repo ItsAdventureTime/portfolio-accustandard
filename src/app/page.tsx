@@ -45,6 +45,7 @@ import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
+import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_PO_LIST, DEFAULT_RFP_LIST, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
@@ -126,6 +127,7 @@ export default function DashboardHome() {
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
   const [isAddPOOpen, setIsAddPOOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
+  const [isPwaInstallModalOpen, setIsPwaInstallModalOpen] = useState(false);
 
   // Multi-Format Export & Document Print State
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -2278,6 +2280,7 @@ export default function DashboardHome() {
         }}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
         approvalsCount={approvalsList.length}
         inventoryCount={inventoryList.length}
         soaCount={soaData.rows.length}
@@ -2323,6 +2326,12 @@ export default function DashboardHome() {
           <Menu className="w-5 h-5 mb-0.5 text-blue-900" />
         </button>
       </div>
+
+      {/* PWA App Installation & Mobile Guide Modal */}
+      <PWAInstallModal
+        isOpen={isPwaInstallModalOpen}
+        onClose={() => setIsPwaInstallModalOpen(false)}
+      />
 
       {/* Multi-Format Export Selector Modal */}
       <ExportModal

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#1e3a8a"/>
+  <rect x="32" y="32" width="448" height="448" rx="80" fill="#ffffff" stroke="#3b82f6" stroke-width="8"/>
+  <g transform="translate(64, 160)">
+    <text x="0" y="80" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="60" fill="#1e3a8a" letter-spacing="-2">ACCUSTANDA</text>
+    <text x="0" y="140" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="50" fill="#dc2626">RxD</text>
+    <rect x="0" y="165" width="384" height="6" fill="#dc2626"/>
+    <text x="0" y="200" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="22" fill="#0f172a" letter-spacing="3">MEDICAL &amp; DIAGNOSTIC</text>
+  </g>
+</svg>

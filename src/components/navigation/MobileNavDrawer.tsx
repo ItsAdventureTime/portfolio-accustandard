@@ -12,6 +12,7 @@ interface MobileNavDrawerProps {
   onChangeRole: (role: string) => void;
   onOpenScanner: () => void;
   onOpenCommandPalette: () => void;
+  onOpenPWAInstall: () => void;
   approvalsCount: number;
   inventoryCount: number;
   soaCount: number;
@@ -27,6 +28,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   onChangeRole,
   onOpenScanner,
   onOpenCommandPalette,
+  onOpenPWAInstall,
   approvalsCount,
   inventoryCount,
   soaCount,
@@ -125,6 +127,26 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               <span>Barcode Scanner</span>
             </button>
           </div>
+
+          {/* PWA App Install Banner trigger */}
+          <button
+            onClick={() => {
+              onClose();
+              onOpenPWAInstall();
+            }}
+            className="w-full p-3 bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-xl border border-blue-800 shadow-sm flex items-center justify-between transition hover:opacity-95"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-blue-600 text-white rounded-lg">
+                <Smartphone className="w-4 h-4" />
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-extrabold block">Install Mobile App (PWA)</span>
+                <span className="text-[10px] text-blue-200">iOS & Android Installation Guide</span>
+              </div>
+            </div>
+            <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-md text-white">Guide ➔</span>
+          </button>
 
           {/* Module Navigation List */}
           <div className="space-y-1 pt-1">
