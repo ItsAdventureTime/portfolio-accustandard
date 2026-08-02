@@ -1836,11 +1836,12 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {/* Barcode Scanner Modal */}
+      {/* Mobile Barcode & QR Scanner Modal */}
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={(scannedCode) => {
+          setIsScannerOpen(false);
           setActiveTab('inventory');
           setSearchQuery(scannedCode);
           showNotification(`🎯 Barcode Scanned: ${scannedCode} — Filtered in Inventory!`);
