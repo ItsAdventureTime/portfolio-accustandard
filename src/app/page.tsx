@@ -701,8 +701,8 @@ export default function DashboardHome() {
         <span className="font-extrabold text-blue-800">{getTabBreadcrumb()}</span>
       </div>
 
-      {/* Main Content Area — Maximum Screen Utilization Layout with Mobile Bottom Clearance */}
-      <main className="flex-1 p-4 md:p-6 pb-32 md:pb-6 max-w-[1600px] mx-auto w-full space-y-6">
+      {/* Main Content Area — Maximum Screen Utilization Layout with Precise Mobile Bottom Clearance */}
+      <main className="flex-1 p-4 md:p-6 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-6 max-w-[1600px] mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
