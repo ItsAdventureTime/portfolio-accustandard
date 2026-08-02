@@ -139,6 +139,8 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id:
       {/* Summary Calculations */}
       <div className="flex justify-end mb-8 text-xs">
         <div className="w-80 space-y-1">
+          <div className="flex justify-between items-center py-0.5">
+            <span className="font-bold uppercase text-gray-800">AMOUNT DUE</span>
             <span className={`font-bold ${totalAmountDue > 0 ? 'text-red-600' : 'text-gray-900'}`}>
               {totalAmountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </span>

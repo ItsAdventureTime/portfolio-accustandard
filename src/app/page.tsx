@@ -657,6 +657,15 @@ export default function DashboardHome() {
     }
   };
 
+  // Computed Permission Booleans for Visual RBAC Guarding
+  const canAddStock = checkRolePermission('STOCK_MGMT').allowed;
+  const canEditQuotation = checkRolePermission('SALES_QUOTATION').allowed;
+  const canEditSOA = checkRolePermission('FINANCE_SOA').allowed;
+  const canCreatePO = checkRolePermission('PO_MGMT').allowed;
+  const canTestReceiving = checkRolePermission('PO_RECEIVING').allowed;
+  const canCreateRFP = checkRolePermission('RFP_MGMT').allowed;
+  const canExportInventory = !['Sales', 'Marketing'].includes(viewAsRole);
+
   return (
     <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans relative">
       {/* Center-Screen High-Salience System Alert Modal (Execution Halt Overlay) */}
@@ -1637,6 +1646,8 @@ export default function DashboardHome() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
             {/* Mobile View: Stacked RFP Cards */}
             <div className="space-y-3 sm:hidden">
               {rfpList.map((rfp) => (
