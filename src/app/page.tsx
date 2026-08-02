@@ -43,6 +43,8 @@ import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
+import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
+import { exportToCSV } from '@/lib/exportUtils';
 
 // Types for Simulator Engine
 interface InventoryItem {
@@ -83,6 +85,7 @@ interface SOARowItem {
 }
 
 export default function DashboardHome() {
+  const { secondsRemaining, formatTimer, resetDemoData } = useDemoStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'quotations' | 'soa' | 'purchasing' | 'rfp' | 'admin'>('overview');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -96,109 +99,41 @@ export default function DashboardHome() {
   const [isAddSOARowOpen, setIsAddSOARowOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
 
+  // Interactive Lists
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(DEFAULT_INVENTORY as any);
+  const [approvalsList, setApprovalsList] = useState<ApprovalDoc[]>(DEFAULT_APPROVALS as any);
+  const [soaData, setSoaData] = useState<SOAData>({
+    statementDate: '10-Jul-26',
+    clientName: 'GATCHALIAN MEDICAL LABORATORY',
+    terms: '30 Days',
+    salesperson: 'Sir. Roel Macaraeg',
+    rows: DEFAULT_SOA_ROWS as any,
+    preparedBy: 'Marrione Fuentes',
+    preparedByTitle: 'Accounting Officer',
+  });
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; time: string; user: string; action: string }>>(DEFAULT_AUDIT_LOGS);
+
+  // Handle Manual or Auto Reset
+  const handleRestoreDefaultState = () => {
+    resetDemoData();
+    setInventoryList(DEFAULT_INVENTORY as any);
+    setApprovalsList(DEFAULT_APPROVALS as any);
+    setSoaData((prev) => ({ ...prev, rows: DEFAULT_SOA_ROWS as any }));
+    setAuditLogs(DEFAULT_AUDIT_LOGS);
+    setToastMessage('Demo state restored to pristine default data!');
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
   // Toast Helper
   const showNotification = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Audit Log State
-  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; time: string; user: string; action: string }>>([
-    { id: '1', time: '02:55 PM', user: 'Sales Officer (Mark)', action: 'Created Quotation QRN20240415037 for Allied Care Experts' },
-    { id: '2', time: '03:10 PM', user: 'Marketing Officer (RMT)', action: 'Reviewed and Approved Quotation QRN20240415037' },
-    { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037' },
-  ]);
-
   const addAuditLog = (action: string) => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setAuditLogs((prev) => [{ id: Date.now().toString(), time: timeStr, user: viewAsRole, action }, ...prev]);
   };
-
-  // Interactive Inventory List State
-  const [inventoryList, setInventoryList] = useState<InventoryItem[]>([
-    {
-      id: 'inv-1',
-      sku: 'ACC-BACT-01',
-      description: 'Calibration Sticks Bact Alert',
-      location: 'Pampanga',
-      lotNumber: 'LOT-2026-A9',
-      expiryDate: '2027-11-30',
-      onHand: 45,
-      reserved: 5,
-      unit: 'Kits',
-      status: 'NORMAL',
-    },
-    {
-      id: 'inv-2',
-      sku: 'ACC-REAG-04',
-      description: 'Blood Chemistry Reagents Kit',
-      location: 'Quezon City',
-      lotNumber: 'LOT-2026-B2',
-      expiryDate: '2026-09-15',
-      onHand: 120,
-      reserved: 20,
-      unit: 'Boxes',
-      status: 'NEAR_EXPIRY',
-    },
-    {
-      id: 'inv-3',
-      sku: 'ACC-HEMA-09',
-      description: 'Hematology Lyse Reagent 5L',
-      location: 'Quezon City',
-      lotNumber: 'LOT-2026-C8',
-      expiryDate: '2028-03-20',
-      onHand: 200,
-      reserved: 10,
-      unit: 'Bottles',
-      status: 'NORMAL',
-    },
-    {
-      id: 'inv-4',
-      sku: 'ACC-URIN-12',
-      description: 'Urine Analyzer Test Strips 100s',
-      location: 'Pampanga',
-      lotNumber: 'LOT-2026-D4',
-      expiryDate: '2027-06-10',
-      onHand: 85,
-      reserved: 0,
-      unit: 'Canisters',
-      status: 'NORMAL',
-    },
-  ]);
-
-  // Interactive Pending Approvals List State
-  const [approvalsList, setApprovalsList] = useState<ApprovalDoc[]>([
-    {
-      id: 'app-1',
-      qrn: 'QRN20240415037',
-      type: 'Sales Quotation',
-      maker: 'Sales Officer',
-      reviewerStatus: 'APPROVED',
-      gmStatus: 'APPROVED',
-      dcsStatus: 'PENDING',
-      totalAmount: 31500.0,
-    },
-    {
-      id: 'app-2',
-      qrn: 'PO-2026-0891',
-      type: 'Purchase Order',
-      maker: 'Purchasing Officer',
-      reviewerStatus: 'APPROVED',
-      gmStatus: 'PENDING',
-      dcsStatus: 'AWAITING',
-      totalAmount: 142000.0,
-    },
-    {
-      id: 'app-3',
-      qrn: 'RFP-2026-0104',
-      type: 'Request for Payment',
-      maker: 'Bookkeeper (Aila)',
-      reviewerStatus: 'APPROVED',
-      gmStatus: 'APPROVED',
-      dcsStatus: 'PENDING',
-      totalAmount: 18500.0,
-    },
-  ]);
 
   // Interactive Quotation PDF State
   const [quotationData, setQuotationData] = useState<QuotationData>({
@@ -220,54 +155,6 @@ export default function DashboardHome() {
     validityDays: 30,
     signatoryName: 'Katherine M. Payumo, RMT',
     signatoryTitle: 'Product Marketing Manager',
-  });
-
-  // Interactive Statement of Account State
-  const [soaData, setSoaData] = useState<SOAData>({
-    statementDate: '10-Jul-26',
-    clientName: 'GATCHALIAN MEDICAL LABORATORY',
-    terms: '30 Days',
-    salesperson: 'Sir. Roel Macaraeg',
-    rows: [
-      {
-        id: 'soa-1',
-        salesInvoiceNo: '6087',
-        drNo: '6075',
-        siDate: '18-Jun-26',
-        dueDate: '7/18/2026',
-        ageDays: 22,
-        invoiceAmount: 16960.0,
-        amountPaid: 0,
-        invoiceBalance: 16960.0,
-        runningBalance: 16960.0,
-      },
-      {
-        id: 'soa-2',
-        salesInvoiceNo: '6107',
-        drNo: '6097',
-        siDate: '26-Jun-26',
-        dueDate: '7/26/2026',
-        ageDays: 14,
-        invoiceAmount: 1968.0,
-        amountPaid: 0,
-        invoiceBalance: 1968.0,
-        runningBalance: 18928.0,
-      },
-      {
-        id: 'soa-3',
-        salesInvoiceNo: '6118',
-        drNo: '6113',
-        siDate: '30-Jun-26',
-        dueDate: '7/30/2026',
-        ageDays: 10,
-        invoiceAmount: 13280.0,
-        amountPaid: 0,
-        invoiceBalance: 13280.0,
-        runningBalance: 32208.0,
-      },
-    ],
-    preparedBy: 'Marrione Fuentes',
-    preparedByTitle: 'Accounting Officer',
   });
 
   // New Stock Form Handler
@@ -436,27 +323,43 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* View As Impersonation Bar */}
-        <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded text-xs shadow-inner">
-          <Eye className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-slate-700 font-medium hidden md:inline">Simulate Role:</span>
-          <select
-            value={viewAsRole}
-            onChange={(e) => {
-              setViewAsRole(e.target.value);
-              showNotification(`Switched role simulator to: ${e.target.value}`);
-              addAuditLog(`Impersonated role: ${e.target.value}`);
-            }}
-            className="bg-white text-slate-900 font-semibold rounded px-2.5 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
-          >
-            <option value="Admin">Admin (Bridge)</option>
-            <option value="Chairman (DCS)">Chairman (DCS)</option>
-            <option value="General Manager">General Manager (Karen)</option>
-            <option value="Bookkeeper">Bookkeeper (Aila)</option>
-            <option value="Warehouse">Warehouse (Marie)</option>
-            <option value="Marketing">Marketing / Reviewer</option>
-            <option value="Sales">Sales Officer</option>
-          </select>
+        {/* View As Impersonation & Auto-Reset Timer Bar */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded text-xs shadow-inner">
+            <Eye className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="text-slate-700 font-medium hidden md:inline">Simulate Role:</span>
+            <select
+              value={viewAsRole}
+              onChange={(e) => {
+                setViewAsRole(e.target.value);
+                showNotification(`Switched role simulator to: ${e.target.value}`);
+                addAuditLog(`Impersonated role: ${e.target.value}`);
+              }}
+              className="bg-white text-slate-900 font-semibold rounded px-2.5 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+            >
+              <option value="Admin">Admin (Bridge)</option>
+              <option value="Chairman (DCS)">Chairman (DCS)</option>
+              <option value="General Manager">General Manager (Karen)</option>
+              <option value="Bookkeeper">Bookkeeper (Aila)</option>
+              <option value="Warehouse">Warehouse (Marie)</option>
+              <option value="Marketing">Marketing / Reviewer</option>
+              <option value="Sales">Sales Officer</option>
+            </select>
+          </div>
+
+          {/* 15-Minute Auto-Reset Countdown Badge */}
+          <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-300 px-2.5 py-1.5 rounded text-xs text-amber-900 font-medium">
+            <RefreshCcw className="w-3.5 h-3.5 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
+            <span className="hidden xl:inline">Auto-Reset:</span>
+            <span className="font-mono font-bold text-amber-800">{formatTimer()}</span>
+            <button
+              onClick={handleRestoreDefaultState}
+              className="ml-1 text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 px-1.5 py-0.5 rounded font-bold transition"
+              title="Reset Demo Data Back to Default Seed State"
+            >
+              Reset Data
+            </button>
+          </div>
         </div>
 
         {/* Actions & Barcode Trigger */}
@@ -864,6 +767,17 @@ export default function DashboardHome() {
                   className="bg-white border border-slate-300 text-slate-900 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
                 />
                 <button
+                  onClick={() => {
+                    exportToCSV('accustanda_inventory_report.csv', inventoryList);
+                    showNotification('Downloaded Inventory CSV Report!');
+                    addAuditLog('Exported Inventory CSV Report');
+                  }}
+                  className="btn-danger-red text-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Export CSV</span>
+                </button>
+                <button
                   onClick={() => setIsAddStockOpen(true)}
                   className="btn-primary-blue text-xs"
                 >
@@ -1091,10 +1005,22 @@ export default function DashboardHome() {
         {/* TAB 7: ADMIN & AUDIT LOG STREAM */}
         {activeTab === 'admin' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <UserCheck className="w-4 h-4 text-blue-600" />
-              Immutable System Audit Log Stream ({auditLogs.length} Events Logged)
-            </h2>
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-blue-600" />
+                Immutable System Audit Log Stream ({auditLogs.length} Events Logged)
+              </h2>
+              <button
+                onClick={() => {
+                  exportToCSV('accustanda_audit_trail_report.csv', auditLogs);
+                  showNotification('Downloaded Audit Trail CSV Report!');
+                }}
+                className="btn-danger-red text-xs"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Audit CSV</span>
+              </button>
+            </div>
 
             <div className="wayfinding-card p-4 space-y-2 font-mono text-xs">
               {auditLogs.map((log) => (
