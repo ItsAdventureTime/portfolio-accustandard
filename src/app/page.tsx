@@ -364,7 +364,46 @@ export default function DashboardHome() {
     showNotification(`Stock Item ${sku} removed.`);
   };
 
+  // Role Authorization Helper (COSO Segregation of Duties Control)
+  const isAuthorizedForRole = (actionType: 'APPROVE_GM' | 'APPROVE_DCS' | 'APPROVE_MKTG' | 'STOCK_MGMT' | 'FINANCE_SOA' | 'SALES_QUOTATION'): boolean => {
+    if (viewAsRole === 'Admin') return true; // Admin has full access
+
+    switch (actionType) {
+      case 'APPROVE_MKTG':
+        return viewAsRole.includes('Marketing') || viewAsRole.includes('Chairman') || viewAsRole.includes('General Manager');
+      case 'APPROVE_GM':
+        return viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
+      case 'APPROVE_DCS':
+        return viewAsRole.includes('Chairman');
+      case 'STOCK_MGMT':
+        return viewAsRole.includes('Warehouse') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
+      case 'FINANCE_SOA':
+        return viewAsRole.includes('Bookkeeper') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
+      case 'SALES_QUOTATION':
+        return viewAsRole.includes('Sales') || viewAsRole.includes('Marketing') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
+      default:
+        return false;
+    }
+  };
+
   const handleApproveDoc = (id: string, qrn: string) => {
+    const targetDoc = approvalsList.find((d) => d.id === id);
+    if (!targetDoc) return;
+
+    // Check layer authorization
+    if (targetDoc.reviewerStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_MKTG')) {
+      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized to grant Marketing Review!`);
+      return;
+    }
+    if (targetDoc.gmStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_GM')) {
+      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized for Layer 3 GM Approval!`);
+      return;
+    }
+    if (targetDoc.dcsStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_DCS')) {
+      showNotification(`⛔ COSO Control Violation: Only Chairman (DCS) can grant Layer 4 Final Approval!`);
+      return;
+    }
+
     setApprovalsList((prev) =>
       prev.map((doc) => {
         if (doc.id === id) {
@@ -380,9 +419,13 @@ export default function DashboardHome() {
   };
 
   const handleRejectDoc = (id: string, qrn: string) => {
+    if (viewAsRole.includes('Warehouse') || viewAsRole.includes('Sales')) {
+      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] cannot reject management approval documents!`);
+      return;
+    }
     setApprovalsList((prev) => prev.filter((doc) => doc.id !== id));
     addAuditLog(`Rejected ${qrn} under role [${viewAsRole}]`);
-    showNotification(`Document ${qrn} rejected.`);
+    showNotification(`Document ${qrn} rejected by ${viewAsRole}.`);
   };
 
   const [newSiNo, setNewSiNo] = useState('');
@@ -658,8 +701,8 @@ export default function DashboardHome() {
         <span className="font-bold text-blue-800">{getTabBreadcrumb()}</span>
       </div>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
+      {/* Main Content Area — Maximum Screen Utilization Layout */}
+      <main className="flex-1 p-4 md:p-6 max-w-[1600px] mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
