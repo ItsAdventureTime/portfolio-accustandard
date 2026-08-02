@@ -112,6 +112,8 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       executeScanAction(decodedText);
     } catch (err) {
       setCameraError('Could not decode barcode from uploaded image. Please ensure the barcode is clear and well-lit.');
+    } finally {
+      e.target.value = '';
     }
   };
 
