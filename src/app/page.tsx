@@ -1458,7 +1458,7 @@ export default function DashboardHome() {
                     setPrintModalTitle(`Statement of Account - ${soaData.clientName}`);
                     setPrintModalElementId('printable-soa-target');
                     setPrintModalContent(
-                      <StatementOfAccountPDF data={soaData} onDeleteRow={() => {}} isEditable={false} />
+                      <StatementOfAccountPDF data={soaData} onRemoveRow={() => {}} isEditable={false} />
                     );
                     setIsPrintModalOpen(true);
                   }}
