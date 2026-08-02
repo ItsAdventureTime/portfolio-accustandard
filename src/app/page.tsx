@@ -185,7 +185,66 @@ export default function DashboardHome() {
     signatoryTitle: 'Product Marketing Manager',
   });
 
-  // New PO Form Handler
+  // Symmetrical Deletion & Item Handlers
+  const handleRemoveQuotationItem = (itemId: string) => {
+    setQuotationData((prev) => ({
+      ...prev,
+      items: prev.items.filter((item) => item.id !== itemId),
+    }));
+    addAuditLog('Removed item from Sales Quotation QRN20240415037');
+    showNotification('Removed item from Quotation!');
+  };
+
+  const [isAddQuotationItemOpen, setIsAddQuotationItemOpen] = useState(false);
+  const [newQuotationDesc, setNewQuotationDesc] = useState('');
+  const [newQuotationPkg, setNewQuotationPkg] = useState('1 Box');
+  const [newQuotationPrice, setNewQuotationPrice] = useState(45000);
+
+  const handleAddQuotationItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuotationDesc) return;
+    const newItem = {
+      id: `q-${Date.now()}`,
+      description: newQuotationDesc,
+      packaging: newQuotationPkg,
+      unitPrice: Number(newQuotationPrice),
+    };
+    setQuotationData((prev) => ({
+      ...prev,
+      items: [...prev.items, newItem],
+    }));
+    addAuditLog(`Added quotation item: ${newQuotationDesc} (₱${Number(newQuotationPrice).toLocaleString()})`);
+    showNotification('Added new item to Sales Quotation!');
+    setIsAddQuotationItemOpen(false);
+    setNewQuotationDesc('');
+  };
+
+  const handleDeleteSOARow = (rowId: string) => {
+    setSoaData((prev) => {
+      const filtered = prev.rows.filter((r) => r.id !== rowId);
+      // Recalculate running balances
+      let currentRunning = 0;
+      const updatedRows = filtered.map((r) => {
+        currentRunning += r.invoiceBalance;
+        return { ...r, runningBalance: currentRunning };
+      });
+      return { ...prev, rows: updatedRows };
+    });
+    addAuditLog('Deleted invoice row from Statement of Account (SOA)');
+    showNotification('Deleted invoice row from SOA ledger!');
+  };
+
+  const handleDeletePO = (poId: string) => {
+    setPoList((prev) => prev.filter((p) => p.id !== poId));
+    addAuditLog('Deleted Purchase Order entry');
+    showNotification('Deleted Purchase Order!');
+  };
+
+  const handleDeleteRFP = (rfpId: string) => {
+    setRfpList((prev) => prev.filter((r) => r.id !== rfpId));
+    addAuditLog('Deleted RFP Payment Voucher entry');
+    showNotification('Deleted Payment Voucher!');
+  };
   const [newVendorName, setNewVendorName] = useState('');
   const [newPoItemDesc, setNewPoItemDesc] = useState('');
   const [newPoQty, setNewPoQty] = useState(100);
@@ -983,13 +1042,22 @@ export default function DashboardHome() {
                 </h2>
                 <p className="text-xs text-slate-500">Flow: Client RFQ → Sales → Marketing (Reviewer) → GM → DCS</p>
               </div>
-              <button
-                onClick={() => window.print()}
-                className="btn-danger-red text-xs"
-              >
-                <Download className="w-4 h-4" />
-                Print / Export Quotation
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAddQuotationItemOpen(true)}
+                  className="btn-primary-blue text-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Quotation Line
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="btn-danger-red text-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  Print / Export Quotation
+                </button>
+              </div>
             </div>
 
             {/* Mobile Scroll Hint Banner */}
@@ -999,7 +1067,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <QuotationPDF data={quotationData} />
+              <QuotationPDF data={quotationData} onRemoveItem={handleRemoveQuotationItem} />
             </div>
           </div>
         )}
@@ -1040,7 +1108,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <StatementOfAccountPDF data={soaData} />
+              <StatementOfAccountPDF data={soaData} onRemoveRow={handleDeleteSOARow} />
             </div>
           </div>
         )}
@@ -1114,6 +1182,15 @@ export default function DashboardHome() {
                             {po.status === 'VERIFIED_3WAY' ? '✓ 3-Way Verified' : '⏳ Pending Receiving'}
                           </span>
                         </td>
+                        <td className="text-center">
+                          <button
+                            onClick={() => handleDeletePO(po.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            title="Delete Purchase Order"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1130,9 +1207,18 @@ export default function DashboardHome() {
                       <span className="font-mono font-extrabold text-blue-700 text-sm block">{po.poNumber}</span>
                       <h4 className="font-bold text-slate-900 text-xs mt-0.5">{po.vendorName}</h4>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
-                      {po.status === 'VERIFIED_3WAY' ? '3-Way Verified' : 'Pending Receiving'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
+                        {po.status === 'VERIFIED_3WAY' ? '3-Way Verified' : 'Pending Receiving'}
+                      </span>
+                      <button
+                        onClick={() => handleDeletePO(po.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        title="Delete PO"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-700 font-medium bg-slate-50 p-2 rounded border border-slate-200">
@@ -1187,6 +1273,7 @@ export default function DashboardHome() {
                       <th>Expense Description</th>
                       <th className="text-right">Amount (₱)</th>
                       <th className="text-center">Status</th>
+                      <th className="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1201,6 +1288,15 @@ export default function DashboardHome() {
                           <span className={`px-2 py-0.5 rounded text-xs font-semibold ${rfp.status === 'APPROVED_DCS' ? 'badge-green' : 'badge-amber'}`}>
                             {rfp.status === 'APPROVED_DCS' ? 'Approved by DCS' : 'Pending Approval'}
                           </span>
+                        </td>
+                        <td className="text-center">
+                          <button
+                            onClick={() => handleDeleteRFP(rfp.id)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            title="Delete Payment Voucher"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -1218,9 +1314,18 @@ export default function DashboardHome() {
                       <span className="font-mono font-extrabold text-blue-700 text-sm block">{rfp.rfpNumber}</span>
                       <h4 className="font-bold text-slate-900 text-xs mt-0.5">{rfp.payeeName}</h4>
                     </div>
-                    <span className="text-sm font-extrabold text-slate-900">
-                      ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-extrabold text-slate-900">
+                        ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteRFP(rfp.id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        title="Delete RFP"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <p className="text-xs text-slate-700 bg-purple-50/60 p-2 rounded border border-purple-200">
@@ -1494,7 +1599,71 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {/* MODAL 5: Create Request for Payment (RFP) Modal */}
+      {/* MODAL 6: Add Item to Sales Quotation Modal */}
+      {isAddQuotationItemOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">Add Line Item to Quotation</h3>
+              <button onClick={() => setIsAddQuotationItemOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddQuotationItem} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Product Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Blood Chemistry Reagents Kit 100s"
+                  value={newQuotationDesc}
+                  onChange={(e) => setNewQuotationDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Packaging Unit</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 1 Kit / 50 Tests"
+                    value={newQuotationPkg}
+                    onChange={(e) => setNewQuotationPkg(e.target.value)}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Unit Price (₱)</label>
+                  <input
+                    type="number"
+                    value={newQuotationPrice}
+                    onChange={(e) => setNewQuotationPrice(Number(e.target.value))}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddQuotationItemOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-blue">
+                  Add Item to Quotation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {isAddRFPOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">

@@ -27,7 +27,7 @@ export interface SOAData {
   preparedByTitle: string;
 }
 
-export const StatementOfAccountPDF: React.FC<{ data: SOAData }> = ({ data }) => {
+export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id: string) => void }> = ({ data, onRemoveRow }) => {
   const totalAmountDue = data.rows
     .filter(r => r.ageDays > 30)
     .reduce((sum, r) => sum + r.invoiceBalance, 0);
@@ -63,29 +63,23 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData }> = ({ data }) => 
       </div>
 
       {/* Document Title */}
-      <div className="text-center my-4">
-        <h1 className="text-base font-extrabold tracking-wide uppercase text-gray-900">
-          STATEMENT OF ACCOUNT
-        </h1>
+      <div className="text-center mb-6">
+        <h1 className="text-xl font-bold tracking-wider text-gray-900 uppercase">STATEMENT OF ACCOUNT</h1>
       </div>
 
-      {/* Metadata Section */}
-      <div className="grid grid-cols-2 gap-4 mb-6 text-xs leading-relaxed">
+      {/* Meta Information Grid */}
+      <div className="flex justify-between items-start mb-6 leading-relaxed">
         <div>
           <div className="flex">
-            <span className="w-32 font-bold text-gray-800">Statement Date:</span>
-            <span className="font-semibold text-gray-900">{data.statementDate}</span>
+            <span className="w-24 font-bold text-gray-800">Date:</span>
+            <span className="text-gray-900 font-semibold">{data.statementDate}</span>
           </div>
           <div className="flex">
-            <span className="w-32 font-bold text-gray-800">Client:</span>
+            <span className="w-24 font-bold text-gray-800">Statement To:</span>
             <span className="font-bold text-gray-900 uppercase">{data.clientName}</span>
           </div>
-          {data.clientAddress && (
-            <div className="flex">
-              <span className="w-32 font-bold text-gray-800">Address:</span>
-              <span className="text-gray-900">{data.clientAddress}</span>
-            </div>
-          )}
+        </div>
+        <div>
           <div className="flex">
             <span className="w-32 font-bold text-gray-800">Terms:</span>
             <span className="text-gray-900">{data.terms}</span>
@@ -111,11 +105,12 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData }> = ({ data }) => 
               <th className="border border-gray-900 py-1.5 px-2 text-right">Amount Paid</th>
               <th className="border border-gray-900 py-1.5 px-2 text-right">Invoice Balance</th>
               <th className="border border-gray-900 py-1.5 px-2 text-right">Running Balance</th>
+              {onRemoveRow && <th className="border border-gray-900 py-1.5 px-1 w-10 no-print">Action</th>}
             </tr>
           </thead>
           <tbody>
             {data.rows.map((row, idx) => (
-              <tr key={idx} className="text-center font-medium border-b border-gray-300">
+              <tr key={row.id || idx} className="text-center font-medium border-b border-gray-300 hover:bg-slate-50 transition">
                 <td className="border border-gray-900 py-1.5 px-2">{row.salesInvoiceNo}</td>
                 <td className="border border-gray-900 py-1.5 px-2">{row.drNo}</td>
                 <td className="border border-gray-900 py-1.5 px-2">{row.siDate}</td>
@@ -133,6 +128,17 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData }> = ({ data }) => 
                 <td className="border border-gray-900 py-1.5 px-2 text-right font-semibold">
                   {row.runningBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
+                {onRemoveRow && (
+                  <td className="border border-gray-900 py-1 px-1 text-center no-print">
+                    <button
+                      onClick={() => onRemoveRow(row.id!)}
+                      className="p-1 text-red-600 hover:bg-red-100 rounded transition"
+                      title="Remove SOA Invoice Row"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

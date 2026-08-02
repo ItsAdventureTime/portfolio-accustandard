@@ -25,7 +25,7 @@ export interface QuotationData {
   signatoryTitle: string;
 }
 
-export const QuotationPDF: React.FC<{ data: QuotationData }> = ({ data }) => {
+export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: string) => void }> = ({ data, onRemoveItem }) => {
   return (
     <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans shrink-0">
       {/* Header */}
@@ -77,16 +77,28 @@ export const QuotationPDF: React.FC<{ data: QuotationData }> = ({ data }) => {
               <th className="py-2.5 px-4 text-left border border-blue-900">Product Description</th>
               <th className="py-2.5 px-4 text-center border border-blue-900 w-36">Packaging</th>
               <th className="py-2.5 px-4 text-right border border-blue-900 w-44">Unit Price (PHP)</th>
+              {onRemoveItem && <th className="py-2.5 px-2 text-center border border-blue-900 w-12 no-print">Action</th>}
             </tr>
           </thead>
           <tbody>
             {data.items.map((item, idx) => (
-              <tr key={item.id || idx} className="border-b border-gray-200">
+              <tr key={item.id || idx} className="border-b border-gray-200 hover:bg-slate-50 transition">
                 <td className="py-3 px-4 text-gray-900 font-medium">{item.description}</td>
                 <td className="py-3 px-4 text-center text-gray-800">{item.packaging}</td>
                 <td className="py-3 px-4 text-right font-bold text-gray-900">
                   {item.unitPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
+                {onRemoveItem && (
+                  <td className="py-3 px-2 text-center border-b border-gray-200 no-print">
+                    <button
+                      onClick={() => onRemoveItem(item.id)}
+                      className="p-1 text-red-600 hover:bg-red-100 rounded transition"
+                      title="Remove Item from Quotation"
+                    >
+                      🗑️
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
