@@ -1504,7 +1504,7 @@ export default function DashboardHome() {
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
               <div id="printable-soa-target">
-                <StatementOfAccountPDF data={soaData} onDeleteRow={handleDeleteSOARow} isEditable={canEditSOA} />
+                <StatementOfAccountPDF data={soaData} onRemoveRow={handleDeleteSOARow} isEditable={canEditSOA} />
               </div>
             </div>
           </div>
