@@ -104,8 +104,8 @@ ssh -p 22 jk@216.75.75.136 "bunny-purge"
 # Step 1: Navigate to local project workspace using full directory
 cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
-# Step 2: Re-build static export inside container using full workspace volume path
-podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:20-alpine sh -c "npm run build"
+# Step 2: Re-build static export inside container using latest Alpine Node image (node:current-alpine)
+podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "npm run build"
 
 # Step 3: Sync delta updates to VPS using full local output path and full remote VPS path
 rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
