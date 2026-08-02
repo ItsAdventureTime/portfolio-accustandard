@@ -72,24 +72,56 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 
 ---
 
-## 🛠️ Podman Ephemeral Container Build & VPS Deployment
+## 🛠️ Manual Step-by-Step Deployment Guide (Full Control)
 
-Deploying to target VPS (`jk@216.75.75.136:22` at `~/bridge-ph/accustanda-demo`) with rootless Podman Quadlet systemd service and Bunny CDN cache purging:
+### Method A: Initial Installation & Deployment (Run Manually Step-by-Step)
 
 ```bash
-# 1. 1-Step Complete Installation & Remote VPS Deployment:
-cd ~/dev/accustanda-bridge-dashboard/ && npm run deploy:install
+# Step 1: Navigate to local project workspace
+cd ~/dev/accustanda-bridge-dashboard
 
-# 2. 1-Step Fast Incremental Update & CDN Cache Purge:
-cd ~/dev/accustanda-bridge-dashboard/ && npm run deploy:update
+# Step 2: Run containerized static build inside ephemeral Podman container
+podman run --rm -v "${PWD}:/workspace:Z" -w /workspace node:20-alpine sh -c "npm ci && npm run build"
+
+# Step 3: Create target web directory on VPS
+ssh -p 22 jk@216.75.75.136 "mkdir -p ~/bridge-ph/accustanda-demo"
+
+# Step 4: Sync static build output to VPS via rsync
+rsync -avz --delete -e "ssh -p 22" ./out/ jk@216.75.75.136:~/bridge-ph/accustanda-demo/
+
+# Step 5: Reload Caddy configuration & format Caddyfile on VPS
+ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
+
+# Step 6: Purge Bunny CDN Cache
+ssh -p 22 jk@216.75.75.136 "bunny-purge"
 ```
 
 ---
 
-## 🛰️ Subpath Deployment URLs
+### Method B: Fast Incremental Update (Run Manually Step-by-Step)
+
+```bash
+# Step 1: Re-build static export inside container
+podman run --rm -v "${PWD}:/workspace:Z" -w /workspace node:20-alpine sh -c "npm run build"
+
+# Step 2: Sync delta updates to VPS
+rsync -avz --delete -e "ssh -p 22" ./out/ jk@216.75.75.136:~/bridge-ph/accustanda-demo/
+
+# Step 3: Reload Caddy web server
+ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
+
+# Step 4: Purge Bunny CDN Cache
+ssh -p 22 jk@216.75.75.136 "bunny-purge"
+```
+
+---
+
+## 🛰️ Production VPS Parameters
 
 - **VPS Server Host:** `jk@216.75.75.136` (Port 22)
-- **Deployment Directory:** `/var/www/accustanda-bridge`
+- **Web Root Directory:** `~/bridge-ph/accustanda-demo` (`/home/jk/bridge-ph/accustanda-demo`)
+- **Container Caddy Volume:** `Volume=/home/jk/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z`
+- **Caddy Config File:** `~/caddy/conf/Caddyfile` (`/home/jk/caddy/conf/Caddyfile`)
 - **CDN Purge Utility:** `bunny-purge`
 - **Git Remote:** `git@github.com:ItsAdventureTime/bridge-accustanda.git` (main branch)
 
