@@ -49,7 +49,7 @@ echo "🔄 [3/6] Syncing static build artifacts directly via rsync..."
 rsync -avz --delete -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/out/" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_DEMO_DIR}/"
 
 echo "🐳 [4/6] Checking & configuring Caddy container volume mount in ~/${REMOTE_CADDY_UNIT}..."
-ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "grep -q 'srv/bridge-ph-accustanda-demo' ~/${REMOTE_CADDY_UNIT} || { echo 'Adding volume mount to caddy.container...'; sed -i '/Volume=.*delegateops-business/a Volume=%h/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z' ~/${REMOTE_CADDY_UNIT}; }"
+ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "grep -q 'srv/bridge-ph-accustanda-demo' ~/${REMOTE_CADDY_UNIT} || { echo 'Adding volume mount to caddy.container...'; sed -i '/Volume=.*delegateops-business/a Volume=/home/jk/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z' ~/${REMOTE_CADDY_UNIT}; }"
 
 echo "🔒 [5/6] Checking & configuring Caddy route block in ~/${REMOTE_CADDY_FILE}..."
 rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-caddy-block.conf" "${REMOTE_USER}@${REMOTE_HOST}:/tmp/accustanda-caddy-block.conf"
