@@ -676,29 +676,29 @@ export default function DashboardHome() {
       />
 
       {/* Predictable Navigation Top Shell Header */}
-      <header className="wayfinding-header px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 shadow-xs">
-        {/* Brand Lockup */}
-        <div className="flex items-center space-x-2.5">
-          <div className="bg-white px-2.5 py-1.5 rounded flex flex-col justify-center border border-slate-300 shadow-sm shrink-0">
+      <header className="wayfinding-header px-2.5 sm:px-6 py-2 flex items-center justify-between gap-1.5 shadow-xs max-w-full overflow-hidden">
+        {/* Brand Lockup & Mobile Role Pill */}
+        <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0">
+          <div className="bg-white px-2 py-1 sm:px-2.5 sm:py-1.5 rounded flex flex-col justify-center border border-slate-300 shadow-sm shrink-0">
             <div className="flex items-center leading-none">
-              <span className="text-lg sm:text-xl font-black text-blue-900 tracking-tighter">ACCUSTANDA</span>
-              <span className="text-lg sm:text-xl font-black text-red-600 ml-0.5">R<span className="text-xs font-black italic">x</span></span>
-              <span className="text-lg sm:text-xl font-black text-blue-900">D</span>
+              <span className="text-base sm:text-xl font-black text-blue-900 tracking-tighter">ACCUSTANDA</span>
+              <span className="text-base sm:text-xl font-black text-red-600 ml-0.5">R<span className="text-[10px] sm:text-xs font-black italic">x</span></span>
+              <span className="text-base sm:text-xl font-black text-blue-900">D</span>
             </div>
             <div className="w-full border-b-2 border-red-600 my-0.5"></div>
-            <span className="text-[8px] sm:text-[10px] font-black text-slate-900 tracking-wider uppercase whitespace-nowrap">
+            <span className="text-[7.5px] sm:text-[10px] font-black text-slate-900 tracking-wider uppercase whitespace-nowrap">
               MEDICAL & DIAGNOSTIC
             </span>
           </div>
 
-          {/* Mobile Current Role Pill Badge */}
+          {/* Mobile Current Role Pill Badge (Tap opens Menu Sheet) */}
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="md:hidden flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-900 px-2 py-1 rounded-full text-[10px] font-extrabold shadow-xs transition shrink-0"
+            className="md:hidden flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-900 px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-xs transition shrink min-w-0"
             title="Tap to change role simulator"
           >
-            <Eye className="w-3 h-3 text-amber-700" />
-            <span className="max-w-[85px] truncate">{viewAsRole}</span>
+            <Eye className="w-3 h-3 text-amber-700 shrink-0" />
+            <span className="truncate max-w-[65px] sm:max-w-[110px]">{viewAsRole}</span>
           </button>
 
           <div className="hidden md:block border-l border-slate-300 pl-3">
@@ -750,10 +750,10 @@ export default function DashboardHome() {
         </div>
 
         {/* Actions & Tools Bar */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 p-2 md:px-3.5 md:py-2 rounded-lg text-xs md:text-sm transition font-medium"
+            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 p-1.5 sm:p-2 md:px-3.5 md:py-2 rounded-lg text-xs md:text-sm transition font-medium"
             title="Quick Search & Jump (⌘K)"
           >
             <Search className="w-4 h-4 text-blue-600" />
@@ -766,7 +766,7 @@ export default function DashboardHome() {
           </div>
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="btn-danger-red text-xs md:text-sm p-2 md:px-3.5 md:py-2 flex items-center justify-center gap-1.5 rounded-lg active:scale-95 transition font-bold"
+            className="btn-danger-red text-xs md:text-sm p-1.5 sm:p-2 md:px-3.5 md:py-2 flex items-center justify-center gap-1 rounded-lg active:scale-95 transition font-bold"
             title="Mobile Barcode Scanner"
           >
             <Camera className="w-4 h-4" />
@@ -775,10 +775,11 @@ export default function DashboardHome() {
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="md:hidden p-2 text-slate-800 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg flex items-center justify-center shadow-xs"
+            className="md:hidden p-1.5 text-slate-800 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg flex items-center justify-center shadow-xs"
             aria-label="Open Navigation Menu"
+            title="Open Menu Sheet"
           >
-            <Menu className="w-5 h-5 text-blue-900" />
+            <Menu className="w-4 h-4 text-blue-900" />
           </button>
         </div>
       </header>
@@ -869,11 +870,11 @@ export default function DashboardHome() {
       </nav>
 
       {/* Predictable Context Breadcrumb Bar (Zero Confusion Wayfinding) */}
-      <div className="bg-slate-100 border-b border-slate-300 px-4 md:px-6 py-2.5 flex items-center gap-2 text-xs md:text-sm text-slate-700 font-medium">
+      <div className="bg-slate-100 border-b border-slate-300 px-3 sm:px-6 py-2 flex items-center gap-1.5 text-xs md:text-sm text-slate-700 font-medium max-w-full overflow-hidden">
         <Home className="w-4 h-4 text-blue-700 shrink-0" />
-        <span className="font-bold text-slate-800">Accustanda ERP</span>
+        <span className="font-bold text-slate-800 shrink-0">Accustanda ERP</span>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        <span className="font-extrabold text-blue-800">{getTabBreadcrumb()}</span>
+        <span className="font-extrabold text-blue-800 truncate">{getTabBreadcrumb()}</span>
       </div>
 
       {/* Main Content Area — Maximum Screen Utilization Layout with Precise Mobile Bottom Clearance */}
@@ -1150,13 +1151,13 @@ export default function DashboardHome() {
                 </h2>
                 <p className="text-xs md:text-sm text-slate-600 font-medium">Live Stock Items: {inventoryList.length} SKUs maintained</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="Filter inventory SKU or name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-xs"
+                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-xs w-full sm:w-auto"
                 />
                 <button
                   onClick={() => {
