@@ -1841,7 +1841,9 @@ export default function DashboardHome() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={(scannedCode) => {
-          showNotification(`Scanned Barcode SKU: ${scannedCode}`);
+          setActiveTab('inventory');
+          setSearchQuery(scannedCode);
+          showNotification(`🎯 Barcode Scanned: ${scannedCode} — Filtered in Inventory!`);
           addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
         }}
       />
