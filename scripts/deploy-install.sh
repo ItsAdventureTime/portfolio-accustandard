@@ -5,8 +5,8 @@ set -euo pipefail
 # Accustanda ERP Dashboard - Initial Installation & Quadlet/Caddy Deployment Script
 # Target VPS: Fedora CoreOS (Rootless Podman Quadlets & Caddy Reverse Proxy)
 # Remote Web Dir: ~/bridge-ph/accustanda-demo
-# Quadlet Dir: ~/.config/containers/systemd/bridge-ph/accustanda-demo.container
-# Caddy Config: ~/caddy.conf/Caddyfile
+# Quadlet Dir: ~/.config/containers/systemd/
+# Caddy Config: ~/caddy/conf/Caddyfile
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
@@ -19,13 +19,13 @@ REMOTE_HOST="${REMOTE_HOST:-216.75.75.136}"
 REMOTE_PORT="${REMOTE_PORT:-22}"
 
 REMOTE_DEMO_DIR="${REMOTE_DEMO_DIR:-bridge-ph/accustanda-demo}"
-REMOTE_QUADLET_DIR="${REMOTE_QUADLET_DIR:-.config/containers/systemd/bridge-ph}"
+REMOTE_QUADLET_DIR="${REMOTE_QUADLET_DIR:-.config/containers/systemd}"
 REMOTE_CADDY_FILE="${REMOTE_CADDY_FILE:-caddy/conf/Caddyfile}"
 
 echo "📂 [LOCAL PATH] Project Root: ${PROJECT_DIR}"
 echo "🌐 [REMOTE VPS] User & Host: ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PORT}"
 echo "📁 [DEMO DIR] Web Root: ~/${REMOTE_DEMO_DIR}"
-echo "⚙️ [QUADLET DIR] Systemd Path: ~/${REMOTE_QUADLET_DIR}/accustanda-demo.container"
+echo "⚙️ [QUADLET DIR] Systemd Path: ~/${REMOTE_QUADLET_DIR}/bridge-ph-accustanda-demo.container"
 echo "🔒 [CADDY CONFIG] Target File: ~/${REMOTE_CADDY_FILE}"
 echo "--------------------------------------------------------------------------------"
 
@@ -43,19 +43,21 @@ else
 fi
 
 echo "📁 [2/7] Initializing remote directories on Fedora CoreOS VPS..."
-ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "mkdir -p ~/${REMOTE_DEMO_DIR} ~/${REMOTE_QUADLET_DIR}"
+ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "mkdir -p ~/${REMOTE_DEMO_DIR} ~/${REMOTE_QUADLET_DIR} ~/${REMOTE_QUADLET_DIR}/bridge-ph"
 
 echo "🔄 [3/7] Deploying static build artifacts via rsync..."
 rsync -avz --delete -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/out/" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_DEMO_DIR}/"
 
 echo "⚙️ [4/7] Deploying Podman Quadlet container unit file..."
-rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-demo.container" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_QUADLET_DIR}/accustanda-demo.container"
+rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-demo.container" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_QUADLET_DIR}/bridge-ph-accustanda-demo.container"
+rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-demo.container" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_QUADLET_DIR}/bridge-ph/accustanda-demo.container"
 
 echo "🔒 [5/7] Checking & configuring Caddy route block in ~/${REMOTE_CADDY_FILE}..."
-ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "grep -q '/accustanda/demo' ~/${REMOTE_CADDY_FILE} || { echo 'Configuring /accustanda/demo route in Caddyfile...'; sed -i '/delegateops.business {/r ${PROJECT_DIR}/scripts/accustanda-caddy-block.conf' ~/${REMOTE_CADDY_FILE} 2>/dev/null || true; }"
+rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-caddy-block.conf" "${REMOTE_USER}@${REMOTE_HOST}:/tmp/accustanda-caddy-block.conf"
+ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "grep -q '/accustanda/demo' ~/${REMOTE_CADDY_FILE} || { echo 'Configuring /accustanda/demo route in Caddyfile...'; sed -i '/delegateops.business {/r /tmp/accustanda-caddy-block.conf' ~/${REMOTE_CADDY_FILE}; }"
 
-echo "🔄 [6/7] Reloading systemd user daemon & starting Quadlet container (bridge-ph-accustanda-demo)..."
-ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "systemctl --user daemon-reload && systemctl --user enable --now bridge-ph-accustanda-demo.service && podman exec caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || systemctl --user reload caddy.service 2>/dev/null || true"
+echo "🔄 [6/7] Reloading systemd user daemon & starting Quadlet container..."
+ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "systemctl --user daemon-reload && (systemctl --user enable --now bridge-ph-accustanda-demo.service || systemctl --user enable --now accustanda-demo.service || true) && (podman exec caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || systemctl --user reload caddy.service 2>/dev/null || true)"
 
 echo "🐰 [7/7] Invoking Bunny CDN cache purge (bunny-purge)..."
 ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "bunny-purge" || {
