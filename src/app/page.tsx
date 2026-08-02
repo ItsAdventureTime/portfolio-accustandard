@@ -1177,9 +1177,9 @@ export default function DashboardHome() {
                 <input
                   type="text"
                   placeholder="Filter inventory SKU or name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 sh                <button
+                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-xs w-full sm:w-auto"
+                />
+                <button
                   onClick={() => {
                     if (!canExportInventory) {
                       showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to export system inventory reports!`);
@@ -1506,9 +1506,6 @@ export default function DashboardHome() {
               <div id="printable-soa-target">
                 <StatementOfAccountPDF data={soaData} onDeleteRow={handleDeleteSOARow} isEditable={canEditSOA} />
               </div>
-            </div>
-          </div>
-        )}} isEditable={canEditSOA} />
             </div>
           </div>
         )}
