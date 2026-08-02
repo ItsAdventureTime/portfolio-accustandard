@@ -41,6 +41,7 @@ import {
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
+import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_PO_LIST, DEFAULT_RFP_LIST, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
@@ -658,13 +659,12 @@ export default function DashboardHome() {
 
   return (
     <div className="min-h-screen bg-[#e2e8f0] text-[#1e293b] flex flex-col font-sans relative">
-      {/* Toast Notification Alert */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-bounce">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-          <span className="text-xs font-semibold">{toastMessage}</span>
-        </div>
-      )}
+      {/* Center-Screen High-Salience System Alert Modal (Execution Halt Overlay) */}
+      <SystemAlertModal
+        message={toastMessage}
+        onClose={() => setToastMessage(null)}
+        viewAsRole={viewAsRole}
+      />
 
       {/* Predictable Navigation Top Shell Header */}
       <header className="wayfinding-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
@@ -978,43 +978,60 @@ export default function DashboardHome() {
                     </tr>
                   </thead>
                   <tbody>
-                    {approvalsList.map((doc) => (
-                      <tr key={doc.id}>
-                        <td className="font-mono font-bold text-blue-700">{doc.qrn}</td>
-                        <td>{doc.type}</td>
-                        <td>{doc.maker}</td>
-                        <td>
-                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                            {doc.reviewerStatus}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                            {doc.gmStatus}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                            {doc.dcsStatus}
-                          </span>
-                        </td>
-                        <td className="text-right font-bold text-slate-900">₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                        <td className="text-center space-x-1.5">
-                          <button
-                            onClick={() => handleApproveDoc(doc.id, doc.qrn)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleRejectDoc(doc.id, doc.qrn)}
-                            className="bg-red-600 hover:bg-red-500 text-white px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition"
-                          >
-                            Reject
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {approvalsList.map((doc) => {
+                      const canApproveThisDoc = checkRolePermission('APPROVE_DOC', doc).allowed;
+                      const canRejectThisDoc = checkRolePermission('REJECT_DOC').allowed;
+
+                      return (
+                        <tr key={doc.id}>
+                          <td className="font-mono font-bold text-blue-700">{doc.qrn}</td>
+                          <td>{doc.type}</td>
+                          <td>{doc.maker}</td>
+                          <td>
+                            <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                              {doc.reviewerStatus}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                              {doc.gmStatus}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                              {doc.dcsStatus}
+                            </span>
+                          </td>
+                          <td className="text-right font-bold text-slate-900">₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                          <td className="text-center space-x-1.5">
+                            <button
+                              onClick={() => handleApproveDoc(doc.id, doc.qrn)}
+                              disabled={!canApproveThisDoc}
+                              title={canApproveThisDoc ? "Approve Document" : `Role [${viewAsRole}] is strictly prohibited from approving this document under COSO controls`}
+                              className={`px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition ${
+                                canApproveThisDoc
+                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
+                                  : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-60'
+                              }`}
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectDoc(doc.id, doc.qrn)}
+                              disabled={!canRejectThisDoc}
+                              title={canRejectThisDoc ? "Reject Document" : `Role [${viewAsRole}] is strictly prohibited from rejecting approval documents`}
+                              className={`px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition ${
+                                canRejectThisDoc
+                                  ? 'bg-red-600 hover:bg-red-500 text-white cursor-pointer'
+                                  : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-60'
+                              }`}
+                            >
+                              Reject
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1030,55 +1047,72 @@ export default function DashboardHome() {
                 <span className="text-[10px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-bold">{viewAsRole}</span>
               </div>
 
-              {approvalsList.map((doc) => (
-                <div key={doc.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-amber-500">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="font-mono font-extrabold text-blue-700 text-sm block">{doc.qrn}</span>
-                      <span className="text-xs font-bold text-slate-900 mt-0.5 block">{doc.type}</span>
-                    </div>
-                    <span className="text-sm font-extrabold text-slate-900">
-                      ₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
+              {approvalsList.map((doc) => {
+                const canApproveThisDoc = checkRolePermission('APPROVE_DOC', doc).allowed;
+                const canRejectThisDoc = checkRolePermission('REJECT_DOC').allowed;
 
-                  <div className="grid grid-cols-3 gap-1.5 text-[10px] bg-slate-50 p-2.5 rounded border border-slate-200 text-center font-semibold">
-                    <div>
-                      <span className="text-[9px] text-slate-500 block uppercase">Reviewer</span>
-                      <span className={`px-1.5 py-0.5 rounded ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                        {doc.reviewerStatus}
+                return (
+                  <div key={doc.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-amber-500">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="font-mono font-extrabold text-blue-700 text-sm block">{doc.qrn}</span>
+                        <span className="text-xs font-bold text-slate-900 mt-0.5 block">{doc.type}</span>
+                      </div>
+                      <span className="text-sm font-extrabold text-slate-900">
+                        ₱{doc.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-slate-500 block uppercase">GM Status</span>
-                      <span className={`px-1.5 py-0.5 rounded ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                        {doc.gmStatus}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[9px] text-slate-500 block uppercase">DCS Status</span>
-                      <span className={`px-1.5 py-0.5 rounded ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
-                        {doc.dcsStatus}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 pt-1">
-                    <button
-                      onClick={() => handleApproveDoc(doc.id, doc.qrn)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded text-xs font-extrabold shadow transition text-center"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleRejectDoc(doc.id, doc.qrn)}
-                      className="w-full bg-red-600 hover:bg-red-500 text-white py-2 rounded text-xs font-extrabold shadow transition text-center"
-                    >
-                      Reject
-                    </button>
+                    <div className="grid grid-cols-3 gap-1.5 text-[10px] bg-slate-50 p-2.5 rounded border border-slate-200 text-center font-semibold">
+                      <div>
+                        <span className="text-[9px] text-slate-500 block uppercase">Reviewer</span>
+                        <span className={`px-1.5 py-0.5 rounded ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          {doc.reviewerStatus}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-slate-500 block uppercase">GM Status</span>
+                        <span className={`px-1.5 py-0.5 rounded ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          {doc.gmStatus}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-slate-500 block uppercase">DCS Status</span>
+                        <span className={`px-1.5 py-0.5 rounded ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          {doc.dcsStatus}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => handleApproveDoc(doc.id, doc.qrn)}
+                        disabled={!canApproveThisDoc}
+                        title={canApproveThisDoc ? "Approve Document" : `Role [${viewAsRole}] is strictly prohibited from approving this document`}
+                        className={`w-full py-2 rounded text-xs font-extrabold shadow transition text-center ${
+                          canApproveThisDoc
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-60'
+                        }`}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectDoc(doc.id, doc.qrn)}
+                        disabled={!canRejectThisDoc}
+                        title={canRejectThisDoc ? "Reject Document" : `Role [${viewAsRole}] is strictly prohibited from rejecting approval documents`}
+                        className={`w-full py-2 rounded text-xs font-extrabold shadow transition text-center ${
+                          canRejectThisDoc
+                            ? 'bg-red-600 hover:bg-red-500 text-white'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-60'
+                        }`}
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1104,7 +1138,7 @@ export default function DashboardHome() {
                 />
                 <button
                   onClick={() => {
-                    if (['Sales', 'Marketing'].includes(viewAsRole)) {
+                    if (!canExportInventory) {
                       showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to export system inventory reports!`);
                       addAuditLog(`BLOCKED CSV Export under role [${viewAsRole}]`);
                       return;
@@ -1113,17 +1147,36 @@ export default function DashboardHome() {
                     showNotification('Downloaded Inventory CSV Report!');
                     addAuditLog('Exported Inventory CSV Report');
                   }}
-                  className="btn-danger-red text-xs md:text-sm font-bold"
+                  disabled={!canExportInventory}
+                  title={canExportInventory ? 'Export CSV Report' : `Role [${viewAsRole}] is not authorized to export raw inventory reports`}
+                  className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                    canExportInventory
+                      ? 'btn-danger-red cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3 py-2 rounded-md opacity-60'
+                  }`}
                 >
                   <Download className="w-4 h-4" />
                   <span>Export CSV</span>
                 </button>
                 <button
-                  onClick={() => setIsAddStockOpen(true)}
-                  className="btn-primary-blue text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    if (!canAddStock) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to alter physical inventory! Allowed: Warehouse, Admin.`);
+                      addAuditLog(`BLOCKED Stock Add Modal under role [${viewAsRole}]`);
+                      return;
+                    }
+                    setIsAddStockOpen(true);
+                  }}
+                  disabled={!canAddStock}
+                  title={canAddStock ? 'Add New Stock Batch' : `Role [${viewAsRole}] is not authorized to manage warehouse inventory. Allowed: Warehouse, Admin.`}
+                  className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                    canAddStock
+                      ? 'btn-primary-blue cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3.5 py-2 rounded-md opacity-60'
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
-                  Add Stock Batch
+                  <span>Add Stock Batch</span>
                 </button>
               </div>
             </div>
@@ -1167,8 +1220,11 @@ export default function DashboardHome() {
                         <td className="text-center">
                           <button
                             onClick={() => handleDeleteStock(item.id, item.sku)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-                            title="Remove Stock Entry"
+                            disabled={!canAddStock}
+                            title={canAddStock ? "Remove Stock Entry" : `Role [${viewAsRole}] cannot remove stock items`}
+                            className={`p-1.5 rounded transition ${
+                              canAddStock ? 'text-red-600 hover:bg-red-50 cursor-pointer' : 'text-slate-300 bg-slate-100 cursor-not-allowed border border-slate-200 opacity-50'
+                            }`}
                           >
                             <Trash2 className="w-4.5 h-4.5" />
                           </button>
@@ -1220,7 +1276,11 @@ export default function DashboardHome() {
                     </div>
                     <button
                       onClick={() => handleDeleteStock(item.id, item.sku)}
-                      className="px-3 py-1 bg-red-50 text-red-700 font-semibold rounded border border-red-200 hover:bg-red-100 transition text-xs flex items-center gap-1"
+                      disabled={!canAddStock}
+                      title={canAddStock ? "Remove Stock Item" : `Role [${viewAsRole}] cannot remove stock items`}
+                      className={`px-3 py-1 font-semibold rounded border transition text-xs flex items-center gap-1 ${
+                        canAddStock ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100 cursor-pointer' : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-50'
+                      }`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Remove</span>
@@ -1245,18 +1305,31 @@ export default function DashboardHome() {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setIsAddQuotationItemOpen(true)}
-                  className="btn-primary-blue text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    if (!canEditQuotation) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] cannot encode or alter Sales Quotations! Allowed: Sales, Marketing, GM, Admin.`);
+                      addAuditLog(`BLOCKED Quotation Add Line under role [${viewAsRole}]`);
+                      return;
+                    }
+                    setIsAddQuotationItemOpen(true);
+                  }}
+                  disabled={!canEditQuotation}
+                  title={canEditQuotation ? 'Add Line Item' : `Role [${viewAsRole}] cannot modify Sales Quotations`}
+                  className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                    canEditQuotation
+                      ? 'btn-primary-blue cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3.5 py-2 rounded-md opacity-60'
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
-                  Add Quotation Line
+                  <span>Add Quotation Line</span>
                 </button>
                 <button
                   onClick={() => window.print()}
                   className="btn-danger-red text-xs md:text-sm font-bold"
                 >
                   <Download className="w-4 h-4" />
-                  Print / Export Quotation
+                  <span>Print / Export Quotation</span>
                 </button>
               </div>
             </div>
@@ -1268,7 +1341,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <QuotationPDF data={quotationData} onRemoveItem={handleRemoveQuotationItem} />
+              <QuotationPDF data={quotationData} onRemoveItem={handleRemoveQuotationItem} isEditable={canEditQuotation} />
             </div>
           </div>
         )}
@@ -1286,18 +1359,31 @@ export default function DashboardHome() {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setIsAddSOARowOpen(true)}
-                  className="btn-primary-blue text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    if (!canEditSOA) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] cannot modify Statement of Account (SOA) ledgers! Allowed: Bookkeeper, Admin.`);
+                      addAuditLog(`BLOCKED SOA Row Add under role [${viewAsRole}]`);
+                      return;
+                    }
+                    setIsAddSOARowOpen(true);
+                  }}
+                  disabled={!canEditSOA}
+                  title={canEditSOA ? 'Add Invoice Row' : `Role [${viewAsRole}] cannot modify SOA ledgers. Allowed: Bookkeeper, Admin.`}
+                  className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                    canEditSOA
+                      ? 'btn-primary-blue cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3.5 py-2 rounded-md opacity-60'
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
-                  Add Invoice Row
+                  <span>Add Invoice Row</span>
                 </button>
                 <button
                   onClick={() => window.print()}
                   className="btn-danger-red text-xs md:text-sm font-bold"
                 >
                   <Download className="w-4 h-4" />
-                  Print / Export SOA
+                  <span>Print / Export SOA</span>
                 </button>
               </div>
             </div>
@@ -1309,7 +1395,7 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <StatementOfAccountPDF data={soaData} onRemoveRow={handleDeleteSOARow} />
+              <StatementOfAccountPDF data={soaData} onRemoveRow={handleDeleteSOARow} isEditable={canEditSOA} />
             </div>
           </div>
         )}
@@ -1327,18 +1413,44 @@ export default function DashboardHome() {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setIsPOReceivingModalOpen(true)}
-                  className="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold px-3.5 py-2 rounded-md flex items-center gap-1.5 shadow transition"
+                  onClick={() => {
+                    if (!canTestReceiving) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] cannot perform Goods Receiving Report (GRR) checks! Allowed: Warehouse, GM, Admin.`);
+                      addAuditLog(`BLOCKED PO Receiving Test under role [${viewAsRole}]`);
+                      return;
+                    }
+                    setIsPOReceivingModalOpen(true);
+                  }}
+                  disabled={!canTestReceiving}
+                  title={canTestReceiving ? 'Test PO Over-Receiving Rule' : `Role [${viewAsRole}] cannot perform receiving checks`}
+                  className={`text-xs md:text-sm font-bold px-3.5 py-2 rounded-md flex items-center gap-1.5 shadow transition ${
+                    canTestReceiving
+                      ? 'bg-amber-600 hover:bg-amber-500 text-white cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 opacity-60'
+                  }`}
                 >
                   <ShieldAlert className="w-4 h-4" />
-                  Test PO Over-Receiving Rule
+                  <span>Test PO Over-Receiving Rule</span>
                 </button>
                 <button
-                  onClick={() => setIsAddPOOpen(true)}
-                  className="btn-primary-blue text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    if (!canCreatePO) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] cannot generate Purchase Orders (PO)! Allowed: GM, Bookkeeper, Admin.`);
+                      addAuditLog(`BLOCKED PO Creation under role [${viewAsRole}]`);
+                      return;
+                    }
+                    setIsAddPOOpen(true);
+                  }}
+                  disabled={!canCreatePO}
+                  title={canCreatePO ? 'Create Purchase Order' : `Role [${viewAsRole}] cannot generate Purchase Orders`}
+                  className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                    canCreatePO
+                      ? 'btn-primary-blue cursor-pointer'
+                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3.5 py-2 rounded-md opacity-60'
+                  }`}
                 >
                   <Plus className="w-4 h-4" />
-                  Create Purchase Order
+                  <span>Create Purchase Order</span>
                 </button>
               </div>
             </div>
@@ -1366,6 +1478,7 @@ export default function DashboardHome() {
                       <th>Invoice Ref</th>
                       <th className="text-right">Total Amount</th>
                       <th className="text-center">3-Way Status</th>
+                      <th className="text-center">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1386,8 +1499,11 @@ export default function DashboardHome() {
                         <td className="text-center">
                           <button
                             onClick={() => handleDeletePO(po.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-                            title="Delete Purchase Order"
+                            disabled={!canCreatePO}
+                            title={canCreatePO ? "Delete Purchase Order" : `Role [${viewAsRole}] cannot delete Purchase Orders`}
+                            className={`p-1.5 rounded transition ${
+                              canCreatePO ? 'text-red-600 hover:bg-red-50 cursor-pointer' : 'text-slate-300 bg-slate-100 cursor-not-allowed border border-slate-200 opacity-50'
+                            }`}
                           >
                             <Trash2 className="w-4.5 h-4.5" />
                           </button>
@@ -1414,8 +1530,9 @@ export default function DashboardHome() {
                       </span>
                       <button
                         onClick={() => handleDeletePO(po.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        title="Delete PO"
+                        disabled={!canCreatePO}
+                        title={canCreatePO ? "Delete PO" : `Role [${viewAsRole}] cannot delete Purchase Orders`}
+                        className={`p-1 rounded ${canCreatePO ? 'text-red-600 hover:bg-red-50 cursor-pointer' : 'text-slate-300 bg-slate-100 cursor-not-allowed opacity-50'}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1454,11 +1571,24 @@ export default function DashboardHome() {
                 <p className="text-xs md:text-sm text-slate-600 font-medium">Live Vouchers: {rfpList.length} Non-PO expenses routed for approval</p>
               </div>
               <button
-                onClick={() => setIsAddRFPOpen(true)}
-                className="btn-primary-blue text-xs md:text-sm font-bold"
+                onClick={() => {
+                  if (!canCreateRFP) {
+                    showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] cannot manage Request for Payment (RFP) vouchers! Allowed: Bookkeeper, GM, Admin.`);
+                    addAuditLog(`BLOCKED RFP Creation under role [${viewAsRole}]`);
+                    return;
+                  }
+                  setIsAddRFPOpen(true);
+                }}
+                disabled={!canCreateRFP}
+                title={canCreateRFP ? 'Create Payment Voucher (RFP)' : `Role [${viewAsRole}] cannot manage Request for Payment vouchers`}
+                className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
+                  canCreateRFP
+                    ? 'btn-primary-blue cursor-pointer'
+                    : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300 px-3.5 py-2 rounded-md opacity-60'
+                }`}
               >
                 <Plus className="w-4 h-4" />
-                Create Payment Voucher (RFP)
+                <span>Create Payment Voucher (RFP)</span>
               </button>
             </div>
 
@@ -1493,8 +1623,11 @@ export default function DashboardHome() {
                         <td className="text-center">
                           <button
                             onClick={() => handleDeleteRFP(rfp.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
-                            title="Delete Payment Voucher"
+                            disabled={!canCreateRFP}
+                            title={canCreateRFP ? "Delete Payment Voucher" : `Role [${viewAsRole}] cannot delete Payment Vouchers`}
+                            className={`p-1.5 rounded transition ${
+                              canCreateRFP ? 'text-red-600 hover:bg-red-50 cursor-pointer' : 'text-slate-300 bg-slate-100 cursor-not-allowed border border-slate-200 opacity-50'
+                            }`}
                           >
                             <Trash2 className="w-4.5 h-4.5" />
                           </button>
@@ -1504,8 +1637,6 @@ export default function DashboardHome() {
                   </tbody>
                 </table>
               </div>
-            </div>
-
             {/* Mobile View: Stacked RFP Cards */}
             <div className="space-y-3 sm:hidden">
               {rfpList.map((rfp) => (
@@ -1521,8 +1652,9 @@ export default function DashboardHome() {
                       </span>
                       <button
                         onClick={() => handleDeleteRFP(rfp.id)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded"
-                        title="Delete RFP"
+                        disabled={!canCreateRFP}
+                        title={canCreateRFP ? "Delete RFP" : `Role [${viewAsRole}] cannot delete Payment Vouchers`}
+                        className={`p-1 rounded ${canCreateRFP ? 'text-red-600 hover:bg-red-50 cursor-pointer' : 'text-slate-300 bg-slate-100 cursor-not-allowed opacity-50'}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

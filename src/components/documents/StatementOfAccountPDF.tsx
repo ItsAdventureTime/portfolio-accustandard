@@ -27,7 +27,7 @@ export interface SOAData {
   preparedByTitle: string;
 }
 
-export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id: string) => void }> = ({ data, onRemoveRow }) => {
+export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id: string) => void; isEditable?: boolean }> = ({ data, onRemoveRow, isEditable = true }) => {
   const totalAmountDue = data.rows
     .filter(r => r.ageDays > 30)
     .reduce((sum, r) => sum + r.invoiceBalance, 0);
@@ -41,7 +41,7 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id:
   return (
     <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-xs font-sans shrink-0">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6 border-b border-gray-300 pb-4">
+      <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
         <div>
           <div className="flex items-center leading-none">
             <span className="text-3xl font-black tracking-tighter text-blue-950">ACCUSTANDA</span>
@@ -54,58 +54,46 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id:
           </p>
         </div>
         <div className="text-right text-xs text-gray-700 leading-tight">
-          <p>Unit A G/F El Decano Bldg., Blk 2</p>
-          <p>Lot 2 St. Jude, Villa Corazon, San</p>
-          <p>Agustin, San Fernando Pampanga</p>
-          <p>Email: <span className="text-blue-600 underline">accustandard1024@gmail.com</span></p>
-          <p>Tel and Fax no.: (045)966-6097</p>
+          <p>Unit A G/F El Decano Bldg., Blk 2 Lot 2</p>
+          <p>St. Jude, Villa Corazon, San Agustin,</p>
+          <p>City of San Fernando, 2000, Pampanga</p>
+          <p className="font-semibold text-gray-900 mt-1">VAT Reg. TIN: 009-847-380-000</p>
         </div>
       </div>
 
-      {/* Document Title */}
+      {/* Title */}
       <div className="text-center mb-6">
-        <h1 className="text-xl font-bold tracking-wider text-gray-900 uppercase">STATEMENT OF ACCOUNT</h1>
+        <h2 className="text-xl font-black uppercase text-blue-950 tracking-wider">STATEMENT OF ACCOUNT</h2>
+        <p className="text-xs text-gray-500 font-bold">As of {data.statementDate}</p>
       </div>
 
-      {/* Meta Information Grid */}
-      <div className="flex justify-between items-start mb-6 leading-relaxed">
+      {/* Meta Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6 border border-gray-300 p-3 bg-gray-50 font-semibold leading-relaxed">
         <div>
-          <div className="flex">
-            <span className="w-24 font-bold text-gray-800">Date:</span>
-            <span className="text-gray-900 font-semibold">{data.statementDate}</span>
-          </div>
-          <div className="flex">
-            <span className="w-24 font-bold text-gray-800">Statement To:</span>
-            <span className="font-bold text-gray-900 uppercase">{data.clientName}</span>
-          </div>
+          <p><span className="text-gray-500 uppercase text-[10px] block">CLIENT / BILL TO:</span> <span className="font-bold text-gray-900 text-sm">{data.clientName}</span></p>
+          <p className="mt-1"><span className="text-gray-500 uppercase text-[10px] block">TERMS OF PAYMENT:</span> {data.terms}</p>
         </div>
-        <div>
-          <div className="flex">
-            <span className="w-32 font-bold text-gray-800">Terms:</span>
-            <span className="text-gray-900">{data.terms}</span>
-          </div>
-          <div className="flex">
-            <span className="w-32 font-bold text-gray-800">Salesperson:</span>
-            <span className="text-gray-900">{data.salesperson}</span>
-          </div>
+        <div className="text-right">
+          <p><span className="text-gray-500 uppercase text-[10px] block">STATEMENT DATE:</span> {data.statementDate}</p>
+          <p className="mt-1"><span className="text-gray-500 uppercase text-[10px] block">SALES REPRESENTATIVE:</span> {data.salesperson}</p>
         </div>
       </div>
 
-      {/* Itemized Table */}
-      <div className="mb-6 overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-900 text-xs">
+      {/* Invoice Ledger Table */}
+      <div className="mb-6">
+        <table className="w-full border-collapse border border-gray-900">
           <thead>
-            <tr className="bg-gray-100 font-bold border-b border-gray-900 text-center">
-              <th className="border border-gray-900 py-1.5 px-2">Sales Invoice #</th>
-              <th className="border border-gray-900 py-1.5 px-2">DR #</th>
-              <th className="border border-gray-900 py-1.5 px-2">S.I. Date</th>
-              <th className="border border-gray-900 py-1.5 px-2">Due Date</th>
-              <th className="border border-gray-900 py-1.5 px-2 w-16">AGE</th>
-              <th className="border border-gray-900 py-1.5 px-2 text-right">Invoice Amount</th>
-              <th className="border border-gray-900 py-1.5 px-2 text-right">Amount Paid</th>
-              <th className="border border-gray-900 py-1.5 px-2 text-right">Invoice Balance</th>
-              <th className="border border-gray-900 py-1.5 px-2 text-right">Running Balance</th>
-              {onRemoveRow && <th className="border border-gray-900 py-1.5 px-1 w-10 no-print">Action</th>}
+            <tr className="bg-blue-900 text-white font-bold text-[10px] uppercase text-center">
+              <th className="border border-gray-900 py-2 px-2">SI No.</th>
+              <th className="border border-gray-900 py-2 px-2">DR No.</th>
+              <th className="border border-gray-900 py-2 px-2">SI Date</th>
+              <th className="border border-gray-900 py-2 px-2">Due Date</th>
+              <th className="border border-gray-900 py-2 px-2">Age</th>
+              <th className="border border-gray-900 py-2 px-2">SI Amount</th>
+              <th className="border border-gray-900 py-2 px-2">Amount Paid</th>
+              <th className="border border-gray-900 py-2 px-2">SI Balance</th>
+              <th className="border border-gray-900 py-2 px-2">Running Balance</th>
+              {onRemoveRow && <th className="border border-gray-900 py-2 px-1 w-10 no-print">Action</th>}
             </tr>
           </thead>
           <tbody>
@@ -132,8 +120,11 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id:
                   <td className="border border-gray-900 py-1 px-1 text-center no-print">
                     <button
                       onClick={() => onRemoveRow(row.id!)}
-                      className="p-1 text-red-600 hover:bg-red-100 rounded transition"
-                      title="Remove SOA Invoice Row"
+                      disabled={!isEditable}
+                      className={`p-1 rounded transition ${
+                        isEditable ? 'text-red-600 hover:bg-red-100 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'
+                      }`}
+                      title={isEditable ? "Remove SOA Invoice Row" : "Role is not authorized to remove SOA ledgers"}
                     >
                       🗑️
                     </button>
@@ -148,8 +139,6 @@ export const StatementOfAccountPDF: React.FC<{ data: SOAData; onRemoveRow?: (id:
       {/* Summary Calculations */}
       <div className="flex justify-end mb-8 text-xs">
         <div className="w-80 space-y-1">
-          <div className="flex justify-between items-center py-0.5">
-            <span className="font-bold uppercase text-gray-800">AMOUNT DUE</span>
             <span className={`font-bold ${totalAmountDue > 0 ? 'text-red-600' : 'text-gray-900'}`}>
               {totalAmountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
             </span>

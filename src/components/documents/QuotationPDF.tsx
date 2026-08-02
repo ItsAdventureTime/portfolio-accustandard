@@ -25,7 +25,7 @@ export interface QuotationData {
   signatoryTitle: string;
 }
 
-export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: string) => void }> = ({ data, onRemoveItem }) => {
+export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: string) => void; isEditable?: boolean }> = ({ data, onRemoveItem, isEditable = true }) => {
   return (
     <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans shrink-0">
       {/* Header */}
@@ -92,8 +92,11 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
                   <td className="py-3 px-2 text-center border-b border-gray-200 no-print">
                     <button
                       onClick={() => onRemoveItem(item.id)}
-                      className="p-1 text-red-600 hover:bg-red-100 rounded transition"
-                      title="Remove Item from Quotation"
+                      disabled={!isEditable}
+                      className={`p-1 rounded transition ${
+                        isEditable ? 'text-red-600 hover:bg-red-100 cursor-pointer' : 'text-gray-300 cursor-not-allowed opacity-50'
+                      }`}
+                      title={isEditable ? "Remove Item from Quotation" : "Role is not authorized to remove quotation items"}
                     >
                       🗑️
                     </button>
