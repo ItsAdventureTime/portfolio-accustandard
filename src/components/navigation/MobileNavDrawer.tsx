@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Layers, Package, FileText, FileCheck, Building2, CreditCard, UserCheck, Eye, Search, Camera, Server, ChevronRight, RefreshCcw } from 'lucide-react';
+import { X, Layers, Package, FileText, FileCheck, Building2, CreditCard, UserCheck, Eye, Search, Camera, Server, ChevronRight, RefreshCcw, Smartphone } from 'lucide-react';
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
