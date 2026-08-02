@@ -35,13 +35,13 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   if (!isOpen) return null;
 
   const navItems = [
-    { key: 'overview', title: 'Executive Overview', subtitle: 'Approvals & COSO Pipeline', icon: <Layers className="w-5 h-5 text-blue-600" />, badge: approvalsCount, color: 'bg-blue-100 text-blue-800' },
+    { key: 'overview', title: 'Executive Overview', subtitle: 'Approvals & Active Pipeline', icon: <Layers className="w-5 h-5 text-blue-600" />, badge: approvalsCount, color: 'bg-blue-100 text-blue-800' },
     { key: 'inventory', title: 'Inventory Control', subtitle: 'QC & Pampanga Warehouses', icon: <Package className="w-5 h-5 text-emerald-600" />, badge: inventoryCount, color: 'bg-emerald-100 text-emerald-800' },
-    { key: 'quotations', title: 'Quotation Generator', subtitle: '3-Day Stock Reservation Engine', icon: <FileText className="w-5 h-5 text-amber-600" />, badge: 1, color: 'bg-amber-100 text-amber-800' },
-    { key: 'soa', title: 'Statement of Account (SOA)', subtitle: 'Client Aging & DR Tracking', icon: <FileCheck className="w-5 h-5 text-purple-600" />, badge: soaCount, color: 'bg-purple-100 text-purple-800' },
-    { key: 'purchasing', title: 'Purchasing & Receiving', subtitle: '3-Way Match & PO Control', icon: <Building2 className="w-5 h-5 text-blue-600" /> },
-    { key: 'rfp', title: 'Request for Payment (RFP)', subtitle: 'Non-PO Expense Vouchers', icon: <CreditCard className="w-5 h-5 text-rose-600" /> },
-    { key: 'admin', title: 'System Audit Stream', subtitle: 'Immutable System Controls', icon: <UserCheck className="w-5 h-5 text-slate-700" />, badge: auditCount, color: 'bg-slate-200 text-slate-800' },
+    { key: 'quotations', title: 'Quotation Generator', subtitle: 'Sales Quotes & Stock Reservation', icon: <FileText className="w-5 h-5 text-amber-600" />, badge: 1, color: 'bg-amber-100 text-amber-800' },
+    { key: 'soa', title: 'Statement of Account (SOA)', subtitle: 'Client Aging & Accounts Receivable', icon: <FileCheck className="w-5 h-5 text-purple-600" />, badge: soaCount, color: 'bg-purple-100 text-purple-800' },
+    { key: 'purchasing', title: 'Purchasing & Receiving', subtitle: '3-Way Match Verification', icon: <Building2 className="w-5 h-5 text-blue-600" /> },
+    { key: 'rfp', title: 'Request for Payment (RFP)', subtitle: 'Expense Vouchers & Payments', icon: <CreditCard className="w-5 h-5 text-rose-600" /> },
+    { key: 'admin', title: 'System Audit Trail', subtitle: 'User Activity & Audit Logs', icon: <UserCheck className="w-5 h-5 text-slate-700" />, badge: auditCount, color: 'bg-slate-200 text-slate-800' },
   ];
 
   return (

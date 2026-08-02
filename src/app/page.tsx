@@ -164,7 +164,7 @@ export default function DashboardHome() {
     setRfpList(DEFAULT_RFP_LIST as any);
     setSoaData((prev) => ({ ...prev, rows: DEFAULT_SOA_ROWS as any }));
     setAuditLogs(DEFAULT_AUDIT_LOGS);
-    setToastMessage('Demo state restored to pristine default data!');
+    setToastMessage('Demo data restored to default settings.');
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -201,7 +201,7 @@ export default function DashboardHome() {
     signatoryTitle: 'Product Marketing Manager',
   });
 
-  // Central Role Authorization Check (COSO Segregation of Duties Control)
+  // Central Role Authorization Check (Internal Controls & Segregation of Duties)
   type PermissionAction =
     | 'APPROVE_DOC'
     | 'REJECT_DOC'
@@ -220,42 +220,42 @@ export default function DashboardHome() {
         if (viewAsRole === 'Warehouse') return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to alter physical inventory! Only Warehouse or Admin can manage stock.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot update physical inventory. Only Warehouse or Admin users can manage stock.`,
         };
       }
       case 'SALES_QUOTATION': {
         if (['Sales', 'Marketing', 'General Manager'].includes(viewAsRole)) return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot encode or alter Sales Quotations! Only Sales, Marketing, or GM can alter quotations.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot modify Sales Quotations. Authorized roles: Sales, Marketing, or General Manager.`,
         };
       }
       case 'FINANCE_SOA': {
         if (viewAsRole === 'Bookkeeper') return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot modify Statement of Account (SOA) ledgers! Only Bookkeeper or Admin can post invoices.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot edit Statement of Account (SOA) ledgers. Authorized roles: Bookkeeper or Admin.`,
         };
       }
       case 'PO_MGMT': {
         if (['General Manager', 'Bookkeeper'].includes(viewAsRole)) return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot generate or delete Purchase Orders (PO)! Only General Manager or Bookkeeper can manage POs.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot create or delete Purchase Orders. Authorized roles: General Manager or Bookkeeper.`,
         };
       }
       case 'RFP_MGMT': {
         if (['Bookkeeper', 'General Manager'].includes(viewAsRole)) return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot manage Request for Payment (RFP) vouchers! Only Bookkeeper or GM can manage RFPs.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot manage Request for Payment (RFP) vouchers. Authorized roles: Bookkeeper or General Manager.`,
         };
       }
       case 'PO_RECEIVING': {
         if (['Warehouse', 'General Manager'].includes(viewAsRole)) return { allowed: true };
         return {
           allowed: false,
-          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot perform Goods Receiving Report (GRR) entries! Only Warehouse or GM can receive shipments.`,
+          message: `Access Restricted: The [${viewAsRole}] role cannot log Goods Receiving Reports. Authorized roles: Warehouse or General Manager.`,
         };
       }
       case 'APPROVE_DOC': {
@@ -263,7 +263,7 @@ export default function DashboardHome() {
         if (['Sales', 'Bookkeeper', 'Warehouse'].includes(viewAsRole)) {
           return {
             allowed: false,
-            message: `⛔ COSO SoD Violation: Operational role [${viewAsRole}] is strictly prohibited from approving management control documents!`,
+            message: `Access Restricted: Operational roles like [${viewAsRole}] cannot approve executive control documents.`,
           };
         }
         if (doc) {
@@ -271,7 +271,7 @@ export default function DashboardHome() {
             if (!['Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
               return {
                 allowed: false,
-                message: `⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized for Layer 2 Marketing Review!`,
+                message: `Access Restricted: The [${viewAsRole}] role is not authorized for Marketing Review.`,
               };
             }
           } else if (doc.gmStatus === 'PENDING') {
@@ -633,12 +633,12 @@ export default function DashboardHome() {
       return;
     }
     if (Number(receivingQtyInput) > approvedPOQty) {
-      setPoErrorMsg(`HARD-BLOCKED: Attempting to receive ${receivingQtyInput} units exceeds approved PO limit of ${approvedPOQty} units!`);
-      addAuditLog(`PO Over-Receiving Hard-Blocked (${receivingQtyInput} > ${approvedPOQty})`);
+      setPoErrorMsg(`Quantity Error: Receiving ${receivingQtyInput} units exceeds the approved PO limit of ${approvedPOQty} units.`);
+      addAuditLog(`PO Receiving Blocked: ${receivingQtyInput} exceeds limit of ${approvedPOQty}`);
     } else {
       setPoErrorMsg(null);
       addAuditLog(`Successfully received ${receivingQtyInput} units for PO-2026-0891`);
-      showNotification(`Received ${receivingQtyInput} units. 3-Way Match Verified!`);
+      showNotification(`Received ${receivingQtyInput} units. 3-Way Match verified.`);
       setIsPOReceivingModalOpen(false);
     }
   };
@@ -654,23 +654,23 @@ export default function DashboardHome() {
     [inventoryList, searchQuery]
   );
 
-  // Tab Breadcrumb Title Helper for Zero-Confusion Wayfinding
+  // Tab Breadcrumb Title Helper
   const getTabBreadcrumb = () => {
     switch (activeTab) {
       case 'overview':
-        return 'Executive Overview & Pending Approvals Queue';
+        return 'Executive Overview & Pending Approvals';
       case 'inventory':
-        return 'Multi-Location Inventory Management (Quezon City & Pampanga)';
+        return 'Inventory Management (Quezon City & Pampanga)';
       case 'quotations':
-        return 'Sales Quotation Generator & 3-Day Stock Reservation Engine';
+        return 'Sales Quotations & Stock Reservation';
       case 'soa':
-        return 'Statement of Account (SOA) & Client Aging Ledger';
+        return 'Statement of Account (SOA) & Accounts Receivable';
       case 'purchasing':
-        return 'Purchasing & Receiving Report (3-Way Match Fraud Control)';
+        return 'Purchasing & Receiving (3-Way Match)';
       case 'rfp':
-        return 'Request for Payment (RFP) Non-PO Expenses';
+        return 'Request for Payment (RFP)';
       case 'admin':
-        return 'Immutable System Audit Log Stream';
+        return 'System Audit Trail';
       default:
         return 'Executive Overview';
     }
@@ -722,10 +722,10 @@ export default function DashboardHome() {
 
           <div className="hidden md:block border-l border-slate-300 pl-3">
             <h1 className="text-xs md:text-sm font-extrabold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
-              <span>ENTERPRISE ERP DASHBOARD</span>
+              <span>Enterprise ERP Dashboard</span>
               <span className="bg-blue-100 text-blue-800 border border-blue-300 text-xs px-2 py-0.5 rounded font-mono font-bold">v4.0</span>
             </h1>
-            <p className="text-xs text-slate-600 font-medium">COSO Control-First Multi-Location Supply Chain</p>
+            <p className="text-xs text-slate-600 font-medium">Multi-Location Supply Chain & Operations</p>
           </div>
         </div>
 
