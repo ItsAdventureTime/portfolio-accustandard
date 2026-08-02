@@ -26,7 +26,7 @@ echo "📁 [DEMO DIR] Web Root: ~/${REMOTE_DEMO_DIR}"
 echo "🔒 [CADDY CONFIG] Target File: ~/${REMOTE_CADDY_FILE}"
 echo "--------------------------------------------------------------------------------"
 
-echo "🚀 [1/5] Running Podman containerized static build (--rm)..."
+echo "🚀 [1/6] Running Podman containerized static build (--rm)..."
 if command -v podman &> /dev/null; then
   podman run --rm \
     -v "${PROJECT_DIR}:/workspace:Z" \
@@ -39,17 +39,20 @@ else
   npm run build
 fi
 
-echo "📁 [2/5] Initializing target web directory on Fedora CoreOS VPS..."
+echo "🧹 [2/6] Cleaning legacy Quadlet Nginx containers on VPS..."
+ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "systemctl --user stop accustanda-demo.service bridge-ph-accustanda-demo.service 2>/dev/null || true; systemctl --user disable accustanda-demo.service bridge-ph-accustanda-demo.service 2>/dev/null || true; rm -rf ~/.config/containers/systemd/bridge-ph/accustanda-demo/ ~/.config/containers/systemd/bridge-ph/accustanda-demo.container ~/.config/containers/systemd/bridge-ph-accustanda-demo.container 2>/dev/null || true; systemctl --user daemon-reload"
+
+echo "📁 [3/6] Initializing target web directory on Fedora CoreOS VPS..."
 ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "mkdir -p ~/${REMOTE_DEMO_DIR}"
 
-echo "🔄 [3/5] Syncing static build artifacts directly via rsync..."
+echo "🔄 [4/6] Syncing static build artifacts directly via rsync..."
 rsync -avz --delete -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/out/" "${REMOTE_USER}@${REMOTE_HOST}:~/${REMOTE_DEMO_DIR}/"
 
-echo "🔒 [4/5] Checking & configuring Caddy route block in ~/${REMOTE_CADDY_FILE}..."
+echo "🔒 [5/6] Checking & configuring Caddy route block in ~/${REMOTE_CADDY_FILE}..."
 rsync -avz -e "ssh -p ${REMOTE_PORT}" "${PROJECT_DIR}/scripts/accustanda-caddy-block.conf" "${REMOTE_USER}@${REMOTE_HOST}:/tmp/accustanda-caddy-block.conf"
 ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "grep -q '/accustanda/demo' ~/${REMOTE_CADDY_FILE} || { echo 'Configuring /accustanda/demo route in Caddyfile...'; sed -i '/delegateops.business {/r /tmp/accustanda-caddy-block.conf' ~/${REMOTE_CADDY_FILE}; podman exec caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || systemctl --user reload caddy.service 2>/dev/null || true; }"
 
-echo "🐰 [5/5] Invoking Bunny CDN cache purge (bunny-purge)..."
+echo "🐰 [6/6] Invoking Bunny CDN cache purge (bunny-purge)..."
 ssh -p "${REMOTE_PORT}" "${REMOTE_USER}@${REMOTE_HOST}" "bunny-purge" || {
   echo "⚠️ Note: bunny-purge command invoked on remote VPS."
 }
