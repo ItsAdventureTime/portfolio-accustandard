@@ -112,7 +112,7 @@ export default function DashboardHome() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
-  const [viewAsRole, setViewAsRole] = useState<string>('Chairman (DCS)');
+  const [viewAsRole, setViewAsRole] = useState<string>('Admin');
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -185,8 +185,119 @@ export default function DashboardHome() {
     signatoryTitle: 'Product Marketing Manager',
   });
 
-  // Symmetrical Deletion & Item Handlers
+  // Central Role Authorization Check (COSO Segregation of Duties Control)
+  type PermissionAction =
+    | 'APPROVE_DOC'
+    | 'REJECT_DOC'
+    | 'STOCK_MGMT'
+    | 'SALES_QUOTATION'
+    | 'FINANCE_SOA'
+    | 'PO_MGMT'
+    | 'RFP_MGMT'
+    | 'PO_RECEIVING';
+
+  const checkRolePermission = (action: PermissionAction, detail?: any): { allowed: boolean; message?: string } => {
+    if (viewAsRole === 'Admin') return { allowed: true };
+
+    switch (action) {
+      case 'STOCK_MGMT': {
+        if (viewAsRole === 'Warehouse') return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to alter physical inventory! Only Warehouse or Admin can manage stock.`,
+        };
+      }
+      case 'SALES_QUOTATION': {
+        if (['Sales', 'Marketing', 'General Manager'].includes(viewAsRole)) return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot encode or alter Sales Quotations! Only Sales, Marketing, or GM can alter quotations.`,
+        };
+      }
+      case 'FINANCE_SOA': {
+        if (viewAsRole === 'Bookkeeper') return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot modify Statement of Account (SOA) ledgers! Only Bookkeeper or Admin can post invoices.`,
+        };
+      }
+      case 'PO_MGMT': {
+        if (['General Manager', 'Bookkeeper'].includes(viewAsRole)) return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot generate or delete Purchase Orders (PO)! Only General Manager or Bookkeeper can manage POs.`,
+        };
+      }
+      case 'RFP_MGMT': {
+        if (['Bookkeeper', 'General Manager'].includes(viewAsRole)) return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot manage Request for Payment (RFP) vouchers! Only Bookkeeper or GM can manage RFPs.`,
+        };
+      }
+      case 'PO_RECEIVING': {
+        if (['Warehouse', 'General Manager'].includes(viewAsRole)) return { allowed: true };
+        return {
+          allowed: false,
+          message: `⛔ COSO SoD Violation: Role [${viewAsRole}] cannot perform Goods Receiving Report (GRR) entries! Only Warehouse or GM can receive shipments.`,
+        };
+      }
+      case 'APPROVE_DOC': {
+        const doc = detail;
+        if (['Sales', 'Bookkeeper', 'Warehouse'].includes(viewAsRole)) {
+          return {
+            allowed: false,
+            message: `⛔ COSO SoD Violation: Operational role [${viewAsRole}] is strictly prohibited from approving management control documents!`,
+          };
+        }
+        if (doc) {
+          if (doc.reviewerStatus === 'PENDING') {
+            if (!['Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
+              return {
+                allowed: false,
+                message: `⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized for Layer 2 Marketing Review!`,
+              };
+            }
+          } else if (doc.gmStatus === 'PENDING') {
+            if (!['General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
+              return {
+                allowed: false,
+                message: `⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized for Layer 3 General Manager approval!`,
+              };
+            }
+          } else if (doc.dcsStatus === 'PENDING' || doc.dcsStatus === 'AWAITING') {
+            if (viewAsRole !== 'Chairman (DCS)') {
+              return {
+                allowed: false,
+                message: `⛔ COSO Control Violation: Only Chairman (DCS) can grant Layer 4 Final Approval!`,
+              };
+            }
+          }
+        }
+        return { allowed: true };
+      }
+      case 'REJECT_DOC': {
+        if (['Sales', 'Bookkeeper', 'Warehouse'].includes(viewAsRole)) {
+          return {
+            allowed: false,
+            message: `⛔ COSO SoD Violation: Operational role [${viewAsRole}] cannot reject executive approval documents!`,
+          };
+        }
+        return { allowed: true };
+      }
+      default:
+        return { allowed: false, message: `Action not permitted for role ${viewAsRole}` };
+    }
+  };
+
+  // Symmetrical Deletion & Item Handlers with Role Protection
   const handleRemoveQuotationItem = (itemId: string) => {
+    const auth = checkRolePermission('SALES_QUOTATION');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED Quotation Item Removal under role [${viewAsRole}]`);
+      return;
+    }
     setQuotationData((prev) => ({
       ...prev,
       items: prev.items.filter((item) => item.id !== itemId),
@@ -203,6 +314,12 @@ export default function DashboardHome() {
   const handleAddQuotationItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newQuotationDesc) return;
+    const auth = checkRolePermission('SALES_QUOTATION');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED Quotation Item Addition under role [${viewAsRole}]`);
+      return;
+    }
     const newItem = {
       id: `q-${Date.now()}`,
       description: newQuotationDesc,
@@ -220,6 +337,12 @@ export default function DashboardHome() {
   };
 
   const handleDeleteSOARow = (rowId: string) => {
+    const auth = checkRolePermission('FINANCE_SOA');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED SOA Row Deletion under role [${viewAsRole}]`);
+      return;
+    }
     setSoaData((prev) => {
       const filtered = prev.rows.filter((r) => r.id !== rowId);
       // Recalculate running balances
@@ -235,16 +358,29 @@ export default function DashboardHome() {
   };
 
   const handleDeletePO = (poId: string) => {
+    const auth = checkRolePermission('PO_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED PO Deletion under role [${viewAsRole}]`);
+      return;
+    }
     setPoList((prev) => prev.filter((p) => p.id !== poId));
     addAuditLog('Deleted Purchase Order entry');
     showNotification('Deleted Purchase Order!');
   };
 
   const handleDeleteRFP = (rfpId: string) => {
+    const auth = checkRolePermission('RFP_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED RFP Deletion under role [${viewAsRole}]`);
+      return;
+    }
     setRfpList((prev) => prev.filter((r) => r.id !== rfpId));
     addAuditLog('Deleted RFP Payment Voucher entry');
     showNotification('Deleted Payment Voucher!');
   };
+
   const [newVendorName, setNewVendorName] = useState('');
   const [newPoItemDesc, setNewPoItemDesc] = useState('');
   const [newPoQty, setNewPoQty] = useState(100);
@@ -253,6 +389,12 @@ export default function DashboardHome() {
   const handleAddPO = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newVendorName || !newPoItemDesc) return;
+    const auth = checkRolePermission('PO_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED PO Creation under role [${viewAsRole}]`);
+      return;
+    }
     const num = Math.floor(100 + Math.random() * 900);
     const poNum = `PO-2026-0${num}`;
     const amt = Number(newPoAmount);
@@ -297,6 +439,12 @@ export default function DashboardHome() {
   const handleAddRFP = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPayeeName || !newRfpDesc) return;
+    const auth = checkRolePermission('RFP_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED RFP Creation under role [${viewAsRole}]`);
+      return;
+    }
     const num = Math.floor(100 + Math.random() * 900);
     const rfpNum = `RFP-2026-0${num}`;
     const amt = Number(newRfpAmount);
@@ -329,6 +477,7 @@ export default function DashboardHome() {
     setNewPayeeName('');
     setNewRfpDesc('');
   };
+
   const [newStockSku, setNewStockSku] = useState('');
   const [newStockDesc, setNewStockDesc] = useState('');
   const [newStockLoc, setNewStockLoc] = useState<'Quezon City' | 'Pampanga'>('Quezon City');
@@ -338,6 +487,12 @@ export default function DashboardHome() {
   const handleAddStock = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStockSku || !newStockDesc) return;
+    const auth = checkRolePermission('STOCK_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED Stock Addition under role [${viewAsRole}]`);
+      return;
+    }
     const newItem: InventoryItem = {
       id: `inv-${Date.now()}`,
       sku: newStockSku.toUpperCase(),
@@ -359,68 +514,54 @@ export default function DashboardHome() {
   };
 
   const handleDeleteStock = (id: string, sku: string) => {
+    const auth = checkRolePermission('STOCK_MGMT');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED Stock Removal under role [${viewAsRole}]`);
+      return;
+    }
     setInventoryList((prev) => prev.filter((item) => item.id !== id));
     addAuditLog(`Removed Stock Item ${sku}`);
     showNotification(`Stock Item ${sku} removed.`);
-  };
-
-  // Role Authorization Helper (COSO Segregation of Duties Control)
-  const isAuthorizedForRole = (actionType: 'APPROVE_GM' | 'APPROVE_DCS' | 'APPROVE_MKTG' | 'STOCK_MGMT' | 'FINANCE_SOA' | 'SALES_QUOTATION'): boolean => {
-    if (viewAsRole === 'Admin') return true; // Admin has full access
-
-    switch (actionType) {
-      case 'APPROVE_MKTG':
-        return viewAsRole.includes('Marketing') || viewAsRole.includes('Chairman') || viewAsRole.includes('General Manager');
-      case 'APPROVE_GM':
-        return viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
-      case 'APPROVE_DCS':
-        return viewAsRole.includes('Chairman');
-      case 'STOCK_MGMT':
-        return viewAsRole.includes('Warehouse') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
-      case 'FINANCE_SOA':
-        return viewAsRole.includes('Bookkeeper') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
-      case 'SALES_QUOTATION':
-        return viewAsRole.includes('Sales') || viewAsRole.includes('Marketing') || viewAsRole.includes('General Manager') || viewAsRole.includes('Chairman');
-      default:
-        return false;
-    }
   };
 
   const handleApproveDoc = (id: string, qrn: string) => {
     const targetDoc = approvalsList.find((d) => d.id === id);
     if (!targetDoc) return;
 
-    // Check layer authorization
-    if (targetDoc.reviewerStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_MKTG')) {
-      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized to grant Marketing Review!`);
-      return;
-    }
-    if (targetDoc.gmStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_GM')) {
-      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] is not authorized for Layer 3 GM Approval!`);
-      return;
-    }
-    if (targetDoc.dcsStatus === 'PENDING' && !isAuthorizedForRole('APPROVE_DCS')) {
-      showNotification(`⛔ COSO Control Violation: Only Chairman (DCS) can grant Layer 4 Final Approval!`);
+    const auth = checkRolePermission('APPROVE_DOC', targetDoc);
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized action!');
+      addAuditLog(`BLOCKED Approval for ${qrn} under role [${viewAsRole}] - COSO Violation`);
       return;
     }
 
     setApprovalsList((prev) =>
       prev.map((doc) => {
         if (doc.id === id) {
-          if (viewAsRole.includes('Marketing')) return { ...doc, reviewerStatus: 'APPROVED' };
-          if (viewAsRole.includes('General Manager')) return { ...doc, gmStatus: 'APPROVED' };
-          if (viewAsRole.includes('Chairman') || viewAsRole.includes('Admin')) return { ...doc, dcsStatus: 'APPROVED' };
+          if (doc.reviewerStatus === 'PENDING' && ['Marketing', 'General Manager', 'Chairman (DCS)', 'Admin'].includes(viewAsRole)) {
+            return { ...doc, reviewerStatus: 'APPROVED', gmStatus: 'PENDING' };
+          }
+          if (doc.gmStatus === 'PENDING' && ['General Manager', 'Chairman (DCS)', 'Admin'].includes(viewAsRole)) {
+            return { ...doc, gmStatus: 'APPROVED', dcsStatus: 'PENDING' };
+          }
+          if ((doc.dcsStatus === 'PENDING' || doc.dcsStatus === 'AWAITING') && (viewAsRole === 'Chairman (DCS)' || viewAsRole === 'Admin')) {
+            return { ...doc, dcsStatus: 'APPROVED' };
+          }
         }
         return doc;
       })
     );
+
     addAuditLog(`Approved ${qrn} under role [${viewAsRole}]`);
     showNotification(`Document ${qrn} approved by ${viewAsRole}!`);
   };
 
   const handleRejectDoc = (id: string, qrn: string) => {
-    if (viewAsRole.includes('Warehouse') || viewAsRole.includes('Sales')) {
-      showNotification(`⛔ COSO Control Violation: Role [${viewAsRole}] cannot reject management approval documents!`);
+    const auth = checkRolePermission('REJECT_DOC');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized action!');
+      addAuditLog(`BLOCKED Rejection for ${qrn} under role [${viewAsRole}] - COSO Violation`);
       return;
     }
     setApprovalsList((prev) => prev.filter((doc) => doc.id !== id));
@@ -435,6 +576,12 @@ export default function DashboardHome() {
   const handleAddSOARow = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSiNo || !newDrNo) return;
+    const auth = checkRolePermission('FINANCE_SOA');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED SOA Row Creation under role [${viewAsRole}]`);
+      return;
+    }
     const amt = Number(newInvoiceAmt);
     const lastRunning = soaData.rows.length > 0 ? soaData.rows[soaData.rows.length - 1].runningBalance : 0;
     const newRow: SOARowItem = {
@@ -463,6 +610,12 @@ export default function DashboardHome() {
 
   const handleTestPOReceiving = (e: React.FormEvent) => {
     e.preventDefault();
+    const auth = checkRolePermission('PO_RECEIVING');
+    if (!auth.allowed) {
+      showNotification(auth.message || 'Unauthorized');
+      addAuditLog(`BLOCKED PO Goods Receiving under role [${viewAsRole}]`);
+      return;
+    }
     if (Number(receivingQtyInput) > approvedPOQty) {
       setPoErrorMsg(`HARD-BLOCKED: Attempting to receive ${receivingQtyInput} units exceeds approved PO limit of ${approvedPOQty} units!`);
       addAuditLog(`PO Over-Receiving Hard-Blocked (${receivingQtyInput} > ${approvedPOQty})`);
@@ -951,6 +1104,11 @@ export default function DashboardHome() {
                 />
                 <button
                   onClick={() => {
+                    if (['Sales', 'Marketing'].includes(viewAsRole)) {
+                      showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to export system inventory reports!`);
+                      addAuditLog(`BLOCKED CSV Export under role [${viewAsRole}]`);
+                      return;
+                    }
                     exportToCSV('accustanda_inventory_report.csv', inventoryList);
                     showNotification('Downloaded Inventory CSV Report!');
                     addAuditLog('Exported Inventory CSV Report');
