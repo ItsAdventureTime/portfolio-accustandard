@@ -8,6 +8,7 @@ interface BarcodeScannerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onScan: (barcode: string) => void;
+  onOpenProductManager?: () => void;
   title?: string;
 }
 
@@ -15,7 +16,8 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   isOpen,
   onClose,
   onScan,
-  title = 'Mobile Barcode & QR Scanner',
+  onOpenProductManager,
+  title = 'Mobile Barcode & QR Reader',
 }) => {
   const [manualSku, setManualSku] = useState('');
   const [lastScanned, setLastScanned] = useState<string | null>(null);
@@ -23,6 +25,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   const [isScanningActive, setIsScanningActive] = useState(false);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const modalBackdropRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const playBeepSound = () => {
     try {
@@ -88,11 +91,27 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
             })
             .catch((err) => {
               setIsScanningActive(false);
-              setCameraError('Live camera stream unavailable on this device/HTTP origin. Tap any 1-click test barcode preset below or enter SKU manually.');
+              setCameraError('Live camera stream unavailable. You can upload/snap a barcode image or use quick presets below.');
             });
         });
     } catch (e: any) {
-      setCameraError('Camera setup error. Use quick barcode presets below to simulate instant scan.');
+      setCameraError('Camera setup error. You can upload/snap a barcode image or use quick presets below.');
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode('reader');
+      }
+      const qrCode = html5QrCodeRef.current;
+      const decodedText = await qrCode.scanFile(file, true);
+      executeScanAction(decodedText);
+    } catch (err) {
+      setCameraError('Could not decode barcode from uploaded image. Please ensure the barcode is clear and well-lit.');
     }
   };
 
@@ -154,6 +173,16 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4"
     >
       <div className="bg-slate-900 text-white rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl border border-slate-700 flex flex-col animate-fade-in mobile-modal-container">
+        {/* Hidden File Input for Image Barcode Scanning */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+
         {/* Header */}
         <div className="flex justify-between items-center pb-3 border-b border-slate-800">
           <div className="flex items-center space-x-2">
@@ -168,6 +197,32 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
           >
             <X className="w-6 h-6" />
           </button>
+        </div>
+
+        {/* Action Bar (Upload Image / Product SKU Manager) */}
+        <div className="pt-2 flex justify-between items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-blue-300 font-bold rounded-lg text-xs flex items-center gap-1.5 border border-slate-700 transition"
+          >
+            <Camera className="w-4 h-4 text-blue-400" />
+            <span>Upload / Snap Photo</span>
+          </button>
+
+          {onOpenProductManager && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenProductManager();
+              }}
+              className="px-3 py-1.5 bg-blue-900/80 hover:bg-blue-800 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 border border-blue-600/60 transition"
+            >
+              <Barcode className="w-4 h-4 text-blue-300" />
+              <span>Manage SKUs</span>
+            </button>
+          )}
         </div>
 
         {/* Mobile Viewfinder Video Stream Container */}

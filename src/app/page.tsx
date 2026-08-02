@@ -46,6 +46,7 @@ import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
 import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
+import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_PO_LIST, DEFAULT_RFP_LIST, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
@@ -128,6 +129,7 @@ export default function DashboardHome() {
   const [isAddPOOpen, setIsAddPOOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
   const [isPwaInstallModalOpen, setIsPwaInstallModalOpen] = useState(false);
+  const [isProductManagerOpen, setIsProductManagerOpen] = useState(false);
 
   // Multi-Format Export & Document Print State
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -2244,12 +2246,35 @@ export default function DashboardHome() {
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
+        onOpenProductManager={() => setIsProductManagerOpen(true)}
         onScan={(scannedCode) => {
           setIsScannerOpen(false);
           setActiveTab('inventory');
           setSearchQuery(scannedCode);
-          showNotification(`🎯 Barcode Scanned: ${scannedCode} — Filtered in Inventory!`);
+          showNotification(`Scanned Barcode: ${scannedCode} — Filtered in Inventory.`);
           addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
+        }}
+      />
+
+      {/* Barcode & Product SKU Manager Modal */}
+      <BarcodeProductManagerModal
+        isOpen={isProductManagerOpen}
+        onClose={() => setIsProductManagerOpen(false)}
+        products={inventoryList as any}
+        onAddProduct={(newProd) => {
+          setInventoryList((prev) => [newProd as any, ...prev]);
+          showNotification(`Added new product SKU: ${newProd.sku}`);
+          addAuditLog(`Registered product SKU: ${newProd.sku}`);
+        }}
+        onUpdateProduct={(updatedProd) => {
+          setInventoryList((prev) => prev.map((p) => (p.id === updatedProd.id ? (updatedProd as any) : p)));
+          showNotification(`Updated product SKU: ${updatedProd.sku}`);
+          addAuditLog(`Revised product SKU: ${updatedProd.sku}`);
+        }}
+        onDeleteProduct={(prodId) => {
+          setInventoryList((prev) => prev.filter((p) => p.id !== prodId));
+          showNotification('Deleted product SKU from registry.');
+          addAuditLog('Removed product SKU');
         }}
       />
 
