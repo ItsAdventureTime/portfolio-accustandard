@@ -1,13 +1,12 @@
 [Unit]
-Description=Accustanda ERP Dashboard Rootless Podman Quadlet Service
+Description=Accustanda ERP Dashboard Demo Container
 After=network-online.target
 
 [Container]
-ContainerName=accustanda-demo
-Image=quay.io/fedora/fedora-minimal:latest
-Exec=sh -c "cd /home/jk/bridge-ph/accustanda-demo && python3 -m http.server 3000"
-Volume=/home/jk/bridge-ph/accustanda-demo:/home/jk/bridge-ph/accustanda-demo:ro,z
-PublishPort=3000:3000
+ContainerName=bridge-ph-accustanda-demo
+Image=docker.io/library/nginx:alpine
+Volume=/home/jk/bridge-ph/accustanda-demo:/usr/share/nginx/html:ro,z
+PublishPort=127.0.0.1:3000:80
 
 [Service]
 Restart=always
