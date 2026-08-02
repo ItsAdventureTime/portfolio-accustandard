@@ -81,7 +81,7 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
 # Step 2: Run containerized static build inside ephemeral Podman container using latest Alpine Node image (node:current-alpine)
-podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "npm ci && npm run build"
+podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "rm -rf .next && npm ci && npm run build"
 
 # Step 3: Create target web directory on VPS using full remote directory
 ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
@@ -105,7 +105,7 @@ ssh -p 22 jk@216.75.75.136 "bunny-purge"
 cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
 # Step 2: Re-build static export inside container using latest Alpine Node image (node:current-alpine)
-podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "npm run build"
+podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "rm -rf .next && npm run build"
 
 # Step 3: Sync delta updates to VPS using full local output path and full remote VPS path
 rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
