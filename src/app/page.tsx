@@ -676,21 +676,32 @@ export default function DashboardHome() {
       />
 
       {/* Predictable Navigation Top Shell Header */}
-      <header className="wayfinding-header px-4 md:px-6 py-3 flex flex-wrap justify-between items-center gap-4">
-        {/* Brand Lockup matching photo_2026-08-01_23-55-07.jpg */}
-        <div className="flex items-center space-x-3">
-          <div className="bg-white px-3 py-1.5 rounded flex flex-col justify-center border border-slate-300 shadow-sm">
+      <header className="wayfinding-header px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 shadow-xs">
+        {/* Brand Lockup */}
+        <div className="flex items-center space-x-2.5">
+          <div className="bg-white px-2.5 py-1.5 rounded flex flex-col justify-center border border-slate-300 shadow-sm shrink-0">
             <div className="flex items-center leading-none">
-              <span className="text-xl font-black text-blue-900 tracking-tighter">ACCUSTANDA</span>
-              <span className="text-xl font-black text-red-600 ml-0.5">R<span className="text-sm font-black italic">x</span></span>
-              <span className="text-xl font-black text-blue-900">D</span>
+              <span className="text-lg sm:text-xl font-black text-blue-900 tracking-tighter">ACCUSTANDA</span>
+              <span className="text-lg sm:text-xl font-black text-red-600 ml-0.5">R<span className="text-xs font-black italic">x</span></span>
+              <span className="text-lg sm:text-xl font-black text-blue-900">D</span>
             </div>
             <div className="w-full border-b-2 border-red-600 my-0.5"></div>
-            <span className="text-[9px] sm:text-[10px] md:text-xs font-black text-slate-900 tracking-wider uppercase whitespace-nowrap">
-              MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
+            <span className="text-[8px] sm:text-[10px] font-black text-slate-900 tracking-wider uppercase whitespace-nowrap">
+              MEDICAL & DIAGNOSTIC
             </span>
           </div>
-          <div className="hidden sm:block border-l border-slate-300 pl-3">
+
+          {/* Mobile Current Role Pill Badge */}
+          <button
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="md:hidden flex items-center gap-1 bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-900 px-2 py-1 rounded-full text-[10px] font-extrabold shadow-xs transition shrink-0"
+            title="Tap to change role simulator"
+          >
+            <Eye className="w-3 h-3 text-amber-700" />
+            <span className="max-w-[85px] truncate">{viewAsRole}</span>
+          </button>
+
+          <div className="hidden md:block border-l border-slate-300 pl-3">
             <h1 className="text-xs md:text-sm font-extrabold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
               <span>ENTERPRISE ERP DASHBOARD</span>
               <span className="bg-blue-100 text-blue-800 border border-blue-300 text-xs px-2 py-0.5 rounded font-mono font-bold">v4.0</span>
@@ -699,11 +710,11 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* View As Impersonation & Auto-Reset Timer Bar */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* View As Impersonation & Auto-Reset Timer Bar (Desktop Only) */}
+        <div className="hidden md:flex items-center gap-2">
           <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-2 rounded text-xs md:text-sm shadow-inner">
             <Eye className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-slate-800 font-bold hidden md:inline">Simulate Role:</span>
+            <span className="text-slate-800 font-bold">Simulate Role:</span>
             <select
               value={viewAsRole}
               onChange={(e) => {
@@ -738,15 +749,16 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Actions & Barcode Trigger */}
-        <div className="flex items-center gap-3">
+        {/* Actions & Tools Bar */}
+        <div className="flex items-center gap-1.5 sm:gap-3">
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 px-3.5 py-2 rounded text-xs md:text-sm transition font-medium"
+            className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 p-2 md:px-3.5 md:py-2 rounded-lg text-xs md:text-sm transition font-medium"
+            title="Quick Search & Jump (⌘K)"
           >
             <Search className="w-4 h-4 text-blue-600" />
-            <span className="hidden sm:inline font-bold">Quick Search & Jump</span>
-            <kbd className="bg-white text-slate-800 text-xs font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs font-bold">⌘K</kbd>
+            <span className="hidden md:inline font-bold">Quick Search</span>
+            <kbd className="hidden md:inline-block bg-white text-slate-800 text-xs font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs font-bold">⌘K</kbd>
           </button>
           <div className="hidden lg:flex items-center gap-2 text-xs md:text-sm text-emerald-900 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded font-semibold">
             <Server className="w-4 h-4 text-emerald-700" />
@@ -754,18 +766,19 @@ export default function DashboardHome() {
           </div>
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="hidden sm:inline-flex btn-danger-red text-xs md:text-sm active:scale-95 transition touch-target font-bold"
+            className="btn-danger-red text-xs md:text-sm p-2 md:px-3.5 md:py-2 flex items-center justify-center gap-1.5 rounded-lg active:scale-95 transition font-bold"
+            title="Mobile Barcode Scanner"
           >
             <Camera className="w-4 h-4" />
-            <span>Mobile Barcode Scanner</span>
+            <span className="hidden md:inline">Mobile Barcode Scanner</span>
           </button>
-          {/* Mobile Hamburger Menu Toggle Button */}
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="md:hidden p-2 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg touch-target flex items-center justify-center"
-            aria-label="Open Mobile Menu"
+            className="md:hidden p-2 text-slate-800 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg flex items-center justify-center shadow-xs"
+            aria-label="Open Navigation Menu"
           >
-            <Menu className="w-6 h-6 text-blue-900" />
+            <Menu className="w-5 h-5 text-blue-900" />
           </button>
         </div>
       </header>
