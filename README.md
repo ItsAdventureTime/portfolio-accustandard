@@ -98,19 +98,22 @@ ssh -p 22 jk@216.75.75.136 "bunny-purge"
 
 ---
 
-### Method B: Fast Incremental Update (Run Manually Step-by-Step)
+### Method B: Fast Incremental Update (Manual Commands)
 
 ```bash
-# Step 1: Re-build static export inside container
-podman run --rm -v "${PWD}:/workspace:Z" -w /workspace node:20-alpine sh -c "npm run build"
+# Step 1: Navigate to local project workspace using full directory
+cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
-# Step 2: Sync delta updates to VPS
-rsync -avz --delete -e "ssh -p 22" ./out/ jk@216.75.75.136:~/bridge-ph/accustanda-demo/
+# Step 2: Re-build static export inside container using full workspace volume path
+podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:20-alpine sh -c "npm run build"
 
-# Step 3: Reload Caddy web server
+# Step 3: Sync delta updates to VPS using full local output path and full remote VPS path
+rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
+
+# Step 4: Reload Caddy web server using full remote configuration path
 ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
 
-# Step 4: Purge Bunny CDN Cache
+# Step 5: Purge Bunny CDN Cache
 ssh -p 22 jk@216.75.75.136 "bunny-purge"
 ```
 
