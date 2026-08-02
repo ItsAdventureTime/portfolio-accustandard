@@ -34,7 +34,7 @@ if command -v podman &> /dev/null; then
   podman run --rm \
     -v "${PROJECT_DIR}:/workspace:Z" \
     -w /workspace \
-    node:20-alpine \
+    node:current-alpine \
     sh -c "npm ci && npm run build"
 else
   echo "⚠️ Podman CLI not found locally. Building via local Node.js environment..."

@@ -74,20 +74,20 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 
 ## 🛠️ Manual Step-by-Step Deployment Guide (Full Control)
 
-### Method A: Initial Installation & Deployment (Run Manually Step-by-Step)
+### Method A: Initial Installation & Deployment (Manual Commands)
 
 ```bash
-# Step 1: Navigate to local project workspace
-cd ~/dev/accustanda-bridge-dashboard
+# Step 1: Navigate to local project workspace using full directory
+cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
-# Step 2: Run containerized static build inside ephemeral Podman container
-podman run --rm -v "${PWD}:/workspace:Z" -w /workspace node:20-alpine sh -c "npm ci && npm run build"
+# Step 2: Run containerized static build inside ephemeral Podman container using latest Alpine Node image (node:current-alpine)
+podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "npm ci && npm run build"
 
-# Step 3: Create target web directory on VPS
-ssh -p 22 jk@216.75.75.136 "mkdir -p ~/bridge-ph/accustanda-demo"
+# Step 3: Create target web directory on VPS using full remote directory
+ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
 
-# Step 4: Sync static build output to VPS via rsync
-rsync -avz --delete -e "ssh -p 22" ./out/ jk@216.75.75.136:~/bridge-ph/accustanda-demo/
+# Step 4: Sync static build output to VPS via rsync using full local and remote paths
+rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
 
 # Step 5: Reload Caddy configuration & format Caddyfile on VPS
 ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
