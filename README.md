@@ -74,19 +74,14 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 
 ## 🛠️ Podman Ephemeral Container Build & VPS Deployment
 
-Deploying to target VPS (`jk@216.75.75.136:22` at `/var/www/accustanda-bridge`) with Bunny CDN cache purging:
+Deploying to target VPS (`jk@216.75.75.136:22` at `~/bridge-ph/accustanda-demo`) with rootless Podman Quadlet systemd service and Bunny CDN cache purging:
 
 ```bash
-# 1. Install Dependencies locally
-npm install
+# 1. 1-Step Complete Installation & Remote VPS Deployment:
+cd ~/dev/accustanda-bridge-dashboard/ && npm run deploy:install
 
-# 2. Ephemeral Podman Container Build & Initial Remote VPS Installation
-npm run deploy:install
-# (Runs Podman container build with --rm self-destruction, creates remote directories, syncs via rsync SSH, and triggers bunny-purge)
-
-# 3. Ephemeral Podman Container Build & Fast Remote Update
-npm run deploy:update
-# (Re-builds static export inside container, syncs delta via rsync, and purges Bunny CDN cache)
+# 2. 1-Step Fast Incremental Update & CDN Cache Purge:
+cd ~/dev/accustanda-bridge-dashboard/ && npm run deploy:update
 ```
 
 ---
