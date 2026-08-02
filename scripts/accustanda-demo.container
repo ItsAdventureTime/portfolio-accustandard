@@ -1,0 +1,16 @@
+[Unit]
+Description=Accustanda ERP Dashboard Rootless Podman Quadlet Service
+After=network-online.target
+
+[Container]
+ContainerName=accustanda-demo
+Image=quay.io/fedora/fedora-minimal:latest
+Exec=sh -c "cd /home/jk/bridge-ph/accustanda-demo && python3 -m http.server 3000"
+Volume=/home/jk/bridge-ph/accustanda-demo:/home/jk/bridge-ph/accustanda-demo:ro,z
+PublishPort=3000:3000
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
