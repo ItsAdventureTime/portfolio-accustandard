@@ -90,7 +90,7 @@ ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
 rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
 
 # Step 5: Format host Caddyfile on VPS & reload Caddy container
-ssh -p 22 jk@216.75.75.136 "podman run --rm -v '/home/jk/caddy/conf:/etc/caddy:Z' docker.io/library/caddy:alpine caddy fmt --overwrite /etc/caddy/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
+ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt /etc/caddy/Caddyfile > /tmp/Caddyfile.tmp && mv /tmp/Caddyfile.tmp /home/jk/caddy/conf/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
 
 # Step 6: Purge Bunny CDN Cache
 ssh -p 22 jk@216.75.75.136 "bunny-purge"

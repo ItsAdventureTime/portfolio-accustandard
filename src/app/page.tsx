@@ -754,36 +754,39 @@ export default function DashboardHome() {
         </div>
 
         {/* Actions & Tools Bar */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 p-1.5 sm:p-2 md:px-3.5 md:py-2 rounded-lg text-xs md:text-sm transition font-medium"
+            className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 md:w-auto md:h-auto flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 p-1.5 md:px-3.5 md:py-2 rounded-xl text-xs md:text-sm transition font-medium shadow-xs"
             title="Quick Search & Jump (⌘K)"
           >
-            <Search className="w-4 h-4 text-blue-600" />
+            <Search className="w-4 h-4 text-blue-600 shrink-0" />
             <span className="hidden md:inline font-bold">Quick Search</span>
             <kbd className="hidden md:inline-block bg-white text-slate-800 text-xs font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs font-bold">⌘K</kbd>
           </button>
-          <div className="hidden lg:flex items-center gap-2 text-xs md:text-sm text-emerald-900 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded font-semibold">
+
+          <div className="hidden lg:flex items-center gap-2 text-xs md:text-sm text-emerald-900 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded-xl font-semibold">
             <Server className="w-4 h-4 text-emerald-700" />
             <span>QBO API Live Sync</span>
           </div>
+
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="btn-danger-red text-xs md:text-sm p-1.5 sm:p-2 md:px-3.5 md:py-2 flex items-center justify-center gap-1 rounded-lg active:scale-95 transition font-bold"
+            className="w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 md:w-auto md:h-auto btn-danger-red text-xs md:text-sm p-1.5 md:px-3.5 md:py-2 flex items-center justify-center gap-1.5 rounded-xl active:scale-95 transition font-bold shadow-xs"
             title="Mobile Barcode Scanner"
           >
-            <Camera className="w-4 h-4" />
+            <Camera className="w-4 h-4 shrink-0" />
             <span className="hidden md:inline">Mobile Barcode Scanner</span>
           </button>
+
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMobileDrawerOpen(true)}
-            className="md:hidden p-1.5 text-slate-800 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-lg flex items-center justify-center shadow-xs"
+            className="md:hidden w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 p-1.5 text-slate-800 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded-xl flex items-center justify-center shadow-xs transition"
             aria-label="Open Navigation Menu"
             title="Open Menu Sheet"
           >
-            <Menu className="w-4 h-4 text-blue-900" />
+            <Menu className="w-4 h-4 text-blue-900 shrink-0" />
           </button>
         </div>
       </header>
