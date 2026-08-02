@@ -524,24 +524,24 @@ export default function DashboardHome() {
               <span className="text-xl font-black text-blue-900">D</span>
             </div>
             <div className="w-full border-b-2 border-red-600 my-0.5"></div>
-            <span className="text-[7.5px] font-extrabold text-slate-900 tracking-tighter uppercase whitespace-nowrap">
+            <span className="text-[9px] sm:text-[10px] md:text-xs font-black text-slate-900 tracking-wider uppercase whitespace-nowrap">
               MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
             </span>
           </div>
           <div className="hidden sm:block border-l border-slate-300 pl-3">
-            <h1 className="text-xs font-bold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
+            <h1 className="text-xs md:text-sm font-extrabold tracking-wider uppercase text-slate-800 flex items-center gap-1.5">
               <span>ENTERPRISE ERP DASHBOARD</span>
-              <span className="bg-blue-100 text-blue-800 border border-blue-300 text-[10px] px-1.5 py-0.5 rounded font-mono">v4.0</span>
+              <span className="bg-blue-100 text-blue-800 border border-blue-300 text-xs px-2 py-0.5 rounded font-mono font-bold">v4.0</span>
             </h1>
-            <p className="text-[11px] text-slate-500">COSO Control-First Multi-Location Supply Chain</p>
+            <p className="text-xs text-slate-600 font-medium">COSO Control-First Multi-Location Supply Chain</p>
           </div>
         </div>
 
         {/* View As Impersonation & Auto-Reset Timer Bar */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-1.5 rounded text-xs shadow-inner">
+          <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 px-3 py-2 rounded text-xs md:text-sm shadow-inner">
             <Eye className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-slate-700 font-medium hidden md:inline">Simulate Role:</span>
+            <span className="text-slate-800 font-bold hidden md:inline">Simulate Role:</span>
             <select
               value={viewAsRole}
               onChange={(e) => {
@@ -549,7 +549,7 @@ export default function DashboardHome() {
                 showNotification(`Switched role simulator to: ${e.target.value}`);
                 addAuditLog(`Impersonated role: ${e.target.value}`);
               }}
-              className="bg-white text-slate-900 font-semibold rounded px-2.5 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+              className="bg-white text-slate-900 font-bold rounded px-3 py-1 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-sm"
             >
               <option value="Admin">Admin (Bridge)</option>
               <option value="Chairman (DCS)">Chairman (DCS)</option>
@@ -562,13 +562,13 @@ export default function DashboardHome() {
           </div>
 
           {/* 30-Minute Auto-Reset Countdown Badge */}
-          <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-300 px-2.5 py-1.5 rounded text-xs text-amber-900 font-medium">
-            <RefreshCcw className="w-3.5 h-3.5 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
-            <span className="hidden xl:inline">Auto-Reset:</span>
-            <span className="font-mono font-bold text-amber-800">{formatTimer()}</span>
+          <div className="flex items-center gap-2 bg-amber-50 border border-amber-300 px-3 py-2 rounded text-xs md:text-sm text-amber-900 font-semibold">
+            <RefreshCcw className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
+            <span className="hidden xl:inline font-bold">Auto-Reset:</span>
+            <span className="font-mono font-bold text-amber-900 text-xs md:text-sm">{formatTimer()}</span>
             <button
               onClick={handleRestoreDefaultState}
-              className="ml-1 text-[10px] bg-amber-200 hover:bg-amber-300 text-amber-900 px-1.5 py-0.5 rounded font-bold transition"
+              className="ml-1 text-xs bg-amber-200 hover:bg-amber-300 text-amber-950 px-2 py-1 rounded font-extrabold transition shadow-xs"
               title="Reset Demo Data Back to Default Seed State"
             >
               Reset Data
@@ -580,19 +580,19 @@ export default function DashboardHome() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 px-3 py-1.5 rounded text-xs transition"
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 px-3.5 py-2 rounded text-xs md:text-sm transition font-medium"
           >
-            <Search className="w-3.5 h-3.5 text-blue-600" />
-            <span className="hidden sm:inline font-semibold">Quick Search & Jump</span>
-            <kbd className="bg-white text-slate-700 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs">⌘K</kbd>
+            <Search className="w-4 h-4 text-blue-600" />
+            <span className="hidden sm:inline font-bold">Quick Search & Jump</span>
+            <kbd className="bg-white text-slate-800 text-xs font-mono px-1.5 py-0.5 rounded border border-slate-300 shadow-xs font-bold">⌘K</kbd>
           </button>
-          <div className="hidden lg:flex items-center gap-2 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded">
-            <Server className="w-3.5 h-3.5 text-emerald-700" />
+          <div className="hidden lg:flex items-center gap-2 text-xs md:text-sm text-emerald-900 bg-emerald-50 border border-emerald-300 px-3.5 py-2 rounded font-semibold">
+            <Server className="w-4 h-4 text-emerald-700" />
             <span>QBO API Live Sync</span>
           </div>
           <button
             onClick={() => setIsScannerOpen(true)}
-            className="hidden sm:inline-flex btn-danger-red text-xs active:scale-95 transition touch-target"
+            className="hidden sm:inline-flex btn-danger-red text-xs md:text-sm active:scale-95 transition touch-target font-bold"
           >
             <Camera className="w-4 h-4" />
             <span>Mobile Barcode Scanner</span>
@@ -609,37 +609,37 @@ export default function DashboardHome() {
       </header>
 
       {/* Predictable Horizontal Top Navigation Bar (Hidden on Mobile <md to avoid duplicate menus) */}
-      <nav className="hidden md:flex wayfinding-nav-strip px-4 md:px-6 overflow-x-auto no-scrollbar whitespace-nowrap gap-1 text-xs font-semibold text-slate-600">
+      <nav className="hidden md:flex wayfinding-nav-strip px-4 md:px-6 overflow-x-auto no-scrollbar whitespace-nowrap gap-1.5 text-sm font-semibold text-slate-700">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'overview'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <Layers className="w-4 h-4 text-blue-600" />
           <span>Executive Overview</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">{approvalsList.length}</span>
+          <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-bold">{approvalsList.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'inventory'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <Package className="w-4 h-4 text-blue-600" />
           <span>Inventory (QC & Pampanga)</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-800 rounded-full font-bold">{inventoryList.length}</span>
+          <span className="ml-1 px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full font-bold">{inventoryList.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('quotations')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'quotations'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <FileText className="w-4 h-4 text-blue-600" />
@@ -647,22 +647,22 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('soa')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'soa'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <FileCheck className="w-4 h-4 text-blue-600" />
           <span>Statement of Account (SOA)</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-800 rounded-full font-bold">{soaData.rows.length}</span>
+          <span className="ml-1 px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-bold">{soaData.rows.length}</span>
         </button>
         <button
           onClick={() => setActiveTab('purchasing')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'purchasing'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <Building2 className="w-4 h-4 text-blue-600" />
@@ -670,10 +670,10 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('rfp')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'rfp'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <CreditCard className="w-4 h-4 text-blue-600" />
@@ -681,24 +681,24 @@ export default function DashboardHome() {
         </button>
         <button
           onClick={() => setActiveTab('admin')}
-          className={`py-3 px-4 transition border-b-2 flex items-center gap-2 ${
+          className={`py-3.5 px-4.5 transition border-b-2 flex items-center gap-2.5 ${
             activeTab === 'admin'
-              ? 'border-blue-600 text-blue-700 font-bold bg-white'
-              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50'
+              ? 'border-blue-600 text-blue-700 font-extrabold bg-white text-sm'
+              : 'border-transparent hover:text-slate-900 hover:bg-slate-200/50 text-sm'
           }`}
         >
           <UserCheck className="w-4 h-4 text-blue-600" />
           <span>Audit Log Stream</span>
-          <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-800 rounded-full font-bold">{auditLogs.length}</span>
+          <span className="ml-1 px-2 py-0.5 text-xs bg-slate-200 text-slate-800 rounded-full font-bold">{auditLogs.length}</span>
         </button>
       </nav>
 
       {/* Predictable Context Breadcrumb Bar (Zero Confusion Wayfinding) */}
-      <div className="bg-slate-100 border-b border-slate-300 px-4 md:px-6 py-2 flex items-center gap-2 text-xs text-slate-600">
-        <Home className="w-3.5 h-3.5 text-blue-700" />
-        <span className="font-semibold text-slate-800">Accustanda ERP</span>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="font-bold text-blue-800">{getTabBreadcrumb()}</span>
+      <div className="bg-slate-100 border-b border-slate-300 px-4 md:px-6 py-2.5 flex items-center gap-2 text-xs md:text-sm text-slate-700 font-medium">
+        <Home className="w-4 h-4 text-blue-700 shrink-0" />
+        <span className="font-bold text-slate-800">Accustanda ERP</span>
+        <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        <span className="font-extrabold text-blue-800">{getTabBreadcrumb()}</span>
       </div>
 
       {/* Main Content Area — Maximum Screen Utilization Layout with Mobile Bottom Clearance */}
@@ -710,57 +710,57 @@ export default function DashboardHome() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider text-slate-600">Managed Inventory</span>
+                  <span className="font-bold uppercase tracking-wider text-xs md:text-sm text-slate-700">Managed Inventory</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-slate-900">
+                <p className="text-3xl md:text-4xl font-extrabold text-slate-900">
                   {inventoryList.reduce((acc, i) => acc + i.onHand, 0)}{' '}
-                  <span className="text-xs font-semibold text-slate-500">Units</span>
+                  <span className="text-sm font-bold text-slate-500">Units</span>
                 </p>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
-                  <span className="text-blue-700 font-semibold">QC: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.onHand, 0)}</span>
-                  <span className="text-purple-700 font-semibold">Pampanga: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.onHand, 0)}</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-xs md:text-sm font-semibold">
+                  <span className="text-blue-700 font-bold">QC: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.onHand, 0)}</span>
+                  <span className="text-purple-700 font-bold">Pampanga: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.onHand, 0)}</span>
                 </div>
               </div>
 
               <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider text-amber-700 font-bold">Pending Approvals</span>
+                  <span className="font-bold uppercase tracking-wider text-xs md:text-sm text-amber-800">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-amber-600">
-                  {approvalsList.length} <span className="text-xs font-semibold text-amber-700">Requests</span>
+                <p className="text-3xl md:text-4xl font-extrabold text-amber-600">
+                  {approvalsList.length} <span className="text-sm font-bold text-amber-700">Requests</span>
                 </p>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
-                  <span className="text-slate-600 font-medium">Role: <strong className="text-slate-900">{viewAsRole}</strong></span>
-                  <span className="text-emerald-700 font-bold">COSO 4-Layer</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-xs md:text-sm font-semibold">
+                  <span className="text-slate-700 font-semibold">Role: <strong className="text-slate-950 font-extrabold">{viewAsRole}</strong></span>
+                  <span className="text-emerald-700 font-extrabold">COSO 4-Layer</span>
                 </div>
               </div>
 
               <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider text-slate-600">Active SOA Balance</span>
+                  <span className="font-bold uppercase tracking-wider text-xs md:text-sm text-slate-700">Active SOA Balance</span>
                   <FileCheck className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-slate-900">₱32,208.00</p>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
-                  <span className="text-slate-600 font-medium">Client: Gatchalian Med Lab</span>
-                  <span className="text-emerald-700 font-bold">Current</span>
+                <p className="text-3xl md:text-4xl font-extrabold text-slate-900">₱32,208.00</p>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-xs md:text-sm font-semibold">
+                  <span className="text-slate-700 font-semibold">Client: Gatchalian Med Lab</span>
+                  <span className="text-emerald-700 font-extrabold">Current</span>
                 </div>
               </div>
 
               <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider text-slate-600">Integration Hub</span>
+                  <span className="font-bold uppercase tracking-wider text-xs md:text-sm text-slate-700">Integration Hub</span>
                   <Server className="w-4 h-4 text-emerald-600" />
                 </div>
-                <p className="text-2xl font-extrabold text-emerald-700 flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p className="text-2xl md:text-3xl font-extrabold text-emerald-700 flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>QBO API Live</span>
                 </p>
-                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
-                  <span className="text-slate-500">Auto FEFO Sync</span>
-                  <span className="text-emerald-700 font-bold">Connected</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-xs md:text-sm font-semibold">
+                  <span className="text-slate-600 font-medium">Auto FEFO Sync</span>
+                  <span className="text-emerald-700 font-extrabold">Connected</span>
                 </div>
               </div>
             </div>
@@ -768,27 +768,27 @@ export default function DashboardHome() {
             {/* COSO Stepper Tracker */}
             <div className="wayfinding-card p-5 space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm md:text-base font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-blue-600" />
                   COSO Segregation of Duties — 4-Layer Approval Chain
                 </h3>
-                <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded font-semibold text-xs border border-blue-300">All Documents to Chairman at Launch</span>
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded font-bold text-xs md:text-sm border border-blue-300">All Documents to Chairman at Launch</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs md:text-sm">
                 <div className="p-3 bg-slate-50 border-l-4 border-blue-600 rounded shadow-sm">
-                  <span className="text-[10px] font-bold uppercase text-blue-700">Layer 1: Maker</span>
-                  <p className="font-semibold text-slate-900 mt-1">Encodes Transaction</p>
-                  <p className="text-[11px] text-slate-500">Sales / Purchasing / Bookkeeper</p>
+                  <span className="text-xs font-extrabold uppercase text-blue-700">Layer 1: Maker</span>
+                  <p className="font-bold text-slate-900 mt-1 text-xs md:text-sm">Encodes Transaction</p>
+                  <p className="text-xs text-slate-600 font-medium">Sales / Purchasing / Bookkeeper</p>
                 </div>
                 <div className="p-3 bg-slate-50 border-l-4 border-blue-600 rounded shadow-sm">
-                  <span className="text-[10px] font-bold uppercase text-blue-700">Layer 2: Reviewer</span>
-                  <p className="font-semibold text-slate-900 mt-1">Checks Completeness</p>
-                  <p className="text-[11px] text-slate-500">Marketing Officer</p>
+                  <span className="text-xs font-extrabold uppercase text-blue-700">Layer 2: Reviewer</span>
+                  <p className="font-bold text-slate-900 mt-1 text-xs md:text-sm">Checks Completeness</p>
+                  <p className="text-xs text-slate-600 font-medium">Marketing Officer</p>
                 </div>
                 <div className="p-3 bg-slate-50 border-l-4 border-blue-600 rounded shadow-sm">
-                  <span className="text-[10px] font-bold uppercase text-blue-700">Layer 3: GM</span>
-                  <p className="font-semibold text-slate-900 mt-1">Business Approval</p>
-                  <p className="text-[11px] text-slate-500">General Manager (Karen)</p>
+                  <span className="text-xs font-extrabold uppercase text-blue-700">Layer 3: GM</span>
+                  <p className="font-bold text-slate-900 mt-1 text-xs md:text-sm">Business Approval</p>
+                  <p className="text-xs text-slate-600 font-medium">General Manager (Karen)</p>
                 </div>
                 <div className="p-3 bg-amber-50 border-l-4 border-amber-500 rounded shadow-sm">
                   <span className="text-[10px] font-bold uppercase text-amber-700">Layer 4: DCS</span>
@@ -803,8 +803,8 @@ export default function DashboardHome() {
             <div className="wayfinding-card p-0 overflow-hidden hidden sm:block">
               <div className="p-4 bg-slate-100 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-blue-600" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  <Clock className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-sm md:text-base font-extrabold uppercase tracking-wider text-slate-950">
                     Pending Approval Queue (Role View: {viewAsRole})
                   </h3>
                 </div>
@@ -831,17 +831,17 @@ export default function DashboardHome() {
                         <td>{doc.type}</td>
                         <td>{doc.maker}</td>
                         <td>
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.reviewerStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
                             {doc.reviewerStatus}
                           </span>
                         </td>
                         <td>
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.gmStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
                             {doc.gmStatus}
                           </span>
                         </td>
                         <td>
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${doc.dcsStatus === 'APPROVED' ? 'badge-green' : 'badge-amber'}`}>
                             {doc.dcsStatus}
                           </span>
                         </td>
@@ -849,13 +849,13 @@ export default function DashboardHome() {
                         <td className="text-center space-x-1.5">
                           <button
                             onClick={() => handleApproveDoc(doc.id, doc.qrn)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => handleRejectDoc(doc.id, doc.qrn)}
-                            className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-semibold shadow transition"
+                            className="bg-red-600 hover:bg-red-500 text-white px-3.5 py-1.5 rounded text-xs md:text-sm font-bold shadow transition"
                           >
                             Reject
                           </button>
@@ -935,11 +935,11 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <Package className="w-4 h-4 text-blue-600" />
+                <h2 className="text-base md:text-lg font-extrabold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <Package className="w-5 h-5 text-blue-600" />
                   Multi-Location Inventory Management (QC & Pampanga)
                 </h2>
-                <p className="text-xs text-slate-500">Live Stock Items: {inventoryList.length} SKUs maintained</p>
+                <p className="text-xs md:text-sm text-slate-600 font-medium">Live Stock Items: {inventoryList.length} SKUs maintained</p>
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -947,7 +947,7 @@ export default function DashboardHome() {
                   placeholder="Filter inventory SKU or name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border border-slate-300 text-slate-900 rounded px-3 py-1.5 text-xs focus:outline-none focus:border-blue-500"
+                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-xs"
                 />
                 <button
                   onClick={() => {
@@ -955,14 +955,14 @@ export default function DashboardHome() {
                     showNotification('Downloaded Inventory CSV Report!');
                     addAuditLog('Exported Inventory CSV Report');
                   }}
-                  className="btn-danger-red text-xs"
+                  className="btn-danger-red text-xs md:text-sm font-bold"
                 >
                   <Download className="w-4 h-4" />
                   <span>Export CSV</span>
                 </button>
                 <button
                   onClick={() => setIsAddStockOpen(true)}
-                  className="btn-primary-blue text-xs"
+                  className="btn-primary-blue text-xs md:text-sm font-bold"
                 >
                   <Plus className="w-4 h-4" />
                   Add Stock Batch
@@ -993,13 +993,13 @@ export default function DashboardHome() {
                         <td className="font-mono font-bold text-blue-700">{item.sku}</td>
                         <td className="font-medium">{item.description}</td>
                         <td>
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${item.location === 'Quezon City' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${item.location === 'Quezon City' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
                             {item.location}
                           </span>
                         </td>
                         <td className="font-mono text-slate-600">{item.lotNumber}</td>
                         <td>
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${item.status === 'NEAR_EXPIRY' ? 'badge-amber' : 'badge-green'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${item.status === 'NEAR_EXPIRY' ? 'badge-amber' : 'badge-green'}`}>
                             {item.expiryDate} {item.status === 'NEAR_EXPIRY' && '(Near Expiry)'}
                           </span>
                         </td>
@@ -1009,10 +1009,10 @@ export default function DashboardHome() {
                         <td className="text-center">
                           <button
                             onClick={() => handleDeleteStock(item.id, item.sku)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                             title="Remove Stock Entry"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4.5 h-4.5" />
                           </button>
                         </td>
                       </tr>
@@ -1079,23 +1079,23 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-blue-600" />
+                <h2 className="text-base md:text-lg font-extrabold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-600" />
                   Sales Quotation Generator & 3-Day Stock Reservation Engine
                 </h2>
-                <p className="text-xs text-slate-500">Flow: Client RFQ → Sales → Marketing (Reviewer) → GM → DCS</p>
+                <p className="text-xs md:text-sm text-slate-600 font-medium">Flow: Client RFQ → Sales → Marketing (Reviewer) → GM → DCS</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsAddQuotationItemOpen(true)}
-                  className="btn-primary-blue text-xs"
+                  className="btn-primary-blue text-xs md:text-sm font-bold"
                 >
                   <Plus className="w-4 h-4" />
                   Add Quotation Line
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="btn-danger-red text-xs"
+                  className="btn-danger-red text-xs md:text-sm font-bold"
                 >
                   <Download className="w-4 h-4" />
                   Print / Export Quotation
@@ -1120,23 +1120,23 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <FileCheck className="w-4 h-4 text-blue-600" />
+                <h2 className="text-base md:text-lg font-extrabold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <FileCheck className="w-5 h-5 text-blue-600" />
                   Statement of Account (SOA) Module
                 </h2>
-                <p className="text-xs text-slate-500">DR # Tracking, Client Aging, and Running Balances</p>
+                <p className="text-xs md:text-sm text-slate-600 font-medium">DR # Tracking, Client Aging, and Running Balances</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsAddSOARowOpen(true)}
-                  className="btn-primary-blue text-xs"
+                  className="btn-primary-blue text-xs md:text-sm font-bold"
                 >
                   <Plus className="w-4 h-4" />
                   Add Invoice Row
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="btn-danger-red text-xs"
+                  className="btn-danger-red text-xs md:text-sm font-bold"
                 >
                   <Download className="w-4 h-4" />
                   Print / Export SOA
@@ -1161,23 +1161,23 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-blue-600" />
+                <h2 className="text-base md:text-lg font-extrabold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-600" />
                   Purchasing & Receiving Report (3-Way Match & Fraud Control)
                 </h2>
-                <p className="text-xs text-slate-500">Live Purchase Orders: {poList.length} POs tracked across vendors</p>
+                <p className="text-xs md:text-sm text-slate-600 font-medium">Live Purchase Orders: {poList.length} POs tracked across vendors</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsPOReceivingModalOpen(true)}
-                  className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 shadow"
+                  className="bg-amber-600 hover:bg-amber-500 text-white text-xs md:text-sm font-bold px-3.5 py-2 rounded-md flex items-center gap-1.5 shadow transition"
                 >
                   <ShieldAlert className="w-4 h-4" />
                   Test PO Over-Receiving Rule
                 </button>
                 <button
                   onClick={() => setIsAddPOOpen(true)}
-                  className="btn-primary-blue text-xs"
+                  className="btn-primary-blue text-xs md:text-sm font-bold"
                 >
                   <Plus className="w-4 h-4" />
                   Create Purchase Order
@@ -1186,11 +1186,11 @@ export default function DashboardHome() {
             </div>
 
             {/* Hard Block Information Callout */}
-            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-xs text-amber-900 flex items-start gap-3">
+            <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-xs md:text-sm text-amber-950 flex items-start gap-3 shadow-xs">
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <p className="font-bold uppercase">3-Way Match Fraud Control Enforced:</p>
-                <p>Receiving is strictly hard-blocked beyond approved Purchase Order quantities (`PO = Goods Receipt = Vendor Invoice`). Any excess quantity requires a formal, approved PO revision.</p>
+                <p className="font-extrabold uppercase">3-Way Match Fraud Control Enforced:</p>
+                <p className="font-medium">Receiving is strictly hard-blocked beyond approved Purchase Order quantities (`PO = Goods Receipt = Vendor Invoice`). Any excess quantity requires a formal, approved PO revision.</p>
               </div>
             </div>
 
@@ -1221,17 +1221,17 @@ export default function DashboardHome() {
                         <td className="font-mono text-slate-600">{po.invoiceRef}</td>
                         <td className="text-right font-bold text-slate-900">₱{po.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         <td className="text-center">
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
                             {po.status === 'VERIFIED_3WAY' ? '✓ 3-Way Verified' : '⏳ Pending Receiving'}
                           </span>
                         </td>
                         <td className="text-center">
                           <button
                             onClick={() => handleDeletePO(po.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                             title="Delete Purchase Order"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4.5 h-4.5" />
                           </button>
                         </td>
                       </tr>
@@ -1289,15 +1289,15 @@ export default function DashboardHome() {
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-blue-600" />
+                <h2 className="text-base md:text-lg font-extrabold text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-blue-600" />
                   Request for Payment (RFP) - Non-PO Expense Vouchers
                 </h2>
-                <p className="text-xs text-slate-500">Live Vouchers: {rfpList.length} Non-PO expenses routed for approval</p>
+                <p className="text-xs md:text-sm text-slate-600 font-medium">Live Vouchers: {rfpList.length} Non-PO expenses routed for approval</p>
               </div>
               <button
                 onClick={() => setIsAddRFPOpen(true)}
-                className="btn-primary-blue text-xs"
+                className="btn-primary-blue text-xs md:text-sm font-bold"
               >
                 <Plus className="w-4 h-4" />
                 Create Payment Voucher (RFP)
@@ -1328,17 +1328,17 @@ export default function DashboardHome() {
                         <td className="text-slate-700">{rfp.description}</td>
                         <td className="text-right font-bold text-slate-900">₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                         <td className="text-center">
-                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${rfp.status === 'APPROVED_DCS' ? 'badge-green' : 'badge-amber'}`}>
+                          <span className={`px-2.5 py-1 rounded text-xs md:text-sm font-bold ${rfp.status === 'APPROVED_DCS' ? 'badge-green' : 'badge-amber'}`}>
                             {rfp.status === 'APPROVED_DCS' ? 'Approved by DCS' : 'Pending Approval'}
                           </span>
                         </td>
                         <td className="text-center">
                           <button
                             onClick={() => handleDeleteRFP(rfp.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                             title="Delete Payment Voucher"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4.5 h-4.5" />
                           </button>
                         </td>
                       </tr>
