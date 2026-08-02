@@ -60,7 +60,11 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 ### 6. Command Palette Navigation (`⌘K`)
 - **Power-User Navigation (`⌘K` / `Ctrl+K`):** Search any module, SKU, or document to jump instantly.
 
-### 7. Mobile Radical Reachability Architecture
+### 7. 30-Minute Automated Demo State Reset System
+- **Automated Demo Reset:** Every 30 minutes, demo data automatically resets to clean default seed state.
+- **Live Countdown Header Badge:** Visual countdown timer in top shell header with instant "Reset Data" manual override.
+
+### 8. Mobile Radical Reachability Architecture
 - **Persistent Mobile Bottom Bar:** Optimized for single-thumb mobile operation (`<768px`).
 - **Slide-Over Navigation Drawer:** Full menu access on mobile screens.
 - **Mobile Table-to-Card View:** Data tables automatically transform into spacious mobile cards on phone viewports.
@@ -68,29 +72,31 @@ Matching `photo_2026-08-01_23-55-07.jpg`:
 
 ---
 
-## 🛠️ Local Development & Demo Deployment
+## 🛠️ Podman Ephemeral Container Build & VPS Deployment
+
+Deploying to target VPS (`jk@216.75.75.136:22` at `/var/www/accustanda-bridge`) with Bunny CDN cache purging:
 
 ```bash
-# 1. Install Dependencies
+# 1. Install Dependencies locally
 npm install
 
-# 2. Run Next.js Development Server
-npm run dev
+# 2. Ephemeral Podman Container Build & Initial Remote VPS Installation
+npm run deploy:install
+# (Runs Podman container build with --rm self-destruction, creates remote directories, syncs via rsync SSH, and triggers bunny-purge)
 
-# 3. Build Production Static Export (out/)
-npm run build
-
-# 4. Launch Sandboxed Static Server (http://127.0.0.1:3000)
-node server.js
+# 3. Ephemeral Podman Container Build & Fast Remote Update
+npm run deploy:update
+# (Re-builds static export inside container, syncs delta via rsync, and purges Bunny CDN cache)
 ```
 
 ---
 
 ## 🛰️ Subpath Deployment URLs
 
-- **Demo Server:** `https://delegateops.business/accustanda/demo`
-- **Production Server:** `https://delegateops.business/accustanda`
-- **Git Repository:** `git@github.com:ItsAdventureTime/bridge-accustanda.git` (main branch)
+- **VPS Server Host:** `jk@216.75.75.136` (Port 22)
+- **Deployment Directory:** `/var/www/accustanda-bridge`
+- **CDN Purge Utility:** `bunny-purge`
+- **Git Remote:** `git@github.com:ItsAdventureTime/bridge-accustanda.git` (main branch)
 
 ---
 

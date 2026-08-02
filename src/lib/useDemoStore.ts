@@ -198,7 +198,7 @@ export const DEFAULT_AUDIT_LOGS = [
   { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037' },
 ];
 
-const RESET_INTERVAL_MS = 15 * 60 * 1000; // 15 Minutes
+const RESET_INTERVAL_MS = 30 * 60 * 1000; // 30 Minutes
 
 export function useDemoStore() {
   const [lastResetTime, setLastResetTime] = useState<number>(() => {
@@ -209,7 +209,7 @@ export function useDemoStore() {
     return Date.now();
   });
 
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(15 * 60);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(30 * 60);
 
   // Initialize countdown timer
   useEffect(() => {

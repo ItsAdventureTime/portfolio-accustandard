@@ -561,7 +561,7 @@ export default function DashboardHome() {
             </select>
           </div>
 
-          {/* 15-Minute Auto-Reset Countdown Badge */}
+          {/* 30-Minute Auto-Reset Countdown Badge */}
           <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-300 px-2.5 py-1.5 rounded text-xs text-amber-900 font-medium">
             <RefreshCcw className="w-3.5 h-3.5 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
             <span className="hidden xl:inline">Auto-Reset:</span>
