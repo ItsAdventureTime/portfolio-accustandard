@@ -12,9 +12,15 @@ The **Accustanda Rx D Enterprise ERP Dashboard** is a COSO control-first, multi-
 
 ---
 
-## 🎨 2026 Anti-Glare Soft Slate Design System
+## 🎨 2026 Anti-Glare Soft Slate & IBM Carbon v11 Decluttered Design System
 
-In accordance with 2026 enterprise digital ergonomics guidelines, the application features an **Anti-Glare Soft Slate Middle-Ground Palette** (`#e2e8f0` canvas, `#ffffff` card containers, `#cbd5e1` borders, and `#1e293b` dark slate charcoal text). This design absorbs screen glare, reduces eye strain during long operational shifts, and keeps high-contrast visual hierarchy for desktop and mobile devices.
+In accordance with **IBM Carbon Design System (v11)** and 2026 enterprise digital ergonomics guidelines, the application features an **Anti-Glare Soft Slate Palette** (`#e2e8f0` canvas, `#ffffff` card containers, `#cbd5e1` borders, and `#1e293b` dark slate text).
+
+### Core IBM Carbon Decluttering Principles Applied:
+- **Streamlined Visual Hierarchy:** Top priority metrics occupy the top 4 crisp IBM Carbon tiles (Managed Inventory, Pending Approvals, SOA Balance, QBO Live Sync).
+- **Progressive Disclosure:** Non-essential background noise is hidden behind clean interactive actions and modal drawers.
+- **Cognitive Load Reduction:** Purposeful white space and subtle border strokes prevent visual overwhelm during long operational shifts.
+- **Predictable Wayfinding Navigation:** Single-tier header lockup paired with contextual breadcrumbs and `⌘K` command palette search.
 
 ### Brand Lockup Specifications
 Matching `photo_2026-08-01_23-55-07.jpg`:

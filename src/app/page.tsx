@@ -604,92 +604,61 @@ export default function DashboardHome() {
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Metric Cards */}
+            {/* IBM Carbon v11 High-Contrast Metric Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="wayfinding-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Quezon City Warehouse</span>
+                  <span className="font-semibold uppercase tracking-wider text-slate-600">Managed Inventory</span>
                   <Box className="w-4 h-4 text-blue-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-slate-900">
-                  {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.onHand, 0)}{' '}
-                  <span className="text-xs font-normal text-slate-500">Units</span>
+                  {inventoryList.reduce((acc, i) => acc + i.onHand, 0)}{' '}
+                  <span className="text-xs font-semibold text-slate-500">Units</span>
                 </p>
-                <div className="my-2 h-6 w-full">
-                  <svg className="w-full h-full stroke-blue-600 fill-none stroke-2" viewBox="0 0 100 25">
-                    <path d="M0,20 Q25,5 50,15 T100,5" />
-                  </svg>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '75%' }}></div>
-                </div>
-                <div className="mt-2.5 flex justify-between text-[11px]">
-                  <span className="text-emerald-700 font-semibold">
-                    Available: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + (i.onHand - i.reserved), 0)}
-                  </span>
-                  <span className="text-amber-700 font-semibold">
-                    Reserved: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.reserved, 0)}
-                  </span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
+                  <span className="text-blue-700 font-semibold">QC: {inventoryList.filter((i) => i.location === 'Quezon City').reduce((acc, i) => acc + i.onHand, 0)}</span>
+                  <span className="text-purple-700 font-semibold">Pampanga: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.onHand, 0)}</span>
                 </div>
               </div>
 
-              <div className="wayfinding-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Pampanga Warehouse</span>
-                  <Box className="w-4 h-4 text-blue-600" />
-                </div>
-                <p className="text-3xl font-extrabold text-slate-900">
-                  {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.onHand, 0)}{' '}
-                  <span className="text-xs font-normal text-slate-500">Units</span>
-                </p>
-                <div className="my-2 h-6 w-full">
-                  <svg className="w-full h-full stroke-emerald-600 fill-none stroke-2" viewBox="0 0 100 25">
-                    <path d="M0,15 Q25,20 50,10 T100,2" />
-                  </svg>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '84%' }}></div>
-                </div>
-                <div className="mt-2.5 flex justify-between text-[11px]">
-                  <span className="text-emerald-700 font-semibold">
-                    Available: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + (i.onHand - i.reserved), 0)}
-                  </span>
-                  <span className="text-amber-700 font-semibold">
-                    Reserved: {inventoryList.filter((i) => i.location === 'Pampanga').reduce((acc, i) => acc + i.reserved, 0)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="wayfinding-card p-5 relative overflow-hidden">
-                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Pending Approvals</span>
+                  <span className="font-semibold uppercase tracking-wider text-amber-700 font-bold">Pending Approvals</span>
                   <Clock className="w-4 h-4 text-amber-600" />
                 </div>
                 <p className="text-3xl font-extrabold text-amber-600">
-                  {approvalsList.length} <span className="text-xs font-normal text-amber-700">Docs</span>
+                  {approvalsList.length} <span className="text-xs font-semibold text-amber-700">Requests</span>
                 </p>
-                <div className="my-2 text-[11px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
-                  <span>Simulating Role: <strong className="text-slate-900">{viewAsRole}</strong></span>
-                </div>
-                <div className="mt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                  <span>COSO 4-Layer Approval Matrix</span>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
+                  <span className="text-slate-600 font-medium">Role: <strong className="text-slate-900">{viewAsRole}</strong></span>
+                  <span className="text-emerald-700 font-bold">COSO 4-Layer</span>
                 </div>
               </div>
 
-              <div className="wayfinding-card p-5 relative overflow-hidden">
+              <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
                 <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
-                  <span className="font-semibold uppercase tracking-wider">Gross Margin Avg</span>
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <span className="font-semibold uppercase tracking-wider text-slate-600">Active SOA Balance</span>
+                  <FileCheck className="w-4 h-4 text-blue-600" />
                 </div>
-                <p className="text-3xl font-extrabold text-emerald-700">34.8%</p>
-                <div className="my-2 h-6 w-full">
-                  <svg className="w-full h-full stroke-emerald-600 fill-none stroke-2" viewBox="0 0 100 25">
-                    <path d="M0,22 Q25,18 50,8 T100,2" />
-                  </svg>
+                <p className="text-3xl font-extrabold text-slate-900">₱32,208.00</p>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
+                  <span className="text-slate-600 font-medium">Client: Gatchalian Med Lab</span>
+                  <span className="text-emerald-700 font-bold">Current</span>
                 </div>
-                <div className="mt-1 text-[11px] text-slate-500">
-                  <span>Batch FEFO cost basis tracking</span>
+              </div>
+
+              <div className="wayfinding-card p-5 relative overflow-hidden bg-white">
+                <div className="flex justify-between items-center text-slate-500 text-xs mb-2">
+                  <span className="font-semibold uppercase tracking-wider text-slate-600">Integration Hub</span>
+                  <Server className="w-4 h-4 text-emerald-600" />
+                </div>
+                <p className="text-2xl font-extrabold text-emerald-700 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>QBO API Live</span>
+                </p>
+                <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-between text-[11px]">
+                  <span className="text-slate-500">Auto FEFO Sync</span>
+                  <span className="text-emerald-700 font-bold">Connected</span>
                 </div>
               </div>
             </div>
