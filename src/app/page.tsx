@@ -36,16 +36,19 @@ import {
   X,
   Compass,
   Home,
-  Menu
+  Menu,
+  Printer
 } from 'lucide-react';
 import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
+import { ExportModal } from '@/components/modals/ExportModal';
+import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
 import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_PO_LIST, DEFAULT_RFP_LIST, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
-import { exportToCSV } from '@/lib/exportUtils';
+import { exportToCSV, exportToExcel, printDocumentElement } from '@/lib/exportUtils';
 
 // Types for Simulator Engine
 interface InventoryItem {
@@ -123,6 +126,18 @@ export default function DashboardHome() {
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
   const [isAddPOOpen, setIsAddPOOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
+
+  // Multi-Format Export & Document Print State
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportModalTitle, setExportModalTitle] = useState('Report');
+  const [exportModalFilename, setExportModalFilename] = useState('accustanda_report');
+  const [exportModalData, setExportModalData] = useState<object[]>([]);
+  const [exportElementId, setExportElementId] = useState<string | undefined>(undefined);
+
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [printModalTitle, setPrintModalTitle] = useState('Document');
+  const [printModalElementId, setPrintModalElementId] = useState('printable-doc');
+  const [printModalContent, setPrintModalContent] = useState<React.ReactNode>(null);
 
   // Interactive Lists
   const [inventoryList, setInventoryList] = useState<InventoryItem[]>(DEFAULT_INVENTORY as any);
@@ -1164,21 +1179,21 @@ export default function DashboardHome() {
                   placeholder="Filter inventory SKU or name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-xs w-full sm:w-auto"
-                />
-                <button
+                  className="bg-white border border-slate-300 text-slate-900 font-medium rounded-md px-3.5 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 sh                <button
                   onClick={() => {
                     if (!canExportInventory) {
                       showNotification(`⛔ COSO SoD Violation: Role [${viewAsRole}] is not authorized to export system inventory reports!`);
                       addAuditLog(`BLOCKED CSV Export under role [${viewAsRole}]`);
                       return;
                     }
-                    exportToCSV('accustanda_inventory_report.csv', inventoryList);
-                    showNotification('Downloaded Inventory CSV Report!');
-                    addAuditLog('Exported Inventory CSV Report');
+                    setExportModalTitle('Multi-Location Inventory Report');
+                    setExportModalFilename('accustanda_inventory_report');
+                    setExportModalData(inventoryList);
+                    setExportElementId(undefined);
+                    setIsExportModalOpen(true);
                   }}
                   disabled={!canExportInventory}
-                  title={canExportInventory ? 'Export CSV Report' : `Role [${viewAsRole}] is not authorized to export raw inventory reports`}
+                  title={canExportInventory ? 'Export Inventory Data (CSV, Excel, PDF)' : `Role [${viewAsRole}] is not authorized to export raw inventory reports`}
                   className={`text-xs md:text-sm font-bold flex items-center gap-1.5 ${
                     canExportInventory
                       ? 'btn-danger-red cursor-pointer'
@@ -1186,7 +1201,7 @@ export default function DashboardHome() {
                   }`}
                 >
                   <Download className="w-4 h-4" />
-                  <span>Export CSV</span>
+                  <span>Export Report...</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1333,7 +1348,7 @@ export default function DashboardHome() {
                 </h2>
                 <p className="text-xs md:text-sm text-slate-600 font-medium">Flow: Client RFQ → Sales → Marketing (Reviewer) → GM → DCS</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => {
                     if (!canEditQuotation) {
@@ -1352,14 +1367,42 @@ export default function DashboardHome() {
                   }`}
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Add Quotation Line</span>
+                  <span>Add Line Item</span>
                 </button>
                 <button
-                  onClick={() => window.print()}
-                  className="btn-danger-red text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    setPrintModalTitle(`Sales Quotation ${quotationData.qrn}`);
+                    setPrintModalElementId('printable-quotation-target');
+                    setPrintModalContent(
+                      <QuotationPDF data={quotationData} onRemoveItem={() => {}} isEditable={false} />
+                    );
+                    setIsPrintModalOpen(true);
+                  }}
+                  className="btn-primary-blue text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Quotation</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setExportModalTitle(`Sales Quotation (${quotationData.qrn})`);
+                    setExportModalFilename(`accustanda_quotation_${quotationData.qrn}`);
+                    setExportModalData(
+                      quotationData.items.map((item) => ({
+                        QRN: quotationData.qrn,
+                        Client: quotationData.clientOrganization,
+                        ItemDescription: item.description,
+                        Packaging: item.packaging,
+                        UnitPricePHP: item.unitPrice,
+                      }))
+                    );
+                    setExportElementId('printable-quotation-target');
+                    setIsExportModalOpen(true);
+                  }}
+                  className="btn-danger-red text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Print / Export Quotation</span>
+                  <span>Export Quotation...</span>
                 </button>
               </div>
             </div>
@@ -1371,7 +1414,9 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <QuotationPDF data={quotationData} onRemoveItem={handleRemoveQuotationItem} isEditable={canEditQuotation} />
+              <div id="printable-quotation-target">
+                <QuotationPDF data={quotationData} onRemoveItem={handleRemoveQuotationItem} isEditable={canEditQuotation} />
+              </div>
             </div>
           </div>
         )}
@@ -1387,7 +1432,7 @@ export default function DashboardHome() {
                 </h2>
                 <p className="text-xs md:text-sm text-slate-600 font-medium">DR # Tracking, Client Aging, and Running Balances</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   onClick={() => {
                     if (!canEditSOA) {
@@ -1409,11 +1454,44 @@ export default function DashboardHome() {
                   <span>Add Invoice Row</span>
                 </button>
                 <button
-                  onClick={() => window.print()}
-                  className="btn-danger-red text-xs md:text-sm font-bold"
+                  onClick={() => {
+                    setPrintModalTitle(`Statement of Account - ${soaData.clientName}`);
+                    setPrintModalElementId('printable-soa-target');
+                    setPrintModalContent(
+                      <StatementOfAccountPDF data={soaData} onDeleteRow={() => {}} isEditable={false} />
+                    );
+                    setIsPrintModalOpen(true);
+                  }}
+                  className="btn-primary-blue text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print SOA</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setExportModalTitle(`Statement of Account (${soaData.clientName})`);
+                    setExportModalFilename('accustanda_statement_of_account');
+                    setExportModalData(
+                      soaData.rows.map((r) => ({
+                        Client: soaData.clientName,
+                        SalesInvoiceNo: r.salesInvoiceNo,
+                        DRNo: r.drNo,
+                        InvoiceDate: r.siDate,
+                        DueDate: r.dueDate,
+                        AgingDays: r.ageDays,
+                        InvoiceAmount: r.invoiceAmount,
+                        AmountPaid: r.amountPaid,
+                        Balance: r.invoiceBalance,
+                        RunningBalance: r.runningBalance,
+                      }))
+                    );
+                    setExportElementId('printable-soa-target');
+                    setIsExportModalOpen(true);
+                  }}
+                  className="btn-danger-red text-xs md:text-sm font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Download className="w-4 h-4" />
-                  <span>Print / Export SOA</span>
+                  <span>Export SOA...</span>
                 </button>
               </div>
             </div>
@@ -1425,7 +1503,12 @@ export default function DashboardHome() {
             </div>
 
             <div className="bg-slate-300 p-2 sm:p-6 rounded border border-slate-400 overflow-x-auto shadow-sm flex justify-start md:justify-center">
-              <StatementOfAccountPDF data={soaData} onRemoveRow={handleDeleteSOARow} isEditable={canEditSOA} />
+              <div id="printable-soa-target">
+                <StatementOfAccountPDF data={soaData} onDeleteRow={handleDeleteSOARow} isEditable={canEditSOA} />
+              </div>
+            </div>
+          </div>
+        )}} isEditable={canEditSOA} />
             </div>
           </div>
         )}
@@ -2241,9 +2324,32 @@ export default function DashboardHome() {
           className="flex flex-col items-center py-1 px-3 rounded-lg text-slate-700 hover:text-blue-900"
         >
           <Menu className="w-5 h-5 mb-0.5 text-blue-900" />
-          <span>More</span>
         </button>
       </div>
+
+      {/* Multi-Format Export Selector Modal */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        title={exportModalTitle}
+        filename={exportModalFilename}
+        data={exportModalData}
+        printableElementId={exportElementId}
+        onExportSuccess={(format) => {
+          showNotification(`Exported ${exportModalTitle} as ${format}!`);
+          addAuditLog(`Exported ${exportModalTitle} as ${format}`);
+        }}
+      />
+
+      {/* High-Fidelity A4 Document Print Preview Modal */}
+      <DocumentPrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        title={printModalTitle}
+        elementId={printModalElementId}
+      >
+        {printModalContent}
+      </DocumentPrintModal>
     </div>
   );
 }
