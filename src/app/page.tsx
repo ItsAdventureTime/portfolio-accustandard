@@ -43,7 +43,7 @@ import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { QuotationPDF, QuotationData } from '@/components/documents/QuotationPDF';
 import { StatementOfAccountPDF, SOAData } from '@/components/documents/StatementOfAccountPDF';
-import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
+import { useDemoStore, DEFAULT_INVENTORY, DEFAULT_APPROVALS, DEFAULT_SOA_ROWS, DEFAULT_PO_LIST, DEFAULT_RFP_LIST, DEFAULT_AUDIT_LOGS } from '@/lib/useDemoStore';
 import { exportToCSV } from '@/lib/exportUtils';
 
 // Types for Simulator Engine
@@ -84,6 +84,28 @@ interface SOARowItem {
   runningBalance: number;
 }
 
+interface POItem {
+  id: string;
+  poNumber: string;
+  vendorName: string;
+  itemDescription: string;
+  poQty: number;
+  rrQtyReceived: number;
+  invoiceRef: string;
+  totalAmount: number;
+  status: 'VERIFIED_3WAY' | 'PENDING_RECEIVING' | 'REJECTED';
+}
+
+interface RFPItem {
+  id: string;
+  rfpNumber: string;
+  payeeName: string;
+  glAccount: string;
+  description: string;
+  amount: number;
+  status: 'APPROVED_DCS' | 'PENDING_GM' | 'PENDING_MKTG' | 'REJECTED';
+}
+
 export default function DashboardHome() {
   const { secondsRemaining, formatTimer, resetDemoData } = useDemoStore();
   const [activeTab, setActiveTab] = useState<'overview' | 'inventory' | 'quotations' | 'soa' | 'purchasing' | 'rfp' | 'admin'>('overview');
@@ -98,10 +120,14 @@ export default function DashboardHome() {
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
   const [isAddSOARowOpen, setIsAddSOARowOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
+  const [isAddPOOpen, setIsAddPOOpen] = useState(false);
+  const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
 
   // Interactive Lists
   const [inventoryList, setInventoryList] = useState<InventoryItem[]>(DEFAULT_INVENTORY as any);
   const [approvalsList, setApprovalsList] = useState<ApprovalDoc[]>(DEFAULT_APPROVALS as any);
+  const [poList, setPoList] = useState<POItem[]>(DEFAULT_PO_LIST as any);
+  const [rfpList, setRfpList] = useState<RFPItem[]>(DEFAULT_RFP_LIST as any);
   const [soaData, setSoaData] = useState<SOAData>({
     statementDate: '10-Jul-26',
     clientName: 'GATCHALIAN MEDICAL LABORATORY',
@@ -118,6 +144,8 @@ export default function DashboardHome() {
     resetDemoData();
     setInventoryList(DEFAULT_INVENTORY as any);
     setApprovalsList(DEFAULT_APPROVALS as any);
+    setPoList(DEFAULT_PO_LIST as any);
+    setRfpList(DEFAULT_RFP_LIST as any);
     setSoaData((prev) => ({ ...prev, rows: DEFAULT_SOA_ROWS as any }));
     setAuditLogs(DEFAULT_AUDIT_LOGS);
     setToastMessage('Demo state restored to pristine default data!');
@@ -157,7 +185,91 @@ export default function DashboardHome() {
     signatoryTitle: 'Product Marketing Manager',
   });
 
-  // New Stock Form Handler
+  // New PO Form Handler
+  const [newVendorName, setNewVendorName] = useState('');
+  const [newPoItemDesc, setNewPoItemDesc] = useState('');
+  const [newPoQty, setNewPoQty] = useState(100);
+  const [newPoAmount, setNewPoAmount] = useState(140000);
+
+  const handleAddPO = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVendorName || !newPoItemDesc) return;
+    const num = Math.floor(100 + Math.random() * 900);
+    const poNum = `PO-2026-0${num}`;
+    const amt = Number(newPoAmount);
+    const newPO: POItem = {
+      id: `po-${Date.now()}`,
+      poNumber: poNum,
+      vendorName: newVendorName,
+      itemDescription: newPoItemDesc,
+      poQty: Number(newPoQty),
+      rrQtyReceived: 0,
+      invoiceRef: 'Awaiting',
+      totalAmount: amt,
+      status: 'PENDING_RECEIVING',
+    };
+    setPoList((prev) => [newPO, ...prev]);
+
+    // Also route to approvals list for COSO pipeline
+    const newApproval: ApprovalDoc = {
+      id: `app-po-${Date.now()}`,
+      qrn: poNum,
+      type: 'Purchase Order',
+      maker: 'Purchasing Officer',
+      reviewerStatus: 'APPROVED',
+      gmStatus: 'PENDING',
+      dcsStatus: 'AWAITING',
+      totalAmount: amt,
+    };
+    setApprovalsList((prev) => [newApproval, ...prev]);
+    addAuditLog(`Created Purchase Order ${poNum} for ${newVendorName} (₱${amt.toLocaleString()})`);
+    showNotification(`Created ${poNum} and routed for GM Approval!`);
+    setIsAddPOOpen(false);
+    setNewVendorName('');
+    setNewPoItemDesc('');
+  };
+
+  // New RFP Form Handler
+  const [newPayeeName, setNewPayeeName] = useState('');
+  const [newGlAccount, setNewGlAccount] = useState('6100 - Freight & Delivery');
+  const [newRfpDesc, setNewRfpDesc] = useState('');
+  const [newRfpAmount, setNewRfpAmount] = useState(15000);
+
+  const handleAddRFP = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPayeeName || !newRfpDesc) return;
+    const num = Math.floor(100 + Math.random() * 900);
+    const rfpNum = `RFP-2026-0${num}`;
+    const amt = Number(newRfpAmount);
+    const newRFP: RFPItem = {
+      id: `rfp-${Date.now()}`,
+      rfpNumber: rfpNum,
+      payeeName: newPayeeName,
+      glAccount: newGlAccount,
+      description: newRfpDesc,
+      amount: amt,
+      status: 'PENDING_GM',
+    };
+    setRfpList((prev) => [newRFP, ...prev]);
+
+    // Route to approvals queue
+    const newApproval: ApprovalDoc = {
+      id: `app-rfp-${Date.now()}`,
+      qrn: rfpNum,
+      type: 'Request for Payment',
+      maker: 'Bookkeeper (Aila)',
+      reviewerStatus: 'APPROVED',
+      gmStatus: 'PENDING',
+      dcsStatus: 'AWAITING',
+      totalAmount: amt,
+    };
+    setApprovalsList((prev) => [newApproval, ...prev]);
+    addAuditLog(`Created RFP Expense ${rfpNum} for ${newPayeeName} (₱${amt.toLocaleString()})`);
+    showNotification(`Created ${rfpNum} and routed for Approval!`);
+    setIsAddRFPOpen(false);
+    setNewPayeeName('');
+    setNewRfpDesc('');
+  };
   const [newStockSku, setNewStockSku] = useState('');
   const [newStockDesc, setNewStockDesc] = useState('');
   const [newStockLoc, setNewStockLoc] = useState<'Quezon City' | 'Pampanga'>('Quezon City');
@@ -964,41 +1076,197 @@ export default function DashboardHome() {
           </div>
         )}
 
-        {/* TAB 5: PURCHASING */}
+        {/* TAB 5: PURCHASING & 3-WAY MATCH */}
         {activeTab === 'purchasing' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-600" />
-                Purchasing & Receiving Report (3-Way Match & Fraud Control)
-              </h2>
-              <button
-                onClick={() => setIsPOReceivingModalOpen(true)}
-                className="btn-primary-blue text-xs"
-              >
-                <Plus className="w-4 h-4" />
-                Test PO Receiving Rule
-              </button>
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  Purchasing & Receiving Report (3-Way Match & Fraud Control)
+                </h2>
+                <p className="text-xs text-slate-500">Live Purchase Orders: {poList.length} POs tracked across vendors</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsPOReceivingModalOpen(true)}
+                  className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3 py-2 rounded flex items-center gap-1.5 shadow"
+                >
+                  <ShieldAlert className="w-4 h-4" />
+                  Test PO Over-Receiving Rule
+                </button>
+                <button
+                  onClick={() => setIsAddPOOpen(true)}
+                  className="btn-primary-blue text-xs"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Purchase Order
+                </button>
+              </div>
             </div>
 
+            {/* Hard Block Information Callout */}
             <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded text-xs text-amber-900 flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <p className="font-bold uppercase">PO Over-Receiving Rule Enforced:</p>
-                <p>Receiving is strictly hard-blocked beyond approved Purchase Order quantities. Any excess quantity requires a formal, approved PO revision.</p>
+                <p className="font-bold uppercase">3-Way Match Fraud Control Enforced:</p>
+                <p>Receiving is strictly hard-blocked beyond approved Purchase Order quantities (`PO = Goods Receipt = Vendor Invoice`). Any excess quantity requires a formal, approved PO revision.</p>
               </div>
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="wayfinding-card p-0 overflow-hidden hidden sm:block">
+              <div className="table-responsive-wrapper">
+                <table className="wayfinding-grid">
+                  <thead>
+                    <tr>
+                      <th>PO Ref Number</th>
+                      <th>Vendor Name</th>
+                      <th>Item Ordered</th>
+                      <th className="text-right">PO Qty</th>
+                      <th className="text-right">RR Received</th>
+                      <th>Invoice Ref</th>
+                      <th className="text-right">Total Amount</th>
+                      <th className="text-center">3-Way Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {poList.map((po) => (
+                      <tr key={po.id}>
+                        <td className="font-mono font-bold text-blue-700">{po.poNumber}</td>
+                        <td className="font-medium">{po.vendorName}</td>
+                        <td className="text-slate-800">{po.itemDescription}</td>
+                        <td className="text-right font-bold text-slate-900">{po.poQty}</td>
+                        <td className="text-right font-bold text-emerald-700">{po.rrQtyReceived}</td>
+                        <td className="font-mono text-slate-600">{po.invoiceRef}</td>
+                        <td className="text-right font-bold text-slate-900">₱{po.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td className="text-center">
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
+                            {po.status === 'VERIFIED_3WAY' ? '✓ 3-Way Verified' : '⏳ Pending Receiving'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile View: Stacked PO Cards */}
+            <div className="space-y-3 sm:hidden">
+              {poList.map((po) => (
+                <div key={po.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-blue-600">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono font-extrabold text-blue-700 text-sm block">{po.poNumber}</span>
+                      <h4 className="font-bold text-slate-900 text-xs mt-0.5">{po.vendorName}</h4>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${po.status === 'VERIFIED_3WAY' ? 'badge-green' : 'badge-amber'}`}>
+                      {po.status === 'VERIFIED_3WAY' ? '3-Way Verified' : 'Pending Receiving'}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-700 font-medium bg-slate-50 p-2 rounded border border-slate-200">
+                    Order: <strong className="text-slate-900">{po.itemDescription}</strong>
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">PO vs Received Qty</span>
+                      <span className="font-bold text-slate-900">{po.rrQtyReceived} / {po.poQty} Units</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-500 block">Total Amount</span>
+                      <span className="font-extrabold text-slate-900">₱{po.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* TAB 6: REQUEST FOR PAYMENT */}
+        {/* TAB 6: REQUEST FOR PAYMENT (RFP) */}
         {activeTab === 'rfp' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-blue-600" />
-              Request for Payment (RFP) - Non-PO Expenses
-            </h2>
-            <p className="text-xs text-slate-500">Select GL Account from maintained list & route for approval.</p>
+            <div className="flex flex-wrap justify-between items-center gap-4">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-blue-600" />
+                  Request for Payment (RFP) - Non-PO Expense Vouchers
+                </h2>
+                <p className="text-xs text-slate-500">Live Vouchers: {rfpList.length} Non-PO expenses routed for approval</p>
+              </div>
+              <button
+                onClick={() => setIsAddRFPOpen(true)}
+                className="btn-primary-blue text-xs"
+              >
+                <Plus className="w-4 h-4" />
+                Create Payment Voucher (RFP)
+              </button>
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="wayfinding-card p-0 overflow-hidden hidden sm:block">
+              <div className="table-responsive-wrapper">
+                <table className="wayfinding-grid">
+                  <thead>
+                    <tr>
+                      <th>RFP Ref Number</th>
+                      <th>Payee Name</th>
+                      <th>GL Account Code</th>
+                      <th>Expense Description</th>
+                      <th className="text-right">Amount (₱)</th>
+                      <th className="text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rfpList.map((rfp) => (
+                      <tr key={rfp.id}>
+                        <td className="font-mono font-bold text-blue-700">{rfp.rfpNumber}</td>
+                        <td className="font-medium text-slate-900">{rfp.payeeName}</td>
+                        <td className="font-mono text-purple-700 font-semibold">{rfp.glAccount}</td>
+                        <td className="text-slate-700">{rfp.description}</td>
+                        <td className="text-right font-bold text-slate-900">₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                        <td className="text-center">
+                          <span className={`px-2 py-0.5 rounded text-xs font-semibold ${rfp.status === 'APPROVED_DCS' ? 'badge-green' : 'badge-amber'}`}>
+                            {rfp.status === 'APPROVED_DCS' ? 'Approved by DCS' : 'Pending Approval'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile View: Stacked RFP Cards */}
+            <div className="space-y-3 sm:hidden">
+              {rfpList.map((rfp) => (
+                <div key={rfp.id} className="wayfinding-card p-4 space-y-3 border-l-4 border-l-purple-600">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono font-extrabold text-blue-700 text-sm block">{rfp.rfpNumber}</span>
+                      <h4 className="font-bold text-slate-900 text-xs mt-0.5">{rfp.payeeName}</h4>
+                    </div>
+                    <span className="text-sm font-extrabold text-slate-900">
+                      ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-700 bg-purple-50/60 p-2 rounded border border-purple-200">
+                    <span className="font-mono font-bold text-purple-800 block text-[10px] uppercase">{rfp.glAccount}</span>
+                    <span className="mt-0.5 block">{rfp.description}</span>
+                  </p>
+
+                  <div className="flex justify-between items-center text-xs">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${rfp.status === 'APPROVED_DCS' ? 'badge-green' : 'badge-amber'}`}>
+                      {rfp.status === 'APPROVED_DCS' ? 'Approved by DCS' : 'Pending Approval'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -1173,6 +1441,161 @@ export default function DashboardHome() {
                 </button>
                 <button type="submit" className="btn-primary-blue">
                   Add Invoice Row
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Create Purchase Order (PO) Modal */}
+      {isAddPOOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">Create Purchase Order (PO)</h3>
+              <button onClick={() => setIsAddPOOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddPO} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Supplier / Vendor Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sysmex Philippines Inc."
+                  value={newVendorName}
+                  onChange={(e) => setNewVendorName(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Item Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Automated Blood Chemistry Reagents 100s"
+                  value={newPoItemDesc}
+                  onChange={(e) => setNewPoItemDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">PO Quantity</label>
+                  <input
+                    type="number"
+                    value={newPoQty}
+                    onChange={(e) => setNewPoQty(Number(e.target.value))}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Total Amount (₱)</label>
+                  <input
+                    type="number"
+                    value={newPoAmount}
+                    onChange={(e) => setNewPoAmount(Number(e.target.value))}
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddPOOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-blue">
+                  Route PO for Approval
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 5: Create Request for Payment (RFP) Modal */}
+      {isAddRFPOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 mobile-modal-container">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="text-sm font-bold uppercase text-slate-900">Create Non-PO Payment Voucher (RFP)</h3>
+              <button onClick={() => setIsAddRFPOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddRFP} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Payee / Service Provider Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. LBC Express / Meralco"
+                  value={newPayeeName}
+                  onChange={(e) => setNewPayeeName(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Select GL Account Code</label>
+                <select
+                  value={newGlAccount}
+                  onChange={(e) => setNewGlAccount(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
+                >
+                  <option value="6100 - Freight & Delivery">6100 - Freight & Delivery</option>
+                  <option value="6200 - Utilities Expense">6200 - Utilities Expense</option>
+                  <option value="6300 - Professional & Calibration Fees">6300 - Professional & Calibration Fees</option>
+                  <option value="6400 - Office & Warehouse Supplies">6400 - Office & Warehouse Supplies</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Expense Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Climate control power bill for Pampanga warehouse facility"
+                  value={newRfpDesc}
+                  onChange={(e) => setNewRfpDesc(e.target.value)}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Payment Amount (₱)</label>
+                <input
+                  type="number"
+                  value={newRfpAmount}
+                  onChange={(e) => setNewRfpAmount(Number(e.target.value))}
+                  className="w-full border border-slate-300 rounded px-3 py-2 text-slate-900 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              <div className="pt-3 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddRFPOpen(false)}
+                  className="px-4 py-2 bg-slate-200 text-slate-800 font-semibold rounded hover:bg-slate-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary-blue">
+                  Route RFP Voucher
                 </button>
               </div>
             </form>
