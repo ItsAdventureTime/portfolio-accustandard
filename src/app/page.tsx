@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   ShieldAlert,
   Building2,
@@ -628,11 +628,15 @@ export default function DashboardHome() {
     }
   };
 
-  const filteredInventory = inventoryList.filter(
-    (item) =>
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredInventory = useMemo(
+    () =>
+      inventoryList.filter(
+        (item) =>
+          item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.location.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [inventoryList, searchQuery]
   );
 
   // Tab Breadcrumb Title Helper for Zero-Confusion Wayfinding

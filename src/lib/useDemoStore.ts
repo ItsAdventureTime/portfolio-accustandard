@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // Default Seed Data for Accustanda Demo
 export const DEFAULT_INVENTORY = [
@@ -211,6 +211,14 @@ export function useDemoStore() {
 
   const [secondsRemaining, setSecondsRemaining] = useState<number>(30 * 60);
 
+  const resetDemoData = useCallback(() => {
+    const now = Date.now();
+    setLastResetTime(now);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('accustanda_demo_reset_time', String(now));
+    }
+  }, []);
+
   // Initialize countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
@@ -224,21 +232,13 @@ export function useDemoStore() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lastResetTime]);
+  }, [lastResetTime, resetDemoData]);
 
-  const resetDemoData = () => {
-    const now = Date.now();
-    setLastResetTime(now);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accustanda_demo_reset_time', String(now));
-    }
-  };
-
-  const formatTimer = () => {
+  const formatTimer = useCallback(() => {
     const mins = Math.floor(secondsRemaining / 60);
     const secs = secondsRemaining % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
+  }, [secondsRemaining]);
 
   return {
     secondsRemaining,
