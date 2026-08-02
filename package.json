@@ -13,9 +13,7 @@
     "db:studio": "drizzle-kit studio",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
-    "cap:android": "cap open android",
-    "deploy:install": "bash scripts/deploy-install.sh",
-    "deploy:update": "bash scripts/deploy-update.sh"
+    "cap:android": "cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
