@@ -701,8 +701,8 @@ export default function DashboardHome() {
         <span className="font-bold text-blue-800">{getTabBreadcrumb()}</span>
       </div>
 
-      {/* Main Content Area — Maximum Screen Utilization Layout */}
-      <main className="flex-1 p-4 md:p-6 max-w-[1600px] mx-auto w-full space-y-6">
+      {/* Main Content Area — Maximum Screen Utilization Layout with Mobile Bottom Clearance */}
+      <main className="flex-1 p-4 md:p-6 pb-32 md:pb-6 max-w-[1600px] mx-auto w-full space-y-6">
         {/* TAB 1: EXECUTIVE OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -1880,7 +1880,7 @@ export default function DashboardHome() {
       />
 
       {/* Mobile Bottom Navigation Bar (Persistent Thumb Zone Navigation for Mobile <768px) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-300 shadow-2xl px-2 py-1.5 flex justify-around items-center text-[10px] font-semibold text-slate-600 no-print">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-300 shadow-2xl px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex justify-around items-center text-[10px] font-semibold text-slate-600 no-print">
         <button
           onClick={() => setActiveTab('overview')}
           className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
