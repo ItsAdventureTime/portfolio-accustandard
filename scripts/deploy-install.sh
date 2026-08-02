@@ -20,7 +20,7 @@ REMOTE_PORT="${REMOTE_PORT:-22}"
 
 REMOTE_DEMO_DIR="${REMOTE_DEMO_DIR:-bridge-ph/accustanda-demo}"
 REMOTE_QUADLET_DIR="${REMOTE_QUADLET_DIR:-.config/containers/systemd/bridge-ph}"
-REMOTE_CADDY_FILE="${REMOTE_CADDY_FILE:-caddy.conf/Caddyfile}"
+REMOTE_CADDY_FILE="${REMOTE_CADDY_FILE:-caddy/conf/Caddyfile}"
 
 echo "📂 [LOCAL PATH] Project Root: ${PROJECT_DIR}"
 echo "🌐 [REMOTE VPS] User & Host: ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PORT}"
