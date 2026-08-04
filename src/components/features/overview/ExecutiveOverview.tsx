@@ -9,8 +9,7 @@ import {
   ArrowRight,
   TrendingUp,
   AlertTriangle,
-  FileCheck,
-  Camera,
+  Send,
 } from 'lucide-react';
 
 interface ExecutiveOverviewProps {
@@ -43,8 +42,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
       item.dcsStatus === 'PENDING'
   ).length;
 
-  const totalArBalance = soaRows.reduce((acc, row) => acc + row.totalBalance, 0);
-  const lowStockSkus = inventoryList.filter((item) => item.available < 50);
+  const totalArBalance = (soaRows || []).reduce(
+    (acc, row) => acc + (Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0),
+    0
+  );
+
+  const lowStockSkus = (inventoryList || []).filter((item) => (item.available || item.onHand) < 50);
 
   return (
     <div className="space-y-6 text-slate-900">
@@ -76,7 +79,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
         </div>
       </div>
 
-      {/* KPI Metric Cards (Large Readable Typography) */}
+      {/* KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Pending Approvals Card */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
@@ -106,7 +109,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
               ₱{totalArBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <p className="text-xs text-slate-600 font-medium">{soaRows.length} Active SOA Client Invoices</p>
+          <p className="text-xs text-slate-600 font-medium">{(soaRows || []).length} Active SOA Client Invoices</p>
         </div>
 
         {/* Low Stock SKUs Card */}
@@ -133,7 +136,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900">{poList.length}</span>
+            <span className="text-3xl font-black text-slate-900">{(poList || []).length}</span>
             <span className="text-xs font-extrabold text-indigo-800">Pending 3-Way Match</span>
           </div>
           <p className="text-xs text-slate-600 font-medium">Supplier PO &harr; RR &harr; Invoice</p>
@@ -155,9 +158,10 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
           <button
             onClick={() => onSelectTab('quotations')}
-            className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm"
+            className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
           >
-            + Create New Quotation
+            <Send className="w-4 h-4 text-blue-200" />
+            <span>+ Create New Quotation</span>
           </button>
         </div>
 
@@ -184,15 +188,16 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                   {/* Stage 1: Reviewer */}
                   <td className="p-4 text-center">
                     {item.reviewerStatus === 'APPROVED' ? (
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
                       </span>
                     ) : (
                       <button
                         onClick={() => onApproveItem(item.id, 'reviewer')}
-                        className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-full text-xs font-extrabold transition"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-amber-700 active:scale-95 w-full max-w-[140px] mx-auto"
                       >
-                        Approve (Reviewer)
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Approve (Mktg)</span>
                       </button>
                     )}
                   </td>
@@ -200,15 +205,16 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                   {/* Stage 2: GM */}
                   <td className="p-4 text-center">
                     {item.gmStatus === 'APPROVED' ? (
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
                       </span>
                     ) : (
                       <button
                         onClick={() => onApproveItem(item.id, 'gm')}
-                        className="px-2.5 py-1 bg-blue-100 hover:bg-blue-200 text-blue-950 rounded-full text-xs font-extrabold transition"
+                        className="px-3.5 py-1.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-blue-950 active:scale-95 w-full max-w-[140px] mx-auto"
                       >
-                        Approve (GM)
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Approve (GM)</span>
                       </button>
                     )}
                   </td>
@@ -216,15 +222,16 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                   {/* Stage 3: DCS Chairman */}
                   <td className="p-4 text-center">
                     {item.dcsStatus === 'APPROVED' ? (
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
                       </span>
                     ) : (
                       <button
                         onClick={() => onApproveItem(item.id, 'dcs')}
-                        className="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-950 rounded-full text-xs font-extrabold transition"
+                        className="px-3.5 py-1.5 bg-purple-900 hover:bg-purple-800 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-purple-950 active:scale-95 w-full max-w-[140px] mx-auto"
                       >
-                        Approve (DCS)
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Approve (DCS)</span>
                       </button>
                     )}
                   </td>

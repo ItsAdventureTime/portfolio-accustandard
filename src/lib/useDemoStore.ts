@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-// Default Seed Data for Accustanda Demo
+// Default Seed Data for Accustandard Demo
 export const DEFAULT_INVENTORY = [
   {
     id: 'inv-1',
@@ -13,6 +13,7 @@ export const DEFAULT_INVENTORY = [
     expiryDate: '2027-11-30',
     onHand: 45,
     reserved: 5,
+    available: 40,
     unit: 'Kits',
     status: 'NORMAL',
   },
@@ -25,6 +26,7 @@ export const DEFAULT_INVENTORY = [
     expiryDate: '2026-09-15',
     onHand: 120,
     reserved: 20,
+    available: 100,
     unit: 'Boxes',
     status: 'NEAR_EXPIRY',
   },
@@ -37,6 +39,7 @@ export const DEFAULT_INVENTORY = [
     expiryDate: '2028-03-20',
     onHand: 200,
     reserved: 10,
+    available: 190,
     unit: 'Bottles',
     status: 'NORMAL',
   },
@@ -49,6 +52,7 @@ export const DEFAULT_INVENTORY = [
     expiryDate: '2027-06-10',
     onHand: 85,
     reserved: 0,
+    available: 85,
     unit: 'Canisters',
     status: 'NORMAL',
   },
@@ -90,39 +94,42 @@ export const DEFAULT_APPROVALS = [
 export const DEFAULT_SOA_ROWS = [
   {
     id: 'soa-1',
-    salesInvoiceNo: '6087',
-    drNo: '6075',
-    siDate: '18-Jun-26',
+    invoiceNo: 'SI-6087',
+    drNo: 'DR-6075',
+    date: '18-Jun-2026',
     dueDate: '7/18/2026',
-    ageDays: 22,
-    invoiceAmount: 16960.0,
-    amountPaid: 0,
-    invoiceBalance: 16960.0,
-    runningBalance: 16960.0,
+    terms: '30 Days Net',
+    ageDays: 47,
+    current: 0,
+    days30: 0,
+    days60: 16960.0,
+    totalBalance: 16960.0,
   },
   {
     id: 'soa-2',
-    salesInvoiceNo: '6107',
-    drNo: '6097',
-    siDate: '26-Jun-26',
+    invoiceNo: 'SI-6107',
+    drNo: 'DR-6097',
+    date: '26-Jun-2026',
     dueDate: '7/26/2026',
-    ageDays: 14,
-    invoiceAmount: 1968.0,
-    amountPaid: 0,
-    invoiceBalance: 1968.0,
-    runningBalance: 18928.0,
+    terms: '30 Days Net',
+    ageDays: 39,
+    current: 0,
+    days30: 1968.0,
+    days60: 0,
+    totalBalance: 1968.0,
   },
   {
     id: 'soa-3',
-    salesInvoiceNo: '6118',
-    drNo: '6113',
-    siDate: '30-Jun-26',
+    invoiceNo: 'SI-6118',
+    drNo: 'DR-6113',
+    date: '30-Jun-2026',
     dueDate: '7/30/2026',
-    ageDays: 10,
-    invoiceAmount: 13280.0,
-    amountPaid: 0,
-    invoiceBalance: 13280.0,
-    runningBalance: 32208.0,
+    terms: '30 Days Net',
+    ageDays: 35,
+    current: 13280.0,
+    days30: 0,
+    days60: 0,
+    totalBalance: 13280.0,
   },
 ];
 
@@ -136,7 +143,7 @@ export const DEFAULT_PO_LIST = [
     rrQtyReceived: 100,
     invoiceRef: 'SI #8812',
     totalAmount: 142000.0,
-    status: 'VERIFIED_3WAY', // 3-Way Match Verified
+    status: 'VERIFIED_3WAY',
   },
   {
     id: 'po-2',
@@ -165,29 +172,32 @@ export const DEFAULT_PO_LIST = [
 export const DEFAULT_RFP_LIST = [
   {
     id: 'rfp-1',
-    rfpNumber: 'RFP-2026-0104',
-    payeeName: 'LBC Express Courier Services',
+    rfpNo: 'RFP-2026-0104',
+    payee: 'LBC Express Courier Services',
     glAccount: '6100 - Freight & Delivery',
     description: 'Cold-chain express shipping for Pampanga hospital orders',
     amount: 18500.0,
+    requestedBy: 'Bookkeeper (Aila)',
     status: 'APPROVED_DCS',
   },
   {
     id: 'rfp-2',
-    rfpNumber: 'RFP-2026-0112',
-    payeeName: 'Meralco Electric Utilities',
+    rfpNo: 'RFP-2026-0112',
+    payee: 'Meralco Electric Utilities',
     glAccount: '6200 - Utilities Expense',
     description: 'San Fernando warehouse climate-control power bill',
     amount: 34200.0,
+    requestedBy: 'General Manager',
     status: 'PENDING_GM',
   },
   {
     id: 'rfp-3',
-    rfpNumber: 'RFP-2026-0120',
-    payeeName: 'Calibration Certifications Phils',
+    rfpNo: 'RFP-2026-0120',
+    payee: 'Calibration Certifications Phils',
     glAccount: '6300 - Professional & Calibration Fees',
     description: 'ISO 17025 annual calibration for Bact Alert analyzer units',
     amount: 28000.0,
+    requestedBy: 'Marketing',
     status: 'PENDING_MKTG',
   },
 ];
@@ -198,7 +208,7 @@ export const DEFAULT_AUDIT_LOGS = [
   { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037' },
 ];
 
-const RESET_INTERVAL_MS = 30 * 60 * 1000; // 30 Minutes
+const RESET_INTERVAL_MS = 30 * 60 * 1000;
 
 export function useDemoStore() {
   const [lastResetTime, setLastResetTime] = useState<number>(() => {
@@ -219,7 +229,6 @@ export function useDemoStore() {
     }
   }, []);
 
-  // Initialize countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
       const elapsed = Date.now() - lastResetTime;

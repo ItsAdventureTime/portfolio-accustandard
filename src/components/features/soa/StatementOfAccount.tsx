@@ -21,7 +21,7 @@ interface StatementOfAccountProps {
 }
 
 export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
-  soaRows,
+  soaRows = [],
   onOpenPrintModal,
   onOpenExportModal,
   onShowNotification,
@@ -29,13 +29,18 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 }) => {
   const [selectedClient, setSelectedClient] = useState('San Fernando Medical Center');
 
-  const totalBalanceSum = soaRows.reduce((acc, row) => acc + row.totalBalance, 0);
+  const safeRows = Array.isArray(soaRows) ? soaRows : [];
+
+  const totalBalanceSum = safeRows.reduce(
+    (acc, row) => acc + (Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0),
+    0
+  );
 
   const handleExportData = () => {
     onOpenExportModal(
       'Statement of Account',
       'statement_of_account',
-      soaRows,
+      safeRows,
       'printable-soa-target'
     );
   };
@@ -86,25 +91,35 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
           </tr>
         </thead>
         <tbody className="font-semibold text-slate-900">
-          {soaRows.map((row) => (
-            <tr key={row.invoiceNo} className="hover:bg-slate-50 transition">
-              <td className="p-3 border border-slate-300 font-mono font-bold text-blue-900">{row.invoiceNo}</td>
-              <td className="p-3 border border-slate-300">{row.date}</td>
-              <td className="p-3 border border-slate-300 text-xs font-bold text-slate-700">{row.terms}</td>
-              <td className="p-3 border border-slate-300 text-right font-mono">
-                ₱{row.current.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </td>
-              <td className="p-3 border border-slate-300 text-right font-mono">
-                ₱{row.days30.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </td>
-              <td className="p-3 border border-slate-300 text-right font-mono bg-yellow-200 font-black text-slate-900">
-                ₱{row.days60.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </td>
-              <td className="p-3 border border-slate-300 text-right font-mono font-extrabold text-blue-950">
-                ₱{row.totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </td>
-            </tr>
-          ))}
+          {safeRows.map((row, idx) => {
+            const currentVal = Number(row.current) || 0;
+            const days30Val = Number(row.days30) || 0;
+            const days60Val = Number(row.days60) || 0;
+            const totalVal = Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0;
+            const invNo = row.invoiceNo || row.salesInvoiceNo || `SI-${idx + 1}`;
+            const invDate = row.date || row.siDate || 'N/A';
+            const invTerms = row.terms || '30 Days Net';
+
+            return (
+              <tr key={row.id || idx} className="hover:bg-slate-50 transition">
+                <td className="p-3 border border-slate-300 font-mono font-bold text-blue-900">{invNo}</td>
+                <td className="p-3 border border-slate-300">{invDate}</td>
+                <td className="p-3 border border-slate-300 text-xs font-bold text-slate-700">{invTerms}</td>
+                <td className="p-3 border border-slate-300 text-right font-mono">
+                  ₱{currentVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="p-3 border border-slate-300 text-right font-mono">
+                  ₱{days30Val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="p-3 border border-slate-300 text-right font-mono bg-yellow-200 font-black text-slate-900">
+                  ₱{days60Val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="p-3 border border-slate-300 text-right font-mono font-extrabold text-blue-950">
+                  ₱{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
