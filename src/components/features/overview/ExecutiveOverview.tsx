@@ -10,6 +10,7 @@ import {
   TrendingUp,
   AlertTriangle,
   Send,
+  Lock,
 } from 'lucide-react';
 
 interface ExecutiveOverviewProps {
@@ -158,7 +159,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
           <button
             onClick={() => onSelectTab('quotations')}
-            className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
           >
             <Send className="w-4 h-4 text-blue-200" />
             <span>+ Create New Quotation</span>
@@ -167,80 +168,99 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+            <thead className="bg-slate-100 text-slate-700 font-extrabold border-b border-slate-200 uppercase text-xs tracking-wider">
               <tr>
                 <th className="p-4">Document QRN / ID</th>
                 <th className="p-4">Type</th>
                 <th className="p-4">Maker</th>
-                <th className="p-4 text-center">Reviewer</th>
-                <th className="p-4 text-center">GM Approval</th>
-                <th className="p-4 text-center">DCS (Chairman)</th>
+                <th className="p-4 text-center">Reviewer Stage</th>
+                <th className="p-4 text-center">GM Approval Stage</th>
+                <th className="p-4 text-center">DCS (Chairman) Stage</th>
                 <th className="p-4 text-right">Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
-              {approvalsList.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition">
-                  <td className="p-4 font-extrabold font-mono text-blue-900">{item.qrn}</td>
-                  <td className="p-4 text-xs font-bold text-slate-600">{item.type}</td>
-                  <td className="p-4 text-xs text-slate-700">{item.maker}</td>
+              {approvalsList.map((item) => {
+                const isReviewerApproved = item.reviewerStatus === 'APPROVED';
+                const isGmApproved = item.gmStatus === 'APPROVED';
+                const isDcsApproved = item.dcsStatus === 'APPROVED';
 
-                  {/* Stage 1: Reviewer */}
-                  <td className="p-4 text-center">
-                    {item.reviewerStatus === 'APPROVED' ? (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => onApproveItem(item.id, 'reviewer')}
-                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-amber-700 active:scale-95 w-full max-w-[140px] mx-auto"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Approve (Mktg)</span>
-                      </button>
-                    )}
-                  </td>
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition">
+                    <td className="p-4 font-extrabold font-mono text-blue-900">{item.qrn}</td>
+                    <td className="p-4 text-xs font-bold text-slate-600">{item.type}</td>
+                    <td className="p-4 text-xs text-slate-700">{item.maker}</td>
 
-                  {/* Stage 2: GM */}
-                  <td className="p-4 text-center">
-                    {item.gmStatus === 'APPROVED' ? (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => onApproveItem(item.id, 'gm')}
-                        className="px-3.5 py-1.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-blue-950 active:scale-95 w-full max-w-[140px] mx-auto"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Approve (GM)</span>
-                      </button>
-                    )}
-                  </td>
+                    {/* Stage 1: Reviewer */}
+                    <td className="p-4 text-center">
+                      {isReviewerApproved ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>Approved</span>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => onApproveItem(item.id, 'reviewer')}
+                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-amber-600/80 w-full max-w-[130px] mx-auto"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Approve Reviewer</span>
+                        </button>
+                      )}
+                    </td>
 
-                  {/* Stage 3: DCS Chairman */}
-                  <td className="p-4 text-center">
-                    {item.dcsStatus === 'APPROVED' ? (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-2xs w-full max-w-[140px] mx-auto">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => onApproveItem(item.id, 'dcs')}
-                        className="px-3.5 py-1.5 bg-purple-900 hover:bg-purple-800 text-white font-extrabold text-xs rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 border border-purple-950 active:scale-95 w-full max-w-[140px] mx-auto"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Approve (DCS)</span>
-                      </button>
-                    )}
-                  </td>
+                    {/* Stage 2: GM */}
+                    <td className="p-4 text-center">
+                      {isGmApproved ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>Approved</span>
+                        </span>
+                      ) : isReviewerApproved ? (
+                        <button
+                          onClick={() => onApproveItem(item.id, 'gm')}
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-blue-700/80 w-full max-w-[130px] mx-auto"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Approve GM</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Awaiting Reviewer</span>
+                        </span>
+                      )}
+                    </td>
 
-                  <td className="p-4 text-right font-mono font-bold text-slate-900">
-                    ₱{item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              ))}
+                    {/* Stage 3: DCS Chairman */}
+                    <td className="p-4 text-center">
+                      {isDcsApproved ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>Approved</span>
+                        </span>
+                      ) : isGmApproved ? (
+                        <button
+                          onClick={() => onApproveItem(item.id, 'dcs')}
+                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-indigo-700/80 w-full max-w-[130px] mx-auto"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Approve DCS</span>
+                        </button>
+                      ) : (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Awaiting GM</span>
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="p-4 text-right font-mono font-bold text-slate-900">
+                      ₱{item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
