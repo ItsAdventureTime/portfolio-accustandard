@@ -65,7 +65,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Stock Batch</span>
+            <span>Add Stock Batch</span>
           </button>
         </div>
       </div>

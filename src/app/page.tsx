@@ -29,8 +29,10 @@ import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
-import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
 import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
+import { AddStockModal } from '@/components/modals/AddStockModal';
+import { ReceivingReportModal } from '@/components/modals/ReceivingReportModal';
+import { CreateRFPModal } from '@/components/modals/CreateRFPModal';
 import { CreateQuotationModal } from '@/components/modals/CreateQuotationModal';
 import { CreatePOModal } from '@/components/modals/CreatePOModal';
 
@@ -459,6 +461,16 @@ export default function Home() {
         }}
       />
 
+      <AddStockModal
+        isOpen={isAddStockOpen}
+        onClose={() => setIsAddStockOpen(false)}
+        onAddStockBatch={(newStock) => {
+          setInventoryList((prev) => [newStock, ...prev]);
+          showNotification(`Added stock batch for SKU: ${newStock.sku}`);
+          addAuditLog(`Logged stock batch for SKU: ${newStock.sku}`);
+        }}
+      />
+
       <CreateQuotationModal
         isOpen={isCreateQuotationOpen}
         onClose={() => setIsCreateQuotationOpen(false)}
@@ -471,6 +483,52 @@ export default function Home() {
         onClose={() => setIsCreatePOOpen(false)}
         inventoryList={inventoryList}
         onSubmitPO={handleSubmitPO}
+      />
+
+      <ReceivingReportModal
+        isOpen={isPOReceivingModalOpen}
+        onClose={() => setIsPOReceivingModalOpen(false)}
+        poList={poList}
+        onReceivePO={(poId, receivedQty) => {
+          setPoList((prev) =>
+            prev.map((po) => {
+              if (po.id === poId) {
+                const updatedQty = po.rrQtyReceived + receivedQty;
+                return {
+                  ...po,
+                  rrQtyReceived: updatedQty,
+                  status: updatedQty >= po.poQty ? 'VERIFIED_3WAY' : 'PENDING_RECEIVING',
+                };
+              }
+              return po;
+            })
+          );
+          showNotification(`Confirmed Goods Receipt (RR) for PO!`);
+          addAuditLog(`Entered Goods Receipt (RR) count for PO`);
+        }}
+      />
+
+      <CreateRFPModal
+        isOpen={isAddRFPOpen}
+        onClose={() => setIsAddRFPOpen(false)}
+        onSubmitRFP={(newRFP) => {
+          setRfpList((prev) => [newRFP, ...prev]);
+          setApprovalsList((prev) => [
+            {
+              id: `app-rfp-${Date.now()}`,
+              qrn: newRFP.rfpNo,
+              type: 'Request for Payment',
+              maker: newRFP.requestedBy,
+              reviewerStatus: 'APPROVED',
+              gmStatus: 'APPROVED',
+              dcsStatus: 'PENDING',
+              totalAmount: newRFP.amount,
+            },
+            ...prev,
+          ]);
+          showNotification(`Routed RFP Voucher ${newRFP.rfpNo} for Approval!`);
+          addAuditLog(`Created RFP Voucher ${newRFP.rfpNo}`);
+        }}
       />
 
       <DocumentPrintModal
