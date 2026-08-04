@@ -265,6 +265,7 @@ export default function Home() {
           auditCount={auditLogs.length}
           formattedTimer={formatTimer()}
           onResetDemo={handleResetData}
+          viewAsRole={viewAsRole}
         />
 
         {/* Feature Module Workspace Container */}

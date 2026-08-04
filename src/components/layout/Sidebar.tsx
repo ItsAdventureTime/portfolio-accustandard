@@ -13,6 +13,7 @@ import {
   Clock,
   MapPin,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -26,7 +27,18 @@ interface SidebarProps {
   auditCount: number;
   formattedTimer: string;
   onResetDemo: () => void;
+  viewAsRole?: string;
 }
+
+const ROLE_ALLOWED_TABS: Record<string, string[]> = {
+  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
+  Warehouse: ['inventory', 'purchasing'],
+  Marketing: ['overview', 'quotations'],
+  Sales: ['quotations', 'inventory'],
+};
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
@@ -37,7 +49,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   auditCount,
   formattedTimer,
   onResetDemo,
+  viewAsRole = 'Admin',
 }) => {
+  const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
+
   const navItems = [
     {
       key: 'overview',
@@ -118,36 +133,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-1.5">
-        <div className="px-3 pb-2 text-xs font-black uppercase text-slate-500 tracking-wider">
-          Enterprise Operations
+        <div className="px-3 pb-2 text-xs font-black uppercase text-slate-500 tracking-wider flex justify-between items-center">
+          <span>Enterprise Operations</span>
+          <span className="text-[10px] text-blue-900 font-bold bg-blue-100 px-2 py-0.5 rounded-full">{viewAsRole}</span>
         </div>
 
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.key;
+          const isPermitted = allowed.includes(item.key);
+
           return (
             <button
               key={item.key}
               onClick={() => onSelectTab(item.key)}
+              title={isPermitted ? undefined : `Role [${viewAsRole}] cannot access this module`}
               className={`w-full text-left p-3 rounded-xl transition flex items-center justify-between group ${
                 isActive
                   ? 'bg-blue-900 text-white font-extrabold shadow-md'
-                  : 'hover:bg-slate-200/80 text-slate-700 hover:text-slate-900 font-semibold'
+                  : isPermitted
+                  ? 'hover:bg-slate-200/80 text-slate-700 hover:text-slate-900 font-semibold'
+                  : 'opacity-50 text-slate-400 hover:bg-slate-100 font-medium'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div
                   className={`p-2 rounded-lg transition ${
-                    isActive ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700 group-hover:bg-slate-300'
+                    isActive ? 'bg-blue-800 text-white' : isPermitted ? 'bg-slate-200 text-slate-700 group-hover:bg-slate-300' : 'bg-slate-200/50 text-slate-400'
                   }`}
                 >
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-sm font-extrabold block leading-snug">{item.label}</span>
+                  <span className="text-sm font-extrabold flex items-center gap-1.5 leading-snug">
+                    <span>{item.label}</span>
+                    {!isPermitted && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                  </span>
                   <span
                     className={`text-xs block leading-none font-medium ${
-                      isActive ? 'text-blue-200' : 'text-slate-500'
+                      isActive ? 'text-blue-200' : isPermitted ? 'text-slate-500' : 'text-slate-400'
                     }`}
                   >
                     {item.subtitle}
@@ -155,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </div>
               </div>
 
-              {item.badge !== null && (
+              {item.badge !== null && isPermitted && (
                 <span
                   className={`text-xs font-extrabold px-2 py-0.5 rounded-full ${
                     isActive ? 'bg-white text-blue-950' : item.badgeColor
