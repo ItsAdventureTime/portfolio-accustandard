@@ -65,7 +65,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
             </div>
             <div>
               <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
-                Install Accustanda Mobile App
+                Install Accustandard Mobile App
               </h3>
               <p className="text-xs text-slate-500 font-medium">Use full-screen app mode & barcode scanner</p>
             </div>
