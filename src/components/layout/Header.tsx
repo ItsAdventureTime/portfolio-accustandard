@@ -7,8 +7,6 @@ import {
   Smartphone,
   Eye,
   Menu,
-  Bell,
-  ShieldAlert,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -29,38 +27,39 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
+    <header className="bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-30 shadow-sm w-full">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={onOpenMobileDrawer}
-            className="md:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+            className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200"
             aria-label="Open mobile menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-6 h-6" />
           </button>
 
           {/* Mobile Logo Branding */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-3 md:hidden">
             <img
               src="/photo_2026-08-01_23-55-07.jpg"
-              alt="ACCUSTANDA RxD Logo"
-              className="h-7 w-auto object-contain bg-white px-1 py-0.5 rounded"
+              alt="Accustandard Logo"
+              className="h-8 w-auto object-contain bg-white px-1.5 py-0.5 rounded border border-slate-200"
             />
+            <span className="font-black text-sm text-blue-950 uppercase tracking-tight">Accustandard</span>
           </div>
 
           {/* Desktop Search Trigger / Command Palette */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-3">
             <button
               onClick={onOpenCommandPalette}
-              className="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 px-3.5 py-1.5 rounded-xl text-xs transition shadow-xs w-72 justify-between"
+              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-xs w-80 justify-between"
             >
               <span className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-blue-400" />
-                <span className="font-medium text-slate-400">Search SKU, PO, RFP...</span>
+                <Search className="w-4 h-4 text-blue-700" />
+                <span className="font-bold text-slate-500">Search SKU, PO, RFP...</span>
               </span>
-              <kbd className="bg-slate-900 text-slate-400 font-mono text-[10px] px-1.5 py-0.5 rounded border border-slate-700">
+              <kbd className="bg-white text-slate-600 font-mono text-xs px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-extrabold">
                 ⌘K
               </kbd>
             </button>
@@ -68,61 +67,61 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right: Actions & Role Impersonation */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-3">
           {/* Role Impersonation Control */}
-          <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl px-2.5 py-1 flex items-center gap-2">
-            <Eye className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 flex items-center gap-2.5">
+            <Eye className="w-4 h-4 text-blue-700 shrink-0" />
             <div className="hidden sm:block text-left">
-              <span className="text-[9px] text-amber-300 font-bold uppercase tracking-wider block leading-none">
+              <span className="text-[10px] text-blue-800 font-black uppercase tracking-wider block leading-none mb-0.5">
                 Simulate Role
               </span>
               <select
                 value={viewAsRole}
                 onChange={(e) => onChangeRole(e.target.value)}
-                className="bg-transparent text-white font-extrabold text-xs focus:outline-none cursor-pointer pr-1"
+                className="bg-transparent text-blue-950 font-black text-sm focus:outline-none cursor-pointer pr-1"
               >
-                <option value="Admin" className="bg-slate-900 text-white">Admin (Bridge)</option>
-                <option value="Chairman (DCS)" className="bg-slate-900 text-white">Chairman (DCS)</option>
-                <option value="General Manager" className="bg-slate-900 text-white">General Manager (Karen)</option>
-                <option value="Bookkeeper" className="bg-slate-900 text-white">Bookkeeper (Aila)</option>
-                <option value="Warehouse" className="bg-slate-900 text-white">Warehouse (Marie)</option>
-                <option value="Marketing" className="bg-slate-900 text-white">Marketing (Reviewer)</option>
-                <option value="Sales" className="bg-slate-900 text-white">Sales Officer</option>
+                <option value="Admin" className="bg-white text-slate-900 font-bold">Admin (Bridge)</option>
+                <option value="Chairman (DCS)" className="bg-white text-slate-900 font-bold">Chairman (DCS)</option>
+                <option value="General Manager" className="bg-white text-slate-900 font-bold">General Manager (Karen)</option>
+                <option value="Bookkeeper" className="bg-white text-slate-900 font-bold">Bookkeeper (Aila)</option>
+                <option value="Warehouse" className="bg-white text-slate-900 font-bold">Warehouse (Marie)</option>
+                <option value="Marketing" className="bg-white text-slate-900 font-bold">Marketing (Reviewer)</option>
+                <option value="Sales" className="bg-white text-slate-900 font-bold">Sales Officer</option>
               </select>
             </div>
             {/* Mobile Compact Select */}
             <select
               value={viewAsRole}
               onChange={(e) => onChangeRole(e.target.value)}
-              className="sm:hidden bg-transparent text-white font-extrabold text-xs focus:outline-none cursor-pointer"
+              className="sm:hidden bg-transparent text-blue-950 font-black text-sm focus:outline-none cursor-pointer"
             >
-              <option value="Admin" className="bg-slate-900 text-white">Admin</option>
-              <option value="Chairman (DCS)" className="bg-slate-900 text-white">Chairman</option>
-              <option value="General Manager" className="bg-slate-900 text-white">GM</option>
-              <option value="Bookkeeper" className="bg-slate-900 text-white">Bookkeeper</option>
-              <option value="Warehouse" className="bg-slate-900 text-white">Warehouse</option>
-              <option value="Marketing" className="bg-slate-900 text-white">Marketing</option>
-              <option value="Sales" className="bg-slate-900 text-white">Sales</option>
+              <option value="Admin" className="bg-white text-slate-900">Admin</option>
+              <option value="Chairman (DCS)" className="bg-white text-slate-900">Chairman</option>
+              <option value="General Manager" className="bg-white text-slate-900">GM</option>
+              <option value="Bookkeeper" className="bg-white text-slate-900">Bookkeeper</option>
+              <option value="Warehouse" className="bg-white text-slate-900">Warehouse</option>
+              <option value="Marketing" className="bg-white text-slate-900">Marketing</option>
+              <option value="Sales" className="bg-white text-slate-900">Sales</option>
             </select>
           </div>
 
-          {/* Barcode Scanner Action Trigger */}
+          {/* Barcode Scanner Trigger Button */}
           <button
             onClick={onOpenScanner}
-            className="p-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md active:scale-95 shrink-0"
-            title="Scan Barcode / QR Code"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl text-sm font-extrabold transition shadow-sm"
+            title="Open Live Barcode Camera Scanner"
           >
             <Camera className="w-4 h-4" />
-            <span className="hidden lg:inline">Scan Barcode</span>
+            <span className="hidden sm:inline">Scan Barcode</span>
           </button>
 
-          {/* PWA Guide Trigger */}
+          {/* PWA Mode Guide Modal Trigger */}
           <button
             onClick={onOpenPWAInstall}
-            className="p-2 bg-blue-900/80 hover:bg-blue-800 text-blue-200 border border-blue-700/60 rounded-xl transition flex items-center justify-center active:scale-95 shrink-0"
-            title="PWA App Install Guide"
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition border border-slate-300"
+            title="Install as PWA Instructions"
           >
-            <Smartphone className="w-4 h-4 text-blue-300" />
+            <Smartphone className="w-5 h-5 text-blue-800" />
           </button>
         </div>
       </div>
