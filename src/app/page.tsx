@@ -282,7 +282,7 @@ export default function Home() {
               rfpList={rfpList}
               viewAsRole={viewAsRole}
               onApproveItem={handleApproveItem}
-              onSelectTab={setActiveTab}
+              onSelectTab={handleSelectTab}
               onOpenScanner={() => setIsScannerOpen(true)}
             />
           )}
@@ -350,7 +350,7 @@ export default function Home() {
       {/* Mobile App Navigation Bar (Persistent Thumb Zone for <768px) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 text-white backdrop-blur-md border-t border-slate-800 shadow-2xl px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex justify-around items-center text-[10px] font-semibold no-print">
         <button
-          onClick={() => setActiveTab('overview')}
+          onClick={() => handleSelectTab('overview')}
           className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
             activeTab === 'overview' ? 'text-blue-400 font-extrabold bg-blue-950/80' : 'text-slate-400 hover:text-white'
           }`}
@@ -360,7 +360,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('inventory')}
+          onClick={() => handleSelectTab('inventory')}
           className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
             activeTab === 'inventory' ? 'text-emerald-400 font-extrabold bg-emerald-950/80' : 'text-slate-400 hover:text-white'
           }`}
@@ -370,7 +370,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('quotations')}
+          onClick={() => handleSelectTab('quotations')}
           className={`flex flex-col items-center py-1 px-3 rounded-lg transition ${
             activeTab === 'quotations' || activeTab === 'soa' ? 'text-amber-400 font-extrabold bg-amber-950/80' : 'text-slate-400 hover:text-white'
           }`}
@@ -395,7 +395,7 @@ export default function Home() {
         onOpenProductManager={() => setIsProductManagerOpen(true)}
         onScan={(scannedCode) => {
           setIsScannerOpen(false);
-          setActiveTab('inventory');
+          handleSelectTab('inventory');
           setSearchQuery(scannedCode);
           showNotification(`Scanned Barcode: ${scannedCode} — Filtered in Inventory.`);
           addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
@@ -426,10 +426,7 @@ export default function Home() {
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
-        onSelectTab={(tabKey) => {
-          setActiveTab(tabKey);
-          showNotification(`Navigated to section: ${tabKey}`);
-        }}
+        onSelectTab={handleSelectTab}
       />
 
       <MobileNavDrawer
