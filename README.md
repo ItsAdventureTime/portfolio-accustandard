@@ -1,93 +1,119 @@
-# Accustanda Rx D Enterprise ERP & Supply Chain Dashboard v4.0
+# Accustandard Medical ERP & Supply Chain Dashboard v4.2
 
-> **Accustanda Medical and Diagnostic Supplies Corporation**  
+> **Accustandard Medical and Diagnostic Supplies Corporation**  
 > Partner Agency: **DelegateOps Business Support Services (DOS)**  
 > Production Platform & Interactive Internal Control Simulator
 
 ---
 
-## 🌟 Executive Summary & Overview
+## 🌟 Executive Summary & System Overview
 
-The **Accustanda Rx D Enterprise ERP Dashboard** is a COSO control-first, multi-location medical supply chain and financial management system. Designed for **Accustanda Medical and Diagnostic Supplies Corporation**, this dashboard enforces strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotation routing, receiving report 3-way matching, client aging statement of account (SOA) ledgers, non-PO expense management, and QuickBooks Online (QBO) live synchronization.
+The **Accustandard Medical ERP Dashboard** is a COSO control-first, multi-location medical supply chain and financial management system built for **Accustandard Medical and Diagnostic Supplies Corporation**. It enforces strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotation routing, receiving report 3-way matching, client aging statement of account (SOA) ledgers, non-PO expense management, and QuickBooks Online (QBO) live synchronization.
 
 ---
 
-## 🎨 2026 Anti-Glare Soft Slate & IBM Carbon v11 Decluttered Design System
+## 🎨 Light Corporate Medical Design Philosophy
 
-In accordance with **IBM Carbon Design System (v11)** and 2026 enterprise digital ergonomics guidelines, the application features an **Anti-Glare Soft Slate Palette** (`#e2e8f0` canvas, `#ffffff` card containers, `#cbd5e1` borders, and `#1e293b` dark slate text).
+In accordance with modern medical enterprise design standards and 2026 digital ergonomics guidelines, the application enforces a high-contrast **Light Corporate Medical Aesthetic System** (`#F8FAFC` slate canvas, `#FFFFFF` crisp card containers, `#E2E8F0` subtle borders, `#1E3A8A` Deep Royal Navy branding, and `#DC2626` Bright Medical Red accents).
 
-### Core IBM Carbon Decluttering Principles Applied:
-- **Streamlined Visual Hierarchy:** Top priority metrics occupy the top 4 crisp IBM Carbon tiles (Managed Inventory, Pending Approvals, SOA Balance, QBO Live Sync).
-- **Progressive Disclosure:** Non-essential background noise is hidden behind clean interactive actions and modal drawers.
-- **Cognitive Load Reduction:** Purposeful white space and subtle border strokes prevent visual overwhelm during long operational shifts.
-- **Predictable Wayfinding Navigation:** Single-tier header lockup paired with contextual breadcrumbs and `⌘K` command palette search.
+### Core Design System Principles Applied:
+- **No Dark Mode Contradictions:** All surfaces, modals, popovers, and navigation drawers use clean off-white card surfaces (`bg-white border border-slate-300 shadow-2xl`) and dark slate text (`text-slate-900`).
+- **Streamlined Visual Hierarchy:** Top priority metrics occupy 4 crisp summary tiles (Pending Approvals, Accounts Receivable Balance, Low Stock SKUs, Unverified POs).
+- **Progressive Disclosure:** Complex workflows are managed through interactive action buttons, responsive modals, and slide-over drawers.
+- **Cognitive Ergonomics for Older Demographics:** Generous font sizes (`text-sm`/`text-base`), high contrast ratios (WCAG AAA), and 48px touch targets for mobile accessibility.
+- **Predictable Wayfinding Navigation:** Desktop Sidebar lockup paired with persistent mobile bottom bar and `⌘K` command palette search.
 
-### Brand Lockup Specifications
+### Official Brand Logo Lockup Specifications
 Matching `photo_2026-08-01_23-55-07.jpg`:
-- **Brand Title:** `ACCUSTANDA` in bold Royal Blue (`#1E3A8A`)
+- **Brand Title:** `ACCUSTANDARD` in bold Royal Blue (`#1E3A8A`)
 - **Rx D Accent:** `R` in Red with italic `x` and Royal Blue `D`
-- **Horizontal Bar:** Solid red divider line
+- **Horizontal Bar:** Solid red divider line (`#DC2626`)
 - **Tagline Subtext:** `MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION`
 
 ---
 
 ## 🚀 Key Modules & Interactive Features
 
-### 1. Executive Overview & COSO Approval Queue
-- **4-Layer Approval Pipeline:** Enforces COSO Segregation of Duties (`Layer 1: Maker` → `Layer 2: Reviewer (Marketing)` → `Layer 3: GM (Karen)` → `Layer 4: DCS (Chairman)`).
-- **Interactive Role Simulator ("View As"):** Allows impersonation of 7 roles (`Admin`, `Chairman`, `GM`, `Bookkeeper`, `Warehouse`, `Marketing`, `Sales`) to test authorization workflows.
-- **KPI Metrics & SVG Sparklines:** Real-time stock volume, pending approval counts, and gross margin tracking.
+### 1. Executive Control & COSO Approval Pipeline
+- **4-Layer Approval Pipeline:** Enforces COSO Segregation of Duties (`Maker` &rarr; `Reviewer [Marketing]` &rarr; `GM [Karen]` &rarr; `DCS [Chairman]`).
+- **Interactive Role Simulator ("Simulate Role"):** Allows impersonation of 7 user roles (`Admin`, `Chairman DCS`, `General Manager`, `Bookkeeper`, `Warehouse`, `Marketing`, `Sales`) to test authorization workflows.
+- **Visual Role Lock Badges:** Unauthorized approval stages render muted lock indicators (`Role Locked`).
 
 ### 2. Multi-Location Inventory Control
 - Multi-warehouse stock tracking across **Quezon City** and **Pampanga** facilities.
-- **Batch FEFO Expiry Management:** Tracks lot numbers and flags near-expiry reagents (e.g. 2026-09-15).
-- **Mobile Barcode Scanner Integration:** High-speed barcode scanning via device camera.
-- **Interactive Stock CRUD:** Ability to add new stock batches and remove items with live metric recalculations.
+- **Batch FEFO Expiry Management:** Tracks lot numbers and flags near-expiry reagents.
+- **Live Camera Barcode Scanner:** Real-time mobile camera stream scanner with audio beep feedback and 1-click test barcodes.
+- **Interactive Stock CRUD & SKU Manager:** Full ability to add stock batches (`AddStockModal`) and manage SKU definitions (`BarcodeProductManagerModal`).
 
 ### 3. Sales Quotation Generator & 3-Day Stock Reservation
-- Generates official Sales Quotations matching `photo_2026-08-01_23-55-26.jpg`.
+- Replicates official Accustandard Quotation template matching `photo_2026-08-01_23-55-26.jpg` (blue/red dual accent bars, dark blue header `#002060`, terms & conditions, signatory block).
 - **3-Day Stock Reservation Rule:** Auto-reserves inventory items upon quotation creation.
-- **Print / PDF Export:** Generates clean, uncompressed A4 printable PDF documents.
+- **A4 Document Print Engine:** Generates clean, uncompressed A4 printable PDF documents with `@page { size: A4 portrait; margin: 12mm; }`.
 
 ### 4. Statement of Account (SOA) & Client Aging
-- Renders client SOA statements matching `photo_2026-08-01_23-55-13.jpg`.
-- Tracks Delivery Receipt (DR #) numbers, Sales Invoice (SI #) numbers, payment terms, and aging buckets (0-30 days, 31-60 days, 61-90 days, 90+ days).
-- **Interactive Invoice Line Adder:** Dynamic addition and deletion of invoice rows with auto-calculated running balances.
+- Replicates official SOA statements matching `photo_2026-08-01_23-55-13.jpg` with client info, AR aging ledger (0-30 days, 31-60 days, 61-90 days, 90+ days), and prepared-by signature block.
+- **Highlighted Balance Bar:** Full-width bright yellow (`#FFFF00`) highlight bar displaying total current balance (`₱32,208.00`).
 
 ### 5. Purchasing & 3-Way Match Fraud Control
-- **PO Over-Receiving Hard-Block Rule:** Receiving is hard-blocked beyond approved Purchase Order quantities to prevent vendor over-billing fraud.
+- **3-Way Match Control:** Enforces strict matching between Purchase Order Quantity = Goods Receipt (RR) = Vendor Invoice. Hard-blocks over-receiving.
+- **Receiving Report (RR Entry) Modal:** Goods receipt verification modal (`ReceivingReportModal`).
 
-### 6. Command Palette Navigation (`⌘K`)
-- **Power-User Navigation (`⌘K` / `Ctrl+K`):** Search any module, SKU, or document to jump instantly.
+### 6. Request for Payment (RFP) Non-PO Expense Vouchers
+- Non-PO expense disbursement requests classified by GL Chart of Accounts (`CreateRFPModal`).
 
-### 7. 30-Minute Automated Demo State Reset System
-- **Automated Demo Reset:** Every 30 minutes, demo data automatically resets to clean default seed state.
-- **Live Countdown Header Badge:** Visual countdown timer in top shell header with instant "Reset Data" manual override.
+### 7. User Setup & COSO Audit Trail
+- Multi-user RBAC access matrix and real-time searchable audit action stream (`SystemAuditTrail`).
 
-### 8. Mobile Radical Reachability Architecture
-- **Persistent Mobile Bottom Bar:** Optimized for single-thumb mobile operation (`<768px`).
-- **Slide-Over Navigation Drawer:** Full menu access on mobile screens.
-- **Mobile Table-to-Card View:** Data tables automatically transform into spacious mobile cards on phone viewports.
-- **Pixel-Perfect Mobile PDF Preview:** Fixed A4 canvas width prevents text squishing or address column wrapping on mobile screens.
+### 8. Command Palette Search (`⌘K`)
+- Power-user keyboard shortcut (`⌘K` / `Ctrl+K`) for instant module navigation.
+
+### 9. Automated 30-Minute Demo State Reset
+- Every 30 minutes, demo data automatically resets to clean default seed state. Includes live countdown badge and manual reset override.
+
+### 10. Light Mobile Accessibility Architecture
+- Persistent light-mode bottom bar (<768px) with active state pill badges.
+- Slide-over mobile drawer (`MobileNavDrawer`) with visual role lock indicators.
 
 ---
 
-## 🛠️ Manual Step-by-Step Deployment Guide (Full Control)
+## 🔒 Role-Based Access Control (RBAC) Matrix
 
-### Method A: Initial Installation & Deployment (Manual Commands)
+| User Role | Permitted Modules | Approval Permissions | Restricted Modules / Actions |
+| :--- | :--- | :--- | :--- |
+| **Admin (Bridge)** | All 7 Modules | All Stages (Reviewer, GM, DCS) | None (Full Access) |
+| **Chairman (DCS)** | All 7 Modules | All Stages (Reviewer, GM, DCS) | None (Full Access) |
+| **General Manager** | All 7 Modules | Stage 1 (Reviewer) & Stage 2 (GM) | Stage 3 DCS Chairman Approval |
+| **Bookkeeper** | Overview, SOA, Purchasing, RFP | View Only | Inventory, Quotations, Admin, Approvals |
+| **Warehouse** | Inventory, Purchasing | RR Entry Only | Overview, Quotations, SOA, RFP, Admin |
+| **Marketing** | Overview, Quotations | Stage 1 (Reviewer) Only | Inventory, SOA, Purchasing, RFP, GM/DCS |
+| **Sales** | Quotations, Inventory | Create Quotes Only | Overview, SOA, Purchasing, RFP, Admin |
+
+---
+
+## 🛠️ Step-by-Step Manual Deployment Guide for VPS
+
+### Initial Installation & Static Export Build (Containerized Podman)
 
 ```bash
-# Step 1: Navigate to local project workspace using full directory
+# Step 1: Navigate to local project workspace
 cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
 
-# Step 2: Run containerized static build inside ephemeral Podman container using latest Alpine Node image (node:current-alpine)
-podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "rm -rf .next && npm ci && npm run build"
+# Step 2: Build static export inside isolated disposable Podman container using Node Alpine image
+podman run --rm \
+  -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" \
+  -v /workspace/.next \
+  -v /workspace/node_modules \
+  -w /workspace \
+  node:current-alpine \
+  sh -c "npm ci && npm run build"
 
-# Step 3: Create target web directory on VPS using full remote directory
+# Step 3: Create target web directory on Linux VPS
 ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
 
-# Step 4: Sync static build output to VPS via rsync using full local and remote paths
-rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
+# Step 4: Sync static export build files to VPS web root
+rsync -avz --delete -e "ssh -p 22" \
+  /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ \
+  jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
 
 # Step 5: Format host Caddyfile on VPS & reload Caddy container
 ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt /etc/caddy/Caddyfile > /tmp/Caddyfile.tmp && mv /tmp/Caddyfile.tmp /home/jk/caddy/conf/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
@@ -98,36 +124,15 @@ ssh -p 22 jk@216.75.75.136 "bunny-purge"
 
 ---
 
-### Method B: Fast Incremental Update (Manual Commands)
+## 🛰️ Production VPS Infrastructure Parameters
 
-```bash
-# Step 1: Navigate to local project workspace using full directory
-cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
-
-# Step 2: Re-build static export inside container using latest Alpine Node image (node:current-alpine)
-podman run --rm -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" -w /workspace node:current-alpine sh -c "rm -rf .next && npm run build"
-
-# Step 3: Sync delta updates to VPS using full local output path and full remote VPS path
-rsync -avz --delete -e "ssh -p 22" /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
-
-# Step 4: Reload Caddy web server using full remote configuration path
-ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
-
-# Step 5: Purge Bunny CDN Cache
-ssh -p 22 jk@216.75.75.136 "bunny-purge"
-```
-
----
-
-## 🛰️ Production VPS Parameters
-
-- **VPS Server Host:** `jk@216.75.75.136` (Port 22)
-- **Web Root Directory:** `~/bridge-ph/accustanda-demo` (`/home/jk/bridge-ph/accustanda-demo`)
+- **VPS Host:** `jk@216.75.75.136` (Port 22)
+- **Web Root Directory:** `/home/jk/bridge-ph/accustanda-demo`
 - **Container Caddy Volume:** `Volume=/home/jk/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z`
-- **Caddy Config File:** `~/caddy/conf/Caddyfile` (`/home/jk/caddy/conf/Caddyfile`)
+- **Caddy Config File:** `/home/jk/caddy/conf/Caddyfile`
 - **CDN Purge Utility:** `bunny-purge`
-- **Git Remote:** `git@github.com:ItsAdventureTime/bridge-accustanda.git` (main branch)
+- **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustanda.git` (main branch)
 
 ---
 
-© 2026 Accustanda Medical and Diagnostic Supplies Corporation & DelegateOps Business Support Services. All Rights Reserved.
+© 2026 Accustandard Medical and Diagnostic Supplies Corporation & DelegateOps Business Support Services. All Rights Reserved.
