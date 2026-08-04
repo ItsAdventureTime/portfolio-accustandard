@@ -236,7 +236,8 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
             </div>
           )}
         </div>
-      )}
-    </div>
+      </div>
+    )}
+  </div>
   );
 };
