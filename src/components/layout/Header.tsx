@@ -28,20 +28,20 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-30 shadow-sm w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+    <header className="bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-30 shadow-xs w-full">
+      <div className="w-full px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <button
             onClick={onOpenMobileDrawer}
-            className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200"
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200 active:scale-95"
             aria-label="Open mobile menu"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="w-5 h-5" />
           </button>
 
           {/* Mobile Logo Branding */}
-          <div className="flex items-center gap-3 md:hidden">
+          <div className="flex items-center md:hidden shrink-0">
             <AccustandardLogo size="sm" />
           </div>
 
@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={onOpenCommandPalette}
-              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-xs w-80 justify-between"
+              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-xs w-80 justify-between cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-blue-700" />
@@ -63,9 +63,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right: Actions & Role Impersonation */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Role Impersonation Control */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 flex items-center gap-2.5">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 sm:gap-2.5 shadow-2xs">
             <Eye className="w-4 h-4 text-blue-700 shrink-0" />
             <div className="hidden sm:block text-left">
               <span className="text-[10px] text-blue-800 font-black uppercase tracking-wider block leading-none mb-0.5">
@@ -85,11 +85,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <option value="Sales" className="bg-white text-slate-900 font-bold">Sales Officer</option>
               </select>
             </div>
-            {/* Mobile Compact Select */}
+
+            {/* Mobile Compact Role Select */}
             <select
               value={viewAsRole}
               onChange={(e) => onChangeRole(e.target.value)}
-              className="sm:hidden bg-transparent text-blue-950 font-black text-sm focus:outline-none cursor-pointer"
+              className="sm:hidden bg-transparent text-blue-950 font-black text-xs focus:outline-none cursor-pointer py-0.5"
             >
               <option value="Admin" className="bg-white text-slate-900">Admin</option>
               <option value="Chairman (DCS)" className="bg-white text-slate-900">Chairman</option>
@@ -101,20 +102,19 @@ export const Header: React.FC<HeaderProps> = ({
             </select>
           </div>
 
-          {/* Barcode Scanner Trigger Button */}
+          {/* Desktop Barcode Scanner & PWA Buttons */}
           <button
             onClick={onOpenScanner}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl text-sm font-extrabold transition shadow-sm"
+            className="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl text-sm font-extrabold transition shadow-sm active:scale-95"
             title="Open Live Barcode Camera Scanner"
           >
             <Camera className="w-4 h-4" />
-            <span className="hidden sm:inline">Scan Barcode</span>
+            <span>Scan Barcode</span>
           </button>
 
-          {/* PWA Mode Guide Modal Trigger */}
           <button
             onClick={onOpenPWAInstall}
-            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition border border-slate-300"
+            className="hidden sm:block p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition border border-slate-300 active:scale-95"
             title="Install as PWA Instructions"
           >
             <Smartphone className="w-5 h-5 text-blue-800" />
