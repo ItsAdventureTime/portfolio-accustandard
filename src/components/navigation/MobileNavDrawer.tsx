@@ -16,6 +16,8 @@ import {
   Eye,
 } from 'lucide-react';
 
+import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+
 interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -73,17 +75,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
 
         {/* Sheet Title Bar */}
         <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-          <div className="flex items-center gap-2.5">
-            <img
-              src="/photo_2026-08-01_23-55-07.jpg"
-              alt="Accustandard Logo"
-              className="h-8 w-auto object-contain bg-white px-1 py-0.5 rounded border border-slate-200"
-            />
-            <div>
-              <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">Accustandard Navigation</h3>
-              <p className="text-xs text-slate-500 font-semibold">Select Section or Change Role</p>
-            </div>
-          </div>
+          <AccustandardLogo size="sm" />
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition">
             <X className="w-5 h-5" />
           </button>

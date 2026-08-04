@@ -8,6 +8,7 @@ import {
   Eye,
   Menu,
 } from 'lucide-react';
+import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 interface HeaderProps {
   viewAsRole: string;
@@ -41,12 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Mobile Logo Branding */}
           <div className="flex items-center gap-3 md:hidden">
-            <img
-              src="/photo_2026-08-01_23-55-07.jpg"
-              alt="Accustandard Logo"
-              className="h-8 w-auto object-contain bg-white px-1.5 py-0.5 rounded border border-slate-200"
-            />
-            <span className="font-black text-sm text-blue-950 uppercase tracking-tight">Accustandard</span>
+            <AccustandardLogo size="sm" />
           </div>
 
           {/* Desktop Search Trigger / Command Palette */}

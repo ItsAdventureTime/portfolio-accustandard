@@ -15,6 +15,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
+import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+
 interface SidebarProps {
   activeTab: string;
   onSelectTab: (tabKey: string) => void;
@@ -99,21 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <aside className="w-80 bg-slate-50 border-r border-slate-200 text-slate-800 flex flex-col justify-between hidden md:flex shrink-0 shadow-sm">
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-200 bg-white">
-        <div className="flex items-center gap-3">
-          <img
-            src="/photo_2026-08-01_23-55-07.jpg"
-            alt="Accustandard Logo"
-            className="h-12 w-auto object-contain bg-white p-1 rounded-xl border border-slate-200 shadow-sm"
-          />
-          <div>
-            <span className="font-black text-base text-blue-950 uppercase tracking-tight block">
-              Accustandard
-            </span>
-            <p className="text-xs font-bold text-slate-600 tracking-tight">
-              Medical &amp; Diagnostic Supplies Corp.
-            </p>
-          </div>
-        </div>
+        <AccustandardLogo size="md" />
 
         {/* Multi-Warehouse Status Bar */}
         <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-700">

@@ -55,7 +55,7 @@ export function exportToExcel(filename: string, sheetName: string, rows: object[
     tableHtml += `<tr>`;
     keys.forEach((k) => {
       const val = row[k] === null || row[k] === undefined ? '' : row[k];
-      tableHtml += `<style="padding:6px;">${val}</td>`;
+      tableHtml += `<td style="padding:6px;">${val}</td>`;
     });
     tableHtml += `</tr>`;
   });
@@ -83,38 +83,43 @@ export function printDocumentElement(elementId: string) {
     return;
   }
 
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) {
-    window.print();
-    return;
-  }
+  try {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
 
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>Accustanda ERP Printable Document</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <style>
-          @page { size: A4 portrait; margin: 12mm; }
-          body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #ffffff; color: #0f172a; margin: 0; padding: 0; }
-          .print-page { box-shadow: none !important; border: none !important; margin: 0 auto !important; width: 100% !important; max-width: 100% !important; }
-          .no-print { display: none !important; }
-        </style>
-      </head>
-      <body>
-        <div style="padding: 10px;">
-          ${element.innerHTML}
-        </div>
-        <script>
-          window.onload = function() {
-            window.focus();
-            window.print();
-            window.onafterprint = function() { window.close(); };
-          };
-        </script>
-      </body>
-    </html>
-  `);
-  printWindow.document.close();
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Accustandard Printable Document</title>
+          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #ffffff; color: #0f172a; margin: 0; padding: 0; }
+            .print-page { box-shadow: none !important; border: none !important; margin: 0 auto !important; width: 100% !important; max-width: 100% !important; }
+            .no-print { display: none !important; }
+          </style>
+        </head>
+        <body>
+          <div style="padding: 10px;">
+            ${element.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+              window.onafterprint = function() { window.close(); };
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  } catch (err) {
+    console.error('Popup printing fallback triggered:', err);
+    window.print();
+  }
 }

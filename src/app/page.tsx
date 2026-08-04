@@ -140,8 +140,53 @@ export default function Home() {
     addAuditLog(`Created Purchase Order ${newPO.poNumber}`);
   };
 
+  // Role-Based Access Control (RBAC) Module Permissions
+  const ROLE_ALLOWED_TABS: Record<string, string[]> = {
+    Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+    'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+    'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+    Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
+    Warehouse: ['inventory', 'purchasing'],
+    Marketing: ['overview', 'quotations'],
+    Sales: ['quotations', 'inventory'],
+  };
+
+  const handleSelectTab = (tabKey: string) => {
+    const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
+    if (!allowed.includes(tabKey)) {
+      showNotification(`Role Restricted: [${viewAsRole}] does not have permission to view section "${tabKey.toUpperCase()}".`);
+      return;
+    }
+    setActiveTab(tabKey);
+  };
+
+  const handleChangeRole = (role: string) => {
+    setViewAsRole(role);
+    const allowed = ROLE_ALLOWED_TABS[role] || ROLE_ALLOWED_TABS['Admin'];
+    if (!allowed.includes(activeTab)) {
+      setActiveTab(allowed[0]);
+      showNotification(`Switched role to: ${role} — Navigated to allowed module: ${allowed[0].toUpperCase()}`);
+    } else {
+      showNotification(`Switched role simulation to: ${role}`);
+    }
+    addAuditLog(`Switched user role simulation to: ${role}`);
+  };
+
   // Approval Pipeline Action Handler
   const handleApproveItem = (id: string, stage: string) => {
+    if (stage === 'reviewer' && !['Admin', 'Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
+      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
+      return;
+    }
+    if (stage === 'gm' && !['Admin', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
+      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute GM Approval.`);
+      return;
+    }
+    if (stage === 'dcs' && !['Admin', 'Chairman (DCS)'].includes(viewAsRole)) {
+      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute DCS Chairman Approval.`);
+      return;
+    }
+
     setApprovalsList((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -191,11 +236,7 @@ export default function Home() {
       {/* Top Application Header Bar */}
       <Header
         viewAsRole={viewAsRole}
-        onChangeRole={(role) => {
-          setViewAsRole(role);
-          showNotification(`Switched active view role to: ${role}`);
-          addAuditLog(`Switched user role simulation to: ${role}`);
-        }}
+        onChangeRole={handleChangeRole}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
@@ -217,7 +258,7 @@ export default function Home() {
         {/* Desktop Navigation Sidebar */}
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={(tab) => setActiveTab(tab)}
+          onSelectTab={handleSelectTab}
           approvalsCount={approvalsList.length}
           inventoryCount={inventoryList.length}
           soaCount={soaData.rows.length}

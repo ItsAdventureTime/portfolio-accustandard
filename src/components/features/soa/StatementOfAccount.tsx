@@ -10,6 +10,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+
 interface StatementOfAccountProps {
   soaRows: any[];
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
@@ -42,20 +44,11 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     <div id="printable-soa-target" className="bg-white p-8 sm:p-10 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6">
       {/* Header Matching photo_2026-08-01_23-55-13.jpg */}
       <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-red-600 pb-4 gap-4">
-        <div className="flex items-center gap-3">
-          <img
-            src="/photo_2026-08-01_23-55-07.jpg"
-            alt="Accustandard Logo"
-            className="h-14 w-auto object-contain bg-white px-2 py-1 rounded"
-          />
-          <div>
-            <h1 className="text-xl font-black uppercase text-blue-950 tracking-tight">
-              Accustandard Medical &amp; Diagnostic Supplies Corp.
-            </h1>
-            <p className="text-xs text-slate-600 font-semibold">
-              Unit A G/F El Decano Bldg., Blk 2 Lot 2, St. Jude, Villa Corazon, San Agustin, City of San Fernando, 2000, Pampanga
-            </p>
-          </div>
+        <div>
+          <AccustandardLogo size="lg" />
+          <p className="text-xs text-slate-600 font-semibold mt-1">
+            Unit A G/F El Decano Bldg., Blk 2 Lot 2, St. Jude, Villa Corazon, San Agustin, City of San Fernando, 2000, Pampanga
+          </p>
         </div>
 
         <div className="text-left sm:text-right shrink-0">
