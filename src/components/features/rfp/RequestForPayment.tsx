@@ -38,7 +38,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
           className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm self-stretch sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>+ Create RFP Voucher</span>
+          <span>Create RFP Voucher</span>
         </button>
       </div>
 
