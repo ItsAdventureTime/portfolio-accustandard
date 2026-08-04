@@ -29,8 +29,9 @@ import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
-import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
 import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
+import { CreateQuotationModal } from '@/components/modals/CreateQuotationModal';
+import { CreatePOModal } from '@/components/modals/CreatePOModal';
 
 import {
   useDemoStore,
@@ -71,6 +72,8 @@ export default function Home() {
   const [isAddPOOpen, setIsAddPOOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
+  const [isCreateQuotationOpen, setIsCreateQuotationOpen] = useState(false);
+  const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
 
   // Export & Print Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -108,6 +111,33 @@ export default function Home() {
       ...prev,
     ]);
   }, [viewAsRole]);
+
+  // Submit Quotation for COSO Approval
+  const handleSubmitQuotation = (newQuote: any) => {
+    setApprovalsList((prev) => [newQuote, ...prev]);
+    showNotification(`Submitted Sales Quote ${newQuote.qrn} for Approval!`);
+    addAuditLog(`Created and routed Sales Quotation ${newQuote.qrn} for approval`);
+  };
+
+  // Submit PO for Approval
+  const handleSubmitPO = (newPO: any) => {
+    setPoList((prev) => [newPO, ...prev]);
+    setApprovalsList((prev) => [
+      {
+        id: `app-po-${Date.now()}`,
+        qrn: newPO.poNumber,
+        type: 'Purchase Order',
+        maker: 'Purchasing / Bookkeeper',
+        reviewerStatus: 'APPROVED',
+        gmStatus: 'PENDING',
+        dcsStatus: 'AWAITING',
+        totalAmount: newPO.totalAmount,
+      },
+      ...prev,
+    ]);
+    showNotification(`Routed Purchase Order ${newPO.poNumber} for Approval!`);
+    addAuditLog(`Created Purchase Order ${newPO.poNumber}`);
+  };
 
   // Approval Pipeline Action Handler
   const handleApproveItem = (id: string, stage: string) => {
@@ -156,7 +186,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white w-full">
       {/* Top Application Header Bar */}
       <Header
         viewAsRole={viewAsRole}
@@ -181,8 +211,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden max-w-7xl w-full mx-auto">
+      {/* Main Workspace Layout (Full-Width Responsive Grid) */}
+      <div className="flex-1 flex overflow-hidden w-full">
         {/* Desktop Navigation Sidebar */}
         <Sidebar
           activeTab={activeTab}
@@ -196,7 +226,7 @@ export default function Home() {
         />
 
         {/* Feature Module Workspace Container */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-24 md:pb-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-24 md:pb-8 w-full">
           {activeTab === 'overview' && (
             <ExecutiveOverview
               approvalsList={approvalsList}
@@ -226,6 +256,11 @@ export default function Home() {
             <QuotationGenerator
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
+              onOpenCreateModal={() => setIsCreateQuotationOpen(true)}
+              onSubmitForApproval={(qrn) => {
+                showNotification(`Submitted Sales Quote ${qrn} for COSO Approval!`);
+                addAuditLog(`Routed Sales Quote ${qrn} for approval`);
+              }}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
             />
@@ -244,7 +279,7 @@ export default function Home() {
           {activeTab === 'purchasing' && (
             <PurchasingReceiving
               poList={poList}
-              onOpenAddPO={() => setIsAddPOOpen(true)}
+              onOpenAddPO={() => setIsCreatePOOpen(true)}
               onOpenReceivingModal={() => setIsPOReceivingModalOpen(true)}
             />
           )}
@@ -386,6 +421,20 @@ export default function Home() {
           showNotification(`Exported ${exportModalTitle} as ${format}!`);
           addAuditLog(`Exported ${exportModalTitle} as ${format}`);
         }}
+      />
+
+      <CreateQuotationModal
+        isOpen={isCreateQuotationOpen}
+        onClose={() => setIsCreateQuotationOpen(false)}
+        inventoryList={inventoryList}
+        onSubmitQuotation={handleSubmitQuotation}
+      />
+
+      <CreatePOModal
+        isOpen={isCreatePOOpen}
+        onClose={() => setIsCreatePOOpen(false)}
+        inventoryList={inventoryList}
+        onSubmitPO={handleSubmitPO}
       />
 
       <DocumentPrintModal

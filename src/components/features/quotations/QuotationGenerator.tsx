@@ -17,6 +17,8 @@ import {
 interface QuotationGeneratorProps {
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
+  onOpenCreateModal: () => void;
+  onSubmitForApproval: (qrn: string) => void;
   onShowNotification: (msg: string) => void;
   onAddAuditLog: (action: string) => void;
 }
@@ -24,6 +26,8 @@ interface QuotationGeneratorProps {
 export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onOpenPrintModal,
   onOpenExportModal,
+  onOpenCreateModal,
+  onSubmitForApproval,
   onShowNotification,
   onAddAuditLog,
 }) => {
@@ -37,8 +41,6 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const [itemDescription, setItemDescription] = useState('Calibration Sticks Bact Alert');
   const [packaging, setPackaging] = useState('1 Kit');
   const [unitPrice, setUnitPrice] = useState(31500.0);
-  const [reservationDays, setReservationDays] = useState(3);
-  const [approvalStatus, setApprovalStatus] = useState<'PENDING_REVIEWER' | 'APPROVED_GM' | 'APPROVED_DCS'>('APPROVED_GM');
 
   const handleExportData = () => {
     const exportRows = [
@@ -51,7 +53,6 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         Item: itemDescription,
         Packaging: packaging,
         UnitPrice: unitPrice,
-        Status: approvalStatus,
       },
     ];
     onOpenExportModal(
@@ -76,13 +77,29 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-stretch sm:self-auto">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
+          <button
+            onClick={onOpenCreateModal}
+            className="flex-1 sm:flex-initial px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <Send className="w-4 h-4 text-blue-300" />
+            <span>+ Create / Request Sales Quote</span>
+          </button>
+
+          <button
+            onClick={() => onSubmitForApproval(qrn)}
+            className="flex-1 sm:flex-initial px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Submit for Approval</span>
+          </button>
+
           <button
             onClick={handleExportData}
             className="flex-1 sm:flex-initial px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center gap-1.5 shadow-sm"
           >
             <Download className="w-4 h-4 text-blue-400" />
-            <span>Export Quotation...</span>
+            <span>Export Quote...</span>
           </button>
         </div>
       </div>

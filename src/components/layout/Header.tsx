@@ -29,8 +29,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md w-full">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
         <div className="flex items-center gap-3">
           <button
@@ -43,23 +43,18 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Mobile Logo Branding */}
           <div className="flex items-center gap-2 md:hidden">
-            <div className="w-8 h-8 rounded-lg bg-blue-700 text-white font-black text-xs flex items-center justify-center border border-blue-400/40">
-              RxD
-            </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="font-black text-xs tracking-wider uppercase text-white">ACCUSTANDARD</span>
-                <span className="font-black text-[10px] text-red-500 font-serif">RxD</span>
-              </div>
-              <p className="text-[9px] text-slate-400">Medical ERP</p>
-            </div>
+            <img
+              src="/photo_2026-08-01_23-55-07.jpg"
+              alt="ACCUSTANDA RxD Logo"
+              className="h-7 w-auto object-contain bg-white px-1 py-0.5 rounded"
+            />
           </div>
 
           {/* Desktop Search Trigger / Command Palette */}
           <div className="hidden md:flex items-center gap-2">
             <button
               onClick={onOpenCommandPalette}
-              className="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 px-3.5 py-1.5 rounded-xl text-xs transition shadow-xs w-64 justify-between"
+              className="flex items-center gap-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 px-3.5 py-1.5 rounded-xl text-xs transition shadow-xs w-72 justify-between"
             >
               <span className="flex items-center gap-2">
                 <Search className="w-3.5 h-3.5 text-blue-400" />

@@ -96,16 +96,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-800/80 bg-slate-950/40">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-700 via-blue-900 to-slate-900 border border-blue-500/40 flex items-center justify-center text-white font-black shadow-md shrink-0">
-            <span className="text-lg tracking-tighter">RxD</span>
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="ACCUSTANDARD RxD Logo"
+            className="h-10 w-auto object-contain bg-white px-2 py-1 rounded-xl border border-slate-700 shadow-md"
+          />
           <div>
-            <div className="flex items-center gap-1">
-              <span className="font-black text-sm text-white tracking-wider uppercase">ACCUSTANDARD</span>
-              <span className="font-black text-xs text-red-500 font-serif">RxD</span>
-            </div>
-            <p className="text-[10px] font-semibold text-slate-400 tracking-tight">
-              Medical & Diagnostic Supplies Corp.
+            <span className="font-black text-xs text-white tracking-wider uppercase block">ACCUSTANDARD RxD</span>
+            <p className="text-[9px] font-semibold text-slate-400 tracking-tight">
+              Medical &amp; Diagnostic Supplies Corp.
             </p>
           </div>
         </div>
