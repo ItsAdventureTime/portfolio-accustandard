@@ -6,8 +6,6 @@ import {
   Printer,
   Download,
   Send,
-  Lock,
-  Building2,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -30,7 +28,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onShowNotification,
   onAddAuditLog,
 }) => {
-  // Sample Quotation State matching photo_2026-08-01_23-55-26.jpg
+  // Sample Quotation State matching Screenshot 2
   const [qrn, setQrn] = useState('QRN20240415037');
   const [quotationDate, setQuotationDate] = useState('April 15, 2024');
   const [clientName, setClientName] = useState('Ms. Katherine Porciuncula');
@@ -63,71 +61,104 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   };
 
   const quotationDocumentContent = (
-    <div id="printable-quotation-target" className="bg-white p-8 sm:p-10 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6">
-      {/* Quotation Header Matching photo_2026-08-01_23-55-26.jpg */}
-      <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-red-600 pb-4 gap-4">
+    <div id="printable-quotation-target" className="bg-white p-8 sm:p-12 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6 relative">
+      {/* Top Header Block matching Screenshot 2 */}
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <AccustandardLogo size="lg" />
-          <p className="text-xs text-slate-600 font-semibold mt-1">
-            Unit A G/F El Decano Bldg., Blk 2 Lot 2, St. Jude, Villa Corazon, San Agustin, City of San Fernando, 2000, Pampanga
-          </p>
         </div>
 
-        <div className="text-left sm:text-right shrink-0">
-          <span className="text-xs font-black uppercase text-slate-500 block">Official Quotation</span>
-          <span className="text-lg font-black font-mono text-red-600 block">{qrn}</span>
-          <span className="text-xs font-bold text-slate-700 block">{quotationDate}</span>
+        <div className="text-left sm:text-right text-xs text-slate-700 font-semibold leading-snug space-y-0.5">
+          <p>Unit A G/F El Decano Bldg., Blk 2 Lot 2</p>
+          <p>St. Jude, Villa Corazon, San Agustin,</p>
+          <p>City of San Fernando, 2000, Pampanga</p>
         </div>
       </div>
 
-      {/* Recipient Details */}
-      <div className="space-y-1 text-sm font-semibold text-slate-800">
-        <p className="font-extrabold text-base text-slate-900">{clientName}</p>
-        <p className="text-blue-950 font-bold">{clientFacility}</p>
-        <p className="text-slate-600">{clientAddress}</p>
+      {/* Double Horizontal Accent Line (Blue + Red) */}
+      <div className="space-y-0.5">
+        <div className="h-1 bg-blue-900 w-full" />
+        <div className="h-0.5 bg-red-600 w-full" />
       </div>
 
-      <div className="text-sm font-medium text-slate-800">
-        Greetings from Accustandard! We are delighted to submit our price proposal for the supply and delivery of the following:
+      {/* Quotation Ref & Date (Right Aligned) */}
+      <div className="text-right text-xs font-bold text-slate-900 space-y-0.5">
+        <p><span className="uppercase">QUOTATION:</span> <span className="font-mono">{qrn}</span></p>
+        <p>{quotationDate}</p>
       </div>
 
-      {/* Item Table */}
-      <table className="w-full text-left text-sm border-collapse border border-slate-300">
-        <thead className="bg-blue-950 text-white font-extrabold uppercase text-xs">
-          <tr>
-            <th className="p-3 border border-slate-300">Product Description</th>
-            <th className="p-3 border border-slate-300">Packaging</th>
-            <th className="p-3 border border-slate-300 text-right">Unit Price (PHP)</th>
-          </tr>
-        </thead>
-        <tbody className="font-semibold text-slate-900">
-          <tr>
-            <td className="p-3 border border-slate-300 font-bold">{itemDescription}</td>
-            <td className="p-3 border border-slate-300">{packaging}</td>
-            <td className="p-3 border border-slate-300 text-right font-mono font-bold">
-              ₱{unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* Terms & Conditions */}
-      <div className="space-y-1.5 text-xs text-slate-700 font-semibold border-t border-slate-200 pt-4">
-        <p className="font-bold text-slate-900 uppercase">Terms and Conditions:</p>
-        <p><span className="font-bold">DELIVERY:</span> 30-60 days from date of receipt of Purchase Order.</p>
-        <p><span className="font-bold">PAYMENT:</span> Thirty (30) days upon invoice date.</p>
-        <p><span className="font-bold">PROPOSAL VALIDITY:</span> This quotation is valid for 30 days, thereafter subject to reconfirmation.</p>
+      {/* Recipient Details Block matching Screenshot 2 */}
+      <div className="space-y-0.5 text-xs text-slate-900">
+        <p className="font-bold text-sm">{clientName}</p>
+        <p className="font-bold">{clientFacility}</p>
+        <p className="text-slate-700">{clientAddress}</p>
       </div>
 
-      {/* Signatures */}
-      <div className="pt-6 flex justify-between items-end text-xs font-semibold text-slate-800">
-        <div>
-          <p className="font-bold text-slate-900 text-sm">Katherine M. Payumo, RMT</p>
-          <p className="text-slate-600">Product Marketing Manager</p>
+      {/* Salutation Block */}
+      <div className="text-xs space-y-1.5 text-slate-900">
+        <p className="italic font-semibold">Greetings from Accustandard!</p>
+        <p className="font-medium">We are delighted to submit our price proposal for the supply and delivery of the following:</p>
+      </div>
+
+      {/* Product Description Table matching Dark Blue Header in Screenshot 2 */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs border-collapse border border-slate-300">
+          <thead className="bg-[#002060] text-white font-extrabold uppercase tracking-wider">
+            <tr>
+              <th className="p-3 border border-slate-300">PRODUCT DESCRIPTION</th>
+              <th className="p-3 border border-slate-300 text-center">PACKAGING</th>
+              <th className="p-3 border border-slate-300 text-right">UNIT PRICE</th>
+            </tr>
+          </thead>
+          <tbody className="font-bold text-slate-900">
+            <tr>
+              <td className="p-3 border border-slate-300">{itemDescription}</td>
+              <td className="p-3 border border-slate-300 text-center">{packaging}</td>
+              <td className="p-3 border border-slate-300 text-right font-mono">
+                {unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Terms and Conditions Block matching Screenshot 2 */}
+      <div className="space-y-2 text-xs text-slate-900 pt-2">
+        <p className="font-extrabold uppercase">TERMS AND CONDITIONS:</p>
+        <div className="space-y-1 font-semibold text-slate-800 leading-relaxed">
+          <p><span className="font-bold uppercase">DELIVERY:</span> 30-60 days from date of receipt of Purchase Order.</p>
+          <p><span className="font-bold uppercase">PAYMENT:</span> Thirty (30) days upon invoice date</p>
+          <p><span className="font-bold uppercase">PROPOSAL VALIDITY:</span> This quotation is valid for thirty (30) days, thereafter subject to reconfirmation.</p>
         </div>
-        <div className="text-right text-[11px] text-slate-500 font-medium">
-          <p>Email: accustandard1024@gmail.com</p>
-          <p>Tel &amp; Fax: (045) 966-5097</p>
+        <p className="pt-2 font-medium">Thank you for considering our quotation. We look forward to the opportunity to serve you.</p>
+      </div>
+
+      {/* Sign-off Block */}
+      <div className="pt-6 space-y-4 text-xs text-slate-900">
+        <p className="font-medium">Respectfully,</p>
+
+        {/* Signature Line */}
+        <div className="pt-4 space-y-0.5">
+          <p className="font-extrabold text-sm border-b border-slate-400 w-fit pb-0.5">Katherine M. Payumo, RMT</p>
+          <p className="text-slate-700 font-semibold">Product Marketing Manager</p>
+        </div>
+      </div>
+
+      {/* Bottom Footer Accent Bar (Blue + Red Double Line) */}
+      <div className="pt-8 space-y-3">
+        <div className="space-y-0.5">
+          <div className="h-1 bg-blue-900 w-full" />
+          <div className="h-0.5 bg-red-600 w-full" />
+        </div>
+
+        <div className="flex justify-between items-center text-[11px] text-slate-700 font-semibold">
+          <div>
+            <p>Email: accustandard1024@gmail.com</p>
+            <p>Tel and Tel no.: (045) 966 6097</p>
+          </div>
+          <div>
+            <p>Page 1 of 1</p>
+          </div>
         </div>
       </div>
     </div>
@@ -143,7 +174,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             Sales Quotation Generator &amp; Stock Reservation
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            3-Day Stock Reservation Engine &bull; Sales RFQ &rarr; Marketing (Reviewer) &rarr; GM &rarr; DCS (Chairman)
+            Exact Replica of Official Quotation Template &bull; 3-Day Stock Reservation &bull; A4 Printable Output
           </p>
         </div>
 

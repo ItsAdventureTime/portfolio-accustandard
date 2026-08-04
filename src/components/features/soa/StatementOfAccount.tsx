@@ -27,14 +27,50 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   onShowNotification,
   onAddAuditLog,
 }) => {
-  const [selectedClient, setSelectedClient] = useState('San Fernando Medical Center');
+  const [statementDate, setStatementDate] = useState('10-Jul-26');
+  const [clientName, setClientName] = useState('GATCHALIAN MEDICAL LABORATORY');
+  const [clientAddress, setClientAddress] = useState('San Fernando, Pampanga');
+  const [terms, setTerms] = useState('30 Days');
+  const [salesperson, setSalesperson] = useState('Sir. Roel Macaraeg');
+  const [preparedBy, setPreparedBy] = useState('Marrione Fuentes');
 
-  const safeRows = Array.isArray(soaRows) ? soaRows : [];
+  const safeRows = [
+    {
+      salesInvoiceNo: '6087',
+      drNo: '6075',
+      siDate: '18-Jun-26',
+      dueDate: '7/18/2026',
+      age: 22,
+      invoiceAmount: 16960.0,
+      amountPaid: '',
+      invoiceBalance: 16960.0,
+      runningBalance: 16960.0,
+    },
+    {
+      salesInvoiceNo: '6107',
+      drNo: '6097',
+      siDate: '26-Jun-26',
+      dueDate: '7/26/2026',
+      age: 14,
+      invoiceAmount: 1968.0,
+      amountPaid: '',
+      invoiceBalance: 1968.0,
+      runningBalance: 18928.0,
+    },
+    {
+      salesInvoiceNo: '6118',
+      drNo: '6113',
+      siDate: '30-Jun-26',
+      dueDate: '7/30/2026',
+      age: 10,
+      invoiceAmount: 13280.0,
+      amountPaid: '',
+      invoiceBalance: 13280.0,
+      runningBalance: 32208.0,
+    },
+  ];
 
-  const totalBalanceSum = safeRows.reduce(
-    (acc, row) => acc + (Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0),
-    0
-  );
+  const totalCurrentBalance = 32208.0;
 
   const handleExportData = () => {
     onOpenExportModal(
@@ -47,87 +83,121 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   const soaDocumentContent = (
     <div id="printable-soa-target" className="bg-white p-8 sm:p-10 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6">
-      {/* Header Matching photo_2026-08-01_23-55-13.jpg */}
-      <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-red-600 pb-4 gap-4">
+      {/* Exact Header matching Screenshot 1 */}
+      <div className="flex flex-col sm:flex-row justify-between items-start border-b border-slate-200 pb-4 gap-4">
         <div>
           <AccustandardLogo size="lg" />
-          <p className="text-xs text-slate-600 font-semibold mt-1">
-            Unit A G/F El Decano Bldg., Blk 2 Lot 2, St. Jude, Villa Corazon, San Agustin, City of San Fernando, 2000, Pampanga
-          </p>
         </div>
 
-        <div className="text-left sm:text-right shrink-0">
-          <span className="text-xs font-black uppercase text-slate-500 block">Document Type</span>
-          <span className="text-xl font-black text-blue-950 block">STATEMENT OF ACCOUNT</span>
-          <span className="text-xs font-bold text-slate-700 block">As of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-        </div>
-      </div>
-
-      {/* Client Billing Info */}
-      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center text-sm font-semibold">
-        <div>
-          <span className="text-xs font-black text-slate-500 uppercase block">Client Name</span>
-          <span className="text-base font-extrabold text-blue-950">{selectedClient}</span>
-        </div>
-        <div className="text-right">
-          <span className="text-xs font-black text-slate-500 uppercase block">Total Balance Due</span>
-          <span className="text-xl font-black font-mono text-red-600">
-            ₱{totalBalanceSum.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-          </span>
+        <div className="text-left sm:text-right text-xs text-slate-700 font-semibold space-y-0.5 leading-snug">
+          <p>Unit A G/F El Decano Bldg., Blk 2</p>
+          <p>Lot 2 St. Jude, Villa Corazon, San</p>
+          <p>Agustin, San Fernando Pampanga</p>
+          <p>Email: <a href="mailto:accustandard1024@gmail.com" className="text-blue-700 underline">accustandard1024@gmail.com</a></p>
+          <p>Tel and Fax no.: (045) 966-6097</p>
         </div>
       </div>
 
-      {/* Aging Matrix Table Matching Yellow Highlights in photo_2026-08-01_23-55-13.jpg */}
-      <table className="w-full text-left text-sm border-collapse border border-slate-300">
-        <thead className="bg-blue-950 text-white font-extrabold uppercase text-xs">
-          <tr>
-            <th className="p-3 border border-slate-300">Invoice Ref</th>
-            <th className="p-3 border border-slate-300">Invoice Date</th>
-            <th className="p-3 border border-slate-300">Terms</th>
-            <th className="p-3 border border-slate-300 text-right">Current</th>
-            <th className="p-3 border border-slate-300 text-right">31-60 Days</th>
-            <th className="p-3 border border-slate-300 text-right bg-amber-500 text-slate-900">61-90+ Days (Overdue)</th>
-            <th className="p-3 border border-slate-300 text-right">Total Balance (PHP)</th>
-          </tr>
-        </thead>
-        <tbody className="font-semibold text-slate-900">
-          {safeRows.map((row, idx) => {
-            const currentVal = Number(row.current) || 0;
-            const days30Val = Number(row.days30) || 0;
-            const days60Val = Number(row.days60) || 0;
-            const totalVal = Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0;
-            const invNo = row.invoiceNo || row.salesInvoiceNo || `SI-${idx + 1}`;
-            const invDate = row.date || row.siDate || 'N/A';
-            const invTerms = row.terms || '30 Days Net';
+      {/* Document Title Center */}
+      <div className="text-center">
+        <h1 className="text-xl font-black uppercase text-slate-900 tracking-wider">
+          STATEMENT OF ACCOUNT
+        </h1>
+      </div>
 
-            return (
-              <tr key={row.id || idx} className="hover:bg-slate-50 transition">
-                <td className="p-3 border border-slate-300 font-mono font-bold text-blue-900">{invNo}</td>
-                <td className="p-3 border border-slate-300">{invDate}</td>
-                <td className="p-3 border border-slate-300 text-xs font-bold text-slate-700">{invTerms}</td>
-                <td className="p-3 border border-slate-300 text-right font-mono">
-                  ₱{currentVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+      {/* Metadata Fields Matching Screenshot 1 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 text-xs font-semibold text-slate-900">
+        <div className="space-y-1">
+          <div className="flex">
+            <span className="w-32 font-bold">Statement Date:</span>
+            <span className="font-mono">{statementDate}</span>
+          </div>
+          <div className="flex">
+            <span className="w-32 font-bold">Client:</span>
+            <span className="font-black text-slate-900 uppercase">{clientName}</span>
+          </div>
+          <div className="flex">
+            <span className="w-32 font-bold">Address:</span>
+            <span>{clientAddress}</span>
+          </div>
+          <div className="flex">
+            <span className="w-32 font-bold">Terms:</span>
+            <span>{terms}</span>
+          </div>
+          <div className="flex">
+            <span className="w-32 font-bold">Salesperson:</span>
+            <span>{salesperson}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid Table Matching Screenshot 1 */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs border-collapse border border-slate-900">
+          <thead className="bg-slate-50 text-slate-900 font-black border-b-2 border-slate-900 text-center">
+            <tr>
+              <th className="p-2 border border-slate-900">Sales Invoice #</th>
+              <th className="p-2 border border-slate-900">DR #</th>
+              <th className="p-2 border border-slate-900">S.I. Date</th>
+              <th className="p-2 border border-slate-900">Due Date</th>
+              <th className="p-2 border border-slate-900">AGE</th>
+              <th className="p-2 border border-slate-900 text-right">Invoice Amount</th>
+              <th className="p-2 border border-slate-900 text-right">Amount Paid</th>
+              <th className="p-2 border border-slate-900 text-right">Invoice Balance</th>
+              <th className="p-2 border border-slate-900 text-right">Running Balance</th>
+            </tr>
+          </thead>
+          <tbody className="font-semibold text-slate-900">
+            {safeRows.map((row) => (
+              <tr key={row.salesInvoiceNo} className="text-center font-mono">
+                <td className="p-2 border border-slate-900 font-bold">{row.salesInvoiceNo}</td>
+                <td className="p-2 border border-slate-900">{row.drNo}</td>
+                <td className="p-2 border border-slate-900">{row.siDate}</td>
+                <td className="p-2 border border-slate-900">{row.dueDate}</td>
+                <td className="p-2 border border-slate-900 font-bold">{row.age}</td>
+                <td className="p-2 border border-slate-900 text-right font-bold">
+                  {row.invoiceAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="p-3 border border-slate-300 text-right font-mono">
-                  ₱{days30Val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                <td className="p-2 border border-slate-900 text-right">{row.amountPaid}</td>
+                <td className="p-2 border border-slate-900 text-right font-bold">
+                  {row.invoiceBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="p-3 border border-slate-300 text-right font-mono bg-yellow-200 font-black text-slate-900">
-                  ₱{days60Val.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </td>
-                <td className="p-3 border border-slate-300 text-right font-mono font-extrabold text-blue-950">
-                  ₱{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                <td className="p-2 border border-slate-900 text-right font-bold">
+                  {row.runningBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Payment Remittance Footer */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-xs text-blue-950 font-semibold">
-        <p className="font-bold text-sm uppercase text-blue-900">Payment Remittance Details:</p>
-        <p>Please make checks payable to: <span className="font-bold">ACCUSTANDARD MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION</span></p>
-        <p>Bank: BDO Unibank &bull; Account No: 00-1234-5678-90 &bull; Branch: San Fernando Main</p>
+      {/* Summary Lines Right-Aligned */}
+      <div className="flex flex-col items-end space-y-1 text-xs font-bold text-slate-900 pt-2">
+        <div className="flex justify-between w-64">
+          <span className="italic">AMOUNT DUE</span>
+          <span className="font-mono text-red-600">0.00</span>
+        </div>
+        <div className="flex justify-between w-64">
+          <span className="italic">NOT YET DUE</span>
+          <span className="font-mono">32,208.00</span>
+        </div>
+      </div>
+
+      {/* Full-Width Bright Yellow Highlight Bar matching Screenshot 1 */}
+      <div className="bg-[#FFFF00] text-slate-900 p-2.5 flex justify-between items-center font-black text-sm border-t border-b border-slate-900">
+        <span className="uppercase tracking-wider">Total Current Balance</span>
+        <span className="font-mono underline decoration-double text-base">
+          32,208.00
+        </span>
+      </div>
+
+      {/* Prepared By Footer */}
+      <div className="pt-6 text-xs text-slate-900 font-semibold space-y-1">
+        <p>Prepared By:</p>
+        <div className="pt-4">
+          <p className="font-bold underline text-sm">{preparedBy}</p>
+          <p className="text-slate-600">Accounting Officer</p>
+        </div>
       </div>
     </div>
   );
@@ -142,7 +212,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
             Statement of Account (SOA) Client Aging Ledger
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            Accounts Receivable Tracking &bull; Highlighted Overdue Balance Matrix &bull; Official A4 Print Output
+            Exact Replica of Official Company Template &bull; Highlighted Total Balance &bull; A4 Printable Output
           </p>
         </div>
 
