@@ -96,12 +96,12 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                   </td>
                   <td className="p-4 text-center">
                     {po.rrQtyReceived >= po.poQty ? (
-                      <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> 3-Way Verified
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 font-extrabold text-xs shadow-2xs">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> 3-Way Verified
                       </span>
                     ) : (
-                      <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-extrabold flex items-center justify-center gap-1">
-                        <Clock className="w-3.5 h-3.5" /> Pending Receiving
+                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-xs shadow-2xs">
+                        <Clock className="w-4 h-4 text-amber-600" /> Pending Receiving
                       </span>
                     )}
                   </td>

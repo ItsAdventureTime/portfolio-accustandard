@@ -20,7 +20,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
 
   // Initial Registered System Users & RBAC Permissions Matrix
   const [userList, setUserList] = useState([
-    { id: 'usr-1', name: 'Dr. DCS (Chairman)', role: 'Chairman (DCS)', allowedViews: ['Executive Overview', 'Inventory', 'Sales', 'SOA', 'Purchasing', 'RFP', 'User & Audit Logs'], status: 'ACTIVE' },
+    { id: 'usr-1', name: 'Chairman (DCS)', role: 'Chairman (DCS)', allowedViews: ['Executive Overview', 'Inventory', 'Sales', 'SOA', 'Purchasing', 'RFP', 'User & Audit Logs'], status: 'ACTIVE' },
     { id: 'usr-2', name: 'Karen (General Manager)', role: 'General Manager', allowedViews: ['Executive Overview', 'Inventory', 'Sales', 'SOA', 'Purchasing', 'RFP', 'User & Audit Logs'], status: 'ACTIVE' },
     { id: 'usr-3', name: 'Aila (Bookkeeper)', role: 'Bookkeeper', allowedViews: ['Executive Overview', 'SOA', 'Purchasing', 'RFP'], status: 'ACTIVE' },
     { id: 'usr-4', name: 'Marie (Warehouse)', role: 'Warehouse', allowedViews: ['Inventory Control', 'Purchasing & Receiving (RR Input)'], status: 'ACTIVE' },

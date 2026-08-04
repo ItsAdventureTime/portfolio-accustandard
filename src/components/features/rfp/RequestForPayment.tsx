@@ -67,8 +67,8 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                     ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="p-4 text-center">
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold inline-flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Approved (DCS)
+                    <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 font-extrabold text-xs shadow-2xs">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Approved (DCS)
                     </span>
                   </td>
                 </tr>
