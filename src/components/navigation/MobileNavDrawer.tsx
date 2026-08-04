@@ -62,7 +62,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
           <div className="flex items-center gap-2">
             <div className="bg-blue-900 text-white px-2 py-0.5 rounded font-black text-xs tracking-tight">
-              ACCUSTANDA
+              ACCUSTANDARD RxD
             </div>
             <div>
               <h3 className="text-xs font-black uppercase text-slate-900 tracking-wider">Navigation Menu</h3>
