@@ -338,7 +338,11 @@ export default function Home() {
           )}
 
           {activeTab === 'admin' && (
-            <SystemAuditTrail auditLogs={auditLogs} />
+            <SystemAuditTrail
+              auditLogs={auditLogs}
+              onShowNotification={showNotification}
+              onAddAuditLog={addAuditLog}
+            />
           )}
         </main>
       </div>

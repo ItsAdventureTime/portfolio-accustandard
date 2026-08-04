@@ -12,9 +12,15 @@ import {
 
 interface SystemAuditTrailProps {
   auditLogs: any[];
+  onShowNotification?: (msg: string) => void;
+  onAddAuditLog?: (action: string) => void;
 }
 
-export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs }) => {
+export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
+  auditLogs,
+  onShowNotification,
+  onAddAuditLog,
+}) => {
   const [activeSubTab, setActiveSubTab] = useState<'AUDIT' | 'USERS'>('USERS');
   const [filterQuery, setFilterQuery] = useState('');
 
@@ -42,17 +48,22 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUserName.trim()) return;
+    if (!newUserName.trim()) {
+      if (onShowNotification) onShowNotification('Please enter a full name for the new system user.');
+      return;
+    }
 
     const newUser = {
       id: `usr-${Date.now()}`,
-      name: newUserName,
+      name: newUserName.trim(),
       role: newUserRole,
       allowedViews: newUserRole === 'Warehouse' ? ['Inventory Control', 'Purchasing & Receiving'] : ['Executive Overview', 'Sales Quotation Generator'],
       status: 'ACTIVE',
     };
 
     setUserList((prev) => [...prev, newUser]);
+    if (onShowNotification) onShowNotification(`Successfully registered user ${newUserName} as ${newUserRole}!`);
+    if (onAddAuditLog) onAddAuditLog(`Registered new system user ${newUserName} with role ${newUserRole}`);
     setNewUserName('');
   };
 
@@ -73,6 +84,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
         {/* Tab Switcher */}
         <div className="flex items-center gap-1 bg-slate-200 p-1.5 rounded-xl shrink-0">
           <button
+            type="button"
             onClick={() => setActiveSubTab('USERS')}
             className={`px-4 py-2 rounded-lg font-extrabold text-xs sm:text-sm transition ${
               activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-700 hover:text-slate-900'
@@ -81,6 +93,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
             User &amp; Role Setup ({userList.length})
           </button>
           <button
+            type="button"
             onClick={() => setActiveSubTab('AUDIT')}
             className={`px-4 py-2 rounded-lg font-extrabold text-xs sm:text-sm transition ${
               activeSubTab === 'AUDIT' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-700 hover:text-slate-900'
@@ -106,10 +119,10 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
                 <label className="font-bold text-slate-700 block mb-1">User Full Name *</label>
                 <input
                   type="text"
-                  placeholder="e.g. Dr. Alex Santos"
+                  placeholder="e.g. Alex Santos"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3.5 py-2.5 focus:outline-none focus:border-blue-600"
                   required
                 />
               </div>
@@ -119,7 +132,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
                 <select
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3.5 py-2.5 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
                   <option value="Admin">Admin (Bridge)</option>
                   <option value="Chairman (DCS)">Chairman (DCS)</option>
@@ -134,9 +147,10 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-lg transition shadow-sm"
+                  className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-lg transition shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
                 >
-                  + Add System User
+                  <Plus className="w-4 h-4" />
+                  <span>Add System User</span>
                 </button>
               </div>
             </div>
