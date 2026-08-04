@@ -201,43 +201,44 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({ auditLogs })
             </div>
           </div>
 
-      {/* Audit Log Stream */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-          <h3 className="text-xs font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-700" />
-            Audit Action Records
-          </h3>
-          <span className="text-xs font-mono font-bold text-slate-500">{filteredLogs.length} Log Entries</span>
-        </div>
+          {/* Audit Log Stream Table */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-xs font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-700" />
+                Audit Action Records
+              </h3>
+              <span className="text-xs font-mono font-bold text-slate-500">{filteredLogs.length} Log Entries</span>
+            </div>
 
-        <div className="divide-y divide-slate-200 text-xs">
-          {filteredLogs.map((log) => (
-            <div key={log.id} className="p-3.5 hover:bg-slate-50 transition flex items-start gap-3">
-              <div className="p-2 bg-slate-100 text-slate-700 rounded-xl shrink-0 mt-0.5">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-blue-900 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-slate-500" />
-                    {log.user}
-                  </span>
-                  <span className="font-mono text-[11px] text-slate-400 font-semibold">{log.time}</span>
+            <div className="divide-y divide-slate-200 text-xs">
+              {filteredLogs.map((log) => (
+                <div key={log.id} className="p-3.5 hover:bg-slate-50 transition flex items-start gap-3">
+                  <div className="p-2 bg-slate-100 text-slate-700 rounded-xl shrink-0 mt-0.5">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-blue-900 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-slate-500" />
+                        {log.user}
+                      </span>
+                      <span className="font-mono text-[11px] text-slate-400 font-semibold">{log.time}</span>
+                    </div>
+                    <p className="text-slate-800 font-medium">{log.action}</p>
+                  </div>
                 </div>
-                <p className="text-slate-800 font-medium">{log.action}</p>
-              </div>
-            </div>
-          ))}
+              ))}
 
-          {filteredLogs.length === 0 && (
-            <div className="p-8 text-center text-slate-500 font-medium">
-              No audit log entries matching &quot;{filterQuery}&quot;.
+              {filteredLogs.length === 0 && (
+                <div className="p-8 text-center text-slate-500 font-medium">
+                  No audit log entries matching &quot;{filterQuery}&quot;.
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    )}
-  </div>
+      )}
+    </div>
   );
 };
