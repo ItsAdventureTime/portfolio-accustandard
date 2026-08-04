@@ -429,16 +429,9 @@ export default function Home() {
         isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
         activeTab={activeTab}
-        onSelectTab={(tab) => {
-          setActiveTab(tab);
-          setIsMobileDrawerOpen(false);
-        }}
+        onSelectTab={handleSelectTab}
         viewAsRole={viewAsRole}
-        onChangeRole={(role) => {
-          setViewAsRole(role);
-          showNotification(`Switched view role to: ${role}`);
-          addAuditLog(`Switched user role simulation to: ${role}`);
-        }}
+        onChangeRole={handleChangeRole}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}

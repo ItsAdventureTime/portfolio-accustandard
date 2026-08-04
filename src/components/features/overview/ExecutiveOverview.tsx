@@ -50,6 +50,11 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
   const lowStockSkus = (inventoryList || []).filter((item) => (item.available || item.onHand) < 50);
 
+  // Role Approval Eligibility Checks
+  const canApproveReviewer = ['Admin', 'Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole);
+  const canApproveGM = ['Admin', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole);
+  const canApproveDCS = ['Admin', 'Chairman (DCS)'].includes(viewAsRole);
+
   return (
     <div className="space-y-6 text-slate-900">
       {/* Banner / Overview Title */}
@@ -198,7 +203,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
-                      ) : (
+                      ) : canApproveReviewer ? (
                         <button
                           onClick={() => onApproveItem(item.id, 'reviewer')}
                           className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-amber-600/80 w-full max-w-[130px] mx-auto"
@@ -206,6 +211,15 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Approve Reviewer</span>
                         </button>
+                      ) : (
+                        <span
+                          onClick={() => onApproveItem(item.id, 'reviewer')}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          title={`Role [${viewAsRole}] cannot execute Reviewer Approval`}
+                        >
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Role Locked</span>
+                        </span>
                       )}
                     </td>
 
@@ -216,7 +230,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
-                      ) : isReviewerApproved ? (
+                      ) : !isReviewerApproved ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Awaiting Reviewer</span>
+                        </span>
+                      ) : canApproveGM ? (
                         <button
                           onClick={() => onApproveItem(item.id, 'gm')}
                           className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-blue-700/80 w-full max-w-[130px] mx-auto"
@@ -225,9 +244,13 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <span>Approve GM</span>
                         </button>
                       ) : (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                        <span
+                          onClick={() => onApproveItem(item.id, 'gm')}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          title={`Role [${viewAsRole}] cannot execute GM Approval`}
+                        >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Awaiting Reviewer</span>
+                          <span>Role Locked</span>
                         </span>
                       )}
                     </td>
@@ -239,7 +262,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
-                      ) : isGmApproved ? (
+                      ) : !isGmApproved ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>Awaiting GM</span>
+                        </span>
+                      ) : canApproveDCS ? (
                         <button
                           onClick={() => onApproveItem(item.id, 'dcs')}
                           className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-indigo-700/80 w-full max-w-[130px] mx-auto"
@@ -248,9 +276,13 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <span>Approve DCS</span>
                         </button>
                       ) : (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                        <span
+                          onClick={() => onApproveItem(item.id, 'dcs')}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          title={`Role [${viewAsRole}] cannot execute DCS Chairman Approval`}
+                        >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Awaiting GM</span>
+                          <span>Role Locked</span>
                         </span>
                       )}
                     </td>

@@ -14,6 +14,7 @@ import {
   Camera,
   Smartphone,
   Eye,
+  Lock,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -34,6 +35,16 @@ interface MobileNavDrawerProps {
   auditCount: number;
 }
 
+const ROLE_ALLOWED_TABS: Record<string, string[]> = {
+  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
+  Warehouse: ['inventory', 'purchasing'],
+  Marketing: ['overview', 'quotations'],
+  Sales: ['quotations', 'inventory'],
+};
+
 export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   isOpen,
   onClose,
@@ -50,6 +61,8 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   auditCount,
 }) => {
   if (!isOpen) return null;
+
+  const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
 
   const navItems = [
     { key: 'overview', label: 'Executive Overview', subtitle: 'COSO Approvals Pipeline', icon: Layers, badge: approvalsCount },
@@ -143,28 +156,38 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.key;
+            const isPermitted = allowed.includes(item.key);
+
             return (
               <button
                 key={item.key}
-                onClick={() => onSelectTab(item.key)}
+                onClick={() => {
+                  onSelectTab(item.key);
+                  if (isPermitted) onClose();
+                }}
                 className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between ${
                   isActive
                     ? 'bg-blue-900 text-white font-extrabold shadow-md'
-                    : 'hover:bg-slate-100 text-slate-800 font-bold border border-slate-200'
+                    : isPermitted
+                    ? 'hover:bg-slate-100 text-slate-800 font-bold border border-slate-200'
+                    : 'opacity-50 text-slate-400 border border-slate-200 bg-slate-50'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+                  <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-800 text-white' : isPermitted ? 'bg-slate-200 text-slate-700' : 'bg-slate-200/50 text-slate-400'}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-sm font-extrabold block">{item.label}</span>
-                    <span className={`text-xs block font-medium ${isActive ? 'text-blue-200' : 'text-slate-500'}`}>
+                    <span className="text-sm font-extrabold flex items-center gap-1.5 leading-snug">
+                      <span>{item.label}</span>
+                      {!isPermitted && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                    </span>
+                    <span className={`text-xs block font-medium ${isActive ? 'text-blue-200' : isPermitted ? 'text-slate-500' : 'text-slate-400'}`}>
                       {item.subtitle}
                     </span>
                   </div>
                 </div>
-                {item.badge !== null && (
+                {item.badge !== null && isPermitted && (
                   <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${isActive ? 'bg-white text-blue-950' : 'bg-blue-100 text-blue-900'}`}>
                     {item.badge}
                   </span>
