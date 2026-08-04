@@ -29,6 +29,7 @@ import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
+import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
 import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
 import { ReceivingReportModal } from '@/components/modals/ReceivingReportModal';
