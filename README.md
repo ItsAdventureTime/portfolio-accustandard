@@ -63,26 +63,29 @@ In accordance with modern medical enterprise design standards and 2026 digital e
 
 ```bash
 # Step 1: Navigate to project workspace
-cd /Users/jk.deguzman/dev/accustanda-bridge-dashboard
+cd /Users/jk.deguzman/dev/accustandard-bridge-dashboard
 
 # Step 2: Build static export inside isolated disposable Podman container
 podman run --rm \
-  -v "/Users/jk.deguzman/dev/accustanda-bridge-dashboard:/workspace:Z" \
+  -v "/Users/jk.deguzman/dev/accustandard-bridge-dashboard:/workspace:Z" \
   -v /workspace/.next \
   -v /workspace/node_modules \
   -w /workspace \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 3: Sync static export build files to VPS web root
+# Step 3: Create target web root directory on Linux VPS
+ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
+
+# Step 4: Sync static export build files to VPS web root
 rsync -avz --delete -e "ssh -p 22" \
-  /Users/jk.deguzman/dev/accustanda-bridge-dashboard/out/ \
+  /Users/jk.deguzman/dev/accustandard-bridge-dashboard/out/ \
   jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
 
-# Step 4: Format host Caddyfile on VPS & reload Caddy container
+# Step 5: Format host Caddyfile on VPS & reload Caddy container
 ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt /etc/caddy/Caddyfile > /tmp/Caddyfile.tmp && mv /tmp/Caddyfile.tmp /home/jk/caddy/conf/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
 
-# Step 5: Purge Bunny CDN Cache
+# Step 6: Purge Bunny CDN Cache
 ssh -p 22 jk@216.75.75.136 "bunny-purge"
 ```
 
