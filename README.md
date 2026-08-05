@@ -91,4 +91,15 @@ ssh -p 22 jk@216.75.75.136 "bunny-purge"
 
 ---
 
+## 🛰️ Production VPS Infrastructure Parameters
+
+- **VPS Host:** `jk@216.75.75.136` (Port 22)
+- **Web Root Directory:** `/home/jk/bridge-ph/accustanda-demo`
+- **Container Caddy Volume:** `Volume=/home/jk/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z`
+- **Caddy Config File:** `/home/jk/caddy/conf/Caddyfile`
+- **CDN Purge Utility:** `bunny-purge`
+- **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustandard.git` (`main` branch)
+
+---
+
 © 2026 Accustandard Medical and Diagnostic Supplies Corporation & DelegateOps Business Support Services. All Rights Reserved.
