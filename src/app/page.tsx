@@ -36,14 +36,19 @@ import { ReceivingReportModal } from '@/components/modals/ReceivingReportModal';
 import { CreateRFPModal } from '@/components/modals/CreateRFPModal';
 import { CreateQuotationModal } from '@/components/modals/CreateQuotationModal';
 import { CreatePOModal } from '@/components/modals/CreatePOModal';
+import { QBOSyncQueueModal } from '@/components/modals/QBOSyncQueueModal';
 
 import {
   useDemoStore,
   DEFAULT_INVENTORY,
+  DEFAULT_REPLENISHMENT_PLANNER,
+  DEFAULT_RFQS,
   DEFAULT_APPROVALS,
   DEFAULT_SOA_ROWS,
+  DEFAULT_COLLECTIONS,
   DEFAULT_PO_LIST,
   DEFAULT_RFP_LIST,
+  DEFAULT_QBO_QUEUE,
   DEFAULT_AUDIT_LOGS,
 } from '@/lib/useDemoStore';
 
@@ -58,10 +63,14 @@ export default function Home() {
 
   // Core Data Lists
   const [inventoryList, setInventoryList] = useState(DEFAULT_INVENTORY);
+  const [replenishmentList, setReplenishmentList] = useState(DEFAULT_REPLENISHMENT_PLANNER);
+  const [rfqList, setRfqList] = useState(DEFAULT_RFQS);
   const [approvalsList, setApprovalsList] = useState(DEFAULT_APPROVALS);
   const [soaData, setSoaData] = useState({ rows: DEFAULT_SOA_ROWS });
+  const [collectionsList, setCollectionsList] = useState(DEFAULT_COLLECTIONS);
   const [poList, setPoList] = useState(DEFAULT_PO_LIST);
   const [rfpList, setRfpList] = useState(DEFAULT_RFP_LIST);
+  const [qboQueue, setQboQueue] = useState(DEFAULT_QBO_QUEUE);
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
 
   // Modals & Slideovers
@@ -70,6 +79,7 @@ export default function Home() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isPwaInstallModalOpen, setIsPwaInstallModalOpen] = useState(false);
   const [isProductManagerOpen, setIsProductManagerOpen] = useState(false);
+  const [isQboQueueOpen, setIsQboQueueOpen] = useState(false);
 
   // CRUD Simulator Modals
   const [isAddStockOpen, setIsAddStockOpen] = useState(false);
@@ -204,6 +214,24 @@ export default function Home() {
     addAuditLog(`Approved transaction stage [${stage.toUpperCase()}] for item #${id}`);
   };
 
+  const handleTriggerQboSync = (qboId: string) => {
+    setQboQueue((prev) =>
+      prev.map((item) => {
+        if (item.id === qboId) {
+          return {
+            ...item,
+            syncStatus: 'SYNCED',
+            qboRefId: `QBO-POST-${Math.floor(10000 + Math.random() * 90000)}`,
+            lastAttempt: new Date().toLocaleString(),
+          };
+        }
+        return item;
+      })
+    );
+    showNotification(`Successfully posted item ${qboId} to QuickBooks Online ledger!`);
+    addAuditLog(`Synced operational item ${qboId} to QuickBooks Online`);
+  };
+
   // Open Export Modal Helper
   const handleOpenExportModal = (title: string, filename: string, data: object[], elementId?: string) => {
     setExportModalTitle(title);
@@ -225,10 +253,14 @@ export default function Home() {
   const handleResetData = () => {
     resetDemoData();
     setInventoryList(DEFAULT_INVENTORY);
+    setReplenishmentList(DEFAULT_REPLENISHMENT_PLANNER);
+    setRfqList(DEFAULT_RFQS);
     setApprovalsList(DEFAULT_APPROVALS);
     setSoaData({ rows: DEFAULT_SOA_ROWS });
+    setCollectionsList(DEFAULT_COLLECTIONS);
     setPoList(DEFAULT_PO_LIST);
     setRfpList(DEFAULT_RFP_LIST);
+    setQboQueue(DEFAULT_QBO_QUEUE);
     setAuditLogs(DEFAULT_AUDIT_LOGS);
     showNotification('Demo data restored to default settings.');
     addAuditLog('Restored system demo state to default seed data');
@@ -280,16 +312,19 @@ export default function Home() {
               soaRows={soaData.rows}
               poList={poList}
               rfpList={rfpList}
+              qboQueue={qboQueue}
               viewAsRole={viewAsRole}
               onApproveItem={handleApproveItem}
               onSelectTab={handleSelectTab}
               onOpenScanner={() => setIsScannerOpen(true)}
+              onOpenQBOQueue={() => setIsQboQueueOpen(true)}
             />
           )}
 
           {activeTab === 'inventory' && (
             <InventoryControl
               inventoryList={inventoryList}
+              replenishmentPlannerList={replenishmentList}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onOpenAddStock={() => setIsAddStockOpen(true)}
@@ -300,6 +335,7 @@ export default function Home() {
 
           {activeTab === 'quotations' && (
             <QuotationGenerator
+              rfqList={rfqList}
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
               onOpenCreateModal={() => setIsCreateQuotationOpen(true)}
@@ -315,6 +351,7 @@ export default function Home() {
           {activeTab === 'soa' && (
             <StatementOfAccount
               soaRows={soaData.rows}
+              collectionsList={collectionsList}
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
               onShowNotification={showNotification}
@@ -395,6 +432,13 @@ export default function Home() {
       </div>
 
       {/* System Modals & Slideovers */}
+      <QBOSyncQueueModal
+        isOpen={isQboQueueOpen}
+        onClose={() => setIsQboQueueOpen(false)}
+        qboQueue={qboQueue}
+        onTriggerSync={handleTriggerQboSync}
+      />
+
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}

@@ -58,6 +58,83 @@ export const DEFAULT_INVENTORY = [
   },
 ];
 
+export const DEFAULT_REPLENISHMENT_PLANNER = [
+  {
+    id: 'rep-1',
+    sku: 'ACC-BACT-01',
+    description: 'Calibration Sticks Bact Alert',
+    itemClass: 'Class 1 (Fast-Moving)',
+    availableStock: 40,
+    reservedStock: 5,
+    openCustomerDemand: 30,
+    criticalLevel: 50,
+    proposedOrderQty: 60, // Critical + 10% buffer
+    leadTimeDays: 14,
+    supplier: 'BioMerieux Corp',
+    linkedCustomerPO: 'N/A',
+    status: 'REORDER_RECOMMENDED',
+  },
+  {
+    id: 'rep-2',
+    sku: 'ACC-REAG-04',
+    description: 'Blood Chemistry Reagents Kit',
+    itemClass: 'Class 2 (Controlled)',
+    availableStock: 100,
+    reservedStock: 20,
+    openCustomerDemand: 45,
+    criticalLevel: 80,
+    proposedOrderQty: 50,
+    leadTimeDays: 21,
+    supplier: 'Sysmex Philippines Inc.',
+    linkedCustomerPO: 'N/A',
+    status: 'FORECAST_REVIEW',
+  },
+  {
+    id: 'rep-3',
+    sku: 'ACC-SPEC-99',
+    description: 'Lyphotronic H100+ Specialized Column',
+    itemClass: 'Class 3 (Short-Expiry / Special)',
+    availableStock: 2,
+    reservedStock: 2,
+    openCustomerDemand: 5,
+    criticalLevel: 2,
+    proposedOrderQty: 5,
+    leadTimeDays: 30,
+    supplier: 'Shenzhen Lyphotronic Technology',
+    linkedCustomerPO: 'CUST-PO-2026-88', // Required for Class 3
+    status: 'PO_LINKED_READY',
+  },
+];
+
+export const DEFAULT_RFQS = [
+  {
+    id: 'rfq-1',
+    rfqNo: 'RFQ-2026-0081',
+    customerName: 'Allied Care Experts (ACE) Medical Center',
+    requestedBy: 'Sales Agent (Mark)',
+    censusPerDay: 180,
+    lisConnectivity: true,
+    expectedContractMonths: 36,
+    marketingRoiStatus: 'ROI_COMPLETED',
+    proposedSellingPrice: 42000.0,
+    landedCostPerUnit: 24500.0,
+    expectedMarginPct: 41.6,
+  },
+  {
+    id: 'rfq-2',
+    rfqNo: 'RFQ-2026-0094',
+    customerName: 'Medical City Clark Diagnostic Center',
+    requestedBy: 'Sales Agent (Mark)',
+    censusPerDay: 95,
+    lisConnectivity: false,
+    expectedContractMonths: 12,
+    marketingRoiStatus: 'PENDING_ROI',
+    proposedSellingPrice: 58000.0,
+    landedCostPerUnit: 34000.0,
+    expectedMarginPct: 41.3,
+  },
+];
+
 export const DEFAULT_APPROVALS = [
   {
     id: 'app-1',
@@ -133,6 +210,23 @@ export const DEFAULT_SOA_ROWS = [
   },
 ];
 
+export const DEFAULT_COLLECTIONS = [
+  {
+    id: 'col-1',
+    checkNo: 'CHK-BDO-99201',
+    bank: 'BDO Unibank',
+    date: '2026-08-01',
+    amount: 25000.0,
+    customer: 'Allied Care Experts (ACE) Medical Center',
+    allocatedInvoices: [
+      { invoiceNo: 'SI-6087', allocatedAmount: 16960.0 },
+      { invoiceNo: 'SI-6107', allocatedAmount: 1968.0 },
+    ],
+    unappliedCredit: 6072.0,
+    status: 'POSTED_TO_QBO',
+  },
+];
+
 export const DEFAULT_PO_LIST = [
   {
     id: 'po-1',
@@ -199,6 +293,42 @@ export const DEFAULT_RFP_LIST = [
     amount: 28000.0,
     requestedBy: 'Marketing',
     status: 'PENDING_MKTG',
+  },
+];
+
+export const DEFAULT_QBO_QUEUE = [
+  {
+    id: 'qbo-1',
+    docType: 'Sales Invoice',
+    docNumber: 'SI-6087',
+    entityName: 'Allied Care Experts (ACE) Medical Center',
+    amount: 16960.0,
+    qboRefId: 'QBO-INV-88902',
+    syncStatus: 'SYNCED',
+    lastAttempt: '2026-08-04 14:30:12',
+    errorMessage: '',
+  },
+  {
+    id: 'qbo-2',
+    docType: 'Vendor Bill',
+    docNumber: 'PO-2026-0891 / SI-8812',
+    entityName: 'BioMerieux Diagnostics Corp',
+    amount: 142000.0,
+    qboRefId: 'QBO-BILL-44102',
+    syncStatus: 'SYNCED',
+    lastAttempt: '2026-08-04 15:10:45',
+    errorMessage: '',
+  },
+  {
+    id: 'qbo-3',
+    docType: 'Customer Payment Collection',
+    docNumber: 'CHK-BDO-99201',
+    entityName: 'Allied Care Experts (ACE) Medical Center',
+    amount: 25000.0,
+    qboRefId: 'Awaiting Sync',
+    syncStatus: 'QUEUED',
+    lastAttempt: '2026-08-05 08:45:00',
+    errorMessage: '',
   },
 ];
 

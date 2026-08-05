@@ -11,6 +11,8 @@ import {
   AlertTriangle,
   Send,
   Lock,
+  Database,
+  RefreshCw,
 } from 'lucide-react';
 
 interface ExecutiveOverviewProps {
@@ -19,10 +21,12 @@ interface ExecutiveOverviewProps {
   soaRows: any[];
   poList: any[];
   rfpList: any[];
+  qboQueue?: any[];
   viewAsRole: string;
   onApproveItem: (id: string, stage: string) => void;
   onSelectTab: (tabKey: string) => void;
   onOpenScanner: () => void;
+  onOpenQBOQueue?: () => void;
 }
 
 export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
@@ -31,10 +35,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   soaRows,
   poList,
   rfpList,
+  qboQueue = [],
   viewAsRole,
   onApproveItem,
   onSelectTab,
   onOpenScanner,
+  onOpenQBOQueue,
 }) => {
   const pendingApprovalsCount = approvalsList.filter(
     (item) =>
@@ -60,7 +66,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
       {/* Banner / Overview Title */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-6 rounded-2xl shadow-md border border-blue-950 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="bg-red-600 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
               COSO Internal Control System
             </span>
@@ -74,7 +80,17 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          {onOpenQBOQueue && (
+            <button
+              onClick={onOpenQBOQueue}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl transition flex items-center gap-2 shadow-sm"
+            >
+              <Database className="w-4 h-4 text-emerald-200" />
+              <span>QBO Sync Queue ({qboQueue.length})</span>
+            </button>
+          )}
+
           <button
             onClick={() => onSelectTab('inventory')}
             className="px-4 py-2.5 bg-white text-blue-950 hover:bg-slate-100 font-extrabold text-sm rounded-xl transition flex items-center gap-2 shadow-sm"

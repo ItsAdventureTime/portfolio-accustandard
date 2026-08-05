@@ -7,11 +7,17 @@ import {
   Download,
   Send,
   CheckCircle2,
+  Calculator,
+  UserCheck,
+  Building2,
+  DollarSign,
+  PieChart,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 interface QuotationGeneratorProps {
+  rfqList: any[];
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onOpenCreateModal: () => void;
@@ -21,6 +27,7 @@ interface QuotationGeneratorProps {
 }
 
 export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
+  rfqList,
   onOpenPrintModal,
   onOpenExportModal,
   onOpenCreateModal,
@@ -28,7 +35,9 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onShowNotification,
   onAddAuditLog,
 }) => {
-  // Sample Quotation State matching Screenshot 2
+  const [activeSubTab, setActiveSubTab] = useState<'QUOTE' | 'RFQ' | 'ROI'>('QUOTE');
+
+  // Sample Quotation State
   const [qrn, setQrn] = useState('QRN20240415037');
   const [quotationDate, setQuotationDate] = useState('April 15, 2024');
   const [clientName, setClientName] = useState('Ms. Katherine Porciuncula');
@@ -38,6 +47,22 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const [itemDescription, setItemDescription] = useState('Calibration Sticks Bact Alert');
   const [packaging, setPackaging] = useState('1 Kit');
   const [unitPrice, setUnitPrice] = useState(31500.0);
+
+  // Marketing ROI Calculator State
+  const [roiCensus, setRoiCensus] = useState(180);
+  const [roiContractMonths, setRoiContractMonths] = useState(36);
+  const [roiLandedCost, setRoiLandedCost] = useState(24500);
+  const [roiLisedFee, setRoiLisedFee] = useState(3500);
+  const [roiProposedPrice, setRoiProposedPrice] = useState(42000);
+
+  const calculateRoiMargin = () => {
+    const totalCost = roiLandedCost + roiLisedFee;
+    const profit = roiProposedPrice - totalCost;
+    const marginPct = (profit / roiProposedPrice) * 100;
+    return { totalCost, profit, marginPct };
+  };
+
+  const { totalCost, profit, marginPct } = calculateRoiMargin();
 
   const handleExportData = () => {
     const exportRows = [
@@ -62,7 +87,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
   const quotationDocumentContent = (
     <div id="printable-quotation-target" className="bg-white p-8 sm:p-12 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6 relative">
-      {/* Top Header Block matching Screenshot 2 */}
+      {/* Top Header Block */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <AccustandardLogo size="lg" />
@@ -75,19 +100,19 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         </div>
       </div>
 
-      {/* Double Horizontal Accent Line (Blue + Red) */}
+      {/* Double Horizontal Accent Line */}
       <div className="space-y-0.5">
         <div className="h-1 bg-blue-900 w-full" />
         <div className="h-0.5 bg-red-600 w-full" />
       </div>
 
-      {/* Quotation Ref & Date (Right Aligned) */}
+      {/* Quotation Ref & Date */}
       <div className="text-right text-xs font-bold text-slate-900 space-y-0.5">
         <p><span className="uppercase">QUOTATION:</span> <span className="font-mono">{qrn}</span></p>
         <p>{quotationDate}</p>
       </div>
 
-      {/* Recipient Details Block matching Screenshot 2 */}
+      {/* Recipient Details Block */}
       <div className="space-y-0.5 text-xs text-slate-900">
         <p className="font-bold text-sm">{clientName}</p>
         <p className="font-bold">{clientFacility}</p>
@@ -100,7 +125,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         <p className="font-medium">We are delighted to submit our price proposal for the supply and delivery of the following:</p>
       </div>
 
-      {/* Product Description Table matching Dark Blue Header in Screenshot 2 */}
+      {/* Product Description Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse border border-slate-300">
           <thead className="bg-[#002060] text-white font-extrabold uppercase tracking-wider">
@@ -122,7 +147,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         </table>
       </div>
 
-      {/* Terms and Conditions Block matching Screenshot 2 */}
+      {/* Terms and Conditions Block */}
       <div className="space-y-2 text-xs text-slate-900 pt-2">
         <p className="font-extrabold uppercase">TERMS AND CONDITIONS:</p>
         <div className="space-y-1 font-semibold text-slate-800 leading-relaxed">
@@ -137,14 +162,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       <div className="pt-6 space-y-4 text-xs text-slate-900">
         <p className="font-medium">Respectfully,</p>
 
-        {/* Signature Line */}
         <div className="pt-4 space-y-0.5">
           <p className="font-extrabold text-sm border-b border-slate-400 w-fit pb-0.5">Katherine M. Payumo, RMT</p>
           <p className="text-slate-700 font-semibold">Product Marketing Manager</p>
         </div>
       </div>
 
-      {/* Bottom Footer Accent Bar (Blue + Red Double Line) */}
+      {/* Bottom Footer Accent Bar */}
       <div className="pt-8 space-y-3">
         <div className="space-y-0.5">
           <div className="h-1 bg-blue-900 w-full" />
@@ -171,10 +195,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         <div>
           <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
             <FileText className="w-6 h-6 text-amber-600" />
-            Sales Quotation Generator &amp; Stock Reservation
+            Sales Quotation &amp; Demand Qualification Engine
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            Exact Replica of Official Quotation Template &bull; 3-Day Stock Reservation &bull; A4 Printable Output
+            RFQ Creation &bull; Marketing ROI Calculator &bull; 3-Day FEFO Stock Reservation &bull; A4 PDF Printing
           </p>
         </div>
 
@@ -213,8 +237,209 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         </div>
       </div>
 
-      {/* Official A4 Quotation Document Preview */}
-      {quotationDocumentContent}
+      {/* Sub-Tab Navigation */}
+      <div className="flex border-b border-slate-200 gap-2">
+        <button
+          onClick={() => setActiveSubTab('QUOTE')}
+          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+            activeSubTab === 'QUOTE'
+              ? 'border-blue-900 text-blue-900'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span>Official Sales Quotation Document</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('RFQ')}
+          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+            activeSubTab === 'RFQ'
+              ? 'border-blue-900 text-blue-900'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <UserCheck className="w-4 h-4 text-blue-700" />
+          <span>RFQ / Demand Requests (Sales Agent)</span>
+          <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 rounded-full">
+            {rfqList.length} Requests
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('ROI')}
+          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+            activeSubTab === 'ROI'
+              ? 'border-blue-900 text-blue-900'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Calculator className="w-4 h-4 text-emerald-600" />
+          <span>Marketing ROI &amp; Margin Calculator</span>
+        </button>
+      </div>
+
+      {activeSubTab === 'QUOTE' && quotationDocumentContent}
+
+      {activeSubTab === 'RFQ' && (
+        <div className="space-y-4">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs text-blue-900">
+            <p className="font-bold flex items-center gap-1.5">
+              <UserCheck className="w-4 h-4 text-blue-700" />
+              Sales Demand Qualification Workflow (Blueprint Section 1)
+            </p>
+            <p className="mt-1 text-blue-800">
+              Sales Agents create RFQs by specifying client census, LIS connectivity, and expected contract terms.
+              Sales Officers cannot set pricing or approve their own quotes.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                  <tr>
+                    <th className="p-4">RFQ Ref #</th>
+                    <th className="p-4">Customer Facility</th>
+                    <th className="p-4">Sales Agent</th>
+                    <th className="p-4 text-center">Daily Census</th>
+                    <th className="p-4 text-center">LIS Needed</th>
+                    <th className="p-4 text-right">Contract Term</th>
+                    <th className="p-4">Marketing ROI Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+                  {rfqList.map((rfq) => (
+                    <tr key={rfq.id} className="hover:bg-slate-50 transition">
+                      <td className="p-4 font-mono font-extrabold text-blue-900">{rfq.rfqNo}</td>
+                      <td className="p-4 font-bold text-slate-900">{rfq.customerName}</td>
+                      <td className="p-4 text-slate-700">{rfq.requestedBy}</td>
+                      <td className="p-4 text-center font-mono font-bold text-slate-900">{rfq.censusPerDay} / day</td>
+                      <td className="p-4 text-center">
+                        {rfq.lisConnectivity ? (
+                          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded">Yes</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded">No</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right font-mono font-bold text-slate-800">{rfq.expectedContractMonths} Months</td>
+                      <td className="p-4">
+                        {rfq.marketingRoiStatus === 'ROI_COMPLETED' ? (
+                          <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+                            ROI Calculated ({rfq.expectedMarginPct}%)
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                            Pending Marketing Review
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeSubTab === 'ROI' && (
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-emerald-600" />
+              Marketing Manager ROI &amp; Margin Calculator
+            </h3>
+            <p className="text-xs text-slate-500">
+              Side-by-side cost vs. selling price comparison including landed cost, sponsorship, LIS connectivity, and contract margin
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+              <h4 className="font-bold text-slate-900 text-sm border-b border-slate-200 pb-2">Client &amp; Cost Inputs</h4>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Expected Daily Sample Census</label>
+                <input
+                  type="number"
+                  value={roiCensus}
+                  onChange={(e) => setRoiCensus(Number(e.target.value))}
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Batch Landed Cost (₱)</label>
+                <input
+                  type="number"
+                  value={roiLandedCost}
+                  onChange={(e) => setRoiLandedCost(Number(e.target.value))}
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">LIS &amp; Account Overhead (₱)</label>
+                <input
+                  type="number"
+                  value={roiLisedFee}
+                  onChange={(e) => setRoiLisedFee(Number(e.target.value))}
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Proposed Selling Price (₱)</label>
+                <input
+                  type="number"
+                  value={roiProposedPrice}
+                  onChange={(e) => setRoiProposedPrice(Number(e.target.value))}
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 bg-emerald-50/50 p-5 rounded-xl border border-emerald-200 flex flex-col justify-between">
+              <div>
+                <h4 className="font-bold text-emerald-950 text-sm border-b border-emerald-200 pb-2 flex items-center gap-1.5">
+                  <PieChart className="w-4 h-4 text-emerald-700" />
+                  Calculated ROI &amp; Contract Margin
+                </h4>
+
+                <div className="space-y-3 mt-4 text-sm font-semibold text-slate-800">
+                  <div className="flex justify-between">
+                    <span>Total Cost of Goods &amp; Overhead:</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Proposed Selling Price:</span>
+                    <span className="font-mono font-bold text-blue-900">
+                      ₱{roiProposedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between border-t border-emerald-200 pt-3 text-base">
+                    <span className="font-bold text-emerald-950">Net Margin Profit / Unit:</span>
+                    <span className="font-mono font-extrabold text-emerald-800">
+                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-emerald-700 text-white rounded-xl text-center space-y-1 shadow-sm">
+                <p className="text-xs uppercase font-bold text-emerald-200">Expected Contract Margin</p>
+                <p className="text-3xl font-black font-mono">{marginPct.toFixed(1)}%</p>
+                <p className="text-[11px] text-emerald-100">Approved for General Manager &amp; Chairman Review</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
