@@ -1,19 +1,9 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Accustanda Dashboard",
-  description: "Control-First Enterprise Operations ERP & Multi-Location Inventory Dashboard for Accustanda Rx D",
-  manifest: "/manifest.json",
-};
-
-export const viewport: Viewport = {
-  themeColor: "#1d4ed8",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
+  title: "Accustandard ERP Dashboard",
+  description: "Control-First Enterprise Operations ERP & Multi-Location Inventory Dashboard for Accustandard Medical and Diagnostic Supplies Corporation",
 };
 
 export default function RootLayout({
@@ -22,11 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-      </head>
-      <body className="antialiased">{children}</body>
+    <html lang="en" className="h-full">
+      <body className="h-full bg-slate-100 text-slate-900 antialiased font-sans">
+        {children}
+      </body>
     </html>
   );
 }

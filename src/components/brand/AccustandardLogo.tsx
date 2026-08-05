@@ -20,62 +20,38 @@ export const AccustandardLogo: React.FC<AccustandardLogoProps> = ({
   return (
     <div className={`flex items-center gap-2 select-none ${className}`}>
       <div className={`flex flex-col justify-center ${heightClasses}`}>
-        {/* SVG Vector Replica of photo_2026-08-01_23-55-07.jpg */}
+        {/* SVG Vector Logo matching official Accustandard logo specification */}
         <svg
-          viewBox="0 0 520 110"
+          viewBox="0 0 580 95"
           className="h-full w-auto object-contain"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Main ACCUSTANDARD text in Deep Royal Blue */}
+          {/* Main ACCUSTANDARD title in Deep Royal Blue */}
           <text
-            x="5"
-            y="65"
+            x="0"
+            y="52"
             fill="#1E3A8A"
-            fontSize="62"
+            fontSize="54"
             fontWeight="900"
-            fontFamily="Arial Black, Impact, sans-serif"
-            letterSpacing="-1"
+            fontFamily="Impact, 'Arial Black', sans-serif"
+            letterSpacing="1"
           >
             ACCUSTANDARD
           </text>
 
-          {/* Rx Graphic & D in Red & Navy */}
-          <text
-            x="410"
-            y="65"
-            fill="#DC2626"
-            fontSize="68"
-            fontWeight="900"
-            fontFamily="Georgia, serif"
-            fontStyle="italic"
-          >
-            Rx
-          </text>
+          {/* Solid Red Divider Bar */}
+          <rect x="0" y="60" width="580" height="5" fill="#DC2626" rx="1.5" />
 
+          {/* Subtitle: MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION */}
           <text
-            x="475"
-            y="65"
-            fill="#1E3A8A"
-            fontSize="62"
-            fontWeight="900"
-            fontFamily="Arial Black, Impact, sans-serif"
-          >
-            D
-          </text>
-
-          {/* Red Underline Bar */}
-          <path d="M 5 76 L 405 76 L 415 76 L 415 82 L 5 82 Z" fill="#DC2626" />
-
-          {/* Subtitle text */}
-          <text
-            x="8"
-            y="98"
+            x="0"
+            y="85"
             fill="#0F172A"
             fontSize="18"
-            fontWeight="900"
-            fontFamily="Arial, sans-serif"
-            letterSpacing="0.5"
+            fontWeight="800"
+            fontFamily="'Helvetica Neue', Arial, sans-serif"
+            letterSpacing="0.4"
           >
             MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
           </text>

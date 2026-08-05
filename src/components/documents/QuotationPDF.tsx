@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 export interface QuotationItem {
   id: string;
@@ -31,15 +31,7 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
       {/* Header */}
       <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
         <div>
-          <div className="flex items-center leading-none">
-            <span className="text-3xl font-black tracking-tighter text-blue-950">ACCUSTANDA</span>
-            <span className="text-3xl font-black text-red-600 ml-0.5">R<span className="text-2xl font-black italic">x</span></span>
-            <span className="text-3xl font-black text-blue-950">D</span>
-          </div>
-          <div className="w-full border-b-2 border-red-600 my-0.5"></div>
-          <p className="text-[10px] font-extrabold text-gray-900 tracking-tight uppercase whitespace-nowrap">
-            MEDICAL AND DIAGNOSTIC SUPPLIES CORPORATION
-          </p>
+          <AccustandardLogo size="lg" />
         </div>
         <div className="text-right text-xs text-gray-700 leading-tight">
           <p>Unit A G/F El Decano Bldg., Blk 2 Lot 2</p>
@@ -63,7 +55,7 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
 
       {/* Greeting */}
       <div className="mb-6">
-        <p className="italic text-gray-800">Greetings from Accustanda!</p>
+        <p className="italic text-gray-800">Greetings from Accustandard!</p>
         <p className="text-gray-700 mt-1">
           We are delighted to submit our price proposal for the supply and delivery of the following:
         </p>

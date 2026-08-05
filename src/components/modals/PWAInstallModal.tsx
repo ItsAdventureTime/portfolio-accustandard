@@ -67,7 +67,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
               <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
                 Install Accustandard Mobile App
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Use full-screen app mode & barcode scanner</p>
+              <p className="text-xs text-slate-500 font-medium">Use full-screen app mode &amp; barcode scanner</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
@@ -79,7 +79,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
         {isStandalone ? (
           <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 text-xs flex items-center gap-2.5 font-bold">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>App Mode Active: You are currently running Accustanda ERP in full PWA standalone mode.</span>
+            <span>App Mode Active: You are currently running Accustandard ERP in full PWA standalone mode.</span>
           </div>
         ) : null}
 
@@ -109,11 +109,11 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
-                  <p>Scroll down the menu options and tap <strong>"Add to Home Screen"</strong> <PlusSquare className="w-3.5 h-3.5 inline text-emerald-600 mx-0.5" />.</p>
+                  <p>Scroll down the menu options and tap <strong>&quot;Add to Home Screen&quot;</strong> <PlusSquare className="w-3.5 h-3.5 inline text-emerald-600 mx-0.5" />.</p>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">3</span>
-                  <p>Tap <strong>Add</strong> in the top right. The Accustanda app icon will appear on your home screen!</p>
+                  <p>Tap <strong>Add</strong> in the top right. The Accustandard app icon will appear on your home screen!</p>
                 </div>
               </div>
             </div>
@@ -122,7 +122,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
             <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
               <span className="font-extrabold text-slate-900 block text-xs uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
                 <Monitor className="w-4 h-4 text-blue-600" />
-                Android & Desktop Guide:
+                Android &amp; Desktop Guide:
               </span>
               <div className="space-y-2.5 text-slate-700 font-medium">
                 <div className="flex items-start gap-2.5">
@@ -131,7 +131,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
-                  <p>On Android Chrome, open browser menu <strong>(⋮)</strong> ➔ select <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</p>
+                  <p>On Android Chrome, open browser menu <strong>(&#8942;)</strong> &#10132; select <strong>&quot;Install app&quot;</strong> or <strong>&quot;Add to Home screen&quot;</strong>.</p>
                 </div>
               </div>
             </div>
