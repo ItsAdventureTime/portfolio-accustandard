@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import logoImg from '../../../public/photo_2026-08-01_23-55-07.jpg';
 
 interface AccustandardLogoProps {
   className?: string;
@@ -17,14 +18,15 @@ export const AccustandardLogo: React.FC<AccustandardLogoProps> = ({
     lg: 'h-14 sm:h-16',
   }[size];
 
+  const logoSrc = typeof logoImg === 'string' ? logoImg : logoImg.src || '/photo_2026-08-01_23-55-07.jpg';
+
   return (
     <div className={`flex items-center select-none ${className}`}>
-      {/* Renders the exact, untouched logo image photo_2026-08-01_23-55-07.jpg */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/photo_2026-08-01_23-55-07.jpg"
+        src={logoSrc}
         alt="Accustandard Logo"
-        className={`${heightClasses} w-auto object-contain`}
+        className={`${heightClasses} w-auto object-contain block`}
       />
     </div>
   );
