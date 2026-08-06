@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Setting up Accustanda Dashboard Podman Quadlets..."
+echo "==> Setting up Accustandard Dashboard Podman Quadlets..."
 
 # Create Data Directories
-mkdir -p "$HOME/bridge-ph/accustanda-demo/db"
-mkdir -p "$HOME/bridge-ph/accustanda/db"
+mkdir -p "$HOME/bridge-ph/accustandard-demo/db"
+mkdir -p "$HOME/bridge-ph/accustandard/db"
 
 # Create Quadlet Systemd Directories
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustanda-demo"
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustanda"
+mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
+mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard"
 
 # Copy Demo Quadlets
-cp -f deploy/quadlets/demo/* "$HOME/.config/containers/systemd/bridge-ph/accustanda-demo/"
+cp -f deploy/quadlets/demo/* "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo/"
 
 # Copy Production Quadlets
-cp -f deploy/quadlets/production/* "$HOME/.config/containers/systemd/bridge-ph/accustanda/"
+cp -f deploy/quadlets/production/* "$HOME/.config/containers/systemd/bridge-ph/accustandard/"
 
 # Enable Systemd Lingering for Rootless Podman
 loginctl enable-linger "$USER" || true
@@ -24,7 +24,7 @@ loginctl enable-linger "$USER" || true
 systemctl --user daemon-reload
 
 echo "==> Quadlet units installed successfully!"
-echo "    - Demo Quadlet path: $HOME/.config/containers/systemd/bridge-ph/accustanda-demo"
-echo "    - Production Quadlet path: $HOME/.config/containers/systemd/bridge-ph/accustanda"
-echo "    - Data path Demo: $HOME/bridge-ph/accustanda-demo"
-echo "    - Data path Production: $HOME/bridge-ph/accustanda"
+echo "    - Demo Quadlet path: $HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
+echo "    - Production Quadlet path: $HOME/.config/containers/systemd/bridge-ph/accustandard"
+echo "    - Data path Demo: $HOME/bridge-ph/accustandard-demo"
+echo "    - Data path Production: $HOME/bridge-ph/accustandard"

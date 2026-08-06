@@ -1,0 +1,6 @@
+[Unit]
+Description=Accustandard Dashboard Production Pod
+
+[Pod]
+PodName=accustandard-pod
+PublishPort=3000:3000

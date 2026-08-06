@@ -1,0 +1,17 @@
+[Unit]
+Description=Accustandard Dashboard Demo Container
+After=accustandard-demo-db.service
+
+[Container]
+ContainerName=accustandard-demo-app
+Pod=accustandard-demo-pod.pod
+Image=localhost/accustandard-bridge-dashboard:demo
+Environment=NODE_ENV=production
+Environment=NEXT_PUBLIC_BASE_PATH=/accustandard/demo
+Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

@@ -1,6 +1,0 @@
-[Unit]
-Description=Accustanda Dashboard Production Pod
-
-[Pod]
-PodName=accustanda-pod
-PublishPort=3000:3000

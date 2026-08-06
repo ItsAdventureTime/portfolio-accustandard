@@ -1,13 +1,14 @@
-# Caddy Reverse Proxy Configuration Snippet for DelegateOps (delegateops.business)
+# Caddy Reverse Proxy Configuration Snippet for Accustandard Medical ERP
+# Host: delegateops.business
 
 delegateops.business {
-    # Demo Site: https://delegateops.business/accustanda/demo
-    handle_path /accustanda/demo* {
+    # Demo Site: https://delegateops.business/accustandard/demo
+    handle_path /accustandard/demo* {
         reverse_proxy localhost:3001
     }
 
-    # Production Site: https://delegateops.business/accustanda
-    handle_path /accustanda* {
+    # Production Site: https://delegateops.business/accustandard
+    handle_path /accustandard* {
         reverse_proxy localhost:3000
     }
 
