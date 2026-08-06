@@ -59,8 +59,9 @@ In accordance with modern medical enterprise design standards and 2026 digital e
 
 ---
 
-## 🛠️ Step-by-Step Manual Deployment Guide for VPS
+## 🛠️ Step-by-Step Manual Deployment & Migration Guide for VPS
 
+### Local Machine (macOS):
 ```bash
 # Step 1: Navigate to project workspace
 cd /Users/jk.deguzman/dev/accustandard-bridge-dashboard
@@ -74,31 +75,38 @@ podman run --rm \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 3: Create target web root directory on Linux VPS
-ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustanda-demo"
+# Step 3: Run full VPS infrastructure migration script via SSH
+ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-rename-accustandard.sh
 
-# Step 4: Sync static export build files to VPS web root
+# Step 4: Sync static export build files to Demo VPS web root
 rsync -avz --delete -e "ssh -p 22" \
   /Users/jk.deguzman/dev/accustandard-bridge-dashboard/out/ \
-  jk@216.75.75.136:/home/jk/bridge-ph/accustanda-demo/
+  jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/
 
-# Step 5: Format host Caddyfile on VPS & reload Caddy container
-ssh -p 22 jk@216.75.75.136 "podman exec caddy caddy fmt /etc/caddy/Caddyfile > /tmp/Caddyfile.tmp && mv /tmp/Caddyfile.tmp /home/jk/caddy/conf/Caddyfile && podman exec caddy caddy reload --config /etc/caddy/Caddyfile"
-
-# Step 6: Purge Bunny CDN Cache
-ssh -p 22 jk@216.75.75.136 "bunny-purge"
+# Step 5: Sync static export build files to Production VPS web root
+rsync -avz --delete -e "ssh -p 22" \
+  /Users/jk.deguzman/dev/accustandard-bridge-dashboard/out/ \
+  jk@216.75.75.136:/home/jk/bridge-ph/accustandard/
 ```
 
 ---
 
-## 🛰️ Production VPS Infrastructure Parameters
+## 🛰️ Production & Demo VPS Infrastructure Parameters
 
 - **VPS Host:** `jk@216.75.75.136` (Port 22)
-- **Web Root Directory:** `/home/jk/bridge-ph/accustanda-demo`
-- **Container Caddy Volume:** `Volume=/home/jk/bridge-ph/accustanda-demo:/srv/bridge-ph-accustanda-demo:ro,Z`
-- **Caddy Config File:** `/home/jk/caddy/conf/Caddyfile`
-- **CDN Purge Utility:** `bunny-purge`
+- **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
 - **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustandard.git` (`main` branch)
+- **SSH Commit Signing:** Enabled (`commit.gpgsign = true`, `gpg.format = ssh`)
+
+### Remote Production Setup:
+- **Web Root Directory:** `/home/jk/bridge-ph/accustandard`
+- **Systemd Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard`
+- **Quadlet Pod/Containers:** `accustandard-pod`, `accustandard-app`, `accustandard-db`
+
+### Remote Demo Setup:
+- **Web Root Directory:** `/home/jk/bridge-ph/accustandard-demo`
+- **Systemd Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo`
+- **Quadlet Pod/Containers:** `accustandard-demo-pod`, `accustandard-demo-app`, `accustandard-demo-db`
 
 ---
 
