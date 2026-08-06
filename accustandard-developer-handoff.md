@@ -1,63 +1,60 @@
-# Accustandard Developer Handoff
+# Accustandard Developer Handoff Guide
 
-This developer handoff is based on the confirmed requirements gathered with the client.
+Welcome to the developer handoff guide for the **Accustandard Medical ERP Dashboard**. This document summarizes core client requirements and technical guidelines gathered during system planning.
 
-## Executive Summary
-Accustandard requires a single integrated ERP web application that will become the operational system of record. The application is control-first and designed around fraud prevention through segregation of duties, configurable approvals, immutable audit logs, inventory controls, and RBAC.
+---
 
-## Confirmed Architecture
-- Single responsive web application
-- Single login portal
-- Role-based access control
-- Admin can View As any user (read-only) and perform audited overrides
-- Operational database is the source of truth
-- QuickBooks Online is the accounting ledger
-- Preferred real-time QBO API integration with CSV/Excel fallback
+## 🎯 Project Goals
 
-## Confirmed Roles
-- Admin (Bridge)
-- Chairman / DCS
-- General Manager (Karen)
-- Bookkeeper (Aila)
-- Warehouse & Inventory (Marie)
-- Purchasing Officer (TBD)
-- Sales (TBD)
-- Price Maintenance (TBD)
-- Vendor Maintenance (TBD)
+Accustandard requires a single integrated ERP web application to serve as its operational system of record. The platform focuses on fraud prevention, using segregation of duties, configurable approvals, immutable audit logs, strict inventory controls, and role-based access control (RBAC).
 
-## Functional Scope
-- Inventory (multi-location, batch/expiry, serials, transfers, adjustments)
-- Barcode scanning via mobile/PWA
-- Sales quotation, reservation, approvals, SO, DR, Invoice
-- Purchasing, Receiving, 3-way match, AP
-- Request for Payment
-- Price maintenance
-- Vendor maintenance
-- Executive dashboards
-- Reporting
-- QuickBooks Online integration
-- Audit logs and approval engine
+---
 
-## Business Rules
-- Maker, Reviewer, GM, DCS approval chain
-- No self-approval
-- No edits after approval
-- Approved revisions restart approval
-- PO over-receiving blocked
-- Quotation reservation expires after 3 days (configurable)
-- All approvals route to DCS at launch
-- Threshold engine configurable for future
+## 🏗️ Architecture Summary
 
-## Migration
-- Existing system: JDEV (not trusted)
-- Physical inventory count will be the basis for opening balances.
+- Single responsive Next.js web application
+- Unified login portal with interactive 7-role switcher
+- Role-based access control enforced at navigation and action levels
+- Read-only "View As" mode for administrators with audited overrides
+- Internal database acts as operational source of truth
+- QuickBooks Online (QBO) acts as financial accounting ledger via live API queue
 
-## Open Items
-- Purchasing Officer assignment
-- Sales assignment
-- Price Maintenance assignee
-- Vendor Maintenance assignee
-- Costing methodology
-- Price tiers
-- Future approval thresholds
-- Bank accounts for RFP
+---
+
+## 👥 Supported Roles
+
+- **Admin (Bridge):** System configuration and audited overrides
+- **Chairman / DCS:** Final corporate approval
+- **General Manager (Karen):** Operational approvals
+- **Bookkeeper (Aila):** Ledger view and SOA management
+- **Warehouse & Inventory (Marie):** Stock receipts, barcode scanning, and FEFO tracking
+- **Marketing Manager:** RFQ review and contract margin ROI calculations
+- **Sales Officer:** Customer RFQ generation and quote creation
+
+---
+
+## 📋 Core Functional Scope
+
+1. **Inventory Management:** Multi-location tracking (Quezon City & Pampanga), FEFO expiry tracking, serial numbers, stock transfers, and Class 1/2/3 replenishment planning.
+2. **Barcode Scanning:** Camera-based PWA scanning for stock-in receiving reports and stock-out picking.
+3. **Sales & RFQ Flow:** RFQ logging, 3-day soft stock reservations, official quote printing, and Marketing ROI calculations.
+4. **Purchasing & Fraud Controls:** PO generation, 3-way match validation (PO ↔ Receiving Report ↔ Invoice), and over-receiving blocks.
+5. **Expense Management:** Request for Payment (RFP) routing with chart-of-accounts GL selection.
+6. **QuickBooks Online Integration:** Live sync queue with QBO reference tracking.
+
+---
+
+## 🔒 Mandatory Business Rules
+
+- **Approval Chain:** Maker &rarr; Reviewer &rarr; GM &rarr; DCS Chairman.
+- **No Self-Approvals:** Users cannot approve their own submitted documents.
+- **Document Locking:** Approved documents are locked against editing; revisions restart the approval chain.
+- **Hard-Blocked Over-Receiving:** Warehouse cannot receive stock exceeding approved PO quantities.
+- **Stock Reservation Expiry:** Quotation stock reservations auto-release after 3 days if unconfirmed.
+
+---
+
+## 📜 Client Sign-Off & Open Items
+
+- **Opening Balances:** Base physical count used for initial inventory load.
+- **Costing Method:** Moving average cost basis for margin calculations.

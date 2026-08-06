@@ -1,113 +1,145 @@
-# Accustandard Medical ERP & Supply Chain Dashboard v4.3
+# Accustandard Medical ERP & Supply Chain Dashboard
 
-> **Accustandard Medical and Diagnostic Supplies Corporation**  
-> Partner Agency: **DelegateOps Business Support Services (DOS)**  
-> Production Platform & Interactive Internal Control Simulator
+Welcome to the **Accustandard Medical ERP Dashboard**, built for **Accustandard Medical and Diagnostic Supplies Corporation** in partnership with **DelegateOps Business Support Services (DOS)**.
 
----
-
-## 🌟 Executive Summary & System Overview
-
-The **Accustandard Medical ERP Dashboard** is a COSO control-first, multi-location medical supply chain and financial management system built for **Accustandard Medical and Diagnostic Supplies Corporation**. It enforces strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotation routing, receiving report 3-way matching, client aging statement of account (SOA) ledgers, non-PO expense management, and QuickBooks Online (QBO) live synchronization.
+This application is a control-first medical supply chain and internal financial platform. It enforces strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotations, receiving report 3-way matching, client aging statement of account (SOA) ledgers, non-PO expense management, and live QuickBooks Online (QBO) queue synchronization.
 
 ---
 
-## 🎨 Light Corporate Medical Design Philosophy
+## 💡 Why This Platform Was Built
 
-In accordance with modern medical enterprise design standards and 2026 digital ergonomics guidelines, the application enforces a high-contrast **Light Corporate Medical Aesthetic System** (`#F8FAFC` slate canvas, `#FFFFFF` crisp card containers, `#E2E8F0` subtle borders, `#1E3A8A` Deep Royal Navy branding, and `#DC2626` Bright Medical Red accents).
+Medical supply chain operations handle high-value equipment, sensitive diagnostic reagents, and FEFO expiry constraints. Generic off-the-shelf software often lacks strict internal controls. Accustandard ERP solves this by embedding COSO internal control principles directly into everyday workflows:
+
+- **No Self-Approvals:** A user who creates a quote, purchase order, or expense request cannot approve it.
+- **3-Way Matching:** Receiving reports automatically verify Purchase Order quantities against Vendor Invoices to block over-receiving.
+- **3-Day Soft Inventory Reservations:** Quotations reserve physical stock for 3 days before automatically releasing it if unconfirmed.
+- **Audit Logging:** Every approval, override, and state change records a permanent audit trail.
 
 ---
 
-## 🚀 Key Modules & Interactive Features
+## 🎨 Design & User Experience
+
+The dashboard uses a **Light Corporate Medical System**:
+- **Canvas:** Crisp `#F8FAFC` slate background
+- **Cards:** Clean `#FFFFFF` container cards with `#E2E8F0` borders
+- **Primary Brand Color:** Deep Royal Navy (`#1E3A8A`)
+- **Accent Color:** Bright Medical Red (`#DC2626`)
+- **Ergonomics:** Responsive on mobile devices with touch-friendly barcode scanning and clear role lock indicators.
+
+---
+
+## 🛠️ Main Features & Modules
 
 ### 1. Executive Control & COSO Approval Pipeline
-- **4-Layer Approval Pipeline:** Enforces COSO Segregation of Duties (`Maker` &rarr; `Reviewer [Marketing]` &rarr; `GM [Karen]` &rarr; `DCS [Chairman]`).
-- **QuickBooks Online (QBO) Sync Queue Drawer:** Live QBO queue modal displaying validated transactions (Sales Invoices, Vendor Bills, Customer Collections, COGS entries) with QBO reference IDs and status (`QBOSyncQueueModal`).
+Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`.
 
-### 2. Multi-Location Inventory & Replenishment Planner
-- Multi-warehouse stock tracking across **Quezon City** and **Pampanga** facilities with FEFO expiry tracking.
-- **Demand & Replenishment Planner (Blueprint Section 3):**
-  - **Class 1 (Core Stock):** Fast-moving stock reordering at critical level + 10% safety buffer.
-  - **Class 2 (Controlled):** Slower-moving stock requiring demand forecast review.
-  - **Class 3 (Short-Expiry / Special):** Hard-blocked without linked Customer PO to prevent over-stocking.
+### 2. Demand & Replenishment Planner
+Tracks inventory across Quezon City and Pampanga warehouses based on 3 distinct product classes:
+- **Class 1 (Core Stock):** Reorders stock automatically when levels hit critical thresholds + 10% safety buffer.
+- **Class 2 (Controlled Stock):** Slower-moving stock requiring a forecast review before ordering.
+- **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
-### 3. Sales Quotation, RFQ & Marketing ROI Engine
-- **Sales Demand Request (RFQ):** Input form for Sales Agents to record customer daily census, LIS connectivity needs, and expected contract terms.
-- **Marketing Manager ROI Calculator:** Side-by-side cost vs. selling price calculator displaying landed cost, LIS connectivity, account overhead, net profit/unit, and contract margin percentage.
-- **Official Sales Quotation Document:** Replicates official Accustandard Quotation template matching `photo_2026-08-01_23-55-26.jpg`.
+### 3. Sales RFQ & Marketing ROI Engine
+Allows sales officers to log client census data and LIS connectivity needs, while providing Marketing Managers with a side-by-side ROI calculator to evaluate landed costs, overheads, and contract margins.
 
-### 4. Statement of Account (SOA) & Multi-SOA Collection Allocation
-- Replicates official SOA statements matching `photo_2026-08-01_23-55-13.jpg` with full-width bright yellow balance bar (`₱32,208.00`).
-- **Multi-SOA Collection Payment Allocation:** Multi-SOA collection modal allowing a single payment check to be allocated across multiple open client invoices with unapplied customer credit tracking.
+### 4. Statement of Account (SOA) & Payment Allocation
+Renders official SOA statements matching company templates and includes a multi-SOA check allocation tool to distribute single check payments across multiple open invoices.
 
-### 5. Purchasing & 3-Way Match Fraud Control
-- Enforces strict 3-way matching between Purchase Order Quantity = Goods Receipt (RR) = Vendor Invoice. Hard-blocks over-receiving.
+### 5. QuickBooks Online (QBO) Live Sync Queue
+A dedicated sync queue drawer that holds control-validated transactions (Sales Invoices, Bills, Collections, COGS) until pushed to QuickBooks Online.
 
 ---
 
-## 🔒 Role-Based Access Control (RBAC) Matrix
+## 👥 Role-Based Access Control (RBAC)
 
-| User Role | Permitted Modules | Approval Permissions | Restricted Modules / Actions |
+The app supports 7 distinct user roles, each with specific navigation and approval permissions:
+
+| User Role | Permitted Modules | Approval Level | Restricted Actions |
 | :--- | :--- | :--- | :--- |
-| **Admin (Bridge)** | All 7 Modules | All Stages (Reviewer, GM, DCS) | None (Full Access) |
-| **Chairman (DCS)** | All 7 Modules | All Stages (Reviewer, GM, DCS) | None (Full Access) |
-| **General Manager** | All 7 Modules | Stage 1 (Reviewer) & Stage 2 (GM) | Stage 3 DCS Chairman Approval |
-| **Bookkeeper** | Overview, SOA, Purchasing, RFP | View Only | Inventory, Quotations, Admin, Approvals |
-| **Warehouse** | Inventory, Purchasing | RR Entry Only | Overview, Quotations, SOA, RFP, Admin |
-| **Marketing** | Overview, Quotations | Stage 1 (Reviewer) & ROI Only | Inventory, SOA, Purchasing, RFP, GM/DCS |
-| **Sales** | Quotations, Inventory | Create RFQ / Quotes Only | Overview, SOA, Purchasing, RFP, Admin |
+| **Admin (Bridge)** | All 7 Modules | All Stages | None (Full Access) |
+| **Chairman (DCS)** | All 7 Modules | All Stages | None (Full Access) |
+| **General Manager** | All 7 Modules | Stage 1 & Stage 2 (GM) | Stage 3 DCS Chairman Approval |
+| **Bookkeeper** | Overview, SOA, Purchasing, RFP | View Only | Modifying Inventory & Quotations |
+| **Warehouse** | Inventory, Purchasing | RR Entry Only | Overview, Quotations, SOA, RFP |
+| **Marketing** | Overview, Quotations | Stage 1 (Reviewer) & ROI | Inventory, SOA, Purchasing, RFP |
+| **Sales** | Quotations, Inventory | Create RFQ / Quotes Only | Overview, SOA, Purchasing, RFP |
 
 ---
 
-## 🛠️ Step-by-Step Manual Deployment & Migration Guide for VPS
+## 🚀 Quick Start (Local Development)
 
-### Local Machine (macOS):
+### Prerequisites
+- Node.js 18+ or 20+
+- npm 9+
+
+### Setup Commands
 ```bash
-# Step 1: Navigate to project workspace
-cd /Users/jk.deguzman/dev/accustandard-bridge-dashboard
+# 1. Clone the repository
+git clone git@github.com:ItsAdventureTime/bridge-accustandard.git
+cd bridge-accustandard
 
-# Step 2: Build static export inside isolated disposable Podman container
+# 2. Install dependencies
+npm install
+
+# 3. Start local development server
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser to test the interactive dashboard.
+
+---
+
+## 🐳 Building with Podman (Disposable Container)
+
+To test production static builds safely inside an isolated container:
+
+```bash
 podman run --rm \
-  -v "/Users/jk.deguzman/dev/accustandard-bridge-dashboard:/workspace:Z" \
+  -v "$(pwd):/workspace:Z" \
+  -v /workspace/.next \
+  -v /workspace/node_modules \
+  -w /workspace \
+  node:current-alpine \
+  sh -c "npm ci && npm run build"
+```
+
+---
+
+## 🛰️ Production & Demo VPS Deployment
+
+### Infrastructure Configuration
+- **VPS Host:** `jk@216.75.75.136`
+- **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
+- **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustandard.git`
+- **Production Path:** `/home/jk/bridge-ph/accustandard`
+- **Demo Path:** `/home/jk/bridge-ph/accustandard-demo`
+
+### Deploying Updates to VPS
+```bash
+# Step 1: Run static export inside Podman container
+podman run --rm \
+  -v "$(pwd):/workspace:Z" \
   -v /workspace/.next \
   -v /workspace/node_modules \
   -w /workspace \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 3: Run full VPS infrastructure migration script via SSH
+# Step 2: Run VPS migration and container setup script
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-rename-accustandard.sh
 
-# Step 4: Sync static export build files to Demo VPS web root
+# Step 3: Deploy static export files to Demo site
 rsync -avz --delete -e "ssh -p 22" \
-  /Users/jk.deguzman/dev/accustandard-bridge-dashboard/out/ \
+  out/ \
   jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/
 
-# Step 5: Sync static export build files to Production VPS web root
+# Step 4: Deploy static export files to Production site
 rsync -avz --delete -e "ssh -p 22" \
-  /Users/jk.deguzman/dev/accustandard-bridge-dashboard/out/ \
+  out/ \
   jk@216.75.75.136:/home/jk/bridge-ph/accustandard/
 ```
 
 ---
 
-## 🛰️ Production & Demo VPS Infrastructure Parameters
+## 📄 License & Attribution
 
-- **VPS Host:** `jk@216.75.75.136` (Port 22)
-- **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
-- **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustandard.git` (`main` branch)
-- **SSH Commit Signing:** Enabled (`commit.gpgsign = true`, `gpg.format = ssh`)
-
-### Remote Production Setup:
-- **Web Root Directory:** `/home/jk/bridge-ph/accustandard`
-- **Systemd Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard`
-- **Quadlet Pod/Containers:** `accustandard-pod`, `accustandard-app`, `accustandard-db`
-
-### Remote Demo Setup:
-- **Web Root Directory:** `/home/jk/bridge-ph/accustandard-demo`
-- **Systemd Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo`
-- **Quadlet Pod/Containers:** `accustandard-demo-pod`, `accustandard-demo-app`, `accustandard-demo-db`
-
----
-
-© 2026 Accustandard Medical and Diagnostic Supplies Corporation & DelegateOps Business Support Services. All Rights Reserved.
+Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** & **DelegateOps Business Support Services**. All rights reserved.
