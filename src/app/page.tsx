@@ -1,20 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Layers,
-  Package,
-  FileText,
-  FileCheck,
-  Building2,
-  CreditCard,
-  UserCheck,
-  Menu,
-} from 'lucide-react';
-
-import { Sidebar } from '@/components/layout/Sidebar';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
-
+import { Sidebar } from '@/components/layout/Sidebar';
 import { ExecutiveOverview } from '@/components/features/overview/ExecutiveOverview';
 import { InventoryControl } from '@/components/features/inventory/InventoryControl';
 import { QuotationGenerator } from '@/components/features/quotations/QuotationGenerator';
@@ -22,20 +10,18 @@ import { StatementOfAccount } from '@/components/features/soa/StatementOfAccount
 import { PurchasingReceiving } from '@/components/features/purchasing/PurchasingReceiving';
 import { RequestForPayment } from '@/components/features/rfp/RequestForPayment';
 import { SystemAuditTrail } from '@/components/features/admin/SystemAuditTrail';
-
-import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
-import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
-import { ExportModal } from '@/components/modals/ExportModal';
-import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
 import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
-import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
+import { ExportModal } from '@/components/modals/ExportModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
-import { ReceivingReportModal } from '@/components/modals/ReceivingReportModal';
-import { CreateRFPModal } from '@/components/modals/CreateRFPModal';
 import { CreateQuotationModal } from '@/components/modals/CreateQuotationModal';
 import { CreatePOModal } from '@/components/modals/CreatePOModal';
+import { ReceivingReportModal } from '@/components/modals/ReceivingReportModal';
+import { CreateRFPModal } from '@/components/modals/CreateRFPModal';
+import { DocumentPrintModal } from '@/components/modals/DocumentPrintModal';
+import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
+import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
 import { QBOSyncQueueModal } from '@/components/modals/QBOSyncQueueModal';
 
 import {
@@ -52,16 +38,25 @@ import {
   DEFAULT_AUDIT_LOGS,
 } from '@/lib/useDemoStore';
 
-export default function Home() {
-  const { formatTimer, resetDemoData } = useDemoStore();
+import { Layers, Package, FileText, FileCheck, ShoppingCart, DollarSign, ShieldAlert, Menu } from 'lucide-react';
 
-  // Primary Navigation State
-  const [activeTab, setActiveTab] = useState<string>('overview');
-  const [viewAsRole, setViewAsRole] = useState<string>('Admin');
-  const [searchQuery, setSearchQuery] = useState('');
+const ROLE_ALLOWED_TABS: Record<string, string[]> = {
+  'Admin': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'Bookkeeper': ['overview', 'soa', 'purchasing', 'rfp'],
+  'Warehouse': ['inventory', 'purchasing'],
+  'Marketing': ['overview', 'quotations'],
+  'Sales': ['quotations', 'inventory'],
+};
+
+export default function Home() {
+  const { resetDemoData, formatTimer } = useDemoStore();
+  const [viewAsRole, setViewAsRole] = useState('Admin');
+  const [activeTab, setActiveTab] = useState('overview');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Core Data Lists
+  // Core Data Arrays
   const [inventoryList, setInventoryList] = useState(DEFAULT_INVENTORY);
   const [replenishmentList, setReplenishmentList] = useState(DEFAULT_REPLENISHMENT_PLANNER);
   const [rfqList, setRfqList] = useState(DEFAULT_RFQS);
@@ -73,67 +68,93 @@ export default function Home() {
   const [qboQueue, setQboQueue] = useState(DEFAULT_QBO_QUEUE);
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
 
-  // Modals & Slideovers
+  // Search & Filter state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modals & Drawers state
+  const [isQboQueueOpen, setIsQboQueueOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isProductManagerOpen, setIsProductManagerOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isPwaInstallModalOpen, setIsPwaInstallModalOpen] = useState(false);
-  const [isProductManagerOpen, setIsProductManagerOpen] = useState(false);
-  const [isQboQueueOpen, setIsQboQueueOpen] = useState(false);
-
-  // CRUD Simulator Modals
-  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
-  const [isAddPOOpen, setIsAddPOOpen] = useState(false);
-  const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
-  const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
-  const [isCreateQuotationOpen, setIsCreateQuotationOpen] = useState(false);
-  const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
-
-  // Export & Print Modal States
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [exportModalTitle, setExportModalTitle] = useState('Report');
+  const [exportModalTitle, setExportModalTitle] = useState('');
   const [exportModalFilename, setExportModalFilename] = useState('accustandard_report');
   const [exportModalData, setExportModalData] = useState<object[]>([]);
   const [exportElementId, setExportElementId] = useState<string | undefined>(undefined);
 
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [printModalTitle, setPrintModalTitle] = useState('Document');
-  const [printModalElementId, setPrintModalElementId] = useState('printable-doc');
+  const [printModalTitle, setPrintModalTitle] = useState('');
+  const [printModalElementId, setPrintModalElementId] = useState('');
   const [printModalContent, setPrintModalContent] = useState<React.ReactNode>(null);
 
-  // System Notification Toast Helper
-  const showNotification = useCallback((message: string) => {
-    setToastMessage(message);
-    const timer = setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, []);
+  const [isAddStockOpen, setIsAddStockOpen] = useState(false);
+  const [isCreateQuotationOpen, setIsCreateQuotationOpen] = useState(false);
+  const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
+  const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
+  const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
 
-  const addAuditLog = useCallback((actionDescription: string) => {
-    const timeString = new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    setAuditLogs((prev) => [
+  // Toast Notification Helper
+  const showNotification = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
+  // Audit Log Helper
+  const addAuditLog = (action: string) => {
+    const newLog = {
+      id: `log-${Date.now()}`,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      user: viewAsRole,
+      action,
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+  };
+
+  // Tab Selection with Strict RBAC Check
+  const handleSelectTab = (tab: string) => {
+    const allowed = ROLE_ALLOWED_TABS[viewAsRole] || [];
+    if (!allowed.includes(tab)) {
+      showNotification(`Access Restricted: Role [${viewAsRole}] cannot access the ${tab.toUpperCase()} module.`);
+      return;
+    }
+    setActiveTab(tab);
+  };
+
+  // Handle Role Change & Auto-Navigate to Allowed Tab
+  const handleChangeRole = (role: string) => {
+    setViewAsRole(role);
+    const allowed = ROLE_ALLOWED_TABS[role] || ['overview'];
+    if (!allowed.includes(activeTab)) {
+      setActiveTab(allowed[0]);
+    }
+    showNotification(`Switched role simulation view to: ${role}`);
+    addAuditLog(`Role switched to [${role}]`);
+  };
+
+  // Handle Quotation Submit
+  const handleSubmitQuotation = (newQuote: any) => {
+    setApprovalsList((prev) => [
       {
-        id: `audit-${Date.now()}`,
-        time: timeString,
-        user: `${viewAsRole} (Active Session)`,
-        action: actionDescription,
+        id: `app-sq-${Date.now()}`,
+        qrn: newQuote.qrn,
+        type: 'Sales Quotation',
+        maker: newQuote.signatoryName || 'Sales Agent',
+        reviewerStatus: 'PENDING',
+        gmStatus: 'PENDING',
+        dcsStatus: 'PENDING',
+        totalAmount: 18450.0,
       },
       ...prev,
     ]);
-  }, [viewAsRole]);
-
-  // Submit Quotation for COSO Approval
-  const handleSubmitQuotation = (newQuote: any) => {
-    setApprovalsList((prev) => [newQuote, ...prev]);
-    showNotification(`Submitted Sales Quote ${newQuote.qrn} for Approval!`);
-    addAuditLog(`Created and routed Sales Quotation ${newQuote.qrn} for approval`);
+    showNotification(`Created and routed Sales Quotation ${newQuote.qrn} for approval!`);
+    addAuditLog(`Created Sales Quotation ${newQuote.qrn}`);
   };
 
-  // Submit PO for Approval
+  // Handle Purchase Order Submit
   const handleSubmitPO = (newPO: any) => {
     setPoList((prev) => [newPO, ...prev]);
     setApprovalsList((prev) => [
@@ -141,51 +162,19 @@ export default function Home() {
         id: `app-po-${Date.now()}`,
         qrn: newPO.poNumber,
         type: 'Purchase Order',
-        maker: 'Purchasing / Bookkeeper',
+        maker: 'Purchasing Officer',
         reviewerStatus: 'APPROVED',
         gmStatus: 'PENDING',
-        dcsStatus: 'AWAITING',
+        dcsStatus: 'PENDING',
         totalAmount: newPO.totalAmount,
       },
       ...prev,
     ]);
-    showNotification(`Routed Purchase Order ${newPO.poNumber} for Approval!`);
+    showNotification(`Created and routed Purchase Order ${newPO.poNumber} for approval!`);
     addAuditLog(`Created Purchase Order ${newPO.poNumber}`);
   };
 
-  // Role-Based Access Control (RBAC) Module Permissions
-  const ROLE_ALLOWED_TABS: Record<string, string[]> = {
-    Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-    'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-    'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-    Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-    Warehouse: ['inventory', 'purchasing'],
-    Marketing: ['overview', 'quotations'],
-    Sales: ['quotations', 'inventory'],
-  };
-
-  const handleSelectTab = (tabKey: string) => {
-    const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
-    if (!allowed.includes(tabKey)) {
-      showNotification(`Role Restricted: [${viewAsRole}] does not have permission to view section "${tabKey.toUpperCase()}".`);
-      return;
-    }
-    setActiveTab(tabKey);
-  };
-
-  const handleChangeRole = (role: string) => {
-    setViewAsRole(role);
-    const allowed = ROLE_ALLOWED_TABS[role] || ROLE_ALLOWED_TABS['Admin'];
-    if (!allowed.includes(activeTab)) {
-      setActiveTab(allowed[0]);
-      showNotification(`Switched role to: ${role} — Navigated to allowed module: ${allowed[0].toUpperCase()}`);
-    } else {
-      showNotification(`Switched role simulation to: ${role}`);
-    }
-    addAuditLog(`Switched user role simulation to: ${role}`);
-  };
-
-  // Approval Pipeline Action Handler
+  // Handle Approval Action
   const handleApproveItem = (id: string, stage: string) => {
     if (stage === 'reviewer' && !['Admin', 'Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
       showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
@@ -266,6 +255,8 @@ export default function Home() {
     addAuditLog('Restored system demo state to default seed data');
   };
 
+  const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white w-full">
       {/* Top Application Header Bar */}
@@ -288,7 +279,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Workspace Layout (Full-Width Responsive Grid) */}
+      {/* Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden w-full">
         {/* Desktop Navigation Sidebar */}
         <Sidebar
@@ -340,6 +331,19 @@ export default function Home() {
               onOpenExportModal={handleOpenExportModal}
               onOpenCreateModal={() => setIsCreateQuotationOpen(true)}
               onSubmitForApproval={(qrn) => {
+                setApprovalsList((prev) => [
+                  {
+                    id: `app-sq-${Date.now()}`,
+                    qrn: qrn,
+                    type: 'Sales Quotation',
+                    maker: 'Sales Officer (Logged In)',
+                    reviewerStatus: 'PENDING',
+                    gmStatus: 'PENDING',
+                    dcsStatus: 'PENDING',
+                    totalAmount: 18450.0,
+                  },
+                  ...prev,
+                ]);
                 showNotification(`Submitted Sales Quote ${qrn} for COSO Approval!`);
                 addAuditLog(`Routed Sales Quote ${qrn} for approval`);
               }}
@@ -384,43 +388,77 @@ export default function Home() {
         </main>
       </div>
 
-      {/* Mobile App Navigation Bar (Persistent Thumb Zone for <768px) */}
+      {/* Role-Dynamic Mobile Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 text-slate-800 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex justify-around items-center text-[10px] font-bold no-print">
-        <button
-          onClick={() => handleSelectTab('overview')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeTab === 'overview'
-              ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-          }`}
-        >
-          <Layers className="w-5 h-5 mb-0.5 text-blue-800" />
-          <span>Overview</span>
-        </button>
+        {allowedTabs.includes('overview') && (
+          <button
+            onClick={() => handleSelectTab('overview')}
+            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+              activeTab === 'overview'
+                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Layers className="w-5 h-5 mb-0.5 text-blue-800" />
+            <span>Overview</span>
+          </button>
+        )}
 
-        <button
-          onClick={() => handleSelectTab('inventory')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeTab === 'inventory'
-              ? 'text-emerald-900 font-black bg-emerald-50 border border-emerald-200/80 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-          }`}
-        >
-          <Package className="w-5 h-5 mb-0.5 text-emerald-700" />
-          <span>Inventory</span>
-        </button>
+        {allowedTabs.includes('inventory') && (
+          <button
+            onClick={() => handleSelectTab('inventory')}
+            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+              activeTab === 'inventory'
+                ? 'text-emerald-900 font-black bg-emerald-50 border border-emerald-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <Package className="w-5 h-5 mb-0.5 text-emerald-700" />
+            <span>Inventory</span>
+          </button>
+        )}
 
-        <button
-          onClick={() => handleSelectTab('quotations')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-            activeTab === 'quotations' || activeTab === 'soa'
-              ? 'text-amber-900 font-black bg-amber-50 border border-amber-200/80 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-          }`}
-        >
-          <FileText className="w-5 h-5 mb-0.5 text-amber-700" />
-          <span>Sales</span>
-        </button>
+        {allowedTabs.includes('quotations') && (
+          <button
+            onClick={() => handleSelectTab('quotations')}
+            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+              activeTab === 'quotations'
+                ? 'text-amber-900 font-black bg-amber-50 border border-amber-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <FileText className="w-5 h-5 mb-0.5 text-amber-700" />
+            <span>Quotes</span>
+          </button>
+        )}
+
+        {allowedTabs.includes('soa') && (
+          <button
+            onClick={() => handleSelectTab('soa')}
+            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+              activeTab === 'soa'
+                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <FileCheck className="w-5 h-5 mb-0.5 text-blue-800" />
+            <span>SOA</span>
+          </button>
+        )}
+
+        {allowedTabs.includes('purchasing') && (
+          <button
+            onClick={() => handleSelectTab('purchasing')}
+            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
+              activeTab === 'purchasing'
+                ? 'text-purple-900 font-black bg-purple-50 border border-purple-200/80 shadow-2xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+          >
+            <ShoppingCart className="w-5 h-5 mb-0.5 text-purple-800" />
+            <span>Purchasing</span>
+          </button>
+        )}
 
         <button
           onClick={() => setIsMobileDrawerOpen(true)}

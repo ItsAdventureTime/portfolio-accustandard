@@ -51,7 +51,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   const totalAllocated = allocatedSi6087 + allocatedSi6107;
   const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
 
-  const safeRows = [
+  const safeFallbackRows = [
     {
       salesInvoiceNo: '6087',
       drNo: '6075',
@@ -87,105 +87,101 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     },
   ];
 
+  const activeRows = soaRows && soaRows.length > 0 ? soaRows : safeFallbackRows;
+
+  // Dynamic balance calculations
+  const totalCurrentBalance = activeRows.reduce((sum, r) => sum + (Number(r.invoiceBalance) || 0), 0);
+  const totalAmountDue = activeRows
+    .filter((r) => (Number(r.age) || Number(r.ageDays) || 0) > 30)
+    .reduce((sum, r) => sum + (Number(r.invoiceBalance) || 0), 0);
+  const totalNotYetDue = activeRows
+    .filter((r) => (Number(r.age) || Number(r.ageDays) || 0) <= 30)
+    .reduce((sum, r) => sum + (Number(r.invoiceBalance) || 0), 0);
+
   const handleExportData = () => {
-    onOpenExportModal(
-      'Statement of Account',
-      'statement_of_account',
-      safeRows,
-      'printable-soa-target'
-    );
+    onOpenExportModal('Statement of Account Ledger', 'accustandard_soa_ledger', activeRows, 'printable-soa-target');
   };
 
-  const handlePostCollection = (e: React.FormEvent) => {
+  const handleAllocateCheck = (e: React.FormEvent) => {
     e.preventDefault();
-    onShowNotification(`Collection Check ${checkNo} (₱${checkAmount.toLocaleString()}) posted across SOAs SI-6087 & SI-6107`);
-    onAddAuditLog(`Allocated Collection ${checkNo} for ${clientName}`);
+    onShowNotification(
+      `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
+    );
+    onAddAuditLog(
+      `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
+    );
     setIsCollectionModalOpen(false);
   };
 
   const soaDocumentContent = (
-    <div id="printable-soa-target" className="bg-white p-8 sm:p-10 text-slate-900 font-sans max-w-4xl mx-auto border border-slate-300 shadow-md rounded-xl space-y-6">
+    <div id="printable-soa-target" className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-xs font-sans shrink-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start border-b border-slate-200 pb-4 gap-4">
+      <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
         <div>
           <AccustandardLogo size="lg" />
         </div>
-
-        <div className="text-left sm:text-right text-xs text-slate-700 font-semibold space-y-0.5 leading-snug">
-          <p>Unit A G/F El Decano Bldg., Blk 2</p>
-          <p>Lot 2 St. Jude, Villa Corazon, San</p>
-          <p>Agustin, San Fernando Pampanga</p>
-          <p>Email: <a href="mailto:accustandard1024@gmail.com" className="text-blue-700 underline">accustandard1024@gmail.com</a></p>
-          <p>Tel and Fax no.: (045) 966-6097</p>
+        <div className="text-right text-xs text-gray-700 leading-tight">
+          <p>Unit A G/F El Decano Bldg., Blk 2 Lot 2</p>
+          <p>St. Jude, Villa Corazon, San Agustin,</p>
+          <p>City of San Fernando, 2000, Pampanga</p>
+          <p className="font-semibold text-gray-900 mt-1">VAT Reg. TIN: 009-847-380-000</p>
         </div>
       </div>
 
-      {/* Document Title Center */}
-      <div className="text-center">
-        <h1 className="text-xl font-black uppercase text-slate-900 tracking-wider">
-          STATEMENT OF ACCOUNT
-        </h1>
+      {/* Title */}
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-black uppercase text-blue-950 tracking-wider">STATEMENT OF ACCOUNT</h2>
+        <p className="text-xs text-gray-500 font-bold">As of {statementDate}</p>
       </div>
 
-      {/* Metadata Fields */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 text-xs font-semibold text-slate-900">
-        <div className="space-y-1">
-          <div className="flex">
-            <span className="w-32 font-bold">Statement Date:</span>
-            <span className="font-mono">{statementDate}</span>
-          </div>
-          <div className="flex">
-            <span className="w-32 font-bold">Client:</span>
-            <span className="font-black text-slate-900 uppercase">{clientName}</span>
-          </div>
-          <div className="flex">
-            <span className="w-32 font-bold">Address:</span>
-            <span>{clientAddress}</span>
-          </div>
-          <div className="flex">
-            <span className="w-32 font-bold">Terms:</span>
-            <span>{terms}</span>
-          </div>
-          <div className="flex">
-            <span className="w-32 font-bold">Salesperson:</span>
-            <span>{salesperson}</span>
-          </div>
+      {/* Meta Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6 border border-gray-300 p-3 bg-gray-50 font-semibold leading-relaxed">
+        <div>
+          <p><span className="text-gray-500 uppercase text-[10px] block">CLIENT / BILL TO:</span> <span className="font-bold text-gray-900 text-sm">{clientName}</span></p>
+          <p className="text-gray-600 font-medium">{clientAddress}</p>
+          <p className="mt-1"><span className="text-gray-500 uppercase text-[10px] block">TERMS OF PAYMENT:</span> {terms}</p>
+        </div>
+        <div className="text-right">
+          <p><span className="text-gray-500 uppercase text-[10px] block">STATEMENT DATE:</span> {statementDate}</p>
+          <p className="mt-1"><span className="text-gray-500 uppercase text-[10px] block">SALES REPRESENTATIVE:</span> {salesperson}</p>
         </div>
       </div>
 
-      {/* Grid Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse border border-slate-900">
-          <thead className="bg-slate-50 text-slate-900 font-black border-b-2 border-slate-900 text-center">
-            <tr>
-              <th className="p-2 border border-slate-900">Sales Invoice #</th>
-              <th className="p-2 border border-slate-900">DR #</th>
-              <th className="p-2 border border-slate-900">S.I. Date</th>
-              <th className="p-2 border border-slate-900">Due Date</th>
-              <th className="p-2 border border-slate-900">AGE</th>
-              <th className="p-2 border border-slate-900 text-right">Invoice Amount</th>
-              <th className="p-2 border border-slate-900 text-right">Amount Paid</th>
-              <th className="p-2 border border-slate-900 text-right">Invoice Balance</th>
-              <th className="p-2 border border-slate-900 text-right">Running Balance</th>
+      {/* Table */}
+      <div className="mb-6">
+        <table className="w-full border-collapse border border-gray-900">
+          <thead>
+            <tr className="bg-blue-900 text-white font-bold text-[10px] uppercase text-center">
+              <th className="border border-gray-900 py-2 px-2">SI No.</th>
+              <th className="border border-gray-900 py-2 px-2">DR No.</th>
+              <th className="border border-gray-900 py-2 px-2">SI Date</th>
+              <th className="border border-gray-900 py-2 px-2">Due Date</th>
+              <th className="border border-gray-900 py-2 px-2">Age</th>
+              <th className="border border-gray-900 py-2 px-2">SI Amount</th>
+              <th className="border border-gray-900 py-2 px-2">Amount Paid</th>
+              <th className="border border-gray-900 py-2 px-2">SI Balance</th>
+              <th className="border border-gray-900 py-2 px-2">Running Balance</th>
             </tr>
           </thead>
-          <tbody className="font-semibold text-slate-900">
-            {safeRows.map((row) => (
-              <tr key={row.salesInvoiceNo} className="text-center font-mono">
-                <td className="p-2 border border-slate-900 font-bold">{row.salesInvoiceNo}</td>
-                <td className="p-2 border border-slate-900">{row.drNo}</td>
-                <td className="p-2 border border-slate-900">{row.siDate}</td>
-                <td className="p-2 border border-slate-900">{row.dueDate}</td>
-                <td className="p-2 border border-slate-900 font-bold">{row.age}</td>
-                <td className="p-2 border border-slate-900 text-right font-bold">
-                  {row.invoiceAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          <tbody>
+            {activeRows.map((row, idx) => (
+              <tr key={idx} className="text-center font-medium border-b border-gray-300 hover:bg-slate-50 transition">
+                <td className="border border-gray-900 py-1.5 px-2">{row.salesInvoiceNo}</td>
+                <td className="border border-gray-900 py-1.5 px-2">{row.drNo}</td>
+                <td className="border border-gray-900 py-1.5 px-2">{row.siDate}</td>
+                <td className="border border-gray-900 py-1.5 px-2">{row.dueDate}</td>
+                <td className="border border-gray-900 py-1.5 px-2 font-bold">{row.age || row.ageDays}</td>
+                <td className="border border-gray-900 py-1.5 px-2 text-right font-semibold">
+                  {Number(row.invoiceAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
-                <td className="p-2 border border-slate-900 text-right">{row.amountPaid}</td>
-                <td className="p-2 border border-slate-900 text-right font-bold">
-                  {row.invoiceBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                <td className="border border-gray-900 py-1.5 px-2 text-right">
+                  {row.amountPaid ? Number(row.amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) : ''}
                 </td>
-                <td className="p-2 border border-slate-900 text-right font-bold">
-                  {row.runningBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                <td className="border border-gray-900 py-1.5 px-2 text-right font-semibold">
+                  {Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="border border-gray-900 py-1.5 px-2 text-right font-semibold">
+                  {Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
             ))}
@@ -193,58 +189,63 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
         </table>
       </div>
 
-      {/* Summary Lines Right-Aligned */}
-      <div className="flex flex-col items-end space-y-1 text-xs font-bold text-slate-900 pt-2">
-        <div className="flex justify-between w-64">
-          <span className="italic">AMOUNT DUE</span>
-          <span className="font-mono text-red-600">0.00</span>
-        </div>
-        <div className="flex justify-between w-64">
-          <span className="italic">NOT YET DUE</span>
-          <span className="font-mono">32,208.00</span>
+      {/* Summary */}
+      <div className="flex justify-end mb-8 text-xs">
+        <div className="w-80 space-y-1">
+          <div className="flex justify-between items-center py-0.5">
+            <span className="font-bold uppercase text-gray-800">AMOUNT DUE (&gt;30 DAYS)</span>
+            <span className={`font-bold ${totalAmountDue > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+              ₱{totalAmountDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-0.5 italic">
+            <span className="font-semibold text-gray-700">NOT YET DUE (&le;30 DAYS)</span>
+            <span className="font-semibold text-gray-900">
+              ₱{totalNotYetDue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-1.5 px-2 bg-yellow-300 border-y border-gray-900 font-extrabold text-sm">
+            <span>Total Current Balance</span>
+            <span className="border-b-4 border-double border-gray-900 font-mono">
+              ₱{totalCurrentBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Highlight Bar */}
-      <div className="bg-[#FFFF00] text-slate-900 p-2.5 flex justify-between items-center font-black text-sm border-t border-b border-slate-900">
-        <span className="uppercase tracking-wider">Total Current Balance</span>
-        <span className="font-mono underline decoration-double text-base">
-          32,208.00
-        </span>
-      </div>
-
-      {/* Prepared By Footer */}
-      <div className="pt-6 text-xs text-slate-900 font-semibold space-y-1">
-        <p>Prepared By:</p>
-        <div className="pt-4">
-          <p className="font-bold underline text-sm">{preparedBy}</p>
-          <p className="text-slate-600">Accounting Officer</p>
+      {/* Signatory */}
+      <div className="mt-8">
+        <p className="text-xs text-gray-700 mb-6">Prepared By:</p>
+        <div className="border-b border-gray-800 w-48 mb-1">
+          <p className="font-bold text-gray-900">{preparedBy}</p>
         </div>
+        <p className="text-xs text-gray-600">Accounting / Credit &amp; Collection Officer</p>
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-6 text-slate-900">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 w-full">
+      {/* Module Title Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <FileCheck className="w-6 h-6 text-indigo-700" />
-            Statement of Account (SOA) &amp; Multi-SOA Collection Engine
+          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <FileCheck className="w-6 h-6 text-blue-900" />
+            Statement of Account (SOA) &amp; Client Collections
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            Exact Replica of Official Template &bull; Multi-SOA Payment Check Allocation &bull; A4 Printable Output
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Client aging ledger, payment check allocation, and official statement generator
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => setIsCollectionModalOpen(true)}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
           >
-            <CreditCard className="w-4 h-4 text-emerald-300" />
-            <span>+ Allocate Multi-SOA Collection Check</span>
+            <Plus className="w-4 h-4 text-blue-200" />
+            <span>+ Allocate Multi-SOA Check</span>
           </button>
 
           <button
@@ -265,104 +266,124 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
         </div>
       </div>
 
-      {/* Document Preview */}
+      {/* Live Rendered SOA Document Preview */}
       {soaDocumentContent}
 
-      {/* Multi-SOA Collection Allocation Modal */}
+      {/* Multi-SOA Check Allocation Modal */}
       {isCollectionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl border border-slate-300 shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+          <div className="bg-white rounded-2xl border border-slate-300 shadow-2xl w-full max-w-2xl overflow-hidden">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-emerald-700" />
-                Allocate Multi-SOA Collection Payment (Blueprint 5.5)
-              </h3>
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-blue-100 text-blue-900 rounded-xl">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Multi-SOA Collection Payment Allocation</h3>
+                  <p className="text-xs text-slate-500">Allocate a single check payment across multiple open client invoices</p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsCollectionModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handlePostCollection} className="p-6 space-y-4 text-xs font-semibold">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Check / Reference #</label>
-                <input
-                  type="text"
-                  value={checkNo}
-                  onChange={(e) => setCheckNo(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-900"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleAllocateCheck} className="p-6 space-y-4 text-xs">
+              <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Issuing Bank</label>
+                  <label className="block font-bold text-slate-700 mb-1">Check Number</label>
+                  <input
+                    type="text"
+                    value={checkNo}
+                    onChange={(e) => setCheckNo(e.target.value)}
+                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Issuing Bank</label>
                   <input
                     type="text"
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"
+                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Check Amount (₱)</label>
+                  <label className="block font-bold text-slate-700 mb-1">Check Amount (₱)</label>
                   <input
                     type="number"
                     value={checkAmount}
                     onChange={(e) => setCheckAmount(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-mono text-slate-900"
+                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono font-extrabold text-blue-900"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2 border-t border-slate-200 pt-3">
-                <p className="font-bold text-slate-900 uppercase">Allocate Payment Across Invoices:</p>
-                <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span>SI-6087 (Bal: ₱16,960.00)</span>
-                  <input
-                    type="number"
-                    value={allocatedSi6087}
-                    onChange={(e) => setAllocatedSi6087(Number(e.target.value))}
-                    className="w-28 bg-white border border-slate-300 rounded p-1 text-right font-mono font-bold text-slate-900"
-                  />
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Invoice Allocation Breakdown</h4>
+                <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-slate-900">SI-6087 (Gatchalian Medical Lab)</p>
+                    <p className="text-slate-500 text-[11px]">Invoice Balance: ₱16,960.00</p>
+                  </div>
+                  <div className="w-36">
+                    <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Allocated (₱)</label>
+                    <input
+                      type="number"
+                      value={allocatedSi6087}
+                      onChange={(e) => setAllocatedSi6087(Number(e.target.value))}
+                      className="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-right font-mono font-bold text-slate-900"
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span>SI-6107 (Bal: ₱1,968.00)</span>
-                  <input
-                    type="number"
-                    value={allocatedSi6107}
-                    onChange={(e) => setAllocatedSi6107(Number(e.target.value))}
-                    className="w-28 bg-white border border-slate-300 rounded p-1 text-right font-mono font-bold text-slate-900"
-                  />
+
+                <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-slate-900">SI-6107 (Gatchalian Medical Lab)</p>
+                    <p className="text-slate-500 text-[11px]">Invoice Balance: ₱1,968.00</p>
+                  </div>
+                  <div className="w-36">
+                    <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Allocated (₱)</label>
+                    <input
+                      type="number"
+                      value={allocatedSi6107}
+                      onChange={(e) => setAllocatedSi6107(Number(e.target.value))}
+                      className="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-right font-mono font-bold text-slate-900"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 space-y-1">
-                <div className="flex justify-between font-bold">
-                  <span>Total Allocated:</span>
-                  <span className="font-mono">₱{totalAllocated.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between font-semibold">
+                <div>
+                  <p className="text-emerald-900 font-bold">Unapplied Customer Credit</p>
+                  <p className="text-emerald-700 text-[11px]">Excess payment credited for future billing</p>
                 </div>
-                <div className="flex justify-between">
-                  <span>Unapplied Customer Credit:</span>
-                  <span className="font-mono font-bold text-emerald-700">₱{unappliedCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                </div>
+                <p className="text-lg font-black font-mono text-emerald-800">
+                  ₱{unappliedCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setIsCollectionModalOpen(false)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg"
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg shadow-sm"
+                  className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition flex items-center gap-1.5"
                 >
-                  Post Multi-SOA Collection
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Confirm &amp; Apply Check
                 </button>
               </div>
             </form>
