@@ -68,14 +68,14 @@ The app supports 7 distinct user roles, each with specific navigation and approv
 
 ## 🔒 Caddyfile Formatting & Validation Protocol
 
-Before reloading Caddy reverse proxy configurations, always validate and auto-format the `Caddyfile` using official Caddy CLI commands:
+Before reloading rootless Podman `caddy.service`, always validate and auto-format the `Caddyfile` using official Caddy CLI commands:
 
 ```bash
-# Auto-format Caddyfile in place (fixes indentation and syntax formatting)
-caddy fmt --overwrite Caddyfile
+# Auto-format Caddyfile in place via rootless Podman
+podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile
 
-# Validate Caddyfile configuration syntax without launching server
-caddy validate --config Caddyfile
+# Validate Caddyfile configuration syntax inside container
+podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 ```
 
 ---
@@ -146,8 +146,9 @@ podman run --rm \
 - **VPS Host:** `jk@216.75.75.136`
 - **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
 - **GitHub Repository Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- **Production Path:** `/home/jk/bridge-ph/accustandard`
-- **Demo Path:** `/home/jk/bridge-ph/accustandard-demo`
+- **Production Web Root:** `/home/jk/bridge-ph/accustandard`
+- **Demo Web Root:** `/home/jk/bridge-ph/accustandard-demo`
+- **Caddy Unit:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
 
 ### Deploying Updates to VPS
 ```bash
@@ -160,8 +161,8 @@ podman run --rm \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 2: Run VPS migration, formatting, and validation script
-ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-rename-accustandard.sh
+# Step 2: Run VPS deployment & Caddy repair script
+ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 
 # Step 3: Deploy static export files to Demo site
 rsync -avz --delete -e "ssh -p 22" \
