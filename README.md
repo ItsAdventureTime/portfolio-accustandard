@@ -133,53 +133,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to test the 
 
 ---
 
-## 🐳 Building with Podman (Disposable Container)
+## ⚡ 1-Command Automated Demo Deployment
 
-To test static builds safely inside an isolated container:
+To build static files in an isolated Podman container, configure Quadlets, auto-format/validate Caddy, and sync static assets to the Demo VPS in **1 single command**:
 
 ```bash
-podman run --rm \
-  -v "$(pwd):/workspace:Z" \
-  -v /workspace/.next \
-  -v /workspace/node_modules \
-  -w /workspace \
-  node:current-alpine \
-  sh -c "npm ci && npm run build"
+# Option A: Run via npm script
+npm run deploy:demo
+
+# Option B: Run shell script directly
+./scripts/deploy-demo.sh
 ```
 
----
-
-## 🛰️ Demo VPS Deployment Guide
-
-All deployments currently target the **Demo Environment**:
-
-### Infrastructure Path Configuration
-- **VPS Host:** `jk@216.75.75.136`
-- **Live Demo Site URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
-- **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
-- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-- **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
-
-### Deploying Demo Updates to VPS
-```bash
-# Step 1: Run static export inside Podman container
-podman run --rm \
-  -v "$(pwd):/workspace:Z" \
-  -v /workspace/.next \
-  -v /workspace/node_modules \
-  -w /workspace \
-  node:current-alpine \
-  sh -c "npm ci && npm run build"
-
-# Step 2: Run VPS Demo deployment & Caddy repair script
-ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
-
-# Step 3: Deploy static export files to Demo Web Root
-rsync -avz --delete -e "ssh -p 22" \
-  out/ \
-  jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/
-```
+### What `deploy-demo.sh` Automates:
+1. **Disposable Podman Build:** Runs static export in `node:current-alpine` container (`out/`).
+2. **VPS Script Execution:** Executes `scripts/vps-deploy-accustandard.sh` on the VPS over SSH.
+3. **Automated RSync:** Syncs static files directly to `/home/jk/bridge-ph/accustandard-demo/`.
 
 ---
 
