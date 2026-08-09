@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — Demo VPS Deployment & Caddy Auto-Repair Script
+# Accustandard Medical ERP — VPS Deployment & Caddy Auto-Repair Script
 # Target Host: jk@216.75.75.136
-# Demo Web Root Path:      /home/jk/bridge-ph/accustandard/demo
-# Demo Quadlet Systemd:    /home/jk/.config/containers/systemd/bridge-ph/accustandard/demo
+# Demo Web Root Path:      /home/jk/bridge-ph/accustandard-demo/
+# Demo Quadlet Systemd:    /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/
+# Production Web Root:     /home/jk/bridge-ph/accustandard/
+# Production Quadlet:      /home/jk/.config/containers/systemd/bridge-ph/accustandard/
 # Caddy Service:           caddy.service (~/.config/containers/systemd/caddy.container)
 # ==============================================================================
 
 set -euo pipefail
 
 echo "======================================================================"
-echo "==> Starting Accustandard Demo Deployment & Caddy Repair..."
+echo "==> Starting Accustandard Deployment & Caddy Auto-Repair..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services if present
@@ -18,12 +20,13 @@ echo "[1/6] Cleaning up legacy container services..."
 systemctl --user stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db 2>/dev/null || true
 podman stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy 2>/dev/null || true
 podman pod stop accustanda-pod accustanda-demo-pod 2>/dev/null || true
-podman rm -f accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db 2>/dev/null || true
+podman rm -f accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy 2>/dev/null || true
 podman pod rm -f accustanda-pod accustanda-demo-pod 2>/dev/null || true
 
-# 2. Ensure Web Root Directories (/home/jk/bridge-ph/accustandard/demo)
-echo "[2/6] Ensuring demo web root directory (/home/jk/bridge-ph/accustandard/demo)..."
-mkdir -p "$HOME/bridge-ph/accustandard/demo"
+# 2. Ensure Web Root Directories
+echo "[2/6] Verifying web root directories..."
+mkdir -p "$HOME/bridge-ph/accustandard"
+mkdir -p "$HOME/bridge-ph/accustandard-demo"
 rm -f "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustanda-demo" 2>/dev/null || true
 
 # 3. Clean up sed string duplications (e.g. accustandardrdrd) across configuration files
@@ -34,10 +37,8 @@ repair_file_paths() {
   if [ -f "$target_file" ]; then
     # Fix repeated suffix corruption (e.g. accustandardrdrd -> accustandard)
     sed -i 's|accustandardrd[rd]*|accustandard|g' "$target_file" || true
-    # Update standalone accustandard-demo to accustandard/demo
-    sed -i 's|accustandard-demo|accustandard/demo|g' "$target_file" || true
-    # Fix legacy accustanda-demo -> accustandard/demo
-    sed -i 's|accustanda-demo|accustandard/demo|g' "$target_file" || true
+    # Fix legacy accustanda-demo -> accustandard-demo
+    sed -i 's|accustanda-demo|accustandard-demo|g' "$target_file" || true
     # Fix legacy accustanda -> accustandard
     sed -i 's|accustanda\([^r]\|$\)|accustandard\1|g' "$target_file" || true
   fi
@@ -52,15 +53,19 @@ find "$HOME/.config/systemd/user" -type f 2>/dev/null | while read -r file; do
   repair_file_paths "$file"
 done
 
-# 4. Synchronize Quadlet Units to /home/jk/.config/containers/systemd/bridge-ph/accustandard/demo
-echo "[4/6] Synchronizing Quadlet unit files to bridge-ph/accustandard/demo..."
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard/demo"
+# 4. Synchronize Quadlet Units to /home/jk/.config/containers/systemd/bridge-ph/
+echo "[4/6] Synchronizing Quadlet unit files..."
+mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard"
+mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
+if [ -d "$REPO_DIR/deploy/quadlets/production" ]; then
+  cp -rf "$REPO_DIR/deploy/quadlets/production/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard/" 2>/dev/null || true
+fi
 if [ -d "$REPO_DIR/deploy/quadlets/demo" ]; then
-  cp -rf "$REPO_DIR/deploy/quadlets/demo/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard/demo/" 2>/dev/null || true
+  cp -rf "$REPO_DIR/deploy/quadlets/demo/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo/" 2>/dev/null || true
 fi
 
 # 5. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
@@ -97,8 +102,9 @@ if command -v bunny-purge &> /dev/null; then
 fi
 
 echo "======================================================================"
-echo "==> Accustandard Demo VPS Deployment & Caddy Repair Completed!"
-echo "    Demo Web Root Path: /home/jk/bridge-ph/accustandard/demo"
-echo "    Demo Systemd Path:  /home/jk/.config/containers/systemd/bridge-ph/accustandard/demo"
-echo "    Caddy Service:      caddy.service (~/.config/containers/systemd/)"
+echo "==> Accustandard VPS Deployment & Caddy Repair Completed!"
+echo "    Production Path: /home/jk/bridge-ph/accustandard/"
+echo "    Demo Path:       /home/jk/bridge-ph/accustandard-demo/"
+echo "    Demo Quadlet:    /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/"
+echo "    Caddy Service:   caddy.service (~/.config/containers/systemd/)"
 echo "======================================================================"
