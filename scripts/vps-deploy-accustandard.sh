@@ -55,11 +55,14 @@ done
 echo "[4/6] Synchronizing Demo Quadlet unit files..."
 mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="$(dirname "$SCRIPT_DIR")"
-
-if [ -d "$REPO_DIR/deploy/quadlets/demo" ]; then
-  cp -rf "$REPO_DIR/deploy/quadlets/demo/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo/" 2>/dev/null || true
+# Safely resolve script path when run from file or stdin pipe
+SCRIPT_SOURCE="${BASH_SOURCE[0]:-}"
+if [ -n "$SCRIPT_SOURCE" ] && [ -f "$SCRIPT_SOURCE" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+  REPO_DIR="$(dirname "$SCRIPT_DIR")"
+  if [ -d "$REPO_DIR/deploy/quadlets/demo" ]; then
+    cp -rf "$REPO_DIR/deploy/quadlets/demo/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo/" 2>/dev/null || true
+  fi
 fi
 
 # 5. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
