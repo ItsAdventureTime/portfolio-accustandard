@@ -120,12 +120,6 @@ fi
 # Print non-blocking Caddy status
 systemctl --user status caddy.service --no-pager 2>/dev/null || true
 
-# Purge Bunny CDN Cache with timeout and stdin redirect to prevent infinite loops
-if command -v bunny-purge &> /dev/null; then
-  echo "  - Purging Bunny CDN cache (non-blocking)..."
-  timeout 10 bunny-purge < /dev/null 2>&1 || true
-fi
-
 echo "======================================================================"
 echo "==> Demo VPS Deployment & Caddy Repair Completed Successfully!"
 echo "    Live Demo URL:  https://delegateops.business/accustandard/demo"
