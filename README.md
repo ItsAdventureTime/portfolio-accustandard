@@ -6,6 +6,13 @@ This application is a control-first medical supply chain and internal financial 
 
 ---
 
+## 🌐 Live System URLs
+
+- **Live Demo Site:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Production Site (Pending Approval):** `https://delegateops.business/accustandard`
+
+---
+
 ## 💡 Why This Platform Was Built
 
 Medical supply chain operations handle high-value equipment, sensitive diagnostic reagents, and FEFO expiry constraints. Generic off-the-shelf software often lacks strict internal controls. Accustandard ERP solves this by embedding COSO internal control principles directly into everyday workflows:
@@ -144,7 +151,7 @@ podman run --rm \
 
 ### Infrastructure Path Configuration
 - **VPS Host:** `jk@216.75.75.136`
-- **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
+- **Live Demo Site URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
 - **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
 - **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
