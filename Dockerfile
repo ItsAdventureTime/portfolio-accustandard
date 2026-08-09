@@ -1,13 +1,13 @@
-# Stage 1: Build application using lightest node:alpine
-FROM node:alpine AS builder
+# Stage 1: Build application using Node 24 Alpine (node:24-alpine)
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Production runtime using LTS slim node image
-FROM node:lts-alpine AS runner
+# Stage 2: Production runtime using Node 24 Alpine image
+FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000

@@ -24,35 +24,35 @@ if command -v podman &>/dev/null && podman machine list 2>/dev/null | grep -q "s
   podman machine start 2>/dev/null || true
 fi
 
-# Step 1: Run static export inside disposable Podman container
-echo "[1/4] Building static export inside disposable Podman container (node:current-alpine)..."
+# Step 1: Run static export inside disposable Podman container (node:24-alpine with latest npm)
+echo "[1/4] Building static export inside disposable Podman container (node:24-alpine)..."
 podman run --rm \
   -v "$REPO_DIR:/workspace:Z" \
   -v /workspace/.next \
   -v /workspace/node_modules \
   -w /workspace \
-  node:current-alpine \
-  sh -c "npm ci && npm run build"
+  node:24-alpine \
+  sh -c "npm install -g npm@latest && npm ci && npm run build"
 
 if [ ! -d "$REPO_DIR/out" ]; then
   echo "  ! Error: Export directory '$REPO_DIR/out' was not generated."
   exit 1
 fi
-echo "  - Static build successfully generated in 'out/'"
+echo "  - Static build successfully generated in out/"
 
-# Step 2: Sync Go Backend source & migrations to VPS
-echo "[2/4] Syncing Go backend source & Quadlets to VPS..."
+# Step 2: Sync Go Backend source to VPS
+echo "[2/4] Syncing Go backend source to VPS..."
 ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustandard-demo/backend"
 rsync -avz --delete -e "ssh -p 22" \
   "$REPO_DIR/backend/" \
   jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/backend/
 
-# Step 3: Run VPS Demo deployment & Caddy repair script over SSH
-echo "[3/4] Executing VPS Demo deployment & Caddy repair script..."
+# Step 3: Run VPS Demo deployment and Caddy repair script over SSH
+echo "[3/4] Executing VPS Demo deployment and Caddy repair script..."
 ssh -p 22 jk@216.75.75.136 'bash -s' < "$SCRIPT_DIR/vps-deploy-accustandard.sh"
 
-# Step 4: RSync static build files directly to Demo Web Root (/home/jk/bridge-ph/accustandard-demo/web-dist/)
-echo "[4/4] Syncing static build files to VPS Demo Web Root (/home/jk/bridge-ph/accustandard-demo/web-dist/)..."
+# Step 4: RSync static build files directly to Demo Web Root
+echo "[4/4] Syncing static build files to VPS Demo Web Root..."
 ssh -p 22 jk@216.75.75.136 "mkdir -p /home/jk/bridge-ph/accustandard-demo/web-dist"
 rsync -avz --delete -e "ssh -p 22" \
   "$REPO_DIR/out/" \

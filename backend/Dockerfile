@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for Accustandard Go REST API
-FROM golang:1.22-alpine AS builder
+# Multi-stage Dockerfile for Accustandard Go REST API using golang:alpine
+FROM golang:alpine AS builder
 
 WORKDIR /app
 COPY go.mod go.sum* ./
@@ -8,7 +8,7 @@ RUN go mod download || true
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /accustandard-api ./cmd/server
 
-FROM alpine:3.19
+FROM alpine:latest
 
 RUN apk add --no-cache ca-certificates tzdata
 
