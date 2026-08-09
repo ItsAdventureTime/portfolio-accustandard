@@ -1,31 +1,32 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — VPS Migration, Caddy Validation & Formatting Script
+# Accustandard Medical ERP — Rootless Podman & Caddy Quadlet Migration Script
 # Target Host: jk@216.75.75.136
+# Systemd User Unit: caddy.service (~/.config/containers/systemd/caddy.container)
 # ==============================================================================
 
 set -euo pipefail
 
 echo "======================================================================"
-echo "==> Starting Accustandard VPS Migration & Caddy Validation..."
+echo "==> Starting Accustandard Rootless Podman & Caddy Migration..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services
-echo "[1/6] Stopping containers and services..."
+echo "[1/6] Stopping legacy containers and rootless systemd services..."
 systemctl --user stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy.service || true
 podman stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy || true
 podman pod stop accustanda-pod accustanda-demo-pod || true
 podman rm -f accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy || true
 podman pod rm -f accustanda-pod accustanda-demo-pod || true
 
-# 2. Ensure Web Root Directories
+# 2. Ensure Web Root Directories (No Symlinks)
 echo "[2/6] Verifying web root directories..."
 mkdir -p "$HOME/bridge-ph/accustandard"
 mkdir -p "$HOME/bridge-ph/accustandard-demo"
 rm -f "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustanda-demo" 2>/dev/null || true
 
-# 3. Clean up sed-corrupted strings across all systemd files
-echo "[3/6] Cleaning up quadlet configuration files & correcting volume paths..."
+# 3. Clean up sed-corrupted strings across all systemd Quadlet files
+echo "[3/6] Cleaning up Quadlet unit files & correcting volume paths..."
 
 repair_file_paths() {
   local target_file="$1"
@@ -49,28 +50,28 @@ find "$HOME/.config/systemd/user" -type f 2>/dev/null | while read -r file; do
 done
 
 # 4. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
-echo "[4/6] Auto-formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
+echo "[4/6] Formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
 if [ -f "$HOME/caddy/conf/Caddyfile" ]; then
   repair_file_paths "$HOME/caddy/conf/Caddyfile"
 
-  # If host caddy binary exists:
-  if command -v caddy &> /dev/null; then
+  # Format & validate inside rootless Podman caddy container if available
+  if podman container exists caddy 2>/dev/null || podman image exists docker.io/library/caddy:alpine 2>/dev/null; then
+    echo "  - Formatting Caddyfile via rootless Podman container..."
+    podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile 2>/dev/null || true
+    echo "  - Validating Caddyfile syntax via rootless Podman container..."
+    podman exec caddy caddy validate --config /etc/caddy/Caddyfile 2>/dev/null || true
+  # Fallback to host caddy binary if installed
+  elif command -v caddy &> /dev/null; then
     echo "  - Formatting Caddyfile with host caddy binary..."
     caddy fmt --overwrite "$HOME/caddy/conf/Caddyfile" 2>/dev/null || true
     echo "  - Validating Caddyfile syntax..."
     caddy validate --config "$HOME/caddy/conf/Caddyfile" || echo "  ! Warning: Host caddy validate reported errors."
-  # Otherwise use Podman container caddy binary:
-  elif podman container exists caddy 2>/dev/null || podman image exists docker.io/library/caddy:alpine 2>/dev/null; then
-    echo "  - Formatting Caddyfile via Podman container..."
-    podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile 2>/dev/null || true
-    echo "  - Validating Caddyfile syntax via Podman container..."
-    podman exec caddy caddy validate --config /etc/caddy/Caddyfile 2>/dev/null || true
   fi
   echo "  - Caddyfile formatting and validation check complete."
 fi
 
-# 5. Reload Systemd User Daemon & Restart Caddy
-echo "[5/6] Reloading systemd user daemon & starting caddy.service..."
+# 5. Reload Systemd User Daemon & Restart Rootless caddy.service
+echo "[5/6] Reloading systemd user daemon & starting rootless caddy.service..."
 loginctl enable-linger "$USER" || true
 systemctl --user daemon-reload
 systemctl --user restart caddy.service || systemctl --user start caddy.service || true
@@ -84,7 +85,8 @@ if command -v bunny-purge &> /dev/null; then
 fi
 
 echo "======================================================================"
-echo "==> Accustandard VPS Migration, Formatting & Validation Complete!"
+echo "==> Rootless Podman & Caddy Migration Complete!"
 echo "    Production Path: $HOME/bridge-ph/accustandard"
 echo "    Demo Path:       $HOME/bridge-ph/accustandard-demo"
+echo "    Systemd Service: caddy.service (~/.config/containers/systemd/)"
 echo "======================================================================"
