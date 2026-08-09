@@ -10,8 +10,11 @@
 
 set -euo pipefail
 
+# Ensure non-interactive systemd user bus connection over SSH
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+
 echo "======================================================================"
-echo "==> Starting Accustandard Demo VPS Deployment & Caddy Repair..."
+echo "==> Starting Accustandard Demo VPS Deployment & Caddy Auto-Repair..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services if present
@@ -65,41 +68,66 @@ if [ -n "$SCRIPT_SOURCE" ] && [ -f "$SCRIPT_SOURCE" ]; then
   fi
 fi
 
-# 5. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
-echo "[5/6] Auto-formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
-if [ -f "$HOME/caddy/conf/Caddyfile" ]; then
-  repair_file_paths "$HOME/caddy/conf/Caddyfile"
+# 5. Exhaustively Locate, Format (`caddy fmt`), & Validate (`caddy validate`) Caddyfile
+echo "[5/6] Auto-formatting (caddy fmt), validating (caddy validate) & repairing Caddyfile..."
 
-  # Format & validate inside rootless Podman caddy container if active
-  if podman container exists caddy 2>/dev/null || podman image exists docker.io/library/caddy:alpine 2>/dev/null; then
-    echo "  - Formatting Caddyfile via rootless Podman container..."
-    podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile 2>/dev/null || true
-    echo "  - Validating Caddyfile syntax via rootless Podman container..."
-    podman exec caddy caddy validate --config /etc/caddy/Caddyfile 2>/dev/null || true
-  elif command -v caddy &> /dev/null; then
-    echo "  - Formatting Caddyfile with host caddy binary..."
-    caddy fmt --overwrite "$HOME/caddy/conf/Caddyfile" 2>/dev/null || true
-    echo "  - Validating Caddyfile syntax..."
-    caddy validate --config "$HOME/caddy/conf/Caddyfile" || echo "  ! Warning: Host caddy validate reported errors."
+CADDYFILE_LOCATIONS=(
+  "$HOME/caddy/conf/Caddyfile"
+  "$HOME/.config/caddy/Caddyfile"
+  "$HOME/caddy/Caddyfile"
+  "/etc/caddy/Caddyfile"
+)
+
+FOUND_CADDYFILE=""
+for loc in "${CADDYFILE_LOCATIONS[@]}"; do
+  if [ -f "$loc" ]; then
+    FOUND_CADDYFILE="$loc"
+    echo "  - Found Caddyfile at: $FOUND_CADDYFILE"
+    repair_file_paths "$FOUND_CADDYFILE"
+    break
   fi
-  echo "  - Caddyfile format and syntax check complete."
+done
+
+# Format & validate inside rootless Podman caddy container if active
+if podman container exists caddy 2>/dev/null || podman image exists docker.io/library/caddy:alpine 2>/dev/null; then
+  echo "  - Formatting Caddyfile via rootless Podman container..."
+  podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile 2>/dev/null || true
+  echo "  - Validating Caddyfile syntax via rootless Podman container..."
+  podman exec caddy caddy validate --config /etc/caddy/Caddyfile 2>/dev/null || true
+elif command -v caddy &> /dev/null; then
+  if [ -n "$FOUND_CADDYFILE" ]; then
+    echo "  - Formatting Caddyfile with host caddy binary..."
+    caddy fmt --overwrite "$FOUND_CADDYFILE" 2>/dev/null || true
+    echo "  - Validating Caddyfile syntax..."
+    caddy validate --config "$FOUND_CADDYFILE" || echo "  ! Warning: Host caddy validate reported errors."
+  fi
 fi
+echo "  - Caddyfile format, repair and syntax validation complete."
 
 # 6. Reload Systemd User Daemon & Restart Rootless caddy.service
 echo "[6/6] Reloading systemd user daemon & restarting rootless caddy.service..."
-loginctl enable-linger "$USER" || true
+loginctl enable-linger "$USER" 2>/dev/null || true
 systemctl --user daemon-reload
-systemctl --user restart caddy.service || systemctl --user start caddy.service || true
-systemctl --user status caddy.service --no-pager || true
 
-# Purge Bunny CDN Cache
+if systemctl --user is-active --quiet caddy.service 2>/dev/null; then
+  echo "  - Reloading caddy.service..."
+  systemctl --user reload caddy.service 2>/dev/null || systemctl --user restart caddy.service 2>/dev/null || true
+else
+  echo "  - Restarting caddy.service..."
+  systemctl --user restart caddy.service 2>/dev/null || systemctl --user start caddy.service 2>/dev/null || true
+fi
+
+# Print non-blocking Caddy status
+systemctl --user status caddy.service --no-pager 2>/dev/null || true
+
+# Purge Bunny CDN Cache with timeout and stdin redirect to prevent infinite loops
 if command -v bunny-purge &> /dev/null; then
-  echo "  - Purging Bunny CDN cache..."
-  bunny-purge || true
+  echo "  - Purging Bunny CDN cache (non-blocking)..."
+  timeout 10 bunny-purge < /dev/null 2>&1 || true
 fi
 
 echo "======================================================================"
-echo "==> Demo VPS Deployment & Caddy Repair Completed!"
+echo "==> Demo VPS Deployment & Caddy Repair Completed Successfully!"
 echo "    Live Demo URL:  https://delegateops.business/accustandard/demo"
 echo "    Demo Web Root:  /home/jk/bridge-ph/accustandard-demo/"
 echo "    Demo Quadlets:  /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/"
