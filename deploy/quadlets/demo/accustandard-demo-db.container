@@ -4,11 +4,11 @@ Description=Accustandard Dashboard Demo PostgreSQL Database
 [Container]
 ContainerName=accustandard-demo-db
 Pod=accustandard-demo-pod.pod
-Image=postgres:alpine
+Image=postgres:16-alpine
 Environment=POSTGRES_USER=accustandard
 Environment=POSTGRES_PASSWORD=accustandardpass
 Environment=POSTGRES_DB=accustandard_demo_db
-Volume=%h/bridge-ph/accustandard-demo/db:/var/lib/postgresql/data:Z
+Volume=%h/bridge-ph/accustandard-demo/postgres-data:/var/lib/postgresql/data:Z
 
 [Service]
 Restart=always

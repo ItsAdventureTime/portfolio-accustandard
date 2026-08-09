@@ -1,14 +1,13 @@
 [Unit]
-Description=Accustandard Dashboard Demo Container
+Description=Accustandard Go Backend REST API Demo Container
 After=accustandard-demo-db.service
 
 [Container]
 ContainerName=accustandard-demo-app
 Pod=accustandard-demo-pod.pod
-Image=localhost/accustandard-bridge-dashboard:demo
-Environment=NODE_ENV=production
-Environment=NEXT_PUBLIC_BASE_PATH=/accustandard/demo
-Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db
+Image=localhost/accustandard-bridge-backend:demo
+Environment=PORT=8080
+Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db?sslmode=disable
 
 [Service]
 Restart=always
