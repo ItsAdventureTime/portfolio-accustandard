@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'export',
-  basePath: '/accustanda/demo',
+  basePath: '/accustandard/demo',
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
   experimental: {
