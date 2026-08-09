@@ -88,22 +88,22 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ---
 
-## 🚀 Git & Repository Workflow Standard
+## 🚀 Git & Repository Synchronization Rules
 
-To maintain consistent commit history and security across local and remote environments:
+To keep local and remote Git state perfectly in sync:
 
-1. **Local Commits:** ONLY use local `git` CLI with SSH commit signing enabled.
+1. **Local Commits:** Use standard local `git` CLI (no SSH key requirement).
    ```bash
    git add .
-   git commit -S -m "feat(module): describe your clear change"
+   git commit -m "type(scope): clear description of change"
    ```
 
-2. **Remote Commits & Synchronization:** ALWAYS use the official GitHub CLI (`gh`) over **HTTPS** (default authenticated user `ItsAdventureTime`).
+2. **Remote Commits & Synchronization:** ALWAYS use official GitHub CLI (`gh`) over **HTTPS** (authenticated user `ItsAdventureTime`).
    ```bash
    # HTTPS Remote Repository URL
    https://github.com/ItsAdventureTime/bridge-accustandard.git
 
-   # Push changes via GitHub CLI / HTTPS protocol
+   # Push local changes to GitHub remote origin
    git push origin main
    ```
 
