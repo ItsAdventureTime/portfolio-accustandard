@@ -280,83 +280,83 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
       {/* SKU Barcode & Stock Detail Modal Overlay */}
       {selectedSkuModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-emerald-700 text-white rounded-xl">
-                  <Barcode className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-700 text-white rounded-2xl shadow-sm">
+                  <Barcode className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wider">
                     SKU Details: {selectedSkuModal.sku}
                   </h3>
-                  <p className="text-slate-500 font-medium">{selectedSkuModal.description}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">{selectedSkuModal.description}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedSkuModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Metrics Breakdown */}
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="p-3 bg-slate-100 rounded-xl">
-                <span className="text-[10px] text-slate-500 font-bold block uppercase">On-Hand</span>
-                <span className="font-mono font-extrabold text-slate-900 text-base">{selectedSkuModal.onHand}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div className="p-4 bg-slate-100 rounded-2xl">
+                <span className="text-xs text-slate-600 font-bold block uppercase tracking-wider">On-Hand Stock</span>
+                <span className="font-mono font-black text-slate-900 text-xl">{selectedSkuModal.onHand}</span>
               </div>
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                <span className="text-[10px] text-amber-700 font-bold block uppercase">Reserved (3-Day)</span>
-                <span className="font-mono font-extrabold text-amber-900 text-base">{selectedSkuModal.reserved}</span>
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                <span className="text-xs text-amber-800 font-bold block uppercase tracking-wider">Reserved (3-Day)</span>
+                <span className="font-mono font-black text-amber-900 text-xl">{selectedSkuModal.reserved}</span>
               </div>
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <span className="text-[10px] text-emerald-700 font-bold block uppercase">Available</span>
-                <span className="font-mono font-extrabold text-emerald-900 text-base">{selectedSkuModal.available}</span>
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                <span className="text-xs text-emerald-800 font-bold block uppercase tracking-wider">Available Stock</span>
+                <span className="font-mono font-black text-emerald-900 text-xl">{selectedSkuModal.available}</span>
               </div>
             </div>
 
             {/* Batch & Location Info */}
-            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium">
-              <div className="flex justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-bold">Warehouse Location:</span>
-                <span className="font-bold text-slate-900">{selectedSkuModal.location}</span>
+                <span className="font-extrabold text-slate-900 text-base">{selectedSkuModal.location}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-bold">Batch / Lot Number:</span>
-                <span className="font-mono font-extrabold text-blue-900">{selectedSkuModal.lotNumber}</span>
+                <span className="font-mono font-black text-blue-900 text-base">{selectedSkuModal.lotNumber}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-bold">FEFO Expiry Date:</span>
-                <span className="font-bold text-amber-900">{selectedSkuModal.expiryDate}</span>
+                <span className="font-extrabold text-amber-900 text-base">{selectedSkuModal.expiryDate}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-bold">Unit Metric:</span>
-                <span className="font-bold text-slate-800">{selectedSkuModal.unit || 'Kits'}</span>
+                <span className="font-extrabold text-slate-800 text-base">{selectedSkuModal.unit || 'Kits'}</span>
               </div>
             </div>
 
             {/* Visual Barcode Tag Graphic */}
-            <div className="p-3 bg-white border border-slate-300 rounded-xl text-center space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Scannable GS1 Barcode Preview</span>
-              <div className="font-mono font-black text-xl tracking-[0.25em] text-slate-900 select-all py-1">
+            <div className="p-4 bg-white border border-slate-300 rounded-2xl text-center space-y-2">
+              <span className="text-xs font-black text-slate-500 uppercase tracking-widest block">Scannable GS1 Barcode Preview</span>
+              <div className="font-mono font-black text-2xl tracking-[0.3em] text-slate-900 select-all py-2">
                 ||| | |||| | ||| |||| | | |||
               </div>
-              <span className="font-mono text-[10px] text-slate-600 font-bold">*ACC-{selectedSkuModal.sku}*</span>
+              <span className="font-mono text-xs text-slate-600 font-extrabold">*ACC-{selectedSkuModal.sku}*</span>
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedSkuModal(null);
                   onOpenAddStock();
                 }}
-                className="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5"
+                className="px-5 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Add Stock Batch</span>
@@ -365,9 +365,9 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedSkuModal(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
               >
-                Close
+                Close Inspector
               </button>
             </div>
           </div>

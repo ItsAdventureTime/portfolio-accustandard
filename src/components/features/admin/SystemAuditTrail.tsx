@@ -345,35 +345,35 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
 
       {/* Edit User Permissions Modal Overlay */}
       {editingUserModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-900 text-white rounded-xl">
-                  <UserCheck className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
+                  <UserCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wider">
                     User Access Matrix: {editingUserModal.name}
                   </h3>
-                  <p className="text-slate-500 font-medium">Assigned System Role &amp; Module Permissions</p>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">Assigned System Role &amp; Module Permissions</p>
                 </div>
               </div>
               <button
                 onClick={() => setEditingUserModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Permission Restriction Notice for Non-Admin/DCS */}
             {!canEditUsers && (
-              <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 flex items-start gap-2.5 font-medium">
-                <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950 flex items-start gap-3 font-semibold text-xs sm:text-sm">
+                <ShieldAlert className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold block text-amber-900">Role Modification Restricted</span>
+                  <span className="font-extrabold block text-amber-900 text-sm">Role Modification Restricted</span>
                   <span>
                     Your active role <strong>[{viewAsRole}]</strong> has read-only access to this user profile. Only <strong>Admin</strong> and <strong>Chairman (DCS)</strong> roles can modify system roles and module view permissions.
                   </span>
@@ -382,51 +382,53 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
             )}
 
             {/* Form */}
-            <form onSubmit={handleSaveUserPermissions} className="space-y-4">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">User Full Name</label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  disabled={!canEditUsers}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3.5 py-2 focus:outline-none focus:border-blue-600 disabled:opacity-75 disabled:bg-slate-100"
-                  required
-                />
-              </div>
+            <form onSubmit={handleSaveUserPermissions} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">User Full Name *</label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    disabled={!canEditUsers}
+                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-extrabold rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600 disabled:opacity-75 disabled:bg-slate-100"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Assigned System Role</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                  disabled={!canEditUsers}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-extrabold rounded-lg px-3.5 py-2 focus:outline-none focus:border-blue-600 disabled:opacity-75 disabled:bg-slate-100 cursor-pointer"
-                >
-                  <option value="Admin">Admin (Bridge)</option>
-                  <option value="Chairman (DCS)">Chairman (DCS)</option>
-                  <option value="General Manager">General Manager</option>
-                  <option value="Bookkeeper">Bookkeeper</option>
-                  <option value="Warehouse">Warehouse (Receiving Access)</option>
-                  <option value="Marketing">Marketing (Reviewer)</option>
-                  <option value="Sales">Sales Officer</option>
-                </select>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Assigned System Role *</label>
+                  <select
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value)}
+                    disabled={!canEditUsers}
+                    className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600 disabled:opacity-75 disabled:bg-slate-100 cursor-pointer"
+                  >
+                    <option value="Admin">Admin (Bridge)</option>
+                    <option value="Chairman (DCS)">Chairman (DCS)</option>
+                    <option value="General Manager">General Manager</option>
+                    <option value="Bookkeeper">Bookkeeper</option>
+                    <option value="Warehouse">Warehouse (Receiving Access)</option>
+                    <option value="Marketing">Marketing (Reviewer)</option>
+                    <option value="Sales">Sales Officer</option>
+                  </select>
+                </div>
               </div>
 
               {/* Module View Permissions Checkboxes */}
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">
+                <label className="font-bold text-slate-700 block mb-2 text-xs uppercase tracking-wider">
                   Allowed Module View Permissions
                 </label>
-                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
                   {ALL_AVAILABLE_MODULE_VIEWS.map((viewName) => {
                     const isChecked = editViews.includes(viewName);
                     return (
                       <label
                         key={viewName}
-                        className={`flex items-center gap-2 p-2 rounded-lg border text-xs font-bold cursor-pointer transition ${
+                        className={`flex items-center gap-3 p-3 rounded-xl border text-xs sm:text-sm font-extrabold cursor-pointer transition ${
                           isChecked
-                            ? 'bg-blue-50 border-blue-300 text-blue-950'
+                            ? 'bg-blue-50 border-blue-300 text-blue-950 shadow-2xs'
                             : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
                         } ${!canEditUsers ? 'cursor-not-allowed opacity-80' : ''}`}
                       >
@@ -435,7 +437,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                           checked={isChecked}
                           onChange={() => handleToggleModuleView(viewName)}
                           disabled={!canEditUsers}
-                          className="rounded text-blue-900 focus:ring-blue-500"
+                          className="w-4 h-4 rounded text-blue-900 focus:ring-blue-500"
                         />
                         <span>{viewName}</span>
                       </label>
@@ -445,11 +447,11 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
               </div>
 
               {/* Quick Actions */}
-              <div className="pt-2 flex justify-end gap-2 border-t border-slate-200">
+              <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
                 <button
                   type="button"
                   onClick={() => setEditingUserModal(null)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+                  className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -457,7 +459,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                 {canEditUsers && (
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5 shadow-sm"
+                    className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Save User Access Matrix</span>

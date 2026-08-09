@@ -190,55 +190,55 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
 
       {/* RFP Detail Inspector Modal Overlay */}
       {inspectingRfp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-purple-800 text-white rounded-xl">
-                  <CreditCard className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-purple-900 text-white rounded-2xl shadow-sm">
+                  <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wider">
                     RFP Breakdown: {inspectingRfp.rfpNo}
                   </h3>
-                  <p className="text-slate-500 font-medium">Payee: {inspectingRfp.payee}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">Payee: {inspectingRfp.payee}</p>
                 </div>
               </div>
               <button
                 onClick={() => setInspectingRfp(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* RFP Info Grid */}
-            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">GL Chart of Accounts:</span>
-                <span className="font-bold text-slate-900 text-right">{inspectingRfp.glAccount}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm">
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">GL Chart of Accounts</span>
+                <span className="font-extrabold text-slate-900 text-base">{inspectingRfp.glAccount}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Requested By:</span>
-                <span className="font-bold text-slate-800">{inspectingRfp.requestedBy}</span>
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Requested By</span>
+                <span className="font-extrabold text-slate-800 text-base">{inspectingRfp.requestedBy}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Total Voucher Amount:</span>
-                <span className="font-mono font-extrabold text-purple-900 text-sm">
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Total Voucher Amount</span>
+                <span className="font-mono font-black text-purple-950 text-lg">
                   ₱{Number(inspectingRfp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Disbursement Status:</span>
-                <span className={`font-bold ${inspectingRfp.status === 'DISBURSED_PAID' ? 'text-purple-700' : 'text-amber-800'}`}>
-                  {inspectingRfp.status === 'DISBURSED_PAID' ? 'DISBURSED & PAID' : 'PENDING BANK RELEASING'}
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Disbursement Status</span>
+                <span className={`font-black text-sm sm:text-base ${inspectingRfp.status === 'DISBURSED_PAID' ? 'text-purple-800' : 'text-amber-900'}`}>
+                  {inspectingRfp.status === 'DISBURSED_PAID' ? '✓ DISBURSED & PAID' : 'PENDING BANK RELEASING'}
                 </span>
               </div>
               {inspectingRfp.releasedBank && (
-                <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
-                  <span className="text-slate-500 font-bold">Released Bank / Ref:</span>
-                  <span className="font-mono text-purple-900 font-bold">
+                <div className="sm:col-span-2 flex justify-between items-center border-t border-slate-200 pt-3 mt-1">
+                  <span className="text-slate-500 font-bold text-xs uppercase tracking-wider">Released Bank / Ref:</span>
+                  <span className="font-mono text-purple-900 font-extrabold text-base">
                     {inspectingRfp.releasedBank} ({inspectingRfp.releasedRefNo})
                   </span>
                 </div>
@@ -246,7 +246,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-2 flex justify-between items-center border-t border-slate-200 gap-2">
+            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
               {inspectingRfp.status !== 'DISBURSED_PAID' ? (
                 <button
                   type="button"
@@ -255,14 +255,14 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                     setInspectingRfp(null);
                     setReleasingRfp(target);
                   }}
-                  className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5"
+                  className="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
                 >
                   <Landmark className="w-4 h-4" />
                   <span>Release Fund Now</span>
                 </button>
               ) : (
-                <span className="text-xs text-purple-800 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
+                <span className="text-xs sm:text-sm text-purple-900 font-extrabold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-5 h-5 text-purple-700" />
                   Fund Disbursed
                 </span>
               )}
@@ -270,9 +270,9 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
               <button
                 type="button"
                 onClick={() => setInspectingRfp(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
               >
-                Close
+                Close Inspector
               </button>
             </div>
           </div>

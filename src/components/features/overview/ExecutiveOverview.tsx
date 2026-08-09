@@ -222,7 +222,18 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
                 return (
                   <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                    <td className="p-4 font-extrabold font-mono text-blue-900">{item.qrn}</td>
+                    <td className="p-4">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDocModal(item)}
+                        className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                        title="Click to inspect complete document breakdown & approval status"
+                      >
+                        <FileText className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
+                        <span>{item.qrn}</span>
+                        <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
+                      </button>
+                    </td>
                     <td className="p-4 text-xs font-bold text-slate-600">{item.type}</td>
                     <td className="p-4 text-xs text-slate-700">{item.maker}</td>
 
@@ -330,50 +341,50 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
       {/* Document Inspector Modal Overlay */}
       {selectedDocModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-900 text-white rounded-xl">
-                  <FileText className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
+                  <FileText className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
                     <span>Document Inspector: {selectedDocModal.qrn}</span>
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium">{selectedDocModal.type} &bull; Maker: {selectedDocModal.maker}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">{selectedDocModal.type} &bull; Originator: {selectedDocModal.maker}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedDocModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Document Details Grid */}
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-semibold">
               <div>
-                <span className="text-slate-500 font-bold block">Document Type</span>
-                <span className="font-extrabold text-blue-950 text-sm">{selectedDocModal.type}</span>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Document Type</span>
+                <span className="font-extrabold text-blue-950 text-base">{selectedDocModal.type}</span>
               </div>
               <div>
-                <span className="text-slate-500 font-bold block">Total Transaction Value</span>
-                <span className="font-mono font-extrabold text-emerald-700 text-sm">
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Total Transaction Value</span>
+                <span className="font-mono font-black text-emerald-800 text-lg">
                   ₱{Number(selectedDocModal.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 font-bold block">Maker / Originator</span>
-                <span className="font-bold text-slate-800">{selectedDocModal.maker}</span>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Maker / Originator</span>
+                <span className="font-extrabold text-slate-900 text-sm sm:text-base">{selectedDocModal.maker}</span>
               </div>
               <div>
-                <span className="text-slate-500 font-bold block">COSO Control Stage</span>
-                <span className="font-bold text-amber-900">
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">COSO Internal Control Status</span>
+                <span className="font-extrabold text-amber-900 text-sm sm:text-base">
                   {selectedDocModal.dcsStatus === 'APPROVED'
-                    ? 'Fully Approved (DCS Chairman)'
+                    ? '✓ Fully Approved (DCS Chairman)'
                     : selectedDocModal.gmStatus === 'APPROVED'
                     ? 'Awaiting DCS Chairman Approval'
                     : selectedDocModal.reviewerStatus === 'APPROVED'
@@ -384,56 +395,56 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
             </div>
 
             {/* Step-by-Step Approval Pipeline Progress */}
-            <div className="space-y-2 border-t border-slate-200 pt-3">
-              <span className="font-extrabold uppercase text-[11px] text-slate-600 tracking-wider">
-                COSO 4-Layer Approval Pipeline Status
+            <div className="space-y-3 border-t border-slate-200 pt-4">
+              <span className="font-black uppercase text-xs text-slate-700 tracking-wider block">
+                COSO 4-Layer Approval Pipeline Status Tracker
               </span>
 
-              <div className="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-bold">
                 {/* Step 1 */}
-                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-950">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-                  <p>1. Maker</p>
-                  <p className="text-[10px] text-emerald-700">Created</p>
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 space-y-1">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
+                  <p className="font-extrabold text-sm">1. Maker</p>
+                  <p className="text-xs text-emerald-700 font-bold">Created</p>
                 </div>
 
                 {/* Step 2 */}
-                <div className={`p-2 rounded-xl border ${selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-amber-50 border-amber-300 text-amber-950'}`}>
+                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-amber-50 border-amber-300 text-amber-950'}`}>
                   {selectedDocModal.reviewerStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
                   ) : (
-                    <Clock className="w-4 h-4 text-amber-600 mx-auto mb-1 animate-pulse" />
+                    <Clock className="w-5 h-5 text-amber-600 mx-auto animate-pulse" />
                   )}
-                  <p>2. Reviewer</p>
-                  <p className="text-[10px]">{selectedDocModal.reviewerStatus}</p>
+                  <p className="font-extrabold text-sm">2. Reviewer</p>
+                  <p className="text-xs font-bold">{selectedDocModal.reviewerStatus}</p>
                 </div>
 
                 {/* Step 3 */}
-                <div className={`p-2 rounded-xl border ${selectedDocModal.gmStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
+                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.gmStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
                   {selectedDocModal.gmStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
                   ) : (
-                    <Clock className="w-4 h-4 text-slate-400 mx-auto mb-1" />
+                    <Clock className="w-5 h-5 text-slate-400 mx-auto" />
                   )}
-                  <p>3. GM</p>
-                  <p className="text-[10px]">{selectedDocModal.gmStatus}</p>
+                  <p className="font-extrabold text-sm">3. GM</p>
+                  <p className="text-xs font-bold">{selectedDocModal.gmStatus}</p>
                 </div>
 
                 {/* Step 4 */}
-                <div className={`p-2 rounded-xl border ${selectedDocModal.dcsStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.gmStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
+                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.dcsStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.gmStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
                   {selectedDocModal.dcsStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
                   ) : (
-                    <Clock className="w-4 h-4 text-slate-400 mx-auto mb-1" />
+                    <Clock className="w-5 h-5 text-slate-400 mx-auto" />
                   )}
-                  <p>4. DCS</p>
-                  <p className="text-[10px]">{selectedDocModal.dcsStatus}</p>
+                  <p className="font-extrabold text-sm">4. DCS</p>
+                  <p className="text-xs font-bold">{selectedDocModal.dcsStatus}</p>
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-2 flex justify-between items-center border-t border-slate-200 gap-2">
+            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
               <button
                 type="button"
                 onClick={() => {
@@ -441,18 +452,18 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                   setSelectedDocModal(null);
                   onSelectTab(targetTab);
                 }}
-                className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-900 font-extrabold rounded-xl transition flex items-center gap-1.5"
+                className="px-5 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
               >
-                <ExternalLink className="w-4 h-4 text-blue-700" />
+                <ExternalLink className="w-4 h-4 text-blue-200" />
                 <span>Open Module Workspace</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setSelectedDocModal(null)}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition"
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
               >
-                Close
+                Close Inspector
               </button>
             </div>
           </div>

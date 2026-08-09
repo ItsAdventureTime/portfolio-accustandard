@@ -39,31 +39,31 @@ The dashboard uses a **Light Corporate Medical System**:
 ## 🛠️ Main Features & Modules
 
 ### 1. Executive Control & COSO Approval Pipeline
-Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`. Clickable **Document QRN / IDs** open an interactive Document Inspector Modal with full approval timeline tracking.
+Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`. Clickable **Document QRN / ID** button badges (`bg-blue-50`, `hover:bg-blue-900`, `FileText` icon) open an expanded **Document Inspector Modal** (`max-w-3xl`, 768px wide) with step-by-step COSO approval timeline tracking.
 
 ### 2. Multi-Location Inventory & Barcode Inspection
-Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / Barcode** rows open a live Stock Detail Modal with GS1 barcode previews, batch FEFO expiry badges, and location metrics.
+Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / Barcode** button badges open an expanded **Stock Detail Modal** (`max-w-3xl`, 768px wide) with large GS1 barcode previews, batch FEFO expiry badges, and location metrics.
 - **Class 1 (Core Stock):** Reorders stock automatically when levels hit critical thresholds + 10% safety buffer.
 - **Class 2 (Controlled Stock):** Slower-moving stock requiring a forecast review before ordering.
 - **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
 ### 3. Sales RFQ, Quotation Generator & Marketing ROI Engine
-Allows sales officers to log client census data and launch modal quotes. Submitting quotes soft-reserves stock for 3 days and updates the dynamic Official Quotation preview. Features an ROI calculator for landed costs and contract margins.
+Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). Submitting quotes soft-reserves stock for 3 days and updates the dynamic Official Quotation preview. Features an ROI calculator for landed costs and contract margins.
 
 ### 4. Statement of Account (SOA) & Multi-SOA Check Allocation
-Renders official SOA statements matching company templates without `NaN` errors. Includes an interactive multi-SOA check allocation tool to dynamically deduct allocated payments from invoice balances, recompute running balances, track unapplied credit, and queue QBO collections.
+Renders official SOA statements matching company templates without `NaN` errors. Includes an interactive multi-SOA check allocation modal tool to dynamically deduct allocated payments from invoice balances, recompute running balances, track unapplied credit, and queue QBO collections.
 
 ### 5. Purchasing & 3-Way Match Fraud Control
-PO numbers open a **3-Way Match Inspection Modal** displaying approved PO quantity vs. Goods Receipt (RR) vs. Vendor Invoice. Hard-blocks over-receiving fraud beyond approved PO limits.
+PO numbers open an expanded **3-Way Match Inspection Modal** (`max-w-3xl`) displaying approved PO quantity vs. Goods Receipt (RR) vs. Vendor Invoice. Hard-blocks over-receiving fraud beyond approved PO limits.
 
 ### 6. Non-PO Request for Payment (RFP) Vouchers & Bank Releasing
-RFP Voucher IDs open an **Expense Voucher Inspector Modal** displaying GL Chart of Accounts picklists and Admin Bank Fund Releasing modal (BDO/Metrobank/BPI).
+RFP Voucher IDs open an expanded **Expense Voucher Inspector Modal** (`max-w-3xl`) displaying GL Chart of Accounts picklists and Admin Bank Fund Releasing modal (BDO/Metrobank/BPI).
 
 ### 7. User Access Matrix & Dynamic Role Permissions Editor
-In User & Audit Logs, user rows open a **User Access Profile & Role Permissions Modal**. Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
+In User & Audit Logs, user rows open an expanded **User Access Profile & Role Permissions Modal** (`max-w-3xl`). Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
 
 ### 8. QuickBooks Online (QBO) Live Sync Queue & Go REST API
-Dedicated sync queue holding validated transactions (Sales Invoices, Bills, Collections) backed by Go 1.22 REST controllers and PostgreSQL 16 database.
+Dedicated sync queue drawer (`max-w-4xl`) holding validated transactions (Sales Invoices, Bills, Collections) backed by Go 1.22 REST controllers and PostgreSQL 16 database.
 
 ---
 

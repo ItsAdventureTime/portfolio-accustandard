@@ -129,60 +129,60 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
 
       {/* PO Detail Inspector Modal */}
       {selectedPoModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
             {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-900 text-white rounded-xl">
-                  <Building2 className="w-5 h-5" />
+            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
+                  <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                  <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 tracking-wider">
                     PO Breakdown: {selectedPoModal.poNumber}
                   </h3>
-                  <p className="text-slate-500 font-medium">Vendor: {selectedPoModal.vendorName}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium">Vendor: {selectedPoModal.vendorName}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedPoModal(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* PO Info Grid */}
-            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium">
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Item Description:</span>
-                <span className="font-bold text-slate-900 text-right">{selectedPoModal.itemDescription}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm">
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Item Description</span>
+                <span className="font-extrabold text-slate-900 text-base">{selectedPoModal.itemDescription}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">SKU Code:</span>
-                <span className="font-mono font-bold text-blue-900">{selectedPoModal.sku || 'ACC-REAG-01'}</span>
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">SKU Code</span>
+                <span className="font-mono font-black text-blue-950 text-base">{selectedPoModal.sku || 'ACC-REAG-01'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Vendor Invoice Ref:</span>
-                <span className="font-mono text-slate-700">{selectedPoModal.invoiceRef || 'INV-PENDING'}</span>
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Vendor Invoice Reference</span>
+                <span className="font-mono font-bold text-slate-700 text-sm sm:text-base">{selectedPoModal.invoiceRef || 'INV-PENDING'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500 font-bold">Total PO Amount:</span>
-                <span className="font-mono font-extrabold text-emerald-800 text-sm">
+              <div>
+                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Total PO Amount</span>
+                <span className="font-mono font-black text-emerald-800 text-lg">
                   ₱{Number(selectedPoModal.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
             {/* 3-Way Match Verification Progress */}
-            <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-blue-950 uppercase text-[11px]">3-Way Match Audit Progress</span>
-                <span className="font-extrabold text-blue-900">
+            <div className="p-4 sm:p-5 bg-blue-50/90 border border-blue-200 rounded-2xl space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="font-black text-blue-950 uppercase text-xs tracking-wider">3-Way Match Audit Progress</span>
+                <span className="font-extrabold text-blue-900 text-base">
                   {selectedPoModal.rrQtyReceived} / {selectedPoModal.poQty} Units Received
                 </span>
               </div>
-              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden">
                 <div
                   className="bg-emerald-600 h-full transition-all duration-300"
                   style={{
@@ -190,7 +190,7 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                   }}
                 />
               </div>
-              <p className="text-[10px] text-slate-600 font-medium">
+              <p className="text-xs sm:text-sm text-slate-700 font-semibold leading-relaxed">
                 {selectedPoModal.rrQtyReceived >= selectedPoModal.poQty
                   ? '✓ Hard-Block Check Passed: Approved PO quantity matches actual Goods Received and Vendor Invoice.'
                   : '⚠️ Pending Goods Receipt (RR): Receiving report entry required at warehouse prior to payment disbursement.'}
@@ -198,14 +198,14 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-2 flex justify-between items-center border-t border-slate-200 gap-2">
+            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
               <button
                 type="button"
                 onClick={() => {
                   setSelectedPoModal(null);
                   onOpenReceivingModal();
                 }}
-                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5"
+                className="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
               >
                 <PackageCheck className="w-4 h-4" />
                 <span>Enter Receiving Report (RR)</span>
@@ -214,9 +214,9 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedPoModal(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
               >
-                Close
+                Close Inspector
               </button>
             </div>
           </div>

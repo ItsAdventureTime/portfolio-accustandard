@@ -47,43 +47,43 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 text-slate-900">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-sm">
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-700 text-white rounded-xl">
-              <PackageCheck className="w-5 h-5" />
+        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-emerald-700 text-white rounded-2xl shadow-sm">
+              <PackageCheck className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
                 Warehouse Receiving Report (RR Entry)
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Verify Goods Receipt against Purchase Order</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">Verify Goods Receipt against Purchase Order</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* 3-Way Match Warning */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-center gap-2 font-semibold">
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs sm:text-sm text-amber-950 flex items-center gap-3 font-semibold">
           <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
           <span>3-Way Match Active: Receiving cannot exceed approved PO quantity ({selectedPO?.poQty || 0} units). Over-receiving is hard-blocked.</span>
         </div>
 
         {hardBlockError && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 flex items-start gap-2 font-bold">
+          <div className="p-4 bg-red-50 border border-red-300 rounded-2xl text-xs sm:text-sm text-red-950 flex items-start gap-3 font-bold">
             <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <span>{hardBlockError}</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 text-sm font-semibold">
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Select Purchase Order *</label>
+            <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Select Purchase Order *</label>
             <select
               value={selectedPoId}
               onChange={(e) => {
@@ -92,7 +92,7 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
                 const po = poList.find((p) => p.id === e.target.value);
                 if (po) setReceivedQty(po.poQty - po.rrQtyReceived || po.poQty);
               }}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-700"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-700 cursor-pointer"
             >
               {poList.map((po) => (
                 <option key={po.id} value={po.id}>
@@ -102,16 +102,16 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
             </select>
           </div>
 
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-slate-700">
-            <p><span className="font-bold">Item:</span> {selectedPO?.itemDescription}</p>
-            <p><span className="font-bold">Approved PO Qty:</span> {selectedPO?.poQty} units</p>
-            <p><span className="font-bold">Previously Received:</span> {selectedPO?.rrQtyReceived} units</p>
-            <p><span className="font-bold text-emerald-800">Remaining Balance Allowed:</span> {maxAllowed} units</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-semibold text-slate-800">
+            <p><span className="text-slate-500 font-bold block text-xs uppercase">Item Description:</span> <span className="text-slate-900 font-extrabold text-sm">{selectedPO?.itemDescription}</span></p>
+            <p><span className="text-slate-500 font-bold block text-xs uppercase">Approved PO Qty:</span> <span className="text-slate-900 font-black text-sm">{selectedPO?.poQty} units</span></p>
+            <p><span className="text-slate-500 font-bold block text-xs uppercase">Previously Received:</span> <span className="text-slate-900 font-black text-sm">{selectedPO?.rrQtyReceived} units</span></p>
+            <p><span className="text-emerald-700 font-bold block text-xs uppercase">Remaining Balance Allowed:</span> <span className="text-emerald-800 font-black text-base">{maxAllowed} units</span></p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Quantity Received (RR Count) *</label>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Quantity Received (RR Count) *</label>
               <input
                 type="number"
                 min="1"
@@ -121,46 +121,46 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
                   setReceivedQty(Number(e.target.value));
                   setHardBlockError(null);
                 }}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-700"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-700"
                 required
               />
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Batch / Lot Number</label>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Batch / Lot Number</label>
               <input
                 type="text"
                 placeholder="e.g. LOT-2026-REC-01"
                 value={batchNumber}
                 onChange={(e) => setBatchNumber(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-700"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-700"
               />
             </div>
           </div>
 
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Equipment Serial Number (Optional for Equipment)</label>
+            <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Equipment Serial Number (Optional for Equipment)</label>
             <input
               type="text"
               placeholder="e.g. SN-BACT-2026-9910"
               value={serialNumber}
               onChange={(e) => setSerialNumber(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold text-xs rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-blue-700"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-700"
             />
           </div>
 
           {/* Action Footer */}
-          <div className="pt-3 flex justify-end gap-2 border-t border-slate-200">
+          <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold rounded-xl transition"
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5 shadow-sm active:scale-95"
+              className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4" />
               <span>Confirm Goods Receipt (RR)</span>

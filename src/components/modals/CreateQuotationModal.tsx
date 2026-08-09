@@ -55,76 +55,78 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
         {/* Header */}
-        <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-amber-600 text-white rounded-xl">
-              <FileText className="w-5 h-5" />
+        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-600 text-white rounded-2xl shadow-sm">
+              <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
                 Create &amp; Submit Sales Quotation
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Routes to Marketing (Reviewer) &rarr; GM &rarr; DCS for Approval</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Marketing (Reviewer) &rarr; GM &rarr; DCS for Approval</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* 3-Day Reservation Notice */}
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-950 text-xs flex items-center gap-2 font-medium">
-          <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-          <span>Creating this quote will automatically trigger a 3-day stock reservation for the selected item.</span>
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950 text-xs sm:text-sm flex items-center gap-3 font-semibold">
+          <Lock className="w-5 h-5 text-amber-600 shrink-0" />
+          <span>Creating this quote will automatically trigger a 3-day stock reservation for the selected item in the warehouse.</span>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Client Contact Name *</label>
-            <input
-              type="text"
-              placeholder="e.g. Ms. Katherine Porciuncula"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-medium rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-4 text-sm font-semibold">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Client Contact Name *</label>
+              <input
+                type="text"
+                placeholder="e.g. Ms. Katherine Porciuncula"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Medical Facility / Hospital Name *</label>
+              <input
+                type="text"
+                placeholder="e.g. Allied Care Experts Medical Center"
+                value={facilityName}
+                onChange={(e) => setFacilityName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Medical Facility / Hospital Name *</label>
-            <input
-              type="text"
-              placeholder="e.g. Allied Care Experts Medical Center"
-              value={facilityName}
-              onChange={(e) => setFacilityName(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Facility Address</label>
+            <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Facility Delivery Address</label>
             <input
               type="text"
               placeholder="e.g. Baliuag, Bulacan"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-medium rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
             />
           </div>
 
           {/* Registered Inventory Dropdown Select */}
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Select Registered Inventory Item *</label>
+            <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Select Registered Inventory Item *</label>
             <select
               value={selectedSku}
               onChange={(e) => setSelectedSku(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600 cursor-pointer"
             >
               {inventoryList.map((item) => (
                 <option key={item.id} value={item.sku}>
@@ -134,47 +136,49 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Quantity</label>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Order Quantity</label>
               <input
                 type="number"
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
               />
             </div>
 
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Unit Price (₱)</label>
+              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Unit Price (₱)</label>
               <input
                 type="number"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-mono font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-mono font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
               />
             </div>
           </div>
 
-          <div className="p-3 bg-slate-100 rounded-xl flex justify-between items-center font-bold">
-            <span className="text-slate-700">Total Quotation Value:</span>
-            <span className="font-mono text-base text-blue-900">₱{(quantity * unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+          {/* Total Value Card */}
+          <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl flex justify-between items-center font-bold shadow-md">
+            <span className="text-slate-300 text-xs sm:text-sm uppercase tracking-wider">Total Sales Quotation Value:</span>
+            <span className="font-mono text-xl sm:text-2xl font-black text-emerald-400">₱{(quantity * unitPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
           </div>
 
-          <div className="pt-2 flex justify-end gap-2">
+          {/* Actions */}
+          <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+              className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5 shadow-sm"
+              className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 text-blue-200" />
               <span>Submit Sales Quote for Approval</span>
             </button>
           </div>
