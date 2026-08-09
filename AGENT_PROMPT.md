@@ -28,7 +28,7 @@ You are an expert Go backend engineer and DevOps specialist. Execute the Go back
    - Provide `./scripts/vps-migrate-to-go.sh` to initialize the Go backend container and database migration on the VPS.
    - Provide `./scripts/deploy-demo.sh` (or `npm run deploy:demo`) for 1-command deployment:
      - Automatically start Podman machine locally via `podman machine start` if stopped.
-     - Runs local static build inside a disposable Podman container (`podman run --rm -v "$(pwd):/workspace:Z" node:current-alpine sh -c "npm ci && npm run build"`).
+     - Runs local static build inside a disposable Podman container (`podman run --rm -v "$(pwd):/workspace:Z" node:24-alpine sh -c "npm ci && npm run build"`).
      - Runs VPS deployment & Caddy repair non-interactively over SSH.
      - Syncs static export files to `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
 
