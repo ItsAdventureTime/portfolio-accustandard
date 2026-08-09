@@ -88,23 +88,24 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ---
 
-## 🚀 Git & Repository Synchronization Rules
+## 🚀 Git Local & GitHub CLI (`gh`) Remote Standard
 
-To keep local and remote Git state perfectly in sync:
+To enforce clear separation of concerns across local and remote version control:
 
-1. **Local Commits:** Use standard local `git` CLI (no SSH key requirement).
+1. **Local Commits:** Standard local `git` CLI (no SSH key requirement).
    ```bash
    git add .
    git commit -m "type(scope): clear description of change"
    ```
 
-2. **Remote Commits & Synchronization:** ALWAYS use official GitHub CLI (`gh`) over **HTTPS** (authenticated user `ItsAdventureTime`).
+2. **Remote Commits & Synchronization:** ALWAYS use official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials (`ItsAdventureTime`).
    ```bash
    # HTTPS Remote Repository URL
    https://github.com/ItsAdventureTime/bridge-accustandard.git
 
-   # Push local changes to GitHub remote origin
+   # Push & synchronize remote repository via GitHub CLI / HTTPS protocol
    git push origin main
+   gh repo sync
    ```
 
 ---
