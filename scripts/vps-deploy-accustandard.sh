@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — VPS Deployment & Caddy Auto-Repair Script
+# Accustandard Medical ERP — Demo VPS Deployment & Caddy Auto-Repair Script
 # Target Host: jk@216.75.75.136
 # Demo Web Root Path:      /home/jk/bridge-ph/accustandard-demo/
 # Demo Quadlet Systemd:    /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/
-# Production Web Root:     /home/jk/bridge-ph/accustandard/
-# Production Quadlet:      /home/jk/.config/containers/systemd/bridge-ph/accustandard/
+# Live Demo URL:           https://delegateops.business/accustandard/demo
 # Caddy Service:           caddy.service (~/.config/containers/systemd/caddy.container)
 # ==============================================================================
 
 set -euo pipefail
 
 echo "======================================================================"
-echo "==> Starting Accustandard Deployment & Caddy Auto-Repair..."
+echo "==> Starting Accustandard Demo VPS Deployment & Caddy Repair..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services if present
@@ -23,9 +22,8 @@ podman pod stop accustanda-pod accustanda-demo-pod 2>/dev/null || true
 podman rm -f accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy 2>/dev/null || true
 podman pod rm -f accustanda-pod accustanda-demo-pod 2>/dev/null || true
 
-# 2. Ensure Web Root Directories
-echo "[2/6] Verifying web root directories..."
-mkdir -p "$HOME/bridge-ph/accustandard"
+# 2. Ensure Demo Web Root Directory (/home/jk/bridge-ph/accustandard-demo/)
+echo "[2/6] Verifying demo web root directory (/home/jk/bridge-ph/accustandard-demo/)..."
 mkdir -p "$HOME/bridge-ph/accustandard-demo"
 rm -f "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustanda-demo" 2>/dev/null || true
 
@@ -53,23 +51,19 @@ find "$HOME/.config/systemd/user" -type f 2>/dev/null | while read -r file; do
   repair_file_paths "$file"
 done
 
-# 4. Synchronize Quadlet Units to /home/jk/.config/containers/systemd/bridge-ph/
-echo "[4/6] Synchronizing Quadlet unit files..."
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard"
+# 4. Synchronize Demo Quadlet Units to /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/
+echo "[4/6] Synchronizing Demo Quadlet unit files..."
 mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 
-if [ -d "$REPO_DIR/deploy/quadlets/production" ]; then
-  cp -rf "$REPO_DIR/deploy/quadlets/production/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard/" 2>/dev/null || true
-fi
 if [ -d "$REPO_DIR/deploy/quadlets/demo" ]; then
   cp -rf "$REPO_DIR/deploy/quadlets/demo/"* "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo/" 2>/dev/null || true
 fi
 
 # 5. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
-echo "[5/6] Formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
+echo "[5/6] Auto-formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
 if [ -f "$HOME/caddy/conf/Caddyfile" ]; then
   repair_file_paths "$HOME/caddy/conf/Caddyfile"
 
@@ -102,9 +96,8 @@ if command -v bunny-purge &> /dev/null; then
 fi
 
 echo "======================================================================"
-echo "==> Accustandard VPS Deployment & Caddy Repair Completed!"
-echo "    Production Path: /home/jk/bridge-ph/accustandard/"
-echo "    Demo Path:       /home/jk/bridge-ph/accustandard-demo/"
-echo "    Demo Quadlet:    /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/"
-echo "    Caddy Service:   caddy.service (~/.config/containers/systemd/)"
+echo "==> Demo VPS Deployment & Caddy Repair Completed!"
+echo "    Live Demo URL:  https://delegateops.business/accustandard/demo"
+echo "    Demo Web Root:  /home/jk/bridge-ph/accustandard-demo/"
+echo "    Demo Quadlets:  /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/"
 echo "======================================================================"

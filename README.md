@@ -6,10 +6,11 @@ This application is a control-first medical supply chain and internal financial 
 
 ---
 
-## 🌐 Live System URLs
+## 🌐 Live Demo System URL
 
 - **Live Demo Site:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
-- **Production Site (Pending Approval):** `https://delegateops.business/accustandard`
+
+*(Note: Production builds are put on hold until the Demo site is fully reviewed and approved by leadership.)*
 
 ---
 
@@ -91,13 +92,13 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 To maintain consistent commit history and security across local and remote environments:
 
-1. **Local Commits:** Always use local `git` CLI with SSH commit signing enabled.
+1. **Local Commits:** ONLY use local `git` CLI with SSH commit signing enabled.
    ```bash
    git add .
    git commit -S -m "feat(module): describe your clear change"
    ```
 
-2. **Remote Commits & Synchronization:** Always use the official GitHub CLI (`gh`) over **HTTPS** (default authenticated user `ItsAdventureTime`).
+2. **Remote Commits & Synchronization:** ALWAYS use the official GitHub CLI (`gh`) over **HTTPS** (default authenticated user `ItsAdventureTime`).
    ```bash
    # HTTPS Remote Repository URL
    https://github.com/ItsAdventureTime/bridge-accustandard.git
@@ -133,7 +134,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to test the 
 
 ## 🐳 Building with Podman (Disposable Container)
 
-To test production static builds safely inside an isolated container:
+To test static builds safely inside an isolated container:
 
 ```bash
 podman run --rm \
@@ -147,7 +148,9 @@ podman run --rm \
 
 ---
 
-## 🛰️ Production & Demo VPS Deployment
+## 🛰️ Demo VPS Deployment Guide
+
+All deployments currently target the **Demo Environment**:
 
 ### Infrastructure Path Configuration
 - **VPS Host:** `jk@216.75.75.136`
@@ -155,11 +158,9 @@ podman run --rm \
 - **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
 - **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-- **Production Web Root Path:** `/home/jk/bridge-ph/accustandard/`
-- **Production Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard/`
 - **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
 
-### Deploying Updates to VPS
+### Deploying Demo Updates to VPS
 ```bash
 # Step 1: Run static export inside Podman container
 podman run --rm \
@@ -170,18 +171,13 @@ podman run --rm \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 2: Run VPS deployment & Caddy repair script
+# Step 2: Run VPS Demo deployment & Caddy repair script
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 
 # Step 3: Deploy static export files to Demo Web Root
 rsync -avz --delete -e "ssh -p 22" \
   out/ \
   jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/
-
-# Step 4: Deploy static export files to Production Web Root (When Approved)
-rsync -avz --delete -e "ssh -p 22" \
-  out/ \
-  jk@216.75.75.136:/home/jk/bridge-ph/accustandard/
 ```
 
 ---
