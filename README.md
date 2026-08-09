@@ -66,9 +66,23 @@ The app supports 7 distinct user roles, each with specific navigation and approv
 
 ---
 
+## 🔒 Caddyfile Formatting & Validation Protocol
+
+Before reloading Caddy reverse proxy configurations, always validate and auto-format the `Caddyfile` using official Caddy CLI commands:
+
+```bash
+# Auto-format Caddyfile in place (fixes indentation and syntax formatting)
+caddy fmt --overwrite Caddyfile
+
+# Validate Caddyfile configuration syntax without launching server
+caddy validate --config Caddyfile
+```
+
+---
+
 ## 🚀 Git & Repository Workflow Standard
 
-To maintain consistent commit history and security across local and remote environments, strictly adhere to the following workflow:
+To maintain consistent commit history and security across local and remote environments:
 
 1. **Local Commits:** Always use local `git` CLI with SSH commit signing enabled.
    ```bash
@@ -146,7 +160,7 @@ podman run --rm \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 2: Run VPS migration and container setup script
+# Step 2: Run VPS migration, formatting, and validation script
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-rename-accustandard.sh
 
 # Step 3: Deploy static export files to Demo site

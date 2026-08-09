@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — Clean Quadlet & Caddy Repair Script
-# Fixes repeated sed corruption (e.g. accustandardrdrd) & restores Caddy service
+# Accustandard Medical ERP — VPS Migration, Caddy Validation & Formatting Script
 # Target Host: jk@216.75.75.136
 # ==============================================================================
 
 set -euo pipefail
 
 echo "======================================================================"
-echo "==> Starting Accustandard Caddy & Quadlet Configuration Repair..."
+echo "==> Starting Accustandard VPS Migration & Caddy Validation..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services
@@ -25,10 +24,9 @@ mkdir -p "$HOME/bridge-ph/accustandard"
 mkdir -p "$HOME/bridge-ph/accustandard-demo"
 rm -f "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustanda-demo" 2>/dev/null || true
 
-# 3. Clean up sed-corrupted strings (accustandardrdrd, accustandardrd) across all systemd files
+# 3. Clean up sed-corrupted strings across all systemd files
 echo "[3/6] Cleaning up quadlet configuration files & correcting volume paths..."
 
-# Helper function to perform idempotent replacement without suffix concatenation
 repair_file_paths() {
   local target_file="$1"
   if [ -f "$target_file" ]; then
@@ -36,36 +34,45 @@ repair_file_paths() {
     sed -i 's|accustandardrd[rd]*|accustandard|g' "$target_file" || true
     # Fix remaining legacy accustanda-demo -> accustandard-demo
     sed -i 's|accustanda-demo|accustandard-demo|g' "$target_file" || true
-    # Fix remaining standalone accustanda -> accustandard (matching non-alphanumeric boundary)
+    # Fix remaining standalone accustanda -> accustandard
     sed -i 's|accustanda\([^r]\|$\)|accustandard\1|g' "$target_file" || true
   fi
 }
 
 # Recursively fix all quadlet & systemd unit files
-find "$HOME/.config/containers/systemd" -type f | while read -r file; do
+find "$HOME/.config/containers/systemd" -type f 2>/dev/null | while read -r file; do
   repair_file_paths "$file"
 done
 
-find "$HOME/.config/systemd/user" -type f | while read -r file; do
+find "$HOME/.config/systemd/user" -type f 2>/dev/null | while read -r file; do
   repair_file_paths "$file"
 done
 
-# Fix Caddyfile if present
+# 4. Auto-Format (`caddy fmt`) & Validate (`caddy validate`) Caddyfile
+echo "[4/6] Auto-formatting (caddy fmt) and validating (caddy validate) Caddyfile..."
 if [ -f "$HOME/caddy/conf/Caddyfile" ]; then
   repair_file_paths "$HOME/caddy/conf/Caddyfile"
-fi
 
-# 4. Update Caddy container definition directly if caddy.container exists
-if [ -f "$HOME/.config/containers/systemd/caddy/caddy.container" ]; then
-  repair_file_paths "$HOME/.config/containers/systemd/caddy/caddy.container"
+  # If host caddy binary exists:
+  if command -v caddy &> /dev/null; then
+    echo "  - Formatting Caddyfile with host caddy binary..."
+    caddy fmt --overwrite "$HOME/caddy/conf/Caddyfile" 2>/dev/null || true
+    echo "  - Validating Caddyfile syntax..."
+    caddy validate --config "$HOME/caddy/conf/Caddyfile" || echo "  ! Warning: Host caddy validate reported errors."
+  # Otherwise use Podman container caddy binary:
+  elif podman container exists caddy 2>/dev/null || podman image exists docker.io/library/caddy:alpine 2>/dev/null; then
+    echo "  - Formatting Caddyfile via Podman container..."
+    podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile 2>/dev/null || true
+    echo "  - Validating Caddyfile syntax via Podman container..."
+    podman exec caddy caddy validate --config /etc/caddy/Caddyfile 2>/dev/null || true
+  fi
+  echo "  - Caddyfile formatting and validation check complete."
 fi
 
 # 5. Reload Systemd User Daemon & Restart Caddy
-echo "[4/6] Reloading systemd user daemon..."
+echo "[5/6] Reloading systemd user daemon & starting caddy.service..."
 loginctl enable-linger "$USER" || true
 systemctl --user daemon-reload
-
-echo "[5/6] Starting caddy.service..."
 systemctl --user restart caddy.service || systemctl --user start caddy.service || true
 systemctl --user status caddy.service --no-pager || true
 
@@ -77,7 +84,7 @@ if command -v bunny-purge &> /dev/null; then
 fi
 
 echo "======================================================================"
-echo "==> Caddy & Quadlet Repair Completed Successfully!"
+echo "==> Accustandard VPS Migration, Formatting & Validation Complete!"
 echo "    Production Path: $HOME/bridge-ph/accustandard"
 echo "    Demo Path:       $HOME/bridge-ph/accustandard-demo"
 echo "======================================================================"
