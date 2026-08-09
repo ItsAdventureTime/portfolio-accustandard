@@ -1,79 +1,71 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — Clean Permanent Production VPS Migration
+# Accustandard Medical ERP — Clean Quadlet & Caddy Repair Script
+# Fixes repeated sed corruption (e.g. accustandardrdrd) & restores Caddy service
 # Target Host: jk@216.75.75.136
-# Target Directories:
-#   - Production Web Root: /home/jk/bridge-ph/accustandard
-#   - Production Quadlet Systemd: /home/jk/.config/containers/systemd/bridge-ph/accustandard
-#   - Demo Web Root: /home/jk/bridge-ph/accustandard-demo
-#   - Demo Quadlet Systemd: /home/jk/.config/containers/systemd/bridge-ph/accustandard-demo
 # ==============================================================================
 
 set -euo pipefail
 
 echo "======================================================================"
-echo "==> Starting Clean Permanent Accustandard VPS Migration..."
+echo "==> Starting Accustandard Caddy & Quadlet Configuration Repair..."
 echo "======================================================================"
 
 # 1. Stop legacy Podman containers & quadlet services
-echo "[1/6] Stopping legacy containers and systemd services..."
+echo "[1/6] Stopping containers and services..."
 systemctl --user stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy.service || true
 podman stop accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy || true
 podman pod stop accustanda-pod accustanda-demo-pod || true
 podman rm -f accustanda-app accustanda-db accustanda-demo-app accustanda-demo-db caddy || true
 podman pod rm -f accustanda-pod accustanda-demo-pod || true
 
-# 2. Clean up any legacy symlinks & rename web root directories permanently
-echo "[2/6] Cleanly updating web root directories to permanent name 'accustandard'..."
+# 2. Ensure Web Root Directories
+echo "[2/6] Verifying web root directories..."
+mkdir -p "$HOME/bridge-ph/accustandard"
+mkdir -p "$HOME/bridge-ph/accustandard-demo"
 rm -f "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustanda-demo" 2>/dev/null || true
 
-mkdir -p "$HOME/bridge-ph"
+# 3. Clean up sed-corrupted strings (accustandardrdrd, accustandardrd) across all systemd files
+echo "[3/6] Cleaning up quadlet configuration files & correcting volume paths..."
 
-if [ -d "$HOME/bridge-ph/accustanda" ] && [ ! -d "$HOME/bridge-ph/accustandard" ]; then
-  mv "$HOME/bridge-ph/accustanda" "$HOME/bridge-ph/accustandard"
-  echo "  - Moved $HOME/bridge-ph/accustanda -> $HOME/bridge-ph/accustandard"
-else
-  mkdir -p "$HOME/bridge-ph/accustandard"
-fi
+# Helper function to perform idempotent replacement without suffix concatenation
+repair_file_paths() {
+  local target_file="$1"
+  if [ -f "$target_file" ]; then
+    # Fix repeated suffix corruption (e.g. accustandardrdrd -> accustandard)
+    sed -i 's|accustandardrd[rd]*|accustandard|g' "$target_file" || true
+    # Fix remaining legacy accustanda-demo -> accustandard-demo
+    sed -i 's|accustanda-demo|accustandard-demo|g' "$target_file" || true
+    # Fix remaining standalone accustanda -> accustandard (matching non-alphanumeric boundary)
+    sed -i 's|accustanda\([^r]\|$\)|accustandard\1|g' "$target_file" || true
+  fi
+}
 
-if [ -d "$HOME/bridge-ph/accustanda-demo" ] && [ ! -d "$HOME/bridge-ph/accustandard-demo" ]; then
-  mv "$HOME/bridge-ph/accustanda-demo" "$HOME/bridge-ph/accustandard-demo"
-  echo "  - Moved $HOME/bridge-ph/accustanda-demo -> $HOME/bridge-ph/accustandard-demo"
-else
-  mkdir -p "$HOME/bridge-ph/accustandard-demo"
-fi
+# Recursively fix all quadlet & systemd unit files
+find "$HOME/.config/containers/systemd" -type f | while read -r file; do
+  repair_file_paths "$file"
+done
 
-# 3. Permanently update systemd Quadlet & Caddy container files
-echo "[3/6] Updating all Podman Quadlet & Caddy container volume configurations..."
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph"
+find "$HOME/.config/systemd/user" -type f | while read -r file; do
+  repair_file_paths "$file"
+done
 
-if [ -d "$HOME/.config/containers/systemd/bridge-ph/accustanda" ]; then
-  rm -rf "$HOME/.config/containers/systemd/bridge-ph/accustanda"
-fi
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard"
-
-if [ -d "$HOME/.config/containers/systemd/bridge-ph/accustanda-demo" ]; then
-  rm -rf "$HOME/.config/containers/systemd/bridge-ph/accustanda-demo"
-fi
-mkdir -p "$HOME/.config/containers/systemd/bridge-ph/accustandard-demo"
-
-# Permanently update all volume path references in systemd Quadlet files
-find "$HOME/.config/containers/systemd" -type f -exec sed -i 's/accustanda-demo/accustandard-demo/g' {} + 2>/dev/null || true
-find "$HOME/.config/containers/systemd" -type f -exec sed -i 's/accustanda/accustandard/g' {} + 2>/dev/null || true
-find "$HOME/.config/systemd/user" -type f -exec sed -i 's/accustanda-demo/accustandard-demo/g' {} + 2>/dev/null || true
-find "$HOME/.config/systemd/user" -type f -exec sed -i 's/accustanda/accustandard/g' {} + 2>/dev/null || true
-
-# 4. Update Caddyfile Reverse Proxy Configuration permanently
-echo "[4/6] Updating Caddyfile configuration..."
+# Fix Caddyfile if present
 if [ -f "$HOME/caddy/conf/Caddyfile" ]; then
-  sed -i 's/accustanda-demo/accustandard-demo/g' "$HOME/caddy/conf/Caddyfile"
-  sed -i 's/accustanda/accustandard/g' "$HOME/caddy/conf/Caddyfile"
+  repair_file_paths "$HOME/caddy/conf/Caddyfile"
 fi
 
-# 5. Reload Systemd User Daemon & Restart Caddy Service
-echo "[5/6] Reloading systemd user daemon & starting caddy.service..."
+# 4. Update Caddy container definition directly if caddy.container exists
+if [ -f "$HOME/.config/containers/systemd/caddy/caddy.container" ]; then
+  repair_file_paths "$HOME/.config/containers/systemd/caddy/caddy.container"
+fi
+
+# 5. Reload Systemd User Daemon & Restart Caddy
+echo "[4/6] Reloading systemd user daemon..."
 loginctl enable-linger "$USER" || true
 systemctl --user daemon-reload
+
+echo "[5/6] Starting caddy.service..."
 systemctl --user restart caddy.service || systemctl --user start caddy.service || true
 systemctl --user status caddy.service --no-pager || true
 
@@ -85,8 +77,7 @@ if command -v bunny-purge &> /dev/null; then
 fi
 
 echo "======================================================================"
-echo "==> Clean Permanent Accustandard VPS Migration Completed!"
+echo "==> Caddy & Quadlet Repair Completed Successfully!"
 echo "    Production Path: $HOME/bridge-ph/accustandard"
 echo "    Demo Path:       $HOME/bridge-ph/accustandard-demo"
-echo "    Systemd Path:    $HOME/.config/containers/systemd/bridge-ph/accustandard"
 echo "======================================================================"
