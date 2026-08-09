@@ -87,6 +87,22 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 
 ---
 
+## 🎨 UI/UX Design System & Modal Component Architecture
+
+The interface follows modern web ergonomics with high-legibility typography, clear interactive affordances, and spacious viewport utilization:
+
+### 1. Viewport-Optimized Modal Container Sizes
+- **Inspector Modals (`max-w-3xl`, 768px wide)**: Document QRN Inspector, SKU Barcode Detail, PO 3-Way Match Audit, RFP Expense Breakdown, and User Access Matrix Editor.
+- **Queue Drawers (`max-w-4xl`, 896px wide)**: QuickBooks Online Live Sync Queue and Barcode Product Manager.
+- **Interactive Form Modals (`max-w-3xl`, 768px wide)**: Create Sales Quote, Create PO, Warehouse Receiving Report (RR), Create RFP, and Add Stock Batch.
+
+### 2. High-Legibility Typography Scale
+- **Body & Controls**: Scaled from 12px to `14px (text-sm) / 16px (text-base)` with `font-semibold` and `font-extrabold` contrast.
+- **Financial Balances & Quantities**: Rendered in `font-mono font-black` (`text-lg` to `text-2xl`).
+- **Interactive Identifiers (QRN / SKU / PO / RFP)**: Encapsulated inside high-contrast button pills (`bg-blue-50/90`, `hover:bg-blue-900`, `hover:text-white`, `cursor-pointer`) with icon badges (`FileText`, `Barcode`, `Eye`).
+
+---
+
 ## 📊 Inventory Classification System
 
 Products are managed under 3 distinct stock categories:
