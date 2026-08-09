@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
     "deploy:demo": "./scripts/deploy-demo.sh",
@@ -34,10 +34,10 @@
     "drizzle-orm": "^0.38.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.469.0",
-    "next": "^15.1.0",
+    "next": "^16.3.0",
     "pg": "^8.13.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
