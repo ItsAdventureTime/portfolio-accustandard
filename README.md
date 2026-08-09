@@ -66,16 +66,38 @@ The app supports 7 distinct user roles, each with specific navigation and approv
 
 ---
 
+## 🚀 Git & Repository Workflow Standard
+
+To maintain consistent commit history and security across local and remote environments, strictly adhere to the following workflow:
+
+1. **Local Commits:** Always use local `git` CLI with SSH commit signing enabled.
+   ```bash
+   git add .
+   git commit -S -m "feat(module): describe your clear change"
+   ```
+
+2. **Remote Commits & Synchronization:** Always use the official GitHub CLI (`gh`) over **HTTPS** (default authenticated user `ItsAdventureTime`).
+   ```bash
+   # HTTPS Remote Repository URL
+   https://github.com/ItsAdventureTime/bridge-accustandard.git
+
+   # Push changes via GitHub CLI / HTTPS protocol
+   git push origin main
+   ```
+
+---
+
 ## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 - Node.js 18+ or 20+
 - npm 9+
+- GitHub CLI (`gh`) authenticated via HTTPS
 
 ### Setup Commands
 ```bash
-# 1. Clone the repository
-git clone git@github.com:ItsAdventureTime/bridge-accustandard.git
+# 1. Clone the repository over HTTPS using GitHub CLI
+gh repo clone ItsAdventureTime/bridge-accustandard
 cd bridge-accustandard
 
 # 2. Install dependencies
@@ -109,7 +131,7 @@ podman run --rm \
 ### Infrastructure Configuration
 - **VPS Host:** `jk@216.75.75.136`
 - **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
-- **GitHub Repository Remote:** `git@github.com:ItsAdventureTime/bridge-accustandard.git`
+- **GitHub Repository Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
 - **Production Path:** `/home/jk/bridge-ph/accustandard`
 - **Demo Path:** `/home/jk/bridge-ph/accustandard-demo`
 

@@ -1,6 +1,6 @@
 # Technical Architecture & Internal Control System
 
-This document outlines the technical design, data flows, and containerized deployment architecture for the **Accustandard Medical ERP Dashboard**.
+This document outlines the technical design, data flows, containerized deployment architecture, and remote version control standards for the **Accustandard Medical ERP Dashboard**.
 
 ---
 
@@ -28,6 +28,14 @@ The system is structured as a single-page Next.js App Router application optimiz
 |  - Multi-SOA Collection Allocations & Credit Ledger                   |
 +-----------------------------------------------------------------------+
 ```
+
+---
+
+## 🔐 Git Version Control & Remote Standards
+
+To ensure auditability and consistent remote synchronization:
+- **Local Commits:** Standard local `git` CLI with SSH key signatures (`git commit -S`).
+- **Remote Operations:** Official GitHub CLI (`gh`) using **HTTPS** protocol (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
 
 ---
 

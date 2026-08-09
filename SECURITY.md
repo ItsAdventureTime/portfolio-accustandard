@@ -1,6 +1,6 @@
 # Security Policy & Internal Controls
 
-At **Accustandard Medical and Diagnostic Supplies Corporation**, system security and fraud control are core engineering requirements.
+At **Accustandard Medical and Diagnostic Supplies Corporation**, system security, commit verification, and fraud control are core engineering requirements.
 
 ---
 
@@ -11,8 +11,9 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 - **Immutable Audit Logging:** Every approval step, system override, and record modification is permanently logged with timestamps and user identifiers.
 - **Strict Hard-Blocking:** Over-receiving supplier shipments or generating POs for Class 3 short-expiry items without customer POs is hard-blocked at the application layer.
 
-### 2. Commit Integrity
-- All repository commits must be signed using valid SSH or GPG keys verified against GitHub user profiles.
+### 2. Commit Integrity & Remote Protocol Standards
+- **Local Commits:** All local commits must be signed using valid SSH keys (`git commit -S`) verified against GitHub user profiles.
+- **Remote Synchronization:** Remote operations must use the official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
 
 ---
 

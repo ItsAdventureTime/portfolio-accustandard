@@ -6,9 +6,9 @@ Thank you for helping improve the Accustandard Medical ERP Dashboard! We welcome
 
 ## 🛠️ Development Setup
 
-1. **Fork or Clone the Repository**:
+1. **Clone the Repository over HTTPS**:
    ```bash
-   git clone git@github.com:ItsAdventureTime/bridge-accustandard.git
+   gh repo clone ItsAdventureTime/bridge-accustandard
    cd bridge-accustandard
    ```
 
@@ -23,7 +23,7 @@ Thank you for helping improve the Accustandard Medical ERP Dashboard! We welcome
    ```
 
 4. **Verify Production Build**:
-   Before submitting changes, make sure the static export compiles cleanly:
+   Before submitting changes, make sure the static export compiles cleanly inside a disposable Podman container:
    ```bash
    podman run --rm \
      -v "$(pwd):/workspace:Z" \
@@ -36,29 +36,18 @@ Thank you for helping improve the Accustandard Medical ERP Dashboard! We welcome
 
 ---
 
-## 📐 Code Style & Conventions
+## 🔐 Git & Remote Protocol Guidelines
 
-- **Component Architecture:** Place feature modules under `src/components/features/` and modals under `src/components/modals/`.
-- **State Management:** Keep shared demo state in `src/lib/useDemoStore.ts` to ensure all user roles see synchronized updates.
-- **Styling:** Use standard Tailwind CSS utility classes matching the Light Corporate Medical palette (`#F8FAFC` slate canvas, `#1E3A8A` Deep Royal Navy, `#DC2626` Bright Medical Red). Avoid inline style overrides whenever possible.
-- **TypeScript:** Enforce explicit type definitions for data structures and component props.
+To enforce security and consistency across developer workstations:
 
----
+- **Local Commits:** Use standard local `git` commands with SSH commit signing (`git commit -S`).
+- **Remote Operations:** Always use the official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth status` credentials.
 
-## 🔐 Commit Signing Guidelines
-
-All commits submitted to this repository MUST be signed using SSH or GPG keys.
-
-### Setting Up SSH Commit Signing
+### Setting Up Local Commit Signing
 ```bash
 git config --global user.signingkey "ssh-ed25519 YOUR_PUBLIC_KEY"
 git config --global gpg.format ssh
 git config --global commit.gpgsign true
-```
-
-When committing your work, verify that your signature passes:
-```bash
-git commit -S -m "feat(module): describe your clear, punchy change"
 ```
 
 ---
@@ -69,12 +58,16 @@ git commit -S -m "feat(module): describe your clear, punchy change"
    ```bash
    git checkout -b feat/demand-planner-updates
    ```
-2. Make your edits and commit with signed signatures.
-3. Push your branch to GitHub:
+2. Make your edits and commit locally using standard `git`:
+   ```bash
+   git add .
+   git commit -S -m "feat(inventory): enhance Class 1 reorder logic"
+   ```
+3. Push your branch using GitHub CLI / HTTPS:
    ```bash
    git push origin feat/demand-planner-updates
    ```
-4. Open a Pull Request against `main` using GitHub CLI:
+4. Open a Pull Request using GitHub CLI (`gh`):
    ```bash
    gh pr create --title "feat(inventory): enhance Class 1 reorder logic" --body "Detailed summary of changes"
    ```

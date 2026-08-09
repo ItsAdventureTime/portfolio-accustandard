@@ -10,7 +10,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
 
 ---
 
-## 🏗️ Architecture Summary
+## 🏗️ Architecture & Remote Control Summary
 
 - Single responsive Next.js web application
 - Unified login portal with interactive 7-role switcher
@@ -18,6 +18,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
 - Read-only "View As" mode for administrators with audited overrides
 - Internal database acts as operational source of truth
 - QuickBooks Online (QBO) acts as financial accounting ledger via live API queue
+- **Version Control Policy:** Local commits use standard local `git` CLI with SSH key signatures. Remote commits and repo synchronization use the official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
 
 ---
 
