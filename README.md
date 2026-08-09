@@ -140,17 +140,19 @@ podman run --rm \
 
 ---
 
-## 🛰️ Production & Demo VPS Deployment
+## 🛰️ Demo VPS Deployment
+
+Until the demo site is approved by leadership, all build deployments target the **Demo Web Root**.
 
 ### Infrastructure Configuration
 - **VPS Host:** `jk@216.75.75.136`
 - **Local Workspace:** `/Users/jk.deguzman/dev/accustandard-bridge-dashboard`
-- **GitHub Repository Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- **Production Web Root:** `/home/jk/bridge-ph/accustandard`
-- **Demo Web Root:** `/home/jk/bridge-ph/accustandard-demo`
-- **Caddy Unit:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
+- **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
+- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard/demo`
+- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard/demo`
+- **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
 
-### Deploying Updates to VPS
+### Deploying Demo Updates to VPS
 ```bash
 # Step 1: Run static export inside Podman container
 podman run --rm \
@@ -161,18 +163,13 @@ podman run --rm \
   node:current-alpine \
   sh -c "npm ci && npm run build"
 
-# Step 2: Run VPS deployment & Caddy repair script
+# Step 2: Run Demo VPS deployment & Caddy repair script
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 
-# Step 3: Deploy static export files to Demo site
+# Step 3: Deploy static export files to Demo Web Root
 rsync -avz --delete -e "ssh -p 22" \
   out/ \
-  jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/
-
-# Step 4: Deploy static export files to Production site
-rsync -avz --delete -e "ssh -p 22" \
-  out/ \
-  jk@216.75.75.136:/home/jk/bridge-ph/accustandard/
+  jk@216.75.75.136:/home/jk/bridge-ph/accustandard/demo/
 ```
 
 ---

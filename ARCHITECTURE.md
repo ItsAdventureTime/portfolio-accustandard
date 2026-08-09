@@ -61,25 +61,28 @@ Operational users never post directly to accounting ledgers. Completed transacti
 
 ---
 
-## 🐳 Containerized Deployment Architecture
+## 🐳 Containerized Deployment Architecture (Demo Target)
 
-Production deployments use **Podman Quadlets** running systemd-managed rootless containers behind a Caddy reverse proxy:
+Until leadership approves the demo site, all builds are deployed exclusively to the Demo environment:
 
 ```
 [ Internet Client ]
        |
        v (HTTPS: 443)
-[ Caddy Reverse Proxy ]
+[ Caddy Reverse Proxy (caddy.service) ]
        |
-       +---> /accustandard/demo ---> [ localhost:3001 ] (accustandard-demo-pod)
-       |
-       +---> /accustandard -------> [ localhost:3000 ] (accustandard-pod)
+       v /accustandard/demo
+[ Demo Pod: accustandard-demo-pod ] (localhost:3001)
 ```
 
-### Quadlet Services (`deploy/quadlets/`)
-- **`accustandard-pod.pod`**: Systemd pod unit publishing port 3000.
-- **`accustandard-app.container`**: Web app container running static export files.
-- **`accustandard-db.container`**: PostgreSQL container storing persistent records.
+### Path Specifications
+- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard/demo`
+- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard/demo`
+
+### Quadlet Services (`deploy/quadlets/demo/`)
+- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 3001.
+- **`accustandard-demo-app.container`**: Web app container running demo static export files.
+- **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
 
 ---
 
