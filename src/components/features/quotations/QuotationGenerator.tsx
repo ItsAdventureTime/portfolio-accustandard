@@ -18,6 +18,7 @@ import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 interface QuotationGeneratorProps {
   rfqList: any[];
+  quotationsList?: any[];
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onOpenCreateModal: () => void;
@@ -28,6 +29,7 @@ interface QuotationGeneratorProps {
 
 export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   rfqList,
+  quotationsList = [],
   onOpenPrintModal,
   onOpenExportModal,
   onOpenCreateModal,
@@ -36,17 +38,20 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onAddAuditLog,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'QUOTE' | 'RFQ' | 'ROI'>('QUOTE');
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Sample Quotation State
-  const [qrn, setQrn] = useState('QRN20240415037');
-  const [quotationDate, setQuotationDate] = useState('April 15, 2024');
-  const [clientName, setClientName] = useState('Ms. Katherine Porciuncula');
-  const [clientFacility, setClientFacility] = useState('Allied Care Experts Medical Center');
-  const [clientAddress, setClientAddress] = useState('Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan');
+  const activeQuote = quotationsList.length > 0 ? quotationsList[selectedIndex] || quotationsList[0] : null;
 
-  const [itemDescription, setItemDescription] = useState('Calibration Sticks Bact Alert');
-  const [packaging, setPackaging] = useState('1 Kit');
-  const [unitPrice, setUnitPrice] = useState(31500.0);
+  // Active Quotation State (Dynamic with fallback)
+  const qrn = activeQuote?.qrn || 'QRN20240415037';
+  const quotationDate = activeQuote?.quotationDate || 'April 15, 2026';
+  const clientName = activeQuote?.clientName || 'Ms. Katherine Porciuncula';
+  const clientFacility = activeQuote?.clientFacility || activeQuote?.facilityName || 'Allied Care Experts Medical Center';
+  const clientAddress = activeQuote?.clientAddress || activeQuote?.address || 'Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan';
+
+  const itemDescription = activeQuote?.itemDescription || 'Calibration Sticks Bact Alert';
+  const packaging = activeQuote?.packaging || '1 Kit';
+  const unitPrice = activeQuote?.unitPrice || 31500.0;
 
   // Marketing ROI Calculator State
   const [roiCensus, setRoiCensus] = useState(180);
@@ -274,12 +279,37 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Calculator className="w-4 h-4 text-emerald-600" />
+          <Calculator className="w-4 h-4 text-emerald-700" />
           <span>Marketing ROI &amp; Margin Calculator</span>
         </button>
       </div>
 
-      {activeSubTab === 'QUOTE' && quotationDocumentContent}
+      {/* Sub-Tab 1: Official Sales Quotation Document */}
+      {activeSubTab === 'QUOTE' && (
+        <div className="space-y-4">
+          {quotationsList.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3.5 gap-2 shadow-2xs">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">Select Quotation Document:</span>
+                <select
+                  value={selectedIndex}
+                  onChange={(e) => setSelectedIndex(Number(e.target.value))}
+                  className="bg-white border border-slate-300 font-extrabold text-xs rounded-lg px-3 py-1.5 text-blue-900 focus:outline-none focus:border-blue-700 shadow-2xs"
+                >
+                  {quotationsList.map((q, idx) => (
+                    <option key={q.id || idx} value={idx}>
+                      {q.qrn} — {q.clientFacility || q.clientName || 'Quotation'} (₱{Number(q.totalPrice || q.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-xs text-slate-500 font-bold">{quotationsList.length} Active System Quote(s)</span>
+            </div>
+          )}
+
+          {quotationDocumentContent}
+        </div>
+      )}
 
       {activeSubTab === 'RFQ' && (
         <div className="space-y-4">

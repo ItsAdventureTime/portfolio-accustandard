@@ -29,6 +29,7 @@ import {
   DEFAULT_INVENTORY,
   DEFAULT_REPLENISHMENT_PLANNER,
   DEFAULT_RFQS,
+  DEFAULT_QUOTATIONS,
   DEFAULT_APPROVALS,
   DEFAULT_SOA_ROWS,
   DEFAULT_COLLECTIONS,
@@ -60,6 +61,7 @@ export default function Home() {
   const [inventoryList, setInventoryList] = useState(DEFAULT_INVENTORY);
   const [replenishmentList, setReplenishmentList] = useState(DEFAULT_REPLENISHMENT_PLANNER);
   const [rfqList, setRfqList] = useState(DEFAULT_RFQS);
+  const [quotationsList, setQuotationsList] = useState(DEFAULT_QUOTATIONS);
   const [approvalsList, setApprovalsList] = useState(DEFAULT_APPROVALS);
   const [soaData, setSoaData] = useState({ rows: DEFAULT_SOA_ROWS });
   const [collectionsList, setCollectionsList] = useState(DEFAULT_COLLECTIONS);
@@ -94,6 +96,51 @@ export default function Home() {
   const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
+
+  // Load state from localStorage on initial render
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('accustandard_demo_state');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.inventoryList) setInventoryList(parsed.inventoryList);
+          if (parsed.quotationsList) setQuotationsList(parsed.quotationsList);
+          if (parsed.approvalsList) setApprovalsList(parsed.approvalsList);
+          if (parsed.soaRows) setSoaData({ rows: parsed.soaRows });
+          if (parsed.collectionsList) setCollectionsList(parsed.collectionsList);
+          if (parsed.poList) setPoList(parsed.poList);
+          if (parsed.rfpList) setRfpList(parsed.rfpList);
+          if (parsed.qboQueue) setQboQueue(parsed.qboQueue);
+          if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
+        }
+      } catch (e) {
+        console.warn('Failed to parse saved demo state:', e);
+      }
+    }
+  }, []);
+
+  // Save state to localStorage whenever core state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stateToSave = {
+          inventoryList,
+          quotationsList,
+          approvalsList,
+          soaRows: soaData.rows,
+          collectionsList,
+          poList,
+          rfpList,
+          qboQueue,
+          auditLogs,
+        };
+        localStorage.setItem('accustandard_demo_state', JSON.stringify(stateToSave));
+      } catch (e) {
+        console.warn('Failed to save demo state:', e);
+      }
+    }
+  }, [inventoryList, quotationsList, approvalsList, soaData, collectionsList, poList, rfpList, qboQueue, auditLogs]);
 
   // Toast Notification Helper
   const showNotification = (msg: string) => {
@@ -135,23 +182,204 @@ export default function Home() {
     addAuditLog(`Role switched to [${role}]`);
   };
 
-  // Handle Quotation Submit
+  // Handle Quotation Submit (Dynamic Update & Soft Stock Reservation)
   const handleSubmitQuotation = (newQuote: any) => {
+    setQuotationsList((prev: any[]) => [newQuote, ...prev]);
+
+    // Soft-reserve stock for the selected item
+    setInventoryList((prev) =>
+      prev.map((item) => {
+        if (item.sku === newQuote.sku) {
+          const newReserved = item.reserved + 1;
+          const newAvail = Math.max(0, item.onHand - newReserved);
+          return { ...item, reserved: newReserved, available: newAvail };
+        }
+        return item;
+      })
+    );
+
     setApprovalsList((prev) => [
       {
         id: `app-sq-${Date.now()}`,
         qrn: newQuote.qrn,
         type: 'Sales Quotation',
-        maker: newQuote.signatoryName || 'Sales Agent',
+        maker: newQuote.clientName || 'Sales Agent',
         reviewerStatus: 'PENDING',
         gmStatus: 'PENDING',
         dcsStatus: 'PENDING',
-        totalAmount: 18450.0,
+        totalAmount: newQuote.totalAmount || newQuote.unitPrice || 31500.0,
       },
       ...prev,
     ]);
-    showNotification(`Created and routed Sales Quotation ${newQuote.qrn} for approval!`);
-    addAuditLog(`Created Sales Quotation ${newQuote.qrn}`);
+
+    showNotification(`Created and routed Sales Quotation ${newQuote.qrn} for approval! Stock soft-reserved.`);
+    addAuditLog(`Created Sales Quotation ${newQuote.qrn} (3-day soft reservation active)`);
+    setActiveTab('quotations');
+  };
+
+  // Handle Multi-SOA Collection Check Allocation (Dynamic Update of SOA Ledger)
+  const handleAllocateCollection = (
+    checkNo: string,
+    bank: string,
+    checkAmount: number,
+    allocations: { invoiceNo: string; amount: number }[]
+  ) => {
+    let totalAllocated = 0;
+    const updatedRows = soaData.rows.map((row) => {
+      const match = allocations.find(
+        (a) => a.invoiceNo === row.salesInvoiceNo
+      );
+      if (match && match.amount > 0) {
+        totalAllocated += match.amount;
+        const newAmountPaid = (Number(row.amountPaid) || 0) + match.amount;
+        const newInvoiceBalance = Math.max(0, (Number(row.invoiceAmount) || 0) - newAmountPaid);
+        return {
+          ...row,
+          amountPaid: newAmountPaid,
+          invoiceBalance: newInvoiceBalance,
+        };
+      }
+      return row;
+    });
+
+    // Recalculate running balances across all rows
+    let cumBalance = 0;
+    const recomputedRows = updatedRows.map((row) => {
+      cumBalance += Number(row.invoiceBalance) || 0;
+      return {
+        ...row,
+        runningBalance: cumBalance,
+      };
+    });
+
+    const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
+
+    setSoaData({ rows: recomputedRows });
+    setCollectionsList((prev: any[]) => [
+      {
+        id: `col-${Date.now()}`,
+        checkNo,
+        bank,
+        date: new Date().toISOString().split('T')[0],
+        amount: checkAmount,
+        customer: 'GATCHALIAN MEDICAL LABORATORY',
+        allocatedInvoices: allocations.map((a) => ({ invoiceNo: a.invoiceNo, allocatedAmount: a.amount })),
+        unappliedCredit,
+        status: 'QUEUED_QBO',
+      },
+      ...prev,
+    ]);
+
+    setQboQueue((prev) => [
+      {
+        id: `qbo-col-${Date.now()}`,
+        docType: 'Customer Payment Collection',
+        docNumber: checkNo,
+        entityName: 'GATCHALIAN MEDICAL LABORATORY',
+        amount: checkAmount,
+        qboRefId: 'Awaiting Sync',
+        syncStatus: 'QUEUED',
+        lastAttempt: new Date().toLocaleString(),
+        errorMessage: '',
+      },
+      ...prev,
+    ]);
+
+    showNotification(`Multi-SOA Check #${checkNo} allocated! Statement of Account balances updated.`);
+    addAuditLog(`Allocated Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
+  };
+
+  // Handle Goods Receipt Receiving (Dynamic Inventory & PO Update)
+  const handleReceivePO = (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }) => {
+    let targetPo: any = null;
+    setPoList((prev) =>
+      prev.map((po) => {
+        if (po.id === poId) {
+          targetPo = po;
+          const newRR = po.rrQtyReceived + receivedQty;
+          const newStatus = newRR >= po.poQty ? 'VERIFIED_3WAY' : 'PARTIALLY_RECEIVED';
+          return { ...po, rrQtyReceived: newRR, status: newStatus };
+        }
+        return po;
+      })
+    );
+
+    if (targetPo) {
+      setInventoryList((prev) => {
+        const existingIndex = prev.findIndex((item) => item.sku === targetPo.sku);
+        if (existingIndex >= 0) {
+          return prev.map((item, idx) => {
+            if (idx === existingIndex) {
+              const newOnHand = item.onHand + receivedQty;
+              const newAvail = newOnHand - item.reserved;
+              return { ...item, onHand: newOnHand, available: newAvail };
+            }
+            return item;
+          });
+        } else {
+          return [
+            ...prev,
+            {
+              id: `inv-${Date.now()}`,
+              sku: targetPo.sku || 'ACC-REC-01',
+              description: targetPo.itemDescription || 'Received Goods Batch',
+              location: 'Pampanga',
+              lotNumber: details?.batchNumber || `LOT-2026-${Math.floor(100 + Math.random() * 900)}`,
+              expiryDate: '2028-06-30',
+              onHand: receivedQty,
+              reserved: 0,
+              available: receivedQty,
+              unit: 'Boxes',
+              status: 'NORMAL',
+            },
+          ];
+        }
+      });
+    }
+
+    showNotification(`Confirmed Goods Receipt RR for PO! Added ${receivedQty} units to inventory.`);
+    addAuditLog(`Received ${receivedQty} units for PO #${poId}`);
+  };
+
+  // Handle RFP Release
+  const handleReleaseRFP = (id: string, bank: string, refNo: string) => {
+    setRfpList((prev) =>
+      prev.map((rfp) => {
+        if (rfp.id === id) {
+          return {
+            ...rfp,
+            status: 'DISBURSED_PAID',
+            releasedBank: bank,
+            releasedRefNo: refNo,
+          };
+        }
+        return rfp;
+      })
+    );
+    showNotification(`Released funds for RFP #${id} via ${bank} (Ref: ${refNo})!`);
+    addAuditLog(`Disbursed payment for RFP #${id} from ${bank}`);
+  };
+
+  // Handle Add Stock Batch
+  const handleAddStock = (newStock: any) => {
+    setInventoryList((prev) => [
+      {
+        id: `inv-${Date.now()}`,
+        sku: newStock.sku,
+        description: newStock.description,
+        location: newStock.location,
+        lotNumber: newStock.lotNumber,
+        expiryDate: newStock.expiryDate,
+        onHand: newStock.qty,
+        reserved: 0,
+        available: newStock.qty,
+        unit: newStock.unit || 'Boxes',
+        status: 'NORMAL',
+      },
+      ...prev,
+    ]);
+    showNotification(`Added new stock batch ${newStock.lotNumber} (${newStock.sku}) to ${newStock.location}!`);
+    addAuditLog(`Added inventory batch ${newStock.lotNumber} (${newStock.sku})`);
   };
 
   // Handle Purchase Order Submit
@@ -172,6 +400,26 @@ export default function Home() {
     ]);
     showNotification(`Created and routed Purchase Order ${newPO.poNumber} for approval!`);
     addAuditLog(`Created Purchase Order ${newPO.poNumber}`);
+  };
+
+  // Handle RFP Submit
+  const handleSubmitRFP = (newRFP: any) => {
+    setRfpList((prev) => [newRFP, ...prev]);
+    setApprovalsList((prev) => [
+      {
+        id: `app-rfp-${Date.now()}`,
+        qrn: newRFP.rfpNo,
+        type: 'Request for Payment',
+        maker: newRFP.requestedBy || 'Bookkeeper',
+        reviewerStatus: 'APPROVED',
+        gmStatus: 'PENDING',
+        dcsStatus: 'PENDING',
+        totalAmount: newRFP.amount,
+      },
+      ...prev,
+    ]);
+    showNotification(`Created and routed RFP Voucher ${newRFP.rfpNo} for approval!`);
+    addAuditLog(`Created Payment Voucher ${newRFP.rfpNo}`);
   };
 
   // Handle Approval Action
@@ -238,12 +486,16 @@ export default function Home() {
     setIsPrintModalOpen(true);
   };
 
-  // Reset Demo Data
+  // Reset Demo Data (Clears localStorage & restores initial seed constants)
   const handleResetData = () => {
     resetDemoData();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accustandard_demo_state');
+    }
     setInventoryList(DEFAULT_INVENTORY);
     setReplenishmentList(DEFAULT_REPLENISHMENT_PLANNER);
     setRfqList(DEFAULT_RFQS);
+    setQuotationsList(DEFAULT_QUOTATIONS);
     setApprovalsList(DEFAULT_APPROVALS);
     setSoaData({ rows: DEFAULT_SOA_ROWS });
     setCollectionsList(DEFAULT_COLLECTIONS);
@@ -309,6 +561,7 @@ export default function Home() {
               onSelectTab={handleSelectTab}
               onOpenScanner={() => setIsScannerOpen(true)}
               onOpenQBOQueue={() => setIsQboQueueOpen(true)}
+              onOpenCreateQuotationModal={() => setIsCreateQuotationOpen(true)}
             />
           )}
 
@@ -327,6 +580,7 @@ export default function Home() {
           {activeTab === 'quotations' && (
             <QuotationGenerator
               rfqList={rfqList}
+              quotationsList={quotationsList}
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
               onOpenCreateModal={() => setIsCreateQuotationOpen(true)}
@@ -340,7 +594,7 @@ export default function Home() {
                     reviewerStatus: 'PENDING',
                     gmStatus: 'PENDING',
                     dcsStatus: 'PENDING',
-                    totalAmount: 18450.0,
+                    totalAmount: 31500.0,
                   },
                   ...prev,
                 ]);
@@ -360,6 +614,7 @@ export default function Home() {
               onOpenExportModal={handleOpenExportModal}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
+              onAllocateCollection={handleAllocateCollection}
             />
           )}
 
@@ -375,12 +630,14 @@ export default function Home() {
             <RequestForPayment
               rfpList={rfpList}
               onOpenAddRFP={() => setIsAddRFPOpen(true)}
+              onReleaseRFP={handleReleaseRFP}
             />
           )}
 
           {activeTab === 'admin' && (
             <SystemAuditTrail
               auditLogs={auditLogs}
+              viewAsRole={viewAsRole}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
             />
@@ -399,7 +656,7 @@ export default function Home() {
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <Layers className="w-5 h-5 mb-0.5 text-blue-800" />
+            <Layers className="w-5 h-5 mb-0.5" />
             <span>Overview</span>
           </button>
         )}
@@ -409,11 +666,11 @@ export default function Home() {
             onClick={() => handleSelectTab('inventory')}
             className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
               activeTab === 'inventory'
-                ? 'text-emerald-900 font-black bg-emerald-50 border border-emerald-200/80 shadow-2xs'
+                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <Package className="w-5 h-5 mb-0.5 text-emerald-700" />
+            <Package className="w-5 h-5 mb-0.5" />
             <span>Inventory</span>
           </button>
         )}
@@ -423,11 +680,11 @@ export default function Home() {
             onClick={() => handleSelectTab('quotations')}
             className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
               activeTab === 'quotations'
-                ? 'text-amber-900 font-black bg-amber-50 border border-amber-200/80 shadow-2xs'
+                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <FileText className="w-5 h-5 mb-0.5 text-amber-700" />
+            <FileText className="w-5 h-5 mb-0.5" />
             <span>Quotes</span>
           </button>
         )}
@@ -441,35 +698,47 @@ export default function Home() {
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <FileCheck className="w-5 h-5 mb-0.5 text-blue-800" />
+            <FileCheck className="w-5 h-5 mb-0.5" />
             <span>SOA</span>
           </button>
         )}
-
-        {allowedTabs.includes('purchasing') && (
-          <button
-            onClick={() => handleSelectTab('purchasing')}
-            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-              activeTab === 'purchasing'
-                ? 'text-purple-900 font-black bg-purple-50 border border-purple-200/80 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <ShoppingCart className="w-5 h-5 mb-0.5 text-purple-800" />
-            <span>Purchasing</span>
-          </button>
-        )}
-
-        <button
-          onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex flex-col items-center py-1 px-3 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
-        >
-          <Menu className="w-5 h-5 mb-0.5 text-slate-700" />
-          <span>Menu</span>
-        </button>
       </div>
 
-      {/* System Modals & Slideovers */}
+      {/* Global Modals & Drawers */}
+      <CreateQuotationModal
+        isOpen={isCreateQuotationOpen}
+        onClose={() => setIsCreateQuotationOpen(false)}
+        inventoryList={inventoryList}
+        onSubmitQuotation={handleSubmitQuotation}
+      />
+
+      <CreatePOModal
+        isOpen={isCreatePOOpen}
+        onClose={() => setIsCreatePOOpen(false)}
+        inventoryList={inventoryList}
+        onSubmitPO={handleSubmitPO}
+        existingPOs={poList}
+      />
+
+      <ReceivingReportModal
+        isOpen={isPOReceivingModalOpen}
+        onClose={() => setIsPOReceivingModalOpen(false)}
+        poList={poList}
+        onReceivePO={handleReceivePO}
+      />
+
+      <CreateRFPModal
+        isOpen={isAddRFPOpen}
+        onClose={() => setIsAddRFPOpen(false)}
+        onSubmitRFP={handleSubmitRFP}
+      />
+
+      <AddStockModal
+        isOpen={isAddStockOpen}
+        onClose={() => setIsAddStockOpen(false)}
+        onAddStockBatch={handleAddStock}
+      />
+
       <QBOSyncQueueModal
         isOpen={isQboQueueOpen}
         onClose={() => setIsQboQueueOpen(false)}
@@ -480,14 +749,13 @@ export default function Home() {
       <BarcodeScannerModal
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
-        onOpenProductManager={() => setIsProductManagerOpen(true)}
-        onScan={(scannedCode) => {
-          setIsScannerOpen(false);
-          handleSelectTab('inventory');
-          setSearchQuery(scannedCode);
-          showNotification(`Scanned Barcode: ${scannedCode} — Filtered in Inventory.`);
-          addAuditLog(`Scanned Barcode SKU: ${scannedCode}`);
+        onScan={(sku) => {
+          showNotification(`Scanned Barcode SKU: ${sku}`);
+          addAuditLog(`Scanned Barcode SKU ${sku}`);
+          setSearchQuery(sku);
+          setActiveTab('inventory');
         }}
+        onOpenProductManager={() => setIsProductManagerOpen(true)}
       />
 
       <BarcodeProductManagerModal
@@ -545,80 +813,6 @@ export default function Home() {
         filename={exportModalFilename}
         data={exportModalData}
         printableElementId={exportElementId}
-        onExportSuccess={(format) => {
-          showNotification(`Exported ${exportModalTitle} as ${format}!`);
-          addAuditLog(`Exported ${exportModalTitle} as ${format}`);
-        }}
-      />
-
-      <AddStockModal
-        isOpen={isAddStockOpen}
-        onClose={() => setIsAddStockOpen(false)}
-        onAddStockBatch={(newStock) => {
-          setInventoryList((prev) => [newStock, ...prev]);
-          showNotification(`Added stock batch for SKU: ${newStock.sku}`);
-          addAuditLog(`Logged stock batch for SKU: ${newStock.sku}`);
-        }}
-      />
-
-      <CreateQuotationModal
-        isOpen={isCreateQuotationOpen}
-        onClose={() => setIsCreateQuotationOpen(false)}
-        inventoryList={inventoryList}
-        onSubmitQuotation={handleSubmitQuotation}
-      />
-
-      <CreatePOModal
-        isOpen={isCreatePOOpen}
-        onClose={() => setIsCreatePOOpen(false)}
-        inventoryList={inventoryList}
-        onSubmitPO={handleSubmitPO}
-      />
-
-      <ReceivingReportModal
-        isOpen={isPOReceivingModalOpen}
-        onClose={() => setIsPOReceivingModalOpen(false)}
-        poList={poList}
-        onReceivePO={(poId, receivedQty) => {
-          setPoList((prev) =>
-            prev.map((po) => {
-              if (po.id === poId) {
-                const updatedQty = po.rrQtyReceived + receivedQty;
-                return {
-                  ...po,
-                  rrQtyReceived: updatedQty,
-                  status: updatedQty >= po.poQty ? 'VERIFIED_3WAY' : 'PENDING_RECEIVING',
-                };
-              }
-              return po;
-            })
-          );
-          showNotification(`Confirmed Goods Receipt (RR) for PO!`);
-          addAuditLog(`Entered Goods Receipt (RR) count for PO`);
-        }}
-      />
-
-      <CreateRFPModal
-        isOpen={isAddRFPOpen}
-        onClose={() => setIsAddRFPOpen(false)}
-        onSubmitRFP={(newRFP) => {
-          setRfpList((prev) => [newRFP, ...prev]);
-          setApprovalsList((prev) => [
-            {
-              id: `app-rfp-${Date.now()}`,
-              qrn: newRFP.rfpNo,
-              type: 'Request for Payment',
-              maker: newRFP.requestedBy,
-              reviewerStatus: 'APPROVED',
-              gmStatus: 'APPROVED',
-              dcsStatus: 'PENDING',
-              totalAmount: newRFP.amount,
-            },
-            ...prev,
-          ]);
-          showNotification(`Routed RFP Voucher ${newRFP.rfpNo} for Approval!`);
-          addAuditLog(`Created RFP Voucher ${newRFP.rfpNo}`);
-        }}
       />
 
       <DocumentPrintModal

@@ -14,6 +14,9 @@ import {
   FileCheck,
   ArrowRight,
   TrendingUp,
+  Barcode,
+  Eye,
+  X,
 } from 'lucide-react';
 
 interface InventoryControlProps {
@@ -35,7 +38,8 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
   onOpenProductManager,
   onOpenScanner,
 }) => {
-  const [activeTab, setActiveTab] = useState<'INVENTORY' | 'REPLENISHMENT'>('INVENTORY');
+  const [activeTab, setActiveTab] = useState<'LIVE' | 'REPLENISHMENT'>('LIVE');
+  const [selectedSkuModal, setSelectedSkuModal] = useState<any | null>(null);
 
   const filteredInventory = inventoryList.filter(
     (item) =>
@@ -80,9 +84,9 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       {/* Main Tab Navigation */}
       <div className="flex border-b border-slate-200 gap-2">
         <button
-          onClick={() => setActiveTab('INVENTORY')}
+          onClick={() => setActiveTab('LIVE')}
           className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === 'INVENTORY'
+            activeTab === 'LIVE'
               ? 'border-blue-900 text-blue-900'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
@@ -99,7 +103,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <TrendingUp className="w-4 h-4 text-emerald-600" />
+          <Layers className="w-4 h-4 text-amber-700" />
           <span>Demand &amp; Replenishment Planner (Class 1/2/3)</span>
           <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full">
             {replenishmentPlannerList.length} Items
@@ -107,9 +111,10 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
         </button>
       </div>
 
-      {activeTab === 'INVENTORY' && (
+      {/* Main Tab Content */}
+      {activeTab === 'LIVE' && (
         <>
-          {/* Filter Bar */}
+          {/* Search & Scanner Input Bar */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -149,8 +154,17 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                   {filteredInventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition">
-                      <td className="p-4 font-mono font-extrabold text-blue-900">{item.sku}</td>
+                    <tr key={item.id} className="hover:bg-blue-50/50 transition group">
+                      <td className="p-4">
+                        <button
+                          onClick={() => setSelectedSkuModal(item)}
+                          className="font-mono font-extrabold text-blue-900 hover:text-blue-700 hover:underline flex items-center gap-1.5 group-hover:scale-105 transition-transform"
+                        >
+                          <Barcode className="w-4 h-4 text-blue-700 shrink-0" />
+                          <span>{item.sku}</span>
+                          <Eye className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                        </button>
+                      </td>
                       <td className="p-4 font-bold text-slate-900">{item.description}</td>
                       <td className="p-4">
                         <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold flex items-center gap-1.5 w-fit">
@@ -259,6 +273,102 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SKU Barcode & Stock Detail Modal Overlay */}
+      {selectedSkuModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-emerald-700 text-white rounded-xl">
+                  <Barcode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
+                    SKU Details: {selectedSkuModal.sku}
+                  </h3>
+                  <p className="text-slate-500 font-medium">{selectedSkuModal.description}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedSkuModal(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Metrics Breakdown */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="p-3 bg-slate-100 rounded-xl">
+                <span className="text-[10px] text-slate-500 font-bold block uppercase">On-Hand</span>
+                <span className="font-mono font-extrabold text-slate-900 text-base">{selectedSkuModal.onHand}</span>
+              </div>
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <span className="text-[10px] text-amber-700 font-bold block uppercase">Reserved (3-Day)</span>
+                <span className="font-mono font-extrabold text-amber-900 text-base">{selectedSkuModal.reserved}</span>
+              </div>
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <span className="text-[10px] text-emerald-700 font-bold block uppercase">Available</span>
+                <span className="font-mono font-extrabold text-emerald-900 text-base">{selectedSkuModal.available}</span>
+              </div>
+            </div>
+
+            {/* Batch & Location Info */}
+            <div className="space-y-2 p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-bold">Warehouse Location:</span>
+                <span className="font-bold text-slate-900">{selectedSkuModal.location}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-bold">Batch / Lot Number:</span>
+                <span className="font-mono font-extrabold text-blue-900">{selectedSkuModal.lotNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-bold">FEFO Expiry Date:</span>
+                <span className="font-bold text-amber-900">{selectedSkuModal.expiryDate}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-bold">Unit Metric:</span>
+                <span className="font-bold text-slate-800">{selectedSkuModal.unit || 'Kits'}</span>
+              </div>
+            </div>
+
+            {/* Visual Barcode Tag Graphic */}
+            <div className="p-3 bg-white border border-slate-300 rounded-xl text-center space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Scannable GS1 Barcode Preview</span>
+              <div className="font-mono font-black text-xl tracking-[0.25em] text-slate-900 select-all py-1">
+                ||| | |||| | ||| |||| | | |||
+              </div>
+              <span className="font-mono text-[10px] text-slate-600 font-bold">*ACC-{selectedSkuModal.sku}*</span>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedSkuModal(null);
+                  onOpenAddStock();
+                }}
+                className="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold rounded-xl transition flex items-center gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Stock Batch</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedSkuModal(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ShieldCheck,
   Building2,
@@ -13,6 +13,10 @@ import {
   Lock,
   Database,
   RefreshCw,
+  X,
+  FileText,
+  Eye,
+  ExternalLink,
 } from 'lucide-react';
 
 interface ExecutiveOverviewProps {
@@ -27,6 +31,7 @@ interface ExecutiveOverviewProps {
   onSelectTab: (tabKey: string) => void;
   onOpenScanner: () => void;
   onOpenQBOQueue?: () => void;
+  onOpenCreateQuotationModal?: () => void;
 }
 
 export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
@@ -41,7 +46,10 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   onSelectTab,
   onOpenScanner,
   onOpenQBOQueue,
+  onOpenCreateQuotationModal,
 }) => {
+  const [selectedDocModal, setSelectedDocModal] = useState<any | null>(null);
+
   const pendingApprovalsCount = approvalsList.filter(
     (item) =>
       item.reviewerStatus === 'PENDING' ||
@@ -179,8 +187,14 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
           </div>
 
           <button
-            onClick={() => onSelectTab('quotations')}
-            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5"
+            onClick={() => {
+              if (onOpenCreateQuotationModal) {
+                onOpenCreateQuotationModal();
+              } else {
+                onSelectTab('quotations');
+              }
+            }}
+            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95"
           >
             <Send className="w-4 h-4 text-blue-200" />
             <span>+ Create New Quotation</span>
@@ -313,6 +327,137 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Document Inspector Modal Overlay */}
+      {selectedDocModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-xs">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-900 text-white rounded-xl">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                    <span>Document Inspector: {selectedDocModal.qrn}</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">{selectedDocModal.type} &bull; Maker: {selectedDocModal.maker}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedDocModal(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Document Details Grid */}
+            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+              <div>
+                <span className="text-slate-500 font-bold block">Document Type</span>
+                <span className="font-extrabold text-blue-950 text-sm">{selectedDocModal.type}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-bold block">Total Transaction Value</span>
+                <span className="font-mono font-extrabold text-emerald-700 text-sm">
+                  ₱{Number(selectedDocModal.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-bold block">Maker / Originator</span>
+                <span className="font-bold text-slate-800">{selectedDocModal.maker}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-bold block">COSO Control Stage</span>
+                <span className="font-bold text-amber-900">
+                  {selectedDocModal.dcsStatus === 'APPROVED'
+                    ? 'Fully Approved (DCS Chairman)'
+                    : selectedDocModal.gmStatus === 'APPROVED'
+                    ? 'Awaiting DCS Chairman Approval'
+                    : selectedDocModal.reviewerStatus === 'APPROVED'
+                    ? 'Awaiting GM Approval'
+                    : 'Awaiting Reviewer (Marketing) Approval'}
+                </span>
+              </div>
+            </div>
+
+            {/* Step-by-Step Approval Pipeline Progress */}
+            <div className="space-y-2 border-t border-slate-200 pt-3">
+              <span className="font-extrabold uppercase text-[11px] text-slate-600 tracking-wider">
+                COSO 4-Layer Approval Pipeline Status
+              </span>
+
+              <div className="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
+                {/* Step 1 */}
+                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-950">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  <p>1. Maker</p>
+                  <p className="text-[10px] text-emerald-700">Created</p>
+                </div>
+
+                {/* Step 2 */}
+                <div className={`p-2 rounded-xl border ${selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-amber-50 border-amber-300 text-amber-950'}`}>
+                  {selectedDocModal.reviewerStatus === 'APPROVED' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-amber-600 mx-auto mb-1 animate-pulse" />
+                  )}
+                  <p>2. Reviewer</p>
+                  <p className="text-[10px]">{selectedDocModal.reviewerStatus}</p>
+                </div>
+
+                {/* Step 3 */}
+                <div className={`p-2 rounded-xl border ${selectedDocModal.gmStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
+                  {selectedDocModal.gmStatus === 'APPROVED' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-slate-400 mx-auto mb-1" />
+                  )}
+                  <p>3. GM</p>
+                  <p className="text-[10px]">{selectedDocModal.gmStatus}</p>
+                </div>
+
+                {/* Step 4 */}
+                <div className={`p-2 rounded-xl border ${selectedDocModal.dcsStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.gmStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
+                  {selectedDocModal.dcsStatus === 'APPROVED' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-slate-400 mx-auto mb-1" />
+                  )}
+                  <p>4. DCS</p>
+                  <p className="text-[10px]">{selectedDocModal.dcsStatus}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="pt-2 flex justify-between items-center border-t border-slate-200 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const targetTab = selectedDocModal.type.includes('Quotation') ? 'quotations' : selectedDocModal.type.includes('Purchase') ? 'purchasing' : 'rfp';
+                  setSelectedDocModal(null);
+                  onSelectTab(targetTab);
+                }}
+                className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-900 font-extrabold rounded-xl transition flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-4 h-4 text-blue-700" />
+                <span>Open Module Workspace</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDocModal(null)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

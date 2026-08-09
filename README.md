@@ -39,22 +39,31 @@ The dashboard uses a **Light Corporate Medical System**:
 ## 🛠️ Main Features & Modules
 
 ### 1. Executive Control & COSO Approval Pipeline
-Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`.
+Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`. Clickable **Document QRN / IDs** open an interactive Document Inspector Modal with full approval timeline tracking.
 
-### 2. Demand & Replenishment Planner
-Tracks inventory across Quezon City and Pampanga warehouses based on 3 distinct product classes:
+### 2. Multi-Location Inventory & Barcode Inspection
+Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / Barcode** rows open a live Stock Detail Modal with GS1 barcode previews, batch FEFO expiry badges, and location metrics.
 - **Class 1 (Core Stock):** Reorders stock automatically when levels hit critical thresholds + 10% safety buffer.
 - **Class 2 (Controlled Stock):** Slower-moving stock requiring a forecast review before ordering.
 - **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
-### 3. Sales RFQ & Marketing ROI Engine
-Allows sales officers to log client census data and LIS connectivity needs, while providing Marketing Managers with a side-by-side ROI calculator to evaluate landed costs, overheads, and contract margins.
+### 3. Sales RFQ, Quotation Generator & Marketing ROI Engine
+Allows sales officers to log client census data and launch modal quotes. Submitting quotes soft-reserves stock for 3 days and updates the dynamic Official Quotation preview. Features an ROI calculator for landed costs and contract margins.
 
-### 4. Statement of Account (SOA) & Payment Allocation
-Renders official SOA statements matching company templates and includes a multi-SOA check allocation tool to distribute single check payments across multiple open invoices.
+### 4. Statement of Account (SOA) & Multi-SOA Check Allocation
+Renders official SOA statements matching company templates without `NaN` errors. Includes an interactive multi-SOA check allocation tool to dynamically deduct allocated payments from invoice balances, recompute running balances, track unapplied credit, and queue QBO collections.
 
-### 5. QuickBooks Online (QBO) Live Sync Queue
-A dedicated sync queue drawer that holds control-validated transactions (Sales Invoices, Bills, Collections, COGS) until pushed to QuickBooks Online.
+### 5. Purchasing & 3-Way Match Fraud Control
+PO numbers open a **3-Way Match Inspection Modal** displaying approved PO quantity vs. Goods Receipt (RR) vs. Vendor Invoice. Hard-blocks over-receiving fraud beyond approved PO limits.
+
+### 6. Non-PO Request for Payment (RFP) Vouchers & Bank Releasing
+RFP Voucher IDs open an **Expense Voucher Inspector Modal** displaying GL Chart of Accounts picklists and Admin Bank Fund Releasing modal (BDO/Metrobank/BPI).
+
+### 7. User Access Matrix & Dynamic Role Permissions Editor
+In User & Audit Logs, user rows open a **User Access Profile & Role Permissions Modal**. Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
+
+### 8. QuickBooks Online (QBO) Live Sync Queue & Go REST API
+Dedicated sync queue holding validated transactions (Sales Invoices, Bills, Collections) backed by Go 1.22 REST controllers and PostgreSQL 16 database.
 
 ---
 

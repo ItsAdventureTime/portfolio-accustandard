@@ -23,6 +23,7 @@ interface StatementOfAccountProps {
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onShowNotification: (msg: string) => void;
   onAddAuditLog: (action: string) => void;
+  onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void;
 }
 
 export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
@@ -32,6 +33,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   onOpenExportModal,
   onShowNotification,
   onAddAuditLog,
+  onAllocateCollection,
 }) => {
   const [statementDate, setStatementDate] = useState('10-Jul-26');
   const [clientName, setClientName] = useState('GATCHALIAN MEDICAL LABORATORY');
@@ -48,40 +50,40 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   const [allocatedSi6087, setAllocatedSi6087] = useState(16960);
   const [allocatedSi6107, setAllocatedSi6107] = useState(1968);
 
-  const totalAllocated = allocatedSi6087 + allocatedSi6107;
+  const totalAllocated = Number(allocatedSi6087) + Number(allocatedSi6107);
   const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
 
   const safeFallbackRows = [
     {
-      salesInvoiceNo: '6087',
-      drNo: '6075',
+      salesInvoiceNo: 'SI-6087',
+      drNo: 'DR-6075',
       siDate: '18-Jun-26',
       dueDate: '7/18/2026',
-      age: 22,
+      ageDays: 47,
       invoiceAmount: 16960.0,
-      amountPaid: '',
+      amountPaid: 0.0,
       invoiceBalance: 16960.0,
       runningBalance: 16960.0,
     },
     {
-      salesInvoiceNo: '6107',
-      drNo: '6097',
+      salesInvoiceNo: 'SI-6107',
+      drNo: 'DR-6097',
       siDate: '26-Jun-26',
       dueDate: '7/26/2026',
-      age: 14,
+      ageDays: 39,
       invoiceAmount: 1968.0,
-      amountPaid: '',
+      amountPaid: 0.0,
       invoiceBalance: 1968.0,
       runningBalance: 18928.0,
     },
     {
-      salesInvoiceNo: '6118',
-      drNo: '6113',
+      salesInvoiceNo: 'SI-6118',
+      drNo: 'DR-6113',
       siDate: '30-Jun-26',
       dueDate: '7/30/2026',
-      age: 10,
+      ageDays: 35,
       invoiceAmount: 13280.0,
-      amountPaid: '',
+      amountPaid: 0.0,
       invoiceBalance: 13280.0,
       runningBalance: 32208.0,
     },
@@ -104,6 +106,15 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   const handleAllocateCheck = (e: React.FormEvent) => {
     e.preventDefault();
+    const allocations = [
+      { invoiceNo: 'SI-6087', amount: Number(allocatedSi6087) },
+      { invoiceNo: 'SI-6107', amount: Number(allocatedSi6107) },
+    ];
+
+    if (onAllocateCollection) {
+      onAllocateCollection(checkNo, bank, checkAmount, allocations);
+    }
+
     onShowNotification(
       `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
     );
