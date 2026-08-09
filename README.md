@@ -90,22 +90,21 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ## 🚀 Git Local & GitHub CLI (`gh`) Remote Standard
 
-To enforce clear separation of concerns across local and remote version control:
+To strictly separate local version control from remote GitHub repository management:
 
-1. **Local Commits:** Standard local `git` CLI (no SSH key requirement).
+1. **Local Commits:** Use **ONLY** local `git` CLI commands (no SSH key requirement).
    ```bash
    git add .
    git commit -m "type(scope): clear description of change"
    ```
 
-2. **Remote Commits & Synchronization:** ALWAYS use official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials (`ItsAdventureTime`).
+2. **Remote Commit & Synchronization:** ALWAYS use official GitHub CLI (`gh`) commands over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials (`ItsAdventureTime`). NEVER use `git` commands for remote operations.
    ```bash
-   # HTTPS Remote Repository URL
-   https://github.com/ItsAdventureTime/bridge-accustandard.git
-
-   # Push & synchronize remote repository via GitHub CLI / HTTPS protocol
-   git push origin main
+   # Synchronize remote repository state via GitHub CLI
    gh repo sync
+
+   # Create Pull Requests or manage remote state
+   gh pr create --fill
    ```
 
 ---
@@ -133,6 +132,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to test the 
 
 ---
 
+## 🐳 Building with Podman (Disposable Container)
+
+To test static builds safely inside an isolated container:
+
+```bash
+podman run --rm \
+  -v "$(pwd):/workspace:Z" \
+  -v /workspace/.next \
+  -v /workspace/node_modules \
+  -w /workspace \
+  node:current-alpine \
+  sh -c "npm ci && npm run build"
+```
+
+---
+
 ## ⚡ 1-Command Automated Demo Deployment
 
 To build static files in an isolated Podman container, configure Quadlets, auto-format/validate Caddy, and sync static assets to the Demo VPS in **1 single command**:
@@ -145,10 +160,13 @@ npm run deploy:demo
 ./scripts/deploy-demo.sh
 ```
 
-### What `deploy-demo.sh` Automates:
-1. **Disposable Podman Build:** Runs static export in `node:current-alpine` container (`out/`).
-2. **VPS Script Execution:** Executes `scripts/vps-deploy-accustandard.sh` on the VPS over SSH.
-3. **Automated RSync:** Syncs static files directly to `/home/jk/bridge-ph/accustandard-demo/`.
+### Infrastructure Path Configuration
+- **VPS Host:** `jk@216.75.75.136`
+- **Live Demo Site URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
+- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
+- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
+- **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
 
 ---
 

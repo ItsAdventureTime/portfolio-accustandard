@@ -1,13 +1,13 @@
 # Contributing to Accustandard Medical ERP
 
-Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This guide outlines development standards, local git rules, and remote synchronization guidelines.
+Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This guide outlines development standards, local `git` commit rules, and remote GitHub CLI (`gh`) synchronization guidelines.
 
 ---
 
-## 🚀 Version Control Standards
+## 🚀 Strict Version Control & Tooling Standard
 
-### 1. Local Commits (Standard Git CLI)
-- Use standard local `git` CLI commands.
+### 1. Local Commits (Standard Git CLI Only)
+- Use **only** local `git` CLI commands (`git add .`, `git commit -m "..."`).
 - SSH commit signing is **not required** for local commits.
 - Follow the **Conventional Commits** specification:
   - `feat`: New feature or user capability.
@@ -18,19 +18,20 @@ Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This g
 
 ```bash
 git add .
-git commit -m "docs: update deployment guidelines for demo site"
+git commit -m "docs: update contribution guidelines for local git and gh remote sync"
 ```
 
-### 2. Remote Commit & Synchronization (GitHub CLI over HTTPS)
-- ALWAYS perform remote commits and sync via the official **GitHub CLI (`gh`)** over **HTTPS**.
+### 2. Remote Commit & Synchronization (GitHub CLI `gh` Only)
+- ALWAYS perform remote commits, PRs, and synchronization using official **GitHub CLI (`gh`)** over **HTTPS**.
+- **NEVER** use `git` commands for remote operations (e.g. do not use `git push`).
 - Repository Remote: `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- Ensure local `.git` and remote `origin/main` remain 100% synchronized.
+- Ensure local `.git` and remote GitHub repository remain 100% synchronized.
 
 ```bash
-# Push local commits to remote GitHub HTTPS origin
-git push origin main
+# Synchronize remote repository via GitHub CLI
+gh repo sync
 
-# Verify authentication status
+# Verify GitHub CLI authentication status
 gh auth status
 ```
 
@@ -58,3 +59,4 @@ Deployments currently target **strictly the Demo Environment**:
 - **Live URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
 - **Demo Web Root:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Demo Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
+- **1-Command Deployment:** `npm run deploy:demo` (or `./scripts/deploy-demo.sh`)

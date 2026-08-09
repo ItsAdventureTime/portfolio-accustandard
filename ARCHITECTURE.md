@@ -31,11 +31,11 @@ The system is structured as a single-page Next.js App Router application optimiz
 
 ---
 
-## 🔐 Git Version Control & Remote Standards
+## 🔐 Strict Git & GitHub CLI (`gh`) Version Control Standard
 
 To ensure auditability and consistent remote synchronization:
-- **Local Commits:** Standard local `git` CLI with SSH key signatures (`git commit -S`).
-- **Remote Operations:** Official GitHub CLI (`gh`) using **HTTPS** protocol (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
+- **Local Commits:** Use **ONLY** local `git` CLI commands (`git commit -m "..."`). SSH key signing is not required.
+- **Remote Operations:** ALWAYS use official GitHub CLI (`gh`) commands over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials. NEVER use `git` commands for remote operations.
 
 ---
 
@@ -68,7 +68,7 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 ```
 [ Internet Client ]
        |
-       v (HTTPS: 443)
+       v (HTTPS: 443) -> https://delegateops.business/accustandard/demo
 [ Caddy Reverse Proxy (caddy.service) ]
        |
        v /accustandard/demo
@@ -76,8 +76,9 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 ```
 
 ### Path Specifications
-- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard/demo`
-- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard/demo`
+- **Live Demo URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
+- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 
 ### Quadlet Services (`deploy/quadlets/demo/`)
 - **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 3001.
@@ -88,7 +89,7 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 
 ## 📊 Inventory Classification System
 
-Products are managed under 3 distinct stock categories (Blueprint Section 3):
+Products are managed under 3 distinct stock categories:
 - **Class 1 (Core Fast-Moving):** Automated reorder calculation triggered at critical levels + 10% safety buffer.
 - **Class 2 (Controlled Stock):** Reordering requires explicit forecast review by management.
 - **Class 3 (Short-Expiry / Special):** Hard-blocked from generating supplier POs without a linked Customer PO.
