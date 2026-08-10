@@ -283,7 +283,17 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             </div>
           )}
 
-          {quotationDocumentContent}
+          <div className="bg-slate-100/90 p-2.5 sm:p-6 rounded-3xl border border-slate-300 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
+              <span className="uppercase tracking-wider font-extrabold text-[11px] text-slate-700">Official Sales Quotation Document Preview</span>
+              <span className="block sm:hidden text-blue-900 font-extrabold text-[10px] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                &larr; Pinch to zoom / Swipe document &rarr;
+              </span>
+            </div>
+            <div className="overflow-x-auto rounded-2xl border border-slate-300 bg-white p-2 sm:p-4 shadow-sm flex justify-start sm:justify-center">
+              {quotationDocumentContent}
+            </div>
+          </div>
         </div>
       )}
 
