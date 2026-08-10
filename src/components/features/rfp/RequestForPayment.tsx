@@ -81,12 +81,14 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                 <tr key={rfp.id} className="hover:bg-blue-50/50 transition group">
                   <td className="p-4">
                     <button
+                      type="button"
                       onClick={() => setInspectingRfp(rfp)}
-                      className="font-mono font-extrabold text-blue-900 hover:text-blue-700 hover:underline flex items-center gap-1.5 group-hover:scale-105 transition-transform"
+                      className="font-extrabold font-mono text-purple-950 bg-purple-50/90 border border-purple-200/90 hover:bg-purple-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                      title="Click to inspect expense voucher & GL account details"
                     >
-                      <FileText className="w-4 h-4 text-purple-700 shrink-0" />
+                      <FileText className="w-4 h-4 text-purple-700 group-hover:text-purple-200 shrink-0" />
                       <span>{rfp.rfpNo}</span>
-                      <Eye className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 text-blue-600 transition-opacity" />
+                      <Eye className="w-3.5 h-3.5 text-purple-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                     </button>
                   </td>
                   <td className="p-4 font-bold text-slate-900">{rfp.payee}</td>

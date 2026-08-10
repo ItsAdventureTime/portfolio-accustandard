@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Save,
   ShieldAlert,
+  Eye,
 } from 'lucide-react';
 
 interface SystemAuditTrailProps {
@@ -257,9 +258,20 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                       onClick={() => handleOpenEditUser(usr)}
                       className="hover:bg-blue-50/60 transition cursor-pointer group"
                     >
-                      <td className="p-4 font-bold text-slate-900 flex items-center gap-2">
-                        <User className="w-4 h-4 text-blue-700 shrink-0 group-hover:scale-110 transition-transform" />
-                        <span className="group-hover:text-blue-900 group-hover:underline">{usr.name}</span>
+                      <td className="p-4">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditUser(usr);
+                          }}
+                          className="font-extrabold text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                          title="Click to inspect and edit user role & access permissions"
+                        >
+                          <User className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
+                          <span>{usr.name}</span>
+                          <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
+                        </button>
                       </td>
                       <td className="p-4 font-extrabold text-blue-900">{usr.role}</td>
                       <td className="p-4">
