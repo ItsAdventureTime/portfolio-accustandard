@@ -16,6 +16,9 @@ import {
   X,
   Clock,
   ShieldCheck,
+  Zap,
+  AlertTriangle,
+  ShieldAlert,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -357,97 +360,269 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       )}
 
       {activeSubTab === 'ROI' && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-emerald-600" />
-              Marketing Manager ROI &amp; Margin Calculator
-            </h3>
-            <p className="text-xs text-slate-500">
-              Side-by-side cost vs. selling price comparison including landed cost, sponsorship, LIS connectivity, and contract margin
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
-              <h4 className="font-bold text-slate-900 text-sm border-b border-slate-200 pb-2">Client &amp; Cost Inputs</h4>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Expected Daily Sample Census</label>
-                <input
-                  type="number"
-                  value={roiCensus}
-                  onChange={(e) => setRoiCensus(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Batch Landed Cost (₱)</label>
-                <input
-                  type="number"
-                  value={roiLandedCost}
-                  onChange={(e) => setRoiLandedCost(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">LIS &amp; Account Overhead (₱)</label>
-                <input
-                  type="number"
-                  value={roiLisedFee}
-                  onChange={(e) => setRoiLisedFee(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Proposed Selling Price (₱)</label>
-                <input
-                  type="number"
-                  value={roiProposedPrice}
-                  onChange={(e) => setRoiProposedPrice(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-900"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4 bg-emerald-50/50 p-5 rounded-xl border border-emerald-200 flex flex-col justify-between">
-              <div>
-                <h4 className="font-bold text-emerald-950 text-sm border-b border-emerald-200 pb-2 flex items-center gap-1.5">
-                  <PieChart className="w-4 h-4 text-emerald-700" />
-                  Calculated ROI &amp; Contract Margin
-                </h4>
-
-                <div className="space-y-3 mt-4 text-sm font-semibold text-slate-800">
-                  <div className="flex justify-between">
-                    <span>Total Cost of Goods &amp; Overhead:</span>
-                    <span className="font-mono font-bold text-slate-900">
-                      ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span>Proposed Selling Price:</span>
-                    <span className="font-mono font-bold text-blue-900">
-                      ₱{roiProposedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between border-t border-emerald-200 pt-3 text-base">
-                    <span className="font-bold text-emerald-950">Net Margin Profit / Unit:</span>
-                    <span className="font-mono font-extrabold text-emerald-800">
-                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* Header Card */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-300/80 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
+              <div className="flex items-center gap-3.5">
+                <div className="p-3.5 bg-emerald-900 text-white rounded-2xl shadow-sm">
+                  <Calculator className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wider">
+                    Marketing Manager ROI &amp; Margin Financial Engine
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+                    Real-time landed cost vs. proposed selling price, LIS overhead, contract margin %, and 30-day projected revenue
+                  </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-700 text-white rounded-xl text-center space-y-1 shadow-sm">
-                <p className="text-xs uppercase font-bold text-emerald-200">Expected Contract Margin</p>
-                <p className="text-3xl font-black font-mono">{marginPct.toFixed(1)}%</p>
-                <p className="text-[11px] text-emerald-100">Approved for General Manager &amp; Chairman Review</p>
+              <span className={`px-4 py-1.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-2xs border ${
+                marginPct >= 30
+                  ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  : marginPct >= 20
+                  ? 'bg-amber-100 text-amber-900 border-amber-300'
+                  : 'bg-rose-100 text-rose-900 border-rose-300'
+              }`}>
+                {marginPct >= 30 ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                ) : marginPct >= 20 ? (
+                  <AlertTriangle className="w-4 h-4 text-amber-700" />
+                ) : (
+                  <ShieldAlert className="w-4 h-4 text-rose-700" />
+                )}
+                {marginPct >= 30 ? 'Target Margin Qualified' : marginPct >= 20 ? 'Standard Review Margin' : 'Low Margin Alert'}
+              </span>
+            </div>
+
+            {/* Quick Census Scenario Presets */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/90 text-xs font-semibold">
+              <span className="font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-600" />
+                Quick Client Facility Census Presets:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRoiCensus(80)}
+                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                    roiCensus === 80
+                      ? 'bg-blue-900 text-white shadow-xs'
+                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Small Clinic (80/day)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoiCensus(180)}
+                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                    roiCensus === 180
+                      ? 'bg-blue-900 text-white shadow-xs'
+                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Regional Hospital (180/day)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoiCensus(350)}
+                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                    roiCensus === 350
+                      ? 'bg-blue-900 text-white shadow-xs'
+                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Medical Center (350/day)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoiCensus(500)}
+                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                    roiCensus === 500
+                      ? 'bg-blue-900 text-white shadow-xs'
+                      : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  High Volume Lab (500/day)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Calculator Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Inputs Column */}
+            <div className="lg:col-span-5 bg-slate-50/90 p-6 sm:p-7 rounded-3xl border border-slate-300/80 space-y-5">
+              <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-3 flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-blue-700" />
+                Client &amp; Unit Cost Parameters
+              </h4>
+
+              <div className="space-y-4 text-sm font-semibold">
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Expected Daily Sample Census
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={roiCensus}
+                      onChange={(e) => setRoiCensus(Math.max(1, Number(e.target.value)))}
+                      className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      min="1"
+                    />
+                    <span className="absolute right-4 top-3 text-xs text-slate-500 font-bold">samples / day</span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-semibold mt-1">
+                    Est. Monthly Volume: <span className="font-mono font-bold text-slate-900">{(roiCensus * 30).toLocaleString()} samples / mo</span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
+                    Batch Landed Cost (₱)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-3 text-sm font-black text-slate-400">₱</span>
+                    <input
+                      type="number"
+                      value={roiLandedCost}
+                      onChange={(e) => setRoiLandedCost(Math.max(0, Number(e.target.value)))}
+                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
+                    LIS &amp; Account Overhead (₱)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-3 text-sm font-black text-slate-400">₱</span>
+                    <input
+                      type="number"
+                      value={roiLisedFee}
+                      onChange={(e) => setRoiLisedFee(Math.max(0, Number(e.target.value)))}
+                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black text-blue-950 mb-1.5 uppercase tracking-wider">
+                    Proposed Selling Price (₱)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-3 text-sm font-black text-blue-700">₱</span>
+                    <input
+                      type="number"
+                      value={roiProposedPrice}
+                      onChange={(e) => setRoiProposedPrice(Math.max(0, Number(e.target.value)))}
+                      className="w-full bg-white border border-blue-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-lg text-blue-950 focus:outline-none focus:border-blue-600 shadow-2xs"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Financial Results Dashboard */}
+            <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-slate-300/80 shadow-sm space-y-6 flex flex-col justify-between">
+              <div className="space-y-5">
+                <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-3 flex items-center gap-2">
+                  <PieChart className="w-4 h-4 text-emerald-700" />
+                  Calculated Profitability &amp; Financial Summary
+                </h4>
+
+                {/* 4 Metric Cards Grid */}
+                <div className="grid grid-cols-2 gap-3.5">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-1">
+                    <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wider block">Total Unit Cost</span>
+                    <p className="font-mono font-black text-sm sm:text-base text-slate-900">
+                      ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200/90 space-y-1">
+                    <span className="text-xs text-emerald-800 font-extrabold uppercase tracking-wider block">Unit Net Profit</span>
+                    <p className="font-mono font-black text-sm sm:text-base text-emerald-900">
+                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-blue-50/80 rounded-2xl border border-blue-200/90 space-y-1">
+                    <span className="text-xs text-blue-800 font-extrabold uppercase tracking-wider block">30-Day Revenue</span>
+                    <p className="font-mono font-black text-sm sm:text-base text-blue-950">
+                      ₱{(roiProposedPrice * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-purple-50/80 rounded-2xl border border-purple-200/90 space-y-1">
+                    <span className="text-xs text-purple-800 font-extrabold uppercase tracking-wider block">30-Day Net Profit</span>
+                    <p className="font-mono font-black text-sm sm:text-base text-purple-950">
+                      ₱{(profit * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Visual Contract Margin Gauge Card */}
+                <div className={`p-5 rounded-2xl border text-white space-y-3 shadow-md ${
+                  marginPct >= 30
+                    ? 'bg-slate-900 border-emerald-500'
+                    : marginPct >= 20
+                    ? 'bg-slate-900 border-amber-500'
+                    : 'bg-slate-900 border-rose-500'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs uppercase tracking-wider font-extrabold text-slate-300">Expected Contract Margin</span>
+                    <span className="text-xs font-mono font-bold text-slate-400">Target: &ge; 30.0%</span>
+                  </div>
+
+                  <div className="flex items-baseline justify-between">
+                    <span className={`text-4xl font-black font-mono ${
+                      marginPct >= 30 ? 'text-emerald-400' : marginPct >= 20 ? 'text-amber-400' : 'text-rose-400'
+                    }`}>
+                      {marginPct.toFixed(1)}%
+                    </span>
+                    <span className="text-xs font-extrabold text-slate-300">
+                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })} / unit
+                    </span>
+                  </div>
+
+                  {/* Progress Bar Meter */}
+                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        marginPct >= 30 ? 'bg-emerald-500' : marginPct >= 20 ? 'bg-amber-500' : 'bg-rose-500'
+                      }`}
+                      style={{ width: `${Math.min(100, Math.max(0, marginPct))}%` }}
+                    />
+                  </div>
+
+                  {/* Policy Guidance Text */}
+                  <p className="text-xs text-slate-300 font-semibold pt-1">
+                    {marginPct >= 30 ? (
+                      <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        Qualified for Fast-Track GM &amp; Chairman Approval
+                      </span>
+                    ) : marginPct >= 20 ? (
+                      <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        Standard Review Margin — Requires General Manager Sign-off
+                      </span>
+                    ) : (
+                      <span className="text-rose-400 font-bold flex items-center gap-1.5">
+                        <ShieldAlert className="w-4 h-4 shrink-0" />
+                        Low Margin Warning — Triggers Required DCS Chairman Review
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
