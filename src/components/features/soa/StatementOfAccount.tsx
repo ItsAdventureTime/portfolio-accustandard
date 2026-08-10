@@ -283,7 +283,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
       {/* Multi-SOA Check Allocation Modal */}
       {isCollectionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200 text-slate-900">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6">
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">

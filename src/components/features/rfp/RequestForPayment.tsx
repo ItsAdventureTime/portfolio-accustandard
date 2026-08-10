@@ -121,8 +121,8 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
 
       {/* Fund Release Modal */}
       {releasingRfp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-300 animate-in fade-in zoom-in duration-200 text-xs">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-5 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-xs sm:text-sm">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-emerald-700 text-white rounded-xl">
@@ -192,8 +192,8 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
 
       {/* RFP Detail Inspector Modal Overlay */}
       {inspectingRfp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-slate-900 text-sm">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">

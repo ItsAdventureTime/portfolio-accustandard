@@ -171,7 +171,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       aria-labelledby="barcodeScannerTitle"
       className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200"
     >
-      <div className="bg-white text-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-300 flex flex-col animate-in fade-in zoom-in duration-200 space-y-6 text-sm">
+      <div className="bg-white text-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-300 flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out space-y-6 text-sm">
         {/* Hidden File Input */}
         <input
           ref={fileInputRef}

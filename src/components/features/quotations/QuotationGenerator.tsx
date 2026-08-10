@@ -363,7 +363,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       {/* Marketing Manager ROI & Margin Financial Engine Popup Modal */}
       {isRoiModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
             {/* Header Block */}
             <div className="flex justify-between items-start border-b border-slate-200 pb-5">
               <div className="flex items-center gap-3.5">
@@ -667,7 +667,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       {/* Sales RFQ Document Inspector Modal */}
       {selectedRfqModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
