@@ -42,10 +42,10 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
+        <div className="flex items-center gap-3 self-stretch sm:self-auto flex-wrap">
           <button
             onClick={onOpenReceivingModal}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-initial px-5 py-3 bg-emerald-700 hover:bg-emerald-800 hover:shadow-md text-white font-extrabold text-xs sm:text-sm rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"
           >
             <PackageCheck className="w-4 h-4" />
             <span>Enter Receiving Report (RR)</span>
@@ -53,7 +53,7 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
 
           <button
             onClick={onOpenAddPO}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            className="flex-1 sm:flex-initial px-5 py-3 bg-blue-900 hover:bg-blue-800 hover:shadow-md text-white font-extrabold text-xs sm:text-sm rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create Purchase Order (PO)</span>

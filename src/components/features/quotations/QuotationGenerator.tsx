@@ -243,13 +243,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       </div>
 
       {/* Sub-Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-2">
+      <div className="bg-slate-200/70 p-1.5 rounded-2xl flex flex-wrap gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
         <button
           onClick={() => setActiveSubTab('QUOTE')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
             activeSubTab === 'QUOTE'
-              ? 'border-blue-900 text-blue-900'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'bg-blue-900 text-white shadow-md scale-100'
+              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -258,29 +258,26 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
         <button
           onClick={() => setActiveSubTab('RFQ')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
             activeSubTab === 'RFQ'
-              ? 'border-blue-900 text-blue-900'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'bg-blue-900 text-white shadow-md scale-100'
+              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
           }`}
         >
-          <UserCheck className="w-4 h-4 text-blue-700" />
-          <span>RFQ / Demand Requests (Sales Agent)</span>
-          <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 rounded-full">
-            {rfqList.length} Requests
-          </span>
+          <UserCheck className="w-4 h-4" />
+          <span>RFQ / Demand Requests ({rfqList.length})</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('ROI')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
             activeSubTab === 'ROI'
-              ? 'border-blue-900 text-blue-900'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'bg-blue-900 text-white shadow-md scale-100'
+              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
           }`}
         >
-          <Calculator className="w-4 h-4 text-emerald-700" />
-          <span>Marketing ROI &amp; Margin Calculator</span>
+          <Calculator className="w-4 h-4 text-emerald-400" />
+          <span>Marketing ROI Calculator</span>
         </button>
       </div>
 

@@ -282,21 +282,21 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
       {/* Multi-SOA Check Allocation Modal */}
       {isCollectionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl border border-slate-300 shadow-2xl w-full max-w-2xl overflow-hidden">
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200 text-slate-900">
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
-                <div className="p-2.5 bg-blue-100 text-blue-900 rounded-xl">
-                  <CreditCard className="w-5 h-5" />
+                <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
+                  <CreditCard className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Multi-SOA Collection Payment Allocation</h3>
-                  <p className="text-xs text-slate-500">Allocate a single check payment across multiple open client invoices</p>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wider">Multi-SOA Collection Payment Allocation</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">Allocate a single check payment across multiple open client invoices</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCollectionModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
               >
                 ✕
               </button>

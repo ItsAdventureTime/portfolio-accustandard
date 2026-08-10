@@ -28,13 +28,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-white border-b border-slate-200 text-slate-900 sticky top-0 z-30 shadow-xs w-full">
+    <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200">
       <div className="w-full px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <button
             onClick={onOpenMobileDrawer}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200 active:scale-95"
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer"
             aria-label="Open mobile menu"
           >
             <Menu className="w-5 h-5" />
@@ -49,13 +49,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={onOpenCommandPalette}
-              className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition shadow-xs w-80 justify-between cursor-pointer"
+              className="flex items-center gap-3 bg-slate-50/80 hover:bg-white hover:border-blue-400 border border-slate-300/80 text-slate-700 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md w-80 justify-between cursor-pointer group"
             >
-              <span className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-blue-700" />
-                <span className="font-bold text-slate-500">Search SKU, PO, RFP...</span>
+              <span className="flex items-center gap-2.5">
+                <Search className="w-4 h-4 text-blue-700 group-hover:scale-110 transition-transform duration-200" />
+                <span className="font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Search SKU, PO, RFP...</span>
               </span>
-              <kbd className="bg-white text-slate-600 font-mono text-xs px-2 py-0.5 rounded border border-slate-300 shadow-2xs font-extrabold">
+              <kbd className="bg-white text-slate-700 font-mono text-xs px-2 py-0.5 rounded-lg border border-slate-300 shadow-2xs font-black group-hover:border-blue-300">
                 ⌘K
               </kbd>
             </button>
@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right: Actions & Role Impersonation */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Role Impersonation Control */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 sm:gap-2.5 shadow-2xs">
+          <div className="bg-blue-50/90 border border-blue-200/90 hover:border-blue-400 rounded-2xl px-3 py-1.5 flex items-center gap-2 sm:gap-3 shadow-2xs transition-all duration-200">
             <Eye className="w-4 h-4 text-blue-700 shrink-0" />
             <div className="hidden sm:block text-left">
               <span className="text-[10px] text-blue-800 font-black uppercase tracking-wider block leading-none mb-0.5">
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop Barcode Scanner & PWA Buttons */}
           <button
             onClick={onOpenScanner}
-            className="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3.5 py-2 rounded-xl text-sm font-extrabold transition shadow-sm active:scale-95"
+            className="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 hover:shadow-md text-white px-4 py-2.5 rounded-2xl text-sm font-extrabold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer"
             title="Open Live Barcode Camera Scanner"
           >
             <Camera className="w-4 h-4" />
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onOpenPWAInstall}
-            className="hidden sm:block p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl transition border border-slate-300 active:scale-95"
+            className="hidden sm:block p-2.5 bg-slate-100/80 hover:bg-slate-200 hover:border-slate-400 text-slate-700 hover:text-slate-900 rounded-2xl transition-all duration-200 border border-slate-300 active:scale-95 cursor-pointer"
             title="Install as PWA Instructions"
           >
             <Smartphone className="w-5 h-5 text-blue-800" />

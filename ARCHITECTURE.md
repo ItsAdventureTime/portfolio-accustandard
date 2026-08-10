@@ -87,19 +87,20 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 
 ---
 
-## 🎨 UI/UX Design System & Modal Component Architecture
+## 🎨 UI/UX Design System & Micro-Interaction Architecture
 
-The interface follows modern web ergonomics with high-legibility typography, clear interactive affordances, and spacious viewport utilization:
+The interface follows modern web ergonomics with physics-based motion, spatial alignment, and high-legibility visual hierarchy:
 
 ### 1. Viewport-Optimized Modal Container Sizes
 - **Inspector Modals (`max-w-3xl`, 768px wide)**: Document QRN Inspector, SKU Barcode Detail, PO 3-Way Match Audit, RFP Expense Breakdown, and User Access Matrix Editor.
 - **Queue Drawers (`max-w-4xl`, 896px wide)**: QuickBooks Online Live Sync Queue and Barcode Product Manager.
 - **Interactive Form Modals (`max-w-3xl`, 768px wide)**: Create Sales Quote, Create PO, Warehouse Receiving Report (RR), Create RFP, and Add Stock Batch.
 
-### 2. High-Legibility Typography Scale
-- **Body & Controls**: Scaled from 12px to `14px (text-sm) / 16px (text-base)` with `font-semibold` and `font-extrabold` contrast.
-- **Financial Balances & Quantities**: Rendered in `font-mono font-black` (`text-lg` to `text-2xl`).
-- **Interactive Identifiers (QRN / SKU / PO / RFP)**: Encapsulated inside high-contrast button pills (`bg-blue-50/90`, `hover:bg-blue-900`, `hover:text-white`, `cursor-pointer`) with icon badges (`FileText`, `Barcode`, `Eye`).
+### 2. Micro-Animations & Spatial Alignment Rules
+- **Hover Elevation**: Card components enforce `hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out` with equal-height flex container wrapping (`h-full flex flex-col justify-between`).
+- **Sidebar Nav Translations**: Navigation links execute rightward micro-translation on hover (`hover:translate-x-1 transition-all duration-200`).
+- **Pill Tab Switchers**: Tab bars use encapsulated background rails (`bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5`) with active state scaling (`bg-blue-900 text-white shadow-md`).
+- **Glassmorphism 2.0**: Navigation bar headers enforce `bg-white/90 backdrop-blur-xl border-b border-slate-200/80`.
 
 ---
 

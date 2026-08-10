@@ -82,13 +82,13 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       </div>
 
       {/* Main Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-2">
+      <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
         <button
           onClick={() => setActiveTab('LIVE')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'LIVE'
-              ? 'border-blue-900 text-blue-900'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'bg-blue-900 text-white shadow-md scale-100'
+              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
           }`}
         >
           <Package className="w-4 h-4" />
@@ -97,17 +97,14 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
         <button
           onClick={() => setActiveTab('REPLENISHMENT')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-2 transition-colors ${
+          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'REPLENISHMENT'
-              ? 'border-blue-900 text-blue-900'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'bg-blue-900 text-white shadow-md scale-100'
+              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
           }`}
         >
-          <Layers className="w-4 h-4 text-amber-700" />
-          <span>Demand &amp; Replenishment Planner (Class 1/2/3)</span>
-          <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full">
-            {replenishmentPlannerList.length} Items
-          </span>
+          <Layers className="w-4 h-4" />
+          <span>Demand Replenishment Planner ({replenishmentPlannerList.length})</span>
         </button>
       </div>
 

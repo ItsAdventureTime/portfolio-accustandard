@@ -112,64 +112,72 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
       {/* KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Pending Approvals Card */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Pending Approvals</span>
-            <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
+            <div className="p-2.5 bg-amber-100/90 text-amber-800 rounded-xl shadow-2xs">
               <Clock className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900">{pendingApprovalsCount}</span>
-            <span className="text-xs font-extrabold text-amber-700">Awaiting Action</span>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900">{pendingApprovalsCount}</span>
+              <span className="text-xs font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Awaiting Action</span>
+            </div>
+            <p className="text-xs text-slate-600 font-bold mt-1">Across Sales Quotes, POs &amp; RFPs</p>
           </div>
-          <p className="text-xs text-slate-600 font-medium">Across Sales Quotes, POs &amp; RFPs</p>
         </div>
 
         {/* Total Accounts Receivable Card */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Accounts Receivable</span>
-            <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+            <div className="p-2.5 bg-emerald-100/90 text-emerald-800 rounded-xl shadow-2xs">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-900">
-              ₱{totalArBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-            </span>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-950">
+                ₱{totalArBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 font-bold mt-1">{(soaRows || []).length} Active SOA Client Invoices</p>
           </div>
-          <p className="text-xs text-slate-600 font-medium">{(soaRows || []).length} Active SOA Client Invoices</p>
         </div>
 
         {/* Low Stock SKUs Card */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Low Stock SKUs</span>
-            <div className="p-2 bg-red-100 text-red-700 rounded-xl">
+            <div className="p-2.5 bg-red-100/90 text-red-700 rounded-xl shadow-2xs">
               <AlertTriangle className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900">{lowStockSkus.length}</span>
-            <span className="text-xs font-extrabold text-red-700">Items &lt; 50 units</span>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900">{lowStockSkus.length}</span>
+              <span className="text-xs font-black text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">Items &lt; 50 units</span>
+            </div>
+            <p className="text-xs text-slate-600 font-bold mt-1">QC &amp; Pampanga Warehouses</p>
           </div>
-          <p className="text-xs text-slate-600 font-medium">QC &amp; Pampanga Warehouses</p>
         </div>
 
         {/* Unverified POs Card */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Unverified POs</span>
-            <div className="p-2 bg-indigo-100 text-indigo-800 rounded-xl">
+            <div className="p-2.5 bg-indigo-100/90 text-indigo-800 rounded-xl shadow-2xs">
               <Building2 className="w-5 h-5" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black text-slate-900">{(poList || []).length}</span>
-            <span className="text-xs font-extrabold text-indigo-800">Pending 3-Way Match</span>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl sm:text-4xl font-black text-slate-900">{(poList || []).length}</span>
+              <span className="text-xs font-black text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">Pending Match</span>
+            </div>
+            <p className="text-xs text-slate-600 font-bold mt-1">Supplier PO &harr; RR &harr; Invoice</p>
           </div>
-          <p className="text-xs text-slate-600 font-medium">Supplier PO &harr; RR &harr; Invoice</p>
         </div>
       </div>
 

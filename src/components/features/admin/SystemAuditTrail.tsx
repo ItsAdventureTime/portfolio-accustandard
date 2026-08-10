@@ -148,24 +148,26 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-1 bg-slate-200 p-1.5 rounded-xl shrink-0">
+        <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 shrink-0 border border-slate-300/80 shadow-2xs">
           <button
             type="button"
             onClick={() => setActiveSubTab('USERS')}
-            className={`px-4 py-2 rounded-lg font-extrabold text-xs sm:text-sm transition ${
-              activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-700 hover:text-slate-900'
+            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+              activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
             }`}
           >
-            User &amp; Role Setup ({userList.length})
+            <User className="w-4 h-4" />
+            <span>User &amp; Role Setup ({userList.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveSubTab('AUDIT')}
-            className={`px-4 py-2 rounded-lg font-extrabold text-xs sm:text-sm transition ${
-              activeSubTab === 'AUDIT' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-700 hover:text-slate-900'
+            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+              activeSubTab === 'AUDIT' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
             }`}
           >
-            Audit Action Stream ({auditLogs.length})
+            <Clock className="w-4 h-4" />
+            <span>Audit Action Stream ({auditLogs.length})</span>
           </button>
         </div>
       </div>
