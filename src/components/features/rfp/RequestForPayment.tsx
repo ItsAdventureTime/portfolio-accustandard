@@ -81,7 +81,11 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
               {rfpList.map((rfp) => (
-                <tr key={rfp.id} className="hover:bg-blue-50/50 transition group">
+                <tr
+                  key={rfp.id}
+                  onClick={() => setInspectingRfp(rfp)}
+                  className="hover:bg-blue-50/50 transition cursor-pointer group"
+                >
                   <td className="p-4">
                     <button
                       type="button"

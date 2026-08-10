@@ -210,7 +210,11 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                   {filteredInventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-blue-50/50 transition group">
+                    <tr
+                      key={item.id}
+                      onClick={() => setSelectedSkuModal(item)}
+                      className="hover:bg-blue-50/50 transition cursor-pointer group"
+                    >
                       <td className="p-4">
                         <button
                           type="button"

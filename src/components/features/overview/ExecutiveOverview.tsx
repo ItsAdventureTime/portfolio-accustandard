@@ -233,7 +233,11 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                 const isDcsApproved = item.dcsStatus === 'APPROVED';
 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-50/80 transition">
+                  <tr
+                    key={item.id}
+                    onClick={() => setSelectedDocModal(item)}
+                    className="hover:bg-blue-50/50 transition cursor-pointer group"
+                  >
                     <td className="p-4">
                       <button
                         type="button"

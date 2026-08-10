@@ -357,7 +357,11 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                   {rfqList.map((rfq) => (
-                    <tr key={rfq.id} className="hover:bg-blue-50/50 transition group">
+                    <tr
+                      key={rfq.id}
+                      onClick={() => setSelectedRfqModal(rfq)}
+                      className="hover:bg-blue-50/50 transition cursor-pointer group"
+                    >
                       <td className="p-4">
                         <button
                           type="button"

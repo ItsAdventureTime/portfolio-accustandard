@@ -58,23 +58,25 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
       className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
-        {/* Top Control Bar */}
-        <div className="p-4 bg-slate-900 text-white flex justify-between items-center shrink-0 border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <FileCheck className="w-5 h-5 text-blue-400" />
+        {/* Header Block Matching Screenshot 2 Design System */}
+        <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-900 text-white rounded-2xl shrink-0 shadow-md">
+              <FileCheck className="w-6 h-6" />
+            </div>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-white">
-                AccuStandard Official Request for Quotation (RFQ Form)
+              <h2 className="text-base sm:text-lg font-black tracking-wider text-slate-900 uppercase">
+                ACCUSTANDARD OFFICIAL REQUEST FOR QUOTATION (RFQ FORM)
               </h2>
-              <p className="text-xs text-slate-300">
-                Matches exact structure &amp; branding of <strong className="text-white">RFQ Form.pdf</strong>
+              <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5">
+                Matches exact structure &amp; branding of <strong className="text-slate-900">RFQ Form.pdf</strong>
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => window.print()}
-              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition cursor-pointer"
+              className="px-4 py-2 bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-1.5 transition shadow-md cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4" />
               <span>Print PDF</span>
@@ -82,7 +84,7 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
             <button
               onClick={onClose}
               aria-label="Close RFQ Preview"
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer shrink-0"
             >
               <X className="w-5 h-5" />
             </button>

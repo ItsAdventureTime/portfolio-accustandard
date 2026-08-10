@@ -176,7 +176,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
           </thead>
           <tbody>
             {activeRows.map((row, idx) => (
-              <tr key={idx} className="text-center font-medium border-b border-gray-300 hover:bg-slate-50 transition">
+              <tr key={idx} className="text-center font-medium border-b border-gray-300 hover:bg-blue-50/60 transition cursor-pointer">
                 <td className="border border-gray-900 py-1.5 px-2">{row.salesInvoiceNo}</td>
                 <td className="border border-gray-900 py-1.5 px-2">{row.drNo}</td>
                 <td className="border border-gray-900 py-1.5 px-2">{row.siDate}</td>

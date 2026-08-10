@@ -188,32 +188,32 @@ export const ClientFormatROICalculatorModal: React.FC<ClientFormatROICalculatorM
       className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
-        {/* Header Bar */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-950 via-slate-900 to-blue-900 text-white flex justify-between items-center shrink-0 border-b border-blue-800">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600/30 rounded-2xl border border-blue-400/30 text-blue-300">
+        {/* Header Block Matching Screenshot 2 Design System */}
+        <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-900 text-white rounded-2xl shrink-0 shadow-md">
               <FileSpreadsheet className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black tracking-tight text-white uppercase">
-                  Client-Format ROI Calculator (REVISED ROI_ACE PATEROS)
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-black tracking-wider text-slate-900 uppercase">
+                  CLIENT-FORMAT ROI CALCULATOR (REVISED ROI_ACE PATEROS)
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 text-[11px] font-extrabold">
                   v1.0 Confirmed Formula Engine
                 </span>
               </div>
-              <p className="text-xs text-blue-200/90 font-medium">
-                Linked RFQ: <strong className="text-white">{rfqData?.rfqNo || 'RFQ-2026-0081'}</strong> &bull; Client: <strong className="text-white">{rfqData?.customerName || 'Allied Care Experts (ACE) Medical Center'}</strong>
+              <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5">
+                Linked RFQ: <strong className="text-slate-900">{rfqData?.rfqNo || 'RFQ-2026-0081'}</strong> &bull; Client: <strong className="text-slate-900">{rfqData?.customerName || 'Allied Care Experts (ACE) Medical Center'}</strong>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close ROI Modal"
-            className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer shrink-0"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -551,8 +551,8 @@ export const ClientFormatROICalculatorModal: React.FC<ClientFormatROICalculatorM
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-between items-center shrink-0">
+        {/* Footer Actions Matching Screenshot 2 Design System */}
+        <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
             <ShieldCheck className="w-4 h-4 text-emerald-700" />
             <span>Formulas locked per REVISED ROI_ACE PATEROS.xlsx specification</span>
@@ -560,13 +560,13 @@ export const ClientFormatROICalculatorModal: React.FC<ClientFormatROICalculatorM
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold rounded-xl transition text-xs sm:text-sm cursor-pointer"
+              className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold rounded-2xl transition text-xs sm:text-sm cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-5 py-2 bg-blue-900 hover:bg-blue-950 text-white font-extrabold rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
+              className="px-6 py-2.5 bg-blue-900 hover:bg-blue-950 text-white font-extrabold rounded-2xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
             >
               <Save className="w-4 h-4" />
               <span>Link ROI to Sales Quote</span>

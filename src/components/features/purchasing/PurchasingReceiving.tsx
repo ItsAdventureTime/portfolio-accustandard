@@ -115,7 +115,11 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
               {poList.map((po) => (
-                <tr key={po.id} className="hover:bg-blue-50/50 transition group">
+                <tr
+                  key={po.id}
+                  onClick={() => setSelectedPoModal(po)}
+                  className="hover:bg-blue-50/50 transition cursor-pointer group"
+                >
                   <td className="p-4">
                     <button
                       type="button"
