@@ -19,12 +19,16 @@ interface PurchasingReceivingProps {
   poList: any[];
   onOpenAddPO: () => void;
   onOpenReceivingModal: () => void;
+  onOpenVendorInvoiceModal?: (po?: any) => void;
+  onOpenThreeWayMatchModal?: (po?: any) => void;
 }
 
 export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
   poList,
   onOpenAddPO,
   onOpenReceivingModal,
+  onOpenVendorInvoiceModal,
+  onOpenThreeWayMatchModal,
 }) => {
   const [selectedPoModal, setSelectedPoModal] = useState<any | null>(null);
 
@@ -43,6 +47,26 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
         </div>
 
         <div className="flex items-center gap-3 self-stretch sm:self-auto flex-wrap">
+          {onOpenVendorInvoiceModal && (
+            <button
+              onClick={() => onOpenVendorInvoiceModal(poList[0])}
+              className="flex-1 sm:flex-initial px-4 py-3 bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-95"
+            >
+              <FileText className="w-4 h-4 text-blue-300" />
+              <span>Record Vendor Invoice</span>
+            </button>
+          )}
+
+          {onOpenThreeWayMatchModal && (
+            <button
+              onClick={() => onOpenThreeWayMatchModal(poList[0])}
+              className="flex-1 sm:flex-initial px-4 py-3 bg-indigo-900 hover:bg-indigo-950 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-95"
+            >
+              <FileCheck className="w-4 h-4 text-indigo-300" />
+              <span>Run 3-Way Match</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenReceivingModal}
             className="flex-1 sm:flex-initial px-5 py-3 bg-emerald-700 hover:bg-emerald-800 hover:shadow-md text-white font-extrabold text-xs sm:text-sm rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"

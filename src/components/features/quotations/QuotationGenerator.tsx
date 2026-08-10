@@ -32,6 +32,9 @@ interface QuotationGeneratorProps {
   onSubmitForApproval: (qrn: string) => void;
   onShowNotification: (msg: string) => void;
   onAddAuditLog: (action: string) => void;
+  onOpenClientRoiModal?: (rfq?: any) => void;
+  onOpenRfqPreviewModal?: (rfq?: any) => void;
+  onOpenClientAcceptanceModal?: (quote?: any) => void;
 }
 
 export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
@@ -43,6 +46,9 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onSubmitForApproval,
   onShowNotification,
   onAddAuditLog,
+  onOpenClientRoiModal,
+  onOpenRfqPreviewModal,
+  onOpenClientAcceptanceModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'QUOTE' | 'RFQ'>('QUOTE');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -187,12 +193,42 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
         {/* Action Header Buttons */}
         <div className="flex items-center gap-2.5 flex-wrap">
+          {onOpenClientRoiModal && (
+            <button
+              onClick={() => onOpenClientRoiModal(rfqList[0])}
+              className="px-3.5 py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+            >
+              <Calculator className="w-4 h-4 text-emerald-400" />
+              <span>Client-Format ROI Calculator</span>
+            </button>
+          )}
+
+          {onOpenRfqPreviewModal && (
+            <button
+              onClick={() => onOpenRfqPreviewModal(rfqList[0])}
+              className="px-3.5 py-2.5 bg-indigo-950 hover:bg-indigo-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+            >
+              <Eye className="w-4 h-4 text-indigo-300" />
+              <span>Official RFQ Template</span>
+            </button>
+          )}
+
+          {onOpenClientAcceptanceModal && (
+            <button
+              onClick={() => onOpenClientAcceptanceModal()}
+              className="px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-200" />
+              <span>Record Client Acceptance</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenCreateModal}
             className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
           >
             <Send className="w-4 h-4 text-amber-400" />
-            <span>+ Create / Request Sales Quote</span>
+            <span>+ Create Sales Quote</span>
           </button>
 
           <button
@@ -208,15 +244,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Quotation</span>
-          </button>
-
-          <button
-            onClick={() => onOpenExportModal(`Quotation ${qrn}`, `Quotation_${qrn}`, quotationsList, 'printableQuotationDoc')}
-            className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
-          >
-            <Download className="w-4 h-4" />
-            <span>Export Quote...</span>
+            <span>Print Quote</span>
           </button>
         </div>
       </div>

@@ -25,6 +25,14 @@ import { BarcodeScannerModal } from '@/components/scanner/BarcodeScannerModal';
 import { BarcodeProductManagerModal } from '@/components/modals/BarcodeProductManagerModal';
 import { QBOSyncQueueModal } from '@/components/modals/QBOSyncQueueModal';
 
+import { ClientFormatROICalculatorModal } from '@/components/features/roi/ClientFormatROICalculatorModal';
+import { RFQDocumentPreviewModal } from '@/components/features/rfq/RFQDocumentPreviewModal';
+import { ClientAcceptanceModal } from '@/components/features/quotations/ClientAcceptanceModal';
+import { VendorInvoiceModal } from '@/components/features/purchasing/VendorInvoiceModal';
+import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMatchModal';
+import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
+import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
+
 import {
   useDemoStore,
   DEFAULT_INVENTORY,
@@ -97,6 +105,17 @@ export default function Home() {
   const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
   const [isPOReceivingModalOpen, setIsPOReceivingModalOpen] = useState(false);
   const [isAddRFPOpen, setIsAddRFPOpen] = useState(false);
+
+  // New Handoff Workflow Modals State
+  const [isClientRoiOpen, setIsClientRoiOpen] = useState(false);
+  const [isRfqPreviewOpen, setIsRfqPreviewOpen] = useState(false);
+  const [isClientAcceptanceOpen, setIsClientAcceptanceOpen] = useState(false);
+  const [isVendorInvoiceOpen, setIsVendorInvoiceOpen] = useState(false);
+  const [isThreeWayMatchOpen, setIsThreeWayMatchOpen] = useState(false);
+  const [isCollectionAllocationOpen, setIsCollectionAllocationOpen] = useState(false);
+  const [isStartupImportOpen, setIsStartupImportOpen] = useState(false);
+  const [selectedRfqData, setSelectedRfqData] = useState<any>(null);
+  const [selectedPoData, setSelectedPoData] = useState<any>(null);
 
   // Load state from localStorage on initial render
   useEffect(() => {
@@ -604,6 +623,17 @@ export default function Home() {
               }}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
+              onOpenClientRoiModal={(rfq) => {
+                setSelectedRfqData(rfq);
+                setIsClientRoiOpen(true);
+              }}
+              onOpenRfqPreviewModal={(rfq) => {
+                setSelectedRfqData(rfq);
+                setIsRfqPreviewOpen(true);
+              }}
+              onOpenClientAcceptanceModal={() => {
+                setIsClientAcceptanceOpen(true);
+              }}
             />
           )}
 
@@ -615,7 +645,7 @@ export default function Home() {
               onOpenExportModal={handleOpenExportModal}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
-              onAllocateCollection={handleAllocateCollection}
+              onAllocateCollection={() => setIsCollectionAllocationOpen(true)}
             />
           )}
 
@@ -624,6 +654,14 @@ export default function Home() {
               poList={poList}
               onOpenAddPO={() => setIsCreatePOOpen(true)}
               onOpenReceivingModal={() => setIsPOReceivingModalOpen(true)}
+              onOpenVendorInvoiceModal={(po) => {
+                setSelectedPoData(po);
+                setIsVendorInvoiceOpen(true);
+              }}
+              onOpenThreeWayMatchModal={(po) => {
+                setSelectedPoData(po);
+                setIsThreeWayMatchOpen(true);
+              }}
             />
           )}
 
@@ -641,6 +679,7 @@ export default function Home() {
               viewAsRole={viewAsRole}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
+              onOpenStartupImportModal={() => setIsStartupImportOpen(true)}
             />
           )}
         </main>
@@ -773,6 +812,75 @@ export default function Home() {
       >
         {printModalContent}
       </DocumentPrintModal>
+
+      {/* Confirmed Developer Handoff Workflow Modals */}
+      <ClientFormatROICalculatorModal
+        isOpen={isClientRoiOpen}
+        onClose={() => setIsClientRoiOpen(false)}
+        rfqData={selectedRfqData}
+        onSaveROI={(roi) => {
+          showNotification(`Client-Format ROI Calculator linked! Payback Period: ${roi.roiYears.toFixed(2)} Years`);
+          addAuditLog(`Saved Client-Format ROI calculation matching REVISED ROI_ACE PATEROS.xlsx (${roi.roiYears.toFixed(2)} yrs)`);
+        }}
+      />
+
+      <RFQDocumentPreviewModal
+        isOpen={isRfqPreviewOpen}
+        onClose={() => setIsRfqPreviewOpen(false)}
+        rfqData={selectedRfqData}
+      />
+
+      <ClientAcceptanceModal
+        isOpen={isClientAcceptanceOpen}
+        onClose={() => setIsClientAcceptanceOpen(false)}
+        quotationData={{ qrn: 'QRN20240415037' }}
+        onConfirmAcceptance={(evidence) => {
+          setQuotationsList((prev) =>
+            prev.map((q) => (q.qrn === evidence.quotationId || q.id === evidence.quotationId ? { ...q, status: 'CLIENT_APPROVED' } : q))
+          );
+          showNotification('Recorded client acceptance evidence! Fulfillment unlocked.');
+          addAuditLog(`Uploaded signed client acceptance evidence (${evidence.clientPONumber})`);
+        }}
+      />
+
+      <VendorInvoiceModal
+        isOpen={isVendorInvoiceOpen}
+        onClose={() => setIsVendorInvoiceOpen(false)}
+        poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
+        onSaveInvoice={(inv) => {
+          showNotification(`Vendor Invoice ${inv.invoiceNo} recorded with attachment!`);
+          addAuditLog(`Recorded Vendor Invoice ${inv.invoiceNo} for PO ${inv.poNo}`);
+        }}
+      />
+
+      <ThreeWayMatchModal
+        isOpen={isThreeWayMatchOpen}
+        onClose={() => setIsThreeWayMatchOpen(false)}
+        poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
+        onConfirmVerification={(match) => {
+          showNotification('3-Way Match Verified! Payment processing unlocked.');
+          addAuditLog(`Completed 3-Way Match verification for PO ${match.poNo}`);
+        }}
+      />
+
+      <CollectionAllocationModal
+        isOpen={isCollectionAllocationOpen}
+        onClose={() => setIsCollectionAllocationOpen(false)}
+        collectionData={collectionsList[0] || { amount: 25000.0 }}
+        onConfirmAllocation={(alloc) => {
+          showNotification('Posted multi-invoice collection allocations to client SOA!');
+          addAuditLog(`Allocated payment ${alloc.checkNo} across ${alloc.allocations.length} invoices`);
+        }}
+      />
+
+      <StartupImportModal
+        isOpen={isStartupImportOpen}
+        onClose={() => setIsStartupImportOpen(false)}
+        onImportComplete={(summary) => {
+          showNotification(`Startup Data Batch ${summary.batchId} posted & reconciled!`);
+          addAuditLog(`Executed 5-stage cutover data import batch ${summary.batchId} (${summary.validRecords} posted)`);
+        }}
+      />
     </div>
   );
 }

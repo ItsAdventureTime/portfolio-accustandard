@@ -23,6 +23,7 @@ interface SystemAuditTrailProps {
   viewAsRole?: string;
   onShowNotification?: (msg: string) => void;
   onAddAuditLog?: (action: string) => void;
+  onOpenStartupImportModal?: () => void;
 }
 
 const ALL_AVAILABLE_MODULE_VIEWS = [
@@ -40,6 +41,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   viewAsRole = 'Admin',
   onShowNotification,
   onAddAuditLog,
+  onOpenStartupImportModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'AUDIT' | 'USERS'>('USERS');
   const [filterQuery, setFilterQuery] = useState('');
@@ -148,28 +150,41 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 shrink-0 border border-slate-300/80 shadow-2xs">
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('USERS')}
-            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-              activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-            }`}
-          >
-            <User className="w-4 h-4" />
-            <span>User &amp; Role Setup ({userList.length})</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSubTab('AUDIT')}
-            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-              activeSubTab === 'AUDIT' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-            }`}
-          >
-            <Clock className="w-4 h-4" />
-            <span>Audit Action Stream ({auditLogs.length})</span>
-          </button>
+        {/* Tab Switcher & Startup Import Action */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {onOpenStartupImportModal && (
+            <button
+              type="button"
+              onClick={onOpenStartupImportModal}
+              className="px-4 py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-emerald-400" />
+              <span>Execute Startup Cutover Data Import</span>
+            </button>
+          )}
+
+          <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 shrink-0 border border-slate-300/80 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('USERS')}
+              className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+                activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
+              }`}
+            >
+              <User className="w-4 h-4" />
+              <span>User &amp; Role Setup ({userList.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('AUDIT')}
+              className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+                activeSubTab === 'AUDIT' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
+              }`}
+            >
+              <Clock className="w-4 h-4" />
+              <span>Audit Action Stream ({auditLogs.length})</span>
+            </button>
+          </div>
         </div>
       </div>
 
