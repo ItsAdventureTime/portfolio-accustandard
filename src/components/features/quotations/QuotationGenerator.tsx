@@ -44,9 +44,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   onShowNotification,
   onAddAuditLog,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'QUOTE' | 'RFQ' | 'ROI'>('QUOTE');
+  const [activeSubTab, setActiveSubTab] = useState<'QUOTE' | 'RFQ'>('QUOTE');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [selectedRfqModal, setSelectedRfqModal] = useState<any | null>(null);
+  const [isRoiModalOpen, setIsRoiModalOpen] = useState(false);
 
   const activeQuote = quotationsList.length > 0 ? quotationsList[selectedIndex] || quotationsList[0] : null;
 
@@ -220,42 +221,42 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         </div>
       </div>
 
-      {/* Sub-Tab Navigation Bar */}
-      <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
-        <button
-          onClick={() => setActiveSubTab('QUOTE')}
-          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-            activeSubTab === 'QUOTE'
-              ? 'bg-blue-900 text-white shadow-md scale-100'
-              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Official Sales Quotation Document</span>
-        </button>
+      {/* Sub-Tab Navigation Bar & ROI Popup Trigger */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
+          <button
+            onClick={() => setActiveSubTab('QUOTE')}
+            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+              activeSubTab === 'QUOTE'
+                ? 'bg-blue-900 text-white shadow-md scale-100'
+                : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Official Sales Quotation Document</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab('RFQ')}
+            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+              activeSubTab === 'RFQ'
+                ? 'bg-blue-900 text-white shadow-md scale-100'
+                : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
+            }`}
+          >
+            <UserCheck className="w-4 h-4 text-amber-400" />
+            <span>RFQ / Demand Requests ({rfqList.length})</span>
+          </button>
+        </div>
 
         <button
-          onClick={() => setActiveSubTab('RFQ')}
-          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-            activeSubTab === 'RFQ'
-              ? 'bg-blue-900 text-white shadow-md scale-100'
-              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-          }`}
+          type="button"
+          onClick={() => setIsRoiModalOpen(true)}
+          className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-md cursor-pointer transition active:scale-95 border border-emerald-600"
+          title="Click to launch interactive Marketing Manager ROI & Contract Margin Calculator Popup"
         >
-          <UserCheck className="w-4 h-4 text-amber-400" />
-          <span>RFQ / Demand Requests ({rfqList.length})</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('ROI')}
-          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-            activeSubTab === 'ROI'
-              ? 'bg-blue-900 text-white shadow-md scale-100'
-              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-          }`}
-        >
-          <Calculator className="w-4 h-4 text-emerald-400" />
-          <span>Marketing ROI Calculator</span>
+          <Calculator className="w-4 h-4 text-emerald-200" />
+          <span>Launch Marketing ROI Calculator</span>
         </button>
       </div>
 
@@ -359,11 +360,12 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         </div>
       )}
 
-      {activeSubTab === 'ROI' && (
-        <div className="max-w-5xl mx-auto space-y-6">
-          {/* Header Card */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-300/80 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 pb-5">
+      {/* Marketing Manager ROI & Margin Financial Engine Popup Modal */}
+      {isRoiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in duration-200">
+            {/* Header Block */}
+            <div className="flex justify-between items-start border-b border-slate-200 pb-5">
               <div className="flex items-center gap-3.5">
                 <div className="p-3.5 bg-emerald-900 text-white rounded-2xl shadow-sm">
                   <Calculator className="w-6 h-6 text-emerald-400" />
@@ -378,22 +380,32 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 </div>
               </div>
 
-              <span className={`px-4 py-1.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-2xs border ${
-                marginPct >= 30
-                  ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                  : marginPct >= 20
-                  ? 'bg-amber-100 text-amber-900 border-amber-300'
-                  : 'bg-rose-100 text-rose-900 border-rose-300'
-              }`}>
-                {marginPct >= 30 ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-                ) : marginPct >= 20 ? (
-                  <AlertTriangle className="w-4 h-4 text-amber-700" />
-                ) : (
-                  <ShieldAlert className="w-4 h-4 text-rose-700" />
-                )}
-                {marginPct >= 30 ? 'Target Margin Qualified' : marginPct >= 20 ? 'Standard Review Margin' : 'Low Margin Alert'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-4 py-1.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-2xs border ${
+                  marginPct >= 30
+                    ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                    : marginPct >= 20
+                    ? 'bg-amber-100 text-amber-900 border-amber-300'
+                    : 'bg-rose-100 text-rose-900 border-rose-300'
+                }`}>
+                  {marginPct >= 30 ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                  ) : marginPct >= 20 ? (
+                    <AlertTriangle className="w-4 h-4 text-amber-700" />
+                  ) : (
+                    <ShieldAlert className="w-4 h-4 text-rose-700" />
+                  )}
+                  {marginPct >= 30 ? 'Target Margin Qualified' : marginPct >= 20 ? 'Standard Review Margin' : 'Low Margin Alert'}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setIsRoiModalOpen(false)}
+                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
 
             {/* Quick Census Scenario Presets */}
@@ -449,181 +461,205 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Calculator Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Inputs Column */}
-            <div className="lg:col-span-5 bg-slate-50/90 p-6 sm:p-7 rounded-3xl border border-slate-300/80 space-y-5">
-              <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-3 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-700" />
-                Client &amp; Unit Cost Parameters
-              </h4>
+            {/* Calculator Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Inputs Column */}
+              <div className="lg:col-span-5 bg-slate-50/90 p-5 rounded-3xl border border-slate-300/80 space-y-4">
+                <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-2 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-blue-700" />
+                  Client &amp; Unit Cost Parameters
+                </h4>
 
-              <div className="space-y-4 text-sm font-semibold">
-                <div>
-                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
-                    Expected Daily Sample Census
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={roiCensus}
-                      onChange={(e) => setRoiCensus(Math.max(1, Number(e.target.value)))}
-                      className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
-                      min="1"
-                    />
-                    <span className="absolute right-4 top-3 text-xs text-slate-500 font-bold">samples / day</span>
+                <div className="space-y-3.5 text-sm font-semibold">
+                  <div>
+                    <label className="block text-xs font-black text-slate-700 mb-1 uppercase tracking-wider">
+                      Expected Daily Sample Census
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={roiCensus}
+                        onChange={(e) => setRoiCensus(Math.max(1, Number(e.target.value)))}
+                        className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                        min="1"
+                      />
+                      <span className="absolute right-4 top-2.5 text-xs text-slate-500 font-bold">samples / day</span>
+                    </div>
+                    <p className="text-xs text-slate-500 font-semibold mt-1">
+                      Est. Monthly Volume: <span className="font-mono font-bold text-slate-900">{(roiCensus * 30).toLocaleString()} samples / mo</span>
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 font-semibold mt-1">
-                    Est. Monthly Volume: <span className="font-mono font-bold text-slate-900">{(roiCensus * 30).toLocaleString()} samples / mo</span>
-                  </p>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
-                    Batch Landed Cost (₱)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-sm font-black text-slate-400">₱</span>
-                    <input
-                      type="number"
-                      value={roiLandedCost}
-                      onChange={(e) => setRoiLandedCost(Math.max(0, Number(e.target.value)))}
-                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
-                      min="0"
-                    />
+                  <div>
+                    <label className="block text-xs font-black text-slate-700 mb-1 uppercase tracking-wider">
+                      Batch Landed Cost (₱)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-2.5 text-sm font-black text-slate-400">₱</span>
+                      <input
+                        type="number"
+                        value={roiLandedCost}
+                        onChange={(e) => setRoiLandedCost(Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-slate-700 mb-1 uppercase tracking-wider">
+                      LIS &amp; Account Overhead (₱)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-2.5 text-sm font-black text-slate-400">₱</span>
+                      <input
+                        type="number"
+                        value={roiLisedFee}
+                        onChange={(e) => setRoiLisedFee(Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-2.5 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-black text-blue-950 mb-1 uppercase tracking-wider">
+                      Proposed Selling Price (₱)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-2.5 text-sm font-black text-blue-700">₱</span>
+                      <input
+                        type="number"
+                        value={roiProposedPrice}
+                        onChange={(e) => setRoiProposedPrice(Math.max(0, Number(e.target.value)))}
+                        className="w-full bg-white border border-blue-300 rounded-xl pl-9 pr-4 py-2.5 font-mono font-black text-lg text-blue-950 focus:outline-none focus:border-blue-600 shadow-2xs"
+                        min="0"
+                      />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-black text-slate-700 mb-1.5 uppercase tracking-wider">
-                    LIS &amp; Account Overhead (₱)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-sm font-black text-slate-400">₱</span>
-                    <input
-                      type="number"
-                      value={roiLisedFee}
-                      onChange={(e) => setRoiLisedFee(Math.max(0, Number(e.target.value)))}
-                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-base text-slate-900 focus:outline-none focus:border-blue-600 shadow-2xs"
-                      min="0"
-                    />
+              {/* Right Financial Results Dashboard */}
+              <div className="lg:col-span-7 bg-white p-5 rounded-3xl border border-slate-300/80 shadow-sm space-y-5 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-2 flex items-center gap-2">
+                    <PieChart className="w-4 h-4 text-emerald-700" />
+                    Calculated Profitability &amp; Financial Summary
+                  </h4>
+
+                  {/* 4 Metric Cards Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-0.5">
+                      <span className="text-[11px] text-slate-500 font-extrabold uppercase tracking-wider block">Total Unit Cost</span>
+                      <p className="font-mono font-black text-sm sm:text-base text-slate-900">
+                        ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200/90 space-y-0.5">
+                      <span className="text-[11px] text-emerald-800 font-extrabold uppercase tracking-wider block">Unit Net Profit</span>
+                      <p className="font-mono font-black text-sm sm:text-base text-emerald-900">
+                        ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-200/90 space-y-0.5">
+                      <span className="text-[11px] text-blue-800 font-extrabold uppercase tracking-wider block">30-Day Revenue</span>
+                      <p className="font-mono font-black text-sm sm:text-base text-blue-950">
+                        ₱{(roiProposedPrice * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+
+                    <div className="p-3.5 bg-purple-50/80 rounded-2xl border border-purple-200/90 space-y-0.5">
+                      <span className="text-[11px] text-purple-800 font-extrabold uppercase tracking-wider block">30-Day Net Profit</span>
+                      <p className="font-mono font-black text-sm sm:text-base text-purple-950">
+                        ₱{(profit * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-black text-blue-950 mb-1.5 uppercase tracking-wider">
-                    Proposed Selling Price (₱)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-3 text-sm font-black text-blue-700">₱</span>
-                    <input
-                      type="number"
-                      value={roiProposedPrice}
-                      onChange={(e) => setRoiProposedPrice(Math.max(0, Number(e.target.value)))}
-                      className="w-full bg-white border border-blue-300 rounded-xl pl-9 pr-4 py-3 font-mono font-black text-lg text-blue-950 focus:outline-none focus:border-blue-600 shadow-2xs"
-                      min="0"
-                    />
+                  {/* Visual Contract Margin Gauge Card */}
+                  <div className={`p-4 rounded-2xl border text-white space-y-2.5 shadow-md ${
+                    marginPct >= 30
+                      ? 'bg-slate-900 border-emerald-500'
+                      : marginPct >= 20
+                      ? 'bg-slate-900 border-amber-500'
+                      : 'bg-slate-900 border-rose-500'
+                  }`}>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] uppercase tracking-wider font-extrabold text-slate-300">Expected Contract Margin</span>
+                      <span className="text-[11px] font-mono font-bold text-slate-400">Target: &ge; 30.0%</span>
+                    </div>
+
+                    <div className="flex items-baseline justify-between">
+                      <span className={`text-3xl font-black font-mono ${
+                        marginPct >= 30 ? 'text-emerald-400' : marginPct >= 20 ? 'text-amber-400' : 'text-rose-400'
+                      }`}>
+                        {marginPct.toFixed(1)}%
+                      </span>
+                      <span className="text-xs font-extrabold text-slate-300">
+                        ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })} / unit
+                      </span>
+                    </div>
+
+                    {/* Progress Bar Meter */}
+                    <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          marginPct >= 30 ? 'bg-emerald-500' : marginPct >= 20 ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}
+                        style={{ width: `${Math.min(100, Math.max(0, marginPct))}%` }}
+                      />
+                    </div>
+
+                    {/* Policy Guidance Text */}
+                    <p className="text-xs text-slate-300 font-semibold pt-0.5">
+                      {marginPct >= 30 ? (
+                        <span className="text-emerald-400 font-bold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                          Qualified for Fast-Track GM &amp; Chairman Approval
+                        </span>
+                      ) : marginPct >= 20 ? (
+                        <span className="text-amber-400 font-bold flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4 shrink-0" />
+                          Standard Review Margin — Requires General Manager Sign-off
+                        </span>
+                      ) : (
+                        <span className="text-rose-400 font-bold flex items-center gap-1.5">
+                          <ShieldAlert className="w-4 h-4 shrink-0" />
+                          Low Margin Warning — Triggers Required DCS Chairman Review
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Financial Results Dashboard */}
-            <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-slate-300/80 shadow-sm space-y-6 flex flex-col justify-between">
-              <div className="space-y-5">
-                <h4 className="font-black text-slate-900 text-xs sm:text-sm uppercase tracking-wider border-b border-slate-200 pb-3 flex items-center gap-2">
-                  <PieChart className="w-4 h-4 text-emerald-700" />
-                  Calculated Profitability &amp; Financial Summary
-                </h4>
+            {/* Quick Actions Footer */}
+            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  onShowNotification(`Applied ROI Proposed Unit Price ₱${roiProposedPrice.toLocaleString()} to Quotation!`);
+                  onAddAuditLog(`Calculated ROI for census ${roiCensus}/day yielding ${marginPct.toFixed(1)}% margin`);
+                  setIsRoiModalOpen(false);
+                }}
+                className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer border border-emerald-600"
+              >
+                <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                <span>Apply Calculation to Active Quote</span>
+              </button>
 
-                {/* 4 Metric Cards Grid */}
-                <div className="grid grid-cols-2 gap-3.5">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-1">
-                    <span className="text-xs text-slate-500 font-extrabold uppercase tracking-wider block">Total Unit Cost</span>
-                    <p className="font-mono font-black text-sm sm:text-base text-slate-900">
-                      ₱{totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200/90 space-y-1">
-                    <span className="text-xs text-emerald-800 font-extrabold uppercase tracking-wider block">Unit Net Profit</span>
-                    <p className="font-mono font-black text-sm sm:text-base text-emerald-900">
-                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-blue-50/80 rounded-2xl border border-blue-200/90 space-y-1">
-                    <span className="text-xs text-blue-800 font-extrabold uppercase tracking-wider block">30-Day Revenue</span>
-                    <p className="font-mono font-black text-sm sm:text-base text-blue-950">
-                      ₱{(roiProposedPrice * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-
-                  <div className="p-4 bg-purple-50/80 rounded-2xl border border-purple-200/90 space-y-1">
-                    <span className="text-xs text-purple-800 font-extrabold uppercase tracking-wider block">30-Day Net Profit</span>
-                    <p className="font-mono font-black text-sm sm:text-base text-purple-950">
-                      ₱{(profit * roiCensus * 30).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Visual Contract Margin Gauge Card */}
-                <div className={`p-5 rounded-2xl border text-white space-y-3 shadow-md ${
-                  marginPct >= 30
-                    ? 'bg-slate-900 border-emerald-500'
-                    : marginPct >= 20
-                    ? 'bg-slate-900 border-amber-500'
-                    : 'bg-slate-900 border-rose-500'
-                }`}>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs uppercase tracking-wider font-extrabold text-slate-300">Expected Contract Margin</span>
-                    <span className="text-xs font-mono font-bold text-slate-400">Target: &ge; 30.0%</span>
-                  </div>
-
-                  <div className="flex items-baseline justify-between">
-                    <span className={`text-4xl font-black font-mono ${
-                      marginPct >= 30 ? 'text-emerald-400' : marginPct >= 20 ? 'text-amber-400' : 'text-rose-400'
-                    }`}>
-                      {marginPct.toFixed(1)}%
-                    </span>
-                    <span className="text-xs font-extrabold text-slate-300">
-                      ₱{profit.toLocaleString('en-US', { minimumFractionDigits: 2 })} / unit
-                    </span>
-                  </div>
-
-                  {/* Progress Bar Meter */}
-                  <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        marginPct >= 30 ? 'bg-emerald-500' : marginPct >= 20 ? 'bg-amber-500' : 'bg-rose-500'
-                      }`}
-                      style={{ width: `${Math.min(100, Math.max(0, marginPct))}%` }}
-                    />
-                  </div>
-
-                  {/* Policy Guidance Text */}
-                  <p className="text-xs text-slate-300 font-semibold pt-1">
-                    {marginPct >= 30 ? (
-                      <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        Qualified for Fast-Track GM &amp; Chairman Approval
-                      </span>
-                    ) : marginPct >= 20 ? (
-                      <span className="text-amber-400 font-bold flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 shrink-0" />
-                        Standard Review Margin — Requires General Manager Sign-off
-                      </span>
-                    ) : (
-                      <span className="text-rose-400 font-bold flex items-center gap-1.5">
-                        <ShieldAlert className="w-4 h-4 shrink-0" />
-                        Low Margin Warning — Triggers Required DCS Chairman Review
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsRoiModalOpen(false)}
+                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
+              >
+                Close Calculator
+              </button>
             </div>
           </div>
         </div>
@@ -711,7 +747,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 type="button"
                 onClick={() => {
                   setSelectedRfqModal(null);
-                  setActiveSubTab('ROI');
+                  setIsRoiModalOpen(true);
                 }}
                 className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
               >
