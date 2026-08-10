@@ -302,99 +302,105 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleAllocateCheck} className="p-6 space-y-4 text-xs">
-              <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <form onSubmit={handleAllocateCheck} className="space-y-5 text-sm font-semibold">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs sm:text-sm text-blue-950 font-bold flex items-center gap-3">
+                <CreditCard className="w-5 h-5 text-blue-700 shrink-0" />
+                <span>Multi-SOA Check Allocation: Deducts payment against selected invoice balances and calculates unapplied customer credit in real-time.</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/80 p-5 rounded-2xl border border-slate-300/80">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Check Number</label>
+                  <label className="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">Check Number *</label>
                   <input
                     type="text"
                     value={checkNo}
                     onChange={(e) => setCheckNo(e.target.value)}
-                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900"
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Issuing Bank</label>
+                  <label className="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">Issuing Bank *</label>
                   <input
                     type="text"
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-bold text-slate-900"
+                    className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Check Amount (₱)</label>
+                  <label className="block font-bold text-slate-700 mb-1 text-xs uppercase tracking-wider">Check Amount (₱) *</label>
                   <input
                     type="number"
                     value={checkAmount}
                     onChange={(e) => setCheckAmount(Number(e.target.value))}
-                    className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono font-extrabold text-blue-900"
+                    className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl font-mono font-black text-base sm:text-lg text-blue-950 focus:outline-none focus:border-blue-600"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Invoice Allocation Breakdown</h4>
-                <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                <h4 className="font-black text-slate-900 text-xs uppercase tracking-wider">Invoice Allocation Breakdown</h4>
+                <div className="p-4 bg-white border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                   <div>
-                    <p className="font-bold text-slate-900">SI-6087 (Gatchalian Medical Lab)</p>
-                    <p className="text-slate-500 text-[11px]">Invoice Balance: ₱16,960.00</p>
+                    <p className="font-black text-slate-900 text-sm sm:text-base">SI-6087 (Gatchalian Medical Lab)</p>
+                    <p className="text-slate-600 text-xs font-bold mt-0.5">Invoice Balance: <span className="font-mono text-slate-900 font-extrabold">₱16,960.00</span></p>
                   </div>
-                  <div className="w-36">
-                    <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Allocated (₱)</label>
+                  <div className="w-full sm:w-44">
+                    <label className="block text-xs text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Allocated (₱)</label>
                     <input
                       type="number"
                       value={allocatedSi6087}
                       onChange={(e) => setAllocatedSi6087(Number(e.target.value))}
-                      className="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-right font-mono font-bold text-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-right font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
+                <div className="p-4 bg-white border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                   <div>
-                    <p className="font-bold text-slate-900">SI-6107 (Gatchalian Medical Lab)</p>
-                    <p className="text-slate-500 text-[11px]">Invoice Balance: ₱1,968.00</p>
+                    <p className="font-black text-slate-900 text-sm sm:text-base">SI-6107 (Gatchalian Medical Lab)</p>
+                    <p className="text-slate-600 text-xs font-bold mt-0.5">Invoice Balance: <span className="font-mono text-slate-900 font-extrabold">₱1,968.00</span></p>
                   </div>
-                  <div className="w-36">
-                    <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Allocated (₱)</label>
+                  <div className="w-full sm:w-44">
+                    <label className="block text-xs text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Allocated (₱)</label>
                     <input
                       type="number"
                       value={allocatedSi6107}
                       onChange={(e) => setAllocatedSi6107(Number(e.target.value))}
-                      className="w-full p-1.5 bg-slate-50 border border-slate-300 rounded-lg text-right font-mono font-bold text-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-right font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between font-semibold">
+              {/* Dark Summary Value Card matching Screenshot 1 */}
+              <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl flex justify-between items-center font-bold shadow-md">
                 <div>
-                  <p className="text-emerald-900 font-bold">Unapplied Customer Credit</p>
-                  <p className="text-emerald-700 text-[11px]">Excess payment credited for future billing</p>
+                  <p className="text-slate-300 text-xs sm:text-sm uppercase tracking-wider font-extrabold">Unapplied Customer Credit:</p>
+                  <p className="text-xs text-slate-400 font-semibold">Excess payment credited for future billing</p>
                 </div>
-                <p className="text-lg font-black font-mono text-emerald-800">
+                <span className="font-mono text-xl sm:text-2xl font-black text-emerald-400">
                   ₱{unappliedCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </p>
+                </span>
               </div>
 
-              <div className="pt-2 flex justify-end gap-3 border-t border-slate-200">
+              <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
                 <button
                   type="button"
                   onClick={() => setIsCollectionModalOpen(false)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl transition"
+                  className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-xl transition flex items-center gap-1.5"
+                  className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  Confirm &amp; Apply Check
+                  <span>Confirm &amp; Apply Check</span>
                 </button>
               </div>
             </form>
