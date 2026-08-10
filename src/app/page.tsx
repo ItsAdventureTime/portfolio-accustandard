@@ -548,7 +548,7 @@ export default function Home() {
         />
 
         {/* Feature Module Workspace Container */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-24 md:pb-8 w-full">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 md:pb-8 w-full">
           {activeTab === 'overview' && (
             <ExecutiveOverview
               approvalsList={approvalsList}
@@ -644,65 +644,6 @@ export default function Home() {
             />
           )}
         </main>
-      </div>
-
-      {/* Role-Dynamic Mobile Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 text-slate-800 backdrop-blur-md border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex justify-around items-center text-[10px] font-bold no-print">
-        {allowedTabs.includes('overview') && (
-          <button
-            onClick={() => handleSelectTab('overview')}
-            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-              activeTab === 'overview'
-                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Layers className="w-5 h-5 mb-0.5" />
-            <span>Overview</span>
-          </button>
-        )}
-
-        {allowedTabs.includes('inventory') && (
-          <button
-            onClick={() => handleSelectTab('inventory')}
-            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-              activeTab === 'inventory'
-                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <Package className="w-5 h-5 mb-0.5" />
-            <span>Inventory</span>
-          </button>
-        )}
-
-        {allowedTabs.includes('quotations') && (
-          <button
-            onClick={() => handleSelectTab('quotations')}
-            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-              activeTab === 'quotations'
-                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <FileText className="w-5 h-5 mb-0.5" />
-            <span>Quotes</span>
-          </button>
-        )}
-
-        {allowedTabs.includes('soa') && (
-          <button
-            onClick={() => handleSelectTab('soa')}
-            className={`flex flex-col items-center py-1 px-3 rounded-xl transition ${
-              activeTab === 'soa'
-                ? 'text-blue-900 font-black bg-blue-50 border border-blue-200/80 shadow-2xs'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-          >
-            <FileCheck className="w-5 h-5 mb-0.5" />
-            <span>SOA</span>
-          </button>
-        )}
       </div>
 
       {/* Global Modals & Drawers */}
@@ -807,6 +748,7 @@ export default function Home() {
         onSelectTab={handleSelectTab}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+        allowedTabs={allowedTabs}
       />
 
       <PWAInstallModal

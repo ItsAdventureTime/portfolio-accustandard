@@ -28,21 +28,21 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200">
-      <div className="w-full px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
+    <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200 pt-[env(safe-area-inset-top,0px)]">
+      <div className="w-full px-2.5 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0">
           <button
             onClick={onOpenMobileDrawer}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer"
+            className="md:hidden p-1.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center"
             aria-label="Open mobile menu"
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          {/* Mobile Logo Branding */}
-          <div className="flex items-center md:hidden shrink-0">
-            <AccustandardLogo size="sm" />
+          {/* Mobile Logo Branding with max-w constraint to prevent notch collision */}
+          <div className="flex items-center md:hidden shrink min-w-0 max-w-[135px] xs:max-w-[160px] sm:max-w-none overflow-hidden">
+            <AccustandardLogo size="sm" className="max-h-6 xs:max-h-7 sm:max-h-9" />
           </div>
 
           {/* Desktop Search Trigger / Command Palette */}
