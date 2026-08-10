@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-80 bg-slate-50/90 backdrop-blur-md border-r border-slate-200/80 text-slate-800 flex flex-col justify-between hidden md:flex shrink-0 shadow-xs transition-all duration-200">
+    <aside aria-label="Sidebar Navigation" className="w-80 bg-slate-50/90 backdrop-blur-md border-r border-slate-200/80 text-slate-800 flex flex-col justify-between hidden md:flex shrink-0 shadow-xs transition-all duration-200">
       {/* Brand Header */}
       <div className="p-5 border-b border-slate-200 bg-white/90">
         <AccustandardLogo size="md" />

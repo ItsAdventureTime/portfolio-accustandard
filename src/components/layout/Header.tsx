@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileDrawer,
 }) => {
   return (
-    <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200 pt-[env(safe-area-inset-top,0px)]">
+    <header role="banner" className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200 pt-[env(safe-area-inset-top,0px)]">
       <div className="w-full px-2.5 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0">

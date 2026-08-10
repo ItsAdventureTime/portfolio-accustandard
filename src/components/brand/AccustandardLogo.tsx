@@ -26,6 +26,9 @@ export const AccustandardLogo: React.FC<AccustandardLogoProps> = ({
       <img
         src={logoSrc}
         alt="Accustandard Logo"
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
         className={`${heightClasses} w-auto object-contain block`}
       />
     </div>

@@ -548,7 +548,7 @@ export default function Home() {
         />
 
         {/* Feature Module Workspace Container */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 md:pb-8 w-full">
+        <main aria-label="Enterprise Operations Workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 md:pb-8 w-full">
           {activeTab === 'overview' && (
             <ExecutiveOverview
               approvalsList={approvalsList}

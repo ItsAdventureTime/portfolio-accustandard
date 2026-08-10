@@ -75,12 +75,17 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex flex-col justify-end transition-opacity duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Mobile Navigation Menu"
+      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex flex-col justify-end transition-opacity duration-200 animate-in fade-in"
+    >
       {/* Clickable Backdrop overlay to dismiss sheet */}
       <div className="flex-1 w-full" onClick={onClose} />
 
       {/* App-Native Bottom Sheet Drawer */}
-      <div className="bg-white w-full max-w-lg mx-auto rounded-t-2xl shadow-2xl flex flex-col max-h-[85vh] text-slate-900 border-t border-slate-300 animate-in slide-in-from-bottom duration-300 ease-out overflow-hidden">
+      <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl shadow-2xl flex flex-col max-h-[85vh] text-slate-900 border-t border-slate-300 animate-in slide-in-from-bottom duration-300 ease-out overflow-hidden">
         {/* Drag Handle Indicator */}
         <div className="pt-3 pb-1 flex justify-center bg-slate-50 border-b border-slate-100">
           <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
@@ -89,7 +94,11 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         {/* Sheet Title Bar */}
         <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
           <AccustandardLogo size="sm" />
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition">
+          <button
+            onClick={onClose}
+            aria-label="Close navigation drawer"
+            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>

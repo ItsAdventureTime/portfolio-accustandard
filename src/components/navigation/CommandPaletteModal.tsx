@@ -34,16 +34,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     { id: 'c7', title: 'System Audit Log Stream', category: 'Admin', tabKey: 'admin', icon: <UserCheck className="w-4 h-4 text-slate-700" /> },
   ];
 
-  // Listen for Cmd+K / Ctrl+K keyboard shortcut
+  // Listen for Cmd+K / Ctrl+K and Escape keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         if (isOpen) {
           onClose();
-        } else {
-          // Open handled by parent or trigger
         }
+      }
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -58,23 +59,33 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start justify-center pt-20 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full border border-slate-300 overflow-hidden text-slate-900">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command Palette Quick Search"
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-start justify-center pt-20 p-4 animate-in fade-in duration-200"
+    >
+      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-slate-300 overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
         {/* Search Header Bar */}
-        <div className="p-3 border-b border-slate-200 flex items-center gap-3 bg-slate-50">
-          <Search className="w-5 h-5 text-slate-400" />
+        <div className="p-3.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50">
+          <Search className="w-5 h-5 text-slate-400 shrink-0" />
           <input
             type="text"
             placeholder="Type a command or search module (e.g. Inventory, SOA, Quotation)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-sm text-slate-900 focus:outline-none placeholder-slate-400 font-medium"
+            className="w-full bg-transparent text-sm text-slate-900 focus:outline-none placeholder-slate-400 font-semibold"
             autoFocus
+            aria-label="Search modules and commands"
           />
-          <kbd className="hidden sm:inline-block bg-slate-200 text-slate-700 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-300">
+          <kbd className="hidden sm:inline-block bg-slate-200 text-slate-700 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-300 font-bold">
             ESC
           </kbd>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+          <button
+            onClick={onClose}
+            aria-label="Close command palette"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition cursor-pointer"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
