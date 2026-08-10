@@ -82,10 +82,10 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       </div>
 
       {/* Main Tab Navigation */}
-      <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
+      <div className="bg-slate-200/70 p-1.5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full sm:w-fit border border-slate-300/80 shadow-2xs">
         <button
           onClick={() => setActiveTab('LIVE')}
-          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'LIVE'
               ? 'bg-blue-900 text-white shadow-md scale-100'
               : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
@@ -97,7 +97,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
         <button
           onClick={() => setActiveTab('REPLENISHMENT')}
-          className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'REPLENISHMENT'
               ? 'bg-blue-900 text-white shadow-md scale-100'
               : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
@@ -133,12 +133,68 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             </button>
           </div>
 
-          {/* Inventory Table */}
+          {/* Inventory Table & Mobile Cards */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
-              &larr; Swipe table horizontally for details &rarr;
+            {/* Mobile Card View */}
+            <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
+              {filteredInventory.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setSelectedSkuModal(item)}
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                >
+                  <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSkuModal(item);
+                      }}
+                      className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
+                    >
+                      <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
+                      <span>{item.sku}</span>
+                      <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5" />
+                    </button>
+
+                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold flex items-center gap-1 shrink-0">
+                      <Building2 className="w-3.5 h-3.5 text-blue-700" />
+                      {item.location}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-snug">{item.description}</h4>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 pt-0.5">
+                      <span className="font-mono text-slate-600">Lot: {item.lotNumber}</span>
+                      <span>&bull;</span>
+                      <span className="text-amber-800 font-bold flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-amber-700" />
+                        Exp: {item.expiryDate}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
+                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase text-slate-500 block">On-Hand</span>
+                      <span className="font-mono font-extrabold text-slate-900 text-sm">{item.onHand}</span>
+                    </div>
+                    <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200">
+                      <span className="text-[10px] font-black uppercase text-amber-800 block">Reserved</span>
+                      <span className="font-mono font-extrabold text-amber-700 text-sm">{item.reserved}</span>
+                    </div>
+                    <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-200">
+                      <span className="text-[10px] font-black uppercase text-emerald-800 block">Available</span>
+                      <span className="font-mono font-black text-emerald-800 text-base">{item.available}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
@@ -159,7 +215,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedSkuModal(item)}
-                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                           title="Click to inspect SKU barcode details & batch FEFO"
                         >
                           <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
@@ -212,8 +268,88 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             </div>
           </div>
 
+          {/* Replenishment Planner Table & Mobile Cards */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            {/* Mobile Card View for Replenishment */}
+            <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
+              {replenishmentPlannerList.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
+                      id: item.id,
+                      sku: item.sku,
+                      description: item.description,
+                      location: 'Quezon City',
+                      lotNumber: 'LOT-2026-X1',
+                      expiryDate: '2027-12-31',
+                      onHand: item.availableStock,
+                      reserved: 0,
+                      available: item.availableStock,
+                      criticalLevel: item.criticalLevel,
+                      unit: 'Kits',
+                    };
+                    setSelectedSkuModal(matched);
+                  }}
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                >
+                  <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
+                          id: item.id,
+                          sku: item.sku,
+                          description: item.description,
+                          location: 'Quezon City',
+                          lotNumber: 'LOT-2026-X1',
+                          expiryDate: '2027-12-31',
+                          onHand: item.availableStock,
+                          reserved: 0,
+                          available: item.availableStock,
+                          criticalLevel: item.criticalLevel,
+                          unit: 'Kits',
+                        };
+                        setSelectedSkuModal(matched);
+                      }}
+                      className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
+                    >
+                      <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
+                      <span>{item.sku}</span>
+                      <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5" />
+                    </button>
+
+                    <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-extrabold rounded-lg border border-slate-200">
+                      {item.itemClass}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-slate-900 leading-snug">{item.description}</h4>
+                    <p className="text-xs text-slate-500 font-semibold">{item.supplier} &bull; Lead: {item.leadTimeDays} days</p>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
+                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase text-slate-500 block">Available</span>
+                      <span className="font-mono font-extrabold text-slate-900 text-sm">{item.availableStock}</span>
+                    </div>
+                    <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                      <span className="text-[10px] font-black uppercase text-slate-500 block">Demand</span>
+                      <span className="font-mono font-extrabold text-blue-700 text-sm">{item.openDemand}</span>
+                    </div>
+                    <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200">
+                      <span className="text-[10px] font-black uppercase text-amber-800 block">Proposed Order</span>
+                      <span className="font-mono font-black text-amber-900 text-sm">{item.proposedOrderQty}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
@@ -248,7 +384,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                             };
                             setSelectedSkuModal(matched);
                           }}
-                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                           title="Click to inspect SKU barcode details & batch FEFO"
                         >
                           <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
