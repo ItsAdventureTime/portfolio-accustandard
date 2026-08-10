@@ -12,6 +12,7 @@ import { RequestForPayment } from '@/components/features/rfp/RequestForPayment';
 import { SystemAuditTrail } from '@/components/features/admin/SystemAuditTrail';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 import { MobileNavDrawer } from '@/components/navigation/MobileNavDrawer';
+import { BottomNav } from '@/components/navigation/BottomNav';
 import { PWAInstallModal } from '@/components/modals/PWAInstallModal';
 import { ExportModal } from '@/components/modals/ExportModal';
 import { AddStockModal } from '@/components/modals/AddStockModal';
@@ -799,6 +800,13 @@ export default function Home() {
         inventoryCount={inventoryList.length}
         soaCount={soaData.rows.length}
         auditCount={auditLogs.length}
+      />
+
+      <BottomNav
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        onOpenScanner={() => setIsScannerOpen(true)}
+        onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
       />
 
       <PWAInstallModal

@@ -301,6 +301,9 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
+              &larr; Swipe table horizontally for details &rarr;
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">

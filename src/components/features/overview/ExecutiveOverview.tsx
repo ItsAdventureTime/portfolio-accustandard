@@ -209,6 +209,10 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
           </button>
         </div>
 
+        <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
+          &larr; Swipe table horizontally for details &rarr;
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead className="bg-slate-100 text-slate-700 font-extrabold border-b border-slate-200 uppercase text-xs tracking-wider">
