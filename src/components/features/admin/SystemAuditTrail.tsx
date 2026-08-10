@@ -227,24 +227,71 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
 
           {/* User Access Matrix Table */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
                   User Access &amp; Allowed Module View Permissions
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  {canEditUsers ? 'Click any user row to modify assigned role and module permissions' : 'Read-only view (Only Admin and DCS Chairman can edit user access)'}
+                  {canEditUsers ? 'Click any user row or card to modify assigned role and module permissions' : 'Read-only view (Only Admin and DCS Chairman can edit user access)'}
                 </p>
               </div>
-              <span className={`text-xs font-extrabold px-3 py-1 rounded-full ${canEditUsers ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
+              <span className={`text-xs font-extrabold px-3 py-1 rounded-full w-fit ${canEditUsers ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
                 {canEditUsers ? '✓ Access Admin Controls Unlocked' : '🔒 Read-Only Mode'}
               </span>
             </div>
 
-            <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
-              &larr; Swipe table horizontally for details &rarr;
+            {/* Mobile Card List Layout for User Access Matrix */}
+            <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
+              {userList.map((usr) => (
+                <div
+                  key={usr.id}
+                  onClick={() => handleOpenEditUser(usr)}
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                >
+                  <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-blue-100 text-blue-900 rounded-xl">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <span className="font-extrabold text-sm text-slate-900">{usr.name}</span>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-950 border border-blue-200 font-extrabold text-xs">
+                      {usr.role}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider block">
+                      Allowed Module Views ({usr.allowedViews.length}):
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {usr.allowedViews.map((v) => (
+                        <span
+                          key={v}
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-extrabold"
+                        >
+                          {v}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500">
+                    <span className="text-emerald-700 flex items-center gap-1 font-extrabold text-[11px]">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Active &bull; COSO Verified
+                    </span>
+                    <span className="text-blue-700 font-extrabold flex items-center gap-1 text-[11px]">
+                      Edit Access <Eye className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="overflow-x-auto">
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
