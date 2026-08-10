@@ -248,7 +248,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                     <th className="p-4">User Name</th>
                     <th className="p-4">Role</th>
                     <th className="p-4">Allowed Module Views</th>
-                    <th className="p-4 text-center">Status / Actions</th>
+                    <th className="p-4 text-center">Account Security</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -256,7 +256,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                     <tr
                       key={usr.id}
                       onClick={() => handleOpenEditUser(usr)}
-                      className="hover:bg-blue-50/60 transition cursor-pointer group"
+                      className="hover:bg-blue-50/50 transition cursor-pointer group"
                     >
                       <td className="p-4">
                         <button
@@ -273,28 +273,21 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                           <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                         </button>
                       </td>
-                      <td className="p-4 font-extrabold text-blue-900">{usr.role}</td>
+                      <td className="p-4 font-black text-blue-950 text-sm">{usr.role}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1.5">
                           {usr.allowedViews.map((v) => (
-                            <span key={v} className="px-2.5 py-1 rounded bg-slate-100 border border-slate-300 text-slate-800 text-xs font-bold">
+                            <span key={v} className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 text-xs font-extrabold shadow-2xs">
                               {v}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="p-4 text-center">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditUser(usr);
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-slate-100 group-hover:bg-blue-900 group-hover:text-white text-slate-700 font-bold text-xs transition inline-flex items-center gap-1 shadow-2xs"
-                        >
-                          {canEditUsers ? <Edit className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                          <span>{canEditUsers ? 'Edit User' : 'Inspect'}</span>
-                        </button>
+                      <td className="p-4 text-center whitespace-nowrap">
+                        <span className="px-3 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold inline-flex items-center gap-1.5 shadow-2xs">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                          Active &bull; COSO Verified
+                        </span>
                       </td>
                     </tr>
                   ))}
