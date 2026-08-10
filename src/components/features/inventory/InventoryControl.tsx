@@ -195,24 +195,21 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       )}
 
       {activeTab === 'REPLENISHMENT' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 space-y-1">
-            <p className="font-bold flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-amber-700" />
+        <div className="space-y-5">
+          <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200/90 rounded-2xl text-xs sm:text-sm text-amber-950 font-semibold space-y-2 shadow-2xs">
+            <p className="font-black flex items-center gap-2 text-sm sm:text-base text-amber-950 uppercase tracking-wider">
+              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
               Demand-Driven Replenishment Rules (Blueprint Section 3)
             </p>
-            <p className="text-amber-800">
-              Replenishment is triggered by actual available stock, reservations, open customer demand, lead time, and critical levels.
-              <br />
-              &bull; <strong>Class 1 (Core Stock)</strong>: Reorder at critical level + 10% safety buffer.
-              <br />
-              &bull; <strong>Class 2 (Controlled)</strong>: Requires demand forecast review.
-              <br />
-              &bull; <strong>Class 3 (Short-Expiry / Special)</strong>: Hard-blocked without linked Customer PO to prevent over-stocking.
-            </p>
+            <div className="text-amber-900 space-y-1 font-semibold leading-relaxed">
+              <p>Replenishment is triggered by actual available stock, reservations, open customer demand, lead time, and critical levels:</p>
+              <p>&bull; <strong>Class 1 (Core Stock)</strong>: Reorder automatically at critical level + 10% safety buffer.</p>
+              <p>&bull; <strong>Class 2 (Controlled)</strong>: Requires demand forecast review prior to purchase order creation.</p>
+              <p>&bull; <strong>Class 3 (Short-Expiry / Special)</strong>: Hard-blocked without linked Customer PO to prevent over-stocking.</p>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
@@ -228,42 +225,66 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                   {replenishmentPlannerList.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50 transition">
+                    <tr key={item.id} className="hover:bg-blue-50/50 transition group">
                       <td className="p-4">
-                        <div className="font-mono font-extrabold text-blue-900">{item.sku}</div>
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded border border-slate-200">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
+                              id: item.id,
+                              sku: item.sku,
+                              description: item.description,
+                              location: 'Quezon City',
+                              lotNumber: 'LOT-2026-X1',
+                              expiryDate: '2027-12-31',
+                              onHand: item.availableStock,
+                              reserved: 0,
+                              available: item.availableStock,
+                              criticalLevel: item.criticalLevel,
+                              unit: 'Kits',
+                            };
+                            setSelectedSkuModal(matched);
+                          }}
+                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                          title="Click to inspect SKU barcode details & batch FEFO"
+                        >
+                          <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
+                          <span>{item.sku}</span>
+                          <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
+                        </button>
+                        <span className="inline-block mt-2 px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
                           {item.itemClass}
                         </span>
                       </td>
                       <td className="p-4">
-                        <div className="font-bold text-slate-900">{item.description}</div>
-                        <div className="text-xs text-slate-500">{item.supplier} &bull; Lead Time: {item.leadTimeDays} days</div>
+                        <div className="font-extrabold text-slate-900 text-sm sm:text-base">{item.description}</div>
+                        <div className="text-xs text-slate-600 font-semibold mt-0.5">{item.supplier} &bull; Lead Time: <span className="font-bold text-slate-800">{item.leadTimeDays} days</span></div>
                       </td>
-                      <td className="p-4 text-right font-mono font-bold text-slate-800">{item.availableStock}</td>
-                      <td className="p-4 text-right font-mono text-amber-700 font-bold">{item.openCustomerDemand}</td>
-                      <td className="p-4 text-right font-mono text-slate-700 font-bold">{item.criticalLevel}</td>
-                      <td className="p-4 text-right font-mono font-black text-blue-900 text-base">
+                      <td className="p-4 text-right font-mono font-black text-slate-900 text-sm sm:text-base">{item.availableStock}</td>
+                      <td className="p-4 text-right font-mono font-black text-amber-700 text-sm sm:text-base">{item.openCustomerDemand}</td>
+                      <td className="p-4 text-right font-mono font-black text-slate-700 text-sm sm:text-base">{item.criticalLevel}</td>
+                      <td className="p-4 text-right font-mono font-black text-blue-900 text-base sm:text-lg">
                         {item.proposedOrderQty}
                       </td>
                       <td className="p-4">
                         {item.itemClass.includes('Class 3') && (
                           <div className="space-y-1">
-                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full inline-flex items-center gap-1">
-                              <FileCheck className="w-3.5 h-3.5" />
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                              <FileCheck className="w-4 h-4 text-emerald-700" />
                               Customer PO Linked
                             </span>
-                            <p className="text-[10px] text-slate-500">{item.linkedCustomerPO}</p>
+                            <p className="text-xs font-mono text-slate-600 font-bold">{item.linkedCustomerPO}</p>
                           </div>
                         )}
                         {item.itemClass.includes('Class 1') && (
-                          <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full inline-flex items-center gap-1">
-                            <AlertTriangle className="w-3.5 h-3.5" />
+                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                            <AlertTriangle className="w-4 h-4 text-amber-700" />
                             Buffer +10% Applied
                           </span>
                         )}
                         {item.itemClass.includes('Class 2') && (
-                          <span className="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full inline-flex items-center gap-1">
-                            <Layers className="w-3.5 h-3.5" />
+                          <span className="px-3 py-1 bg-blue-100 text-blue-900 border border-blue-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                            <Layers className="w-4 h-4 text-blue-700" />
                             Forecast Verified
                           </span>
                         )}
