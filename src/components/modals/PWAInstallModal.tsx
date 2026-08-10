@@ -55,29 +55,29 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-5 border border-slate-300 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in duration-200 text-sm font-semibold">
         {/* Modal Header */}
-        <div className="flex justify-between items-start border-b border-slate-200 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-100 text-blue-900 rounded-xl">
+        <div className="flex justify-between items-center border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
               <Smartphone className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">
-                Install Accustandard Mobile App
+              <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
+                Install Accustandard Mobile App (PWA)
               </h3>
-              <p className="text-xs text-slate-500 font-medium">Use full-screen app mode &amp; barcode scanner</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">Use full-screen app mode &amp; instant camera barcode scanning</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+            <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Standalone Active Banner */}
         {isStandalone ? (
-          <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 text-xs flex items-center gap-2.5 font-bold">
+          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-950 text-xs sm:text-sm flex items-center gap-3 font-extrabold shadow-2xs">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>App Mode Active: You are currently running Accustandard ERP in full PWA standalone mode.</span>
           </div>
@@ -87,77 +87,85 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
         {deferredPrompt && (
           <button
             onClick={handleNativeInstall}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 text-xs"
+            className="w-full py-3.5 px-6 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 text-xs sm:text-sm cursor-pointer"
           >
-            <Download className="w-4 h-4" />
-            <span>Install App on Device (1-Click)</span>
+            <Download className="w-5 h-5 text-amber-400" />
+            <span>Install App on Device (1-Click PWA Trigger)</span>
           </button>
         )}
 
-        {/* Platform Instructions */}
-        <div className="space-y-4 text-xs">
-          {isIOS ? (
-            /* iPhone / iPad Safari Instructions */
-            <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="font-extrabold text-slate-900 block text-xs uppercase tracking-wider text-blue-900">
-                iPhone / iPad (Safari Guide):
-              </span>
-              <div className="space-y-2.5 text-slate-700 font-medium">
-                <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">1</span>
-                  <p>Tap the <strong>Share button</strong> <Share className="w-3.5 h-3.5 inline text-blue-600 mx-0.5" /> in your Safari bottom navigation bar.</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
-                  <p>Scroll down the menu options and tap <strong>&quot;Add to Home Screen&quot;</strong> <PlusSquare className="w-3.5 h-3.5 inline text-emerald-600 mx-0.5" />.</p>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">3</span>
-                  <p>Tap <strong>Add</strong> in the top right. The Accustandard app icon will appear on your home screen!</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            /* Android & Desktop Guide */
-            <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="font-extrabold text-slate-900 block text-xs uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
-                <Monitor className="w-4 h-4 text-blue-600" />
+        {/* 2-Column Side-by-Side Platform Instructions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+          {/* Android & Desktop Guide */}
+          <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-slate-200/90 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="font-black text-slate-900 block text-xs uppercase tracking-wider text-blue-950 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <Monitor className="w-4 h-4 text-blue-700" />
                 Android &amp; Desktop Guide:
               </span>
-              <div className="space-y-2.5 text-slate-700 font-medium">
-                <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">1</span>
-                  <p>In Chrome or Edge, click the <strong>Install Icon</strong> <Download className="w-3.5 h-3.5 inline text-blue-600 mx-0.5" /> in the browser address bar (top right).</p>
+              <div className="space-y-3 text-slate-800 font-semibold">
+                <div className="flex items-start gap-3">
+                  <span className="w-7 h-7 bg-blue-900 text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">1</span>
+                  <p className="text-xs sm:text-sm pt-0.5">In Chrome or Edge, click the <strong>Install Icon</strong> <Download className="w-4 h-4 inline text-blue-700 mx-0.5" /> in the browser address bar (top right).</p>
                 </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="w-5 h-5 bg-blue-100 text-blue-900 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
-                  <p>On Android Chrome, open browser menu <strong>(&#8942;)</strong> &#10132; select <strong>&quot;Install app&quot;</strong> or <strong>&quot;Add to Home screen&quot;</strong>.</p>
+                <div className="flex items-start gap-3">
+                  <span className="w-7 h-7 bg-blue-900 text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">2</span>
+                  <p className="text-xs sm:text-sm pt-0.5">On Android Chrome, open browser menu <strong>(&#8942;)</strong> &#10132; select <strong>&quot;Install app&quot;</strong> or <strong>&quot;Add to Home screen&quot;</strong>.</p>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Barcode Scanner & PWA Benefits */}
-          <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5 text-blue-950">
-            <span className="font-bold block text-xs flex items-center gap-1.5 text-blue-900">
-              <ShieldCheck className="w-4 h-4 text-blue-700" />
-              Why Install as a PWA?
-            </span>
-            <ul className="list-disc list-inside space-y-1 text-[11px] text-blue-900 font-medium">
-              <li>Instant full-screen app view (no address bar clutter)</li>
-              <li>Camera permission remembered for instant barcode scanning</li>
-              <li>Works smoothly on low-connectivity mobile networks</li>
-            </ul>
+          {/* iPhone / iPad Safari Guide */}
+          <div className="space-y-3 bg-slate-50 p-5 rounded-2xl border border-slate-200/90 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="font-black text-slate-900 block text-xs uppercase tracking-wider text-blue-950 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <Smartphone className="w-4 h-4 text-blue-700" />
+                iPhone / iPad (Safari Guide):
+              </span>
+              <div className="space-y-3 text-slate-800 font-semibold">
+                <div className="flex items-start gap-3">
+                  <span className="w-7 h-7 bg-blue-900 text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">1</span>
+                  <p className="text-xs sm:text-sm pt-0.5">Tap the <strong>Share button</strong> <Share className="w-4 h-4 inline text-blue-700 mx-0.5" /> in your Safari bottom navigation bar.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="w-7 h-7 bg-blue-900 text-white rounded-xl flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">2</span>
+                  <p className="text-xs sm:text-sm pt-0.5">Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong> <PlusSquare className="w-4 h-4 inline text-emerald-700 mx-0.5" />.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Barcode Scanner & PWA Benefits Card */}
+        <div className="p-5 bg-blue-50/90 border border-blue-200/90 rounded-2xl space-y-2 text-blue-950 shadow-2xs">
+          <span className="font-black block text-xs sm:text-sm flex items-center gap-2 text-blue-950 uppercase tracking-wider">
+            <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0" />
+            Why Install Accustandard as a PWA?
+          </span>
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-xs text-blue-900 font-bold">
+            <li className="flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-blue-200/80">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Full-Screen Workspace (No Clutter)</span>
+            </li>
+            <li className="flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-blue-200/80">
+              <Camera className="w-4 h-4 text-blue-700 shrink-0" />
+              <span>Remembered Camera Barcode Scanner</span>
+            </li>
+            <li className="flex items-center gap-1.5 bg-white p-2.5 rounded-xl border border-blue-200/80">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Fast Offline Cache &amp; Low-Latency</span>
+            </li>
+          </ul>
+        </div>
+
         {/* Footer */}
-        <div className="pt-2 flex justify-end border-t border-slate-100">
+        <div className="pt-4 flex justify-end border-t border-slate-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs transition"
+            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
           >
-            Got It
+            Got It &bull; Close Guide
           </button>
         </div>
       </div>
