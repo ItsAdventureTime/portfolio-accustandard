@@ -102,6 +102,18 @@ The interface follows modern web ergonomics with physics-based motion, spatial a
 - **Pill Tab Switchers**: Tab bars use encapsulated background rails (`bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5`) with active state scaling (`bg-blue-900 text-white shadow-md`).
 - **Glassmorphism 2.0**: Navigation bar headers enforce `bg-white/90 backdrop-blur-xl border-b border-slate-200/80`.
 
+### 3. Standardized Button Pill Badge System
+Across all 6 core data tables, interactive primary keys are rendered inside high-contrast button pill badges (`bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-2xs group cursor-pointer`):
+- **DOCUMENT QRN / ID**: `FileText` (left) + `QRN Code` + `Eye` (right badge) &rarr; opens Document Inspector Modal.
+- **SKU / BARCODE**: `Barcode` (left) + `SKU Code` + `Eye` (right badge) &rarr; opens Stock Barcode Detail Modal.
+- **PO NUMBER**: `FileText` (left) + `PO Code` + `Eye` (right badge) &rarr; opens 3-Way Match PO Modal.
+- **RFP VOUCHER ID**: `FileText` (left) + `RFP Code` + `Eye` (right badge) &rarr; opens Expense Voucher Inspector Modal.
+- **USER NAME**: `User` (left) + `User Name` + `Eye` (right badge) &rarr; opens User Access Matrix Editor Modal.
+- **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
+
+### 4. Smooth Physics Entrance Animations
+All modal popups and drawers enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in duration-200`).
+
 ---
 
 ## 📊 Inventory Classification System
