@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, FileText, Send, Lock, Plus } from 'lucide-react';
+import { X, FileText, Send, Lock } from 'lucide-react';
 
 interface CreateQuotationModalProps {
   isOpen: boolean;
@@ -41,16 +41,32 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
       gmStatus: 'PENDING',
       dcsStatus: 'PENDING',
       totalAmount: quantity * unitPrice,
+      totalPrice: quantity * unitPrice,
       clientName,
+      clientFacility: facilityName,
       facilityName,
-      address,
-      itemDescription: selectedItem?.description || 'Medical Reagent Kit',
+      clientAddress: address || 'Baliuag, Bulacan',
+      address: address || 'Baliuag, Bulacan',
+      itemDescription: selectedItem?.description || 'Calibration Sticks Bact Alert',
       sku: selectedSku,
-      packaging: `${quantity} ${selectedItem?.unit || 'Kits'}`,
+      packaging: `${quantity} Box of ${selectedItem?.onHand || 40}`,
       unitPrice,
+      quantity,
+      quotationDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      items: [
+        {
+          id: `item-${Date.now()}`,
+          description: selectedItem?.description || 'Calibration Sticks Bact Alert',
+          packaging: `${quantity} Box of ${selectedItem?.onHand || 40}`,
+          unitPrice,
+        },
+      ],
     };
 
     onSubmitQuotation(newQuote);
+    setClientName('');
+    setFacilityName('');
+    setAddress('');
     onClose();
   };
 
@@ -143,7 +159,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
                 type="number"
                 min="1"
                 value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
+                onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
                 className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
               />
             </div>
@@ -153,7 +169,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
               <input
                 type="number"
                 value={unitPrice}
-                onChange={(e) => setUnitPrice(Number(e.target.value))}
+                onChange={(e) => setUnitPrice(Math.max(0, Number(e.target.value)))}
                 className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-mono font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
               />
             </div>

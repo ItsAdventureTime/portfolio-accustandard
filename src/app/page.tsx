@@ -206,11 +206,33 @@ export default function Home() {
   const handleSubmitQuotation = (newQuote: any) => {
     setQuotationsList((prev: any[]) => [newQuote, ...prev]);
 
+    // Create matching dynamic RFQ item for RFQ Form preview
+    const newRfq = {
+      id: `rfq-${Date.now()}`,
+      rfqNo: `RFQ-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      customerName: newQuote.facilityName || newQuote.clientFacility || 'Allied Care Experts Medical Center',
+      address: newQuote.address || newQuote.clientAddress || 'Baliuag, Bulacan',
+      addressee: newQuote.clientName || 'Dr. Amalia Santos',
+      addresseePosition: 'Medical Director',
+      contactPerson: `${newQuote.clientName || 'Procurement Officer'} (${newQuote.qrn})`,
+      requestedBy: 'Sales Officer (Logged In)',
+      censusPerDay: 180,
+      dailyCensus: 180,
+      lisConnectivity: true,
+      expectedContractMonths: 36,
+      marketingRoiStatus: 'ROI_COMPLETED',
+      expectedMarginPct: newQuote.marginPct ? newQuote.marginPct.toFixed(1) : '30.8',
+    };
+
+    setRfqList((prev: any[]) => [newRfq, ...prev]);
+    setSelectedRfqData(newRfq);
+
     // Soft-reserve stock for the selected item
     setInventoryList((prev) =>
       prev.map((item) => {
         if (item.sku === newQuote.sku) {
-          const newReserved = item.reserved + 1;
+          const newReserved = item.reserved + (newQuote.quantity || 1);
           const newAvail = Math.max(0, item.onHand - newReserved);
           return { ...item, reserved: newReserved, available: newAvail };
         }
@@ -601,6 +623,7 @@ export default function Home() {
             <QuotationGenerator
               rfqList={rfqList}
               quotationsList={quotationsList}
+              onUpdateQuotationsList={setQuotationsList}
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
               onOpenCreateModal={() => setIsCreateQuotationOpen(true)}
@@ -624,11 +647,11 @@ export default function Home() {
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
               onOpenClientRoiModal={(rfq) => {
-                setSelectedRfqData(rfq);
+                setSelectedRfqData(rfq || rfqList[0]);
                 setIsClientRoiOpen(true);
               }}
               onOpenRfqPreviewModal={(rfq) => {
-                setSelectedRfqData(rfq);
+                setSelectedRfqData(rfq || rfqList[0]);
                 setIsRfqPreviewOpen(true);
               }}
               onOpenClientAcceptanceModal={() => {

@@ -4,13 +4,9 @@ import React, { useState } from 'react';
 import {
   FileText,
   Printer,
-  Download,
-  Send,
-  CheckCircle2,
   Calculator,
   UserCheck,
   Building2,
-  DollarSign,
   PieChart,
   Eye,
   X,
@@ -19,6 +15,7 @@ import {
   Zap,
   AlertTriangle,
   ShieldAlert,
+  Trash2,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -26,6 +23,7 @@ import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 interface QuotationGeneratorProps {
   rfqList: any[];
   quotationsList?: any[];
+  onUpdateQuotationsList?: (newList: any[]) => void;
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onOpenCreateModal: () => void;
@@ -40,6 +38,7 @@ interface QuotationGeneratorProps {
 export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   rfqList,
   quotationsList = [],
+  onUpdateQuotationsList,
   onOpenPrintModal,
   onOpenExportModal,
   onOpenCreateModal,
@@ -55,7 +54,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const [selectedRfqModal, setSelectedRfqModal] = useState<any | null>(null);
   const [isRoiModalOpen, setIsRoiModalOpen] = useState(false);
 
-  const activeQuote = quotationsList.length > 0 ? quotationsList[selectedIndex] || quotationsList[0] : null;
+  const safeIndex = Math.min(selectedIndex, Math.max(0, quotationsList.length - 1));
+  const activeQuote = quotationsList.length > 0 ? quotationsList[safeIndex] || quotationsList[0] : null;
 
   // Active Quotation State (Dynamic with fallback)
   const qrn = activeQuote?.qrn || 'QRN20240415037';
@@ -64,24 +64,94 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const clientFacility = activeQuote?.clientFacility || activeQuote?.facilityName || 'Allied Care Experts Medical Center';
   const clientAddress = activeQuote?.clientAddress || activeQuote?.address || 'Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan';
 
-  const itemDescription = activeQuote?.itemDescription || 'Calibration Sticks Bact Alert';
-  const packaging = activeQuote?.packaging || '1 Box of 40';
-  const unitPrice = activeQuote?.unitPrice || 31500;
+  // Dynamic Quote Items List
+  const quoteItems: any[] = activeQuote?.items && activeQuote.items.length > 0
+    ? activeQuote.items
+    : [
+        {
+          id: 'default-item-1',
+          description: activeQuote?.itemDescription || 'Calibration Sticks Bact Alert',
+          packaging: activeQuote?.packaging || '1 Box of 40',
+          unitPrice: activeQuote?.unitPrice || 31500,
+        },
+      ];
+
+  // Total Quotation Calculation
+  const totalQuotationAmount = quoteItems.reduce((sum, item) => sum + (Number(item.unitPrice) || 0), 0);
 
   // ROI Calculator State
   const [roiCensus, setRoiCensus] = useState(180);
   const [roiLandedCost, setRoiLandedCost] = useState(18000);
   const [roiLisedFee, setRoiLisedFee] = useState(3800);
-  const [roiProposedPrice, setRoiProposedPrice] = useState(31500);
+  const [roiProposedPrice, setRoiProposedPrice] = useState(activeQuote?.unitPrice || 31500);
 
   const totalCost = roiLandedCost + roiLisedFee;
   const profit = roiProposedPrice - totalCost;
   const marginPct = roiProposedPrice > 0 ? (profit / roiProposedPrice) * 100 : 0;
 
+  // Handle Remove Item from active quote table
+  const handleRemoveItem = (itemId: string) => {
+    if (!activeQuote || !onUpdateQuotationsList) return;
+    const updatedItems = quoteItems.filter((it) => it.id !== itemId);
+    const updatedTotal = updatedItems.reduce((sum, it) => sum + (Number(it.unitPrice) || 0), 0);
+
+    const updatedList = quotationsList.map((q, idx) => {
+      if ((q.id && q.id === activeQuote.id) || idx === safeIndex) {
+        return {
+          ...q,
+          items: updatedItems,
+          totalAmount: updatedTotal,
+          totalPrice: updatedTotal,
+        };
+      }
+      return q;
+    });
+
+    onUpdateQuotationsList(updatedList);
+    onShowNotification(`Removed item from Quotation ${qrn}! Updated total value to ₱${updatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`);
+    onAddAuditLog(`Removed item from Sales Quote ${qrn}`);
+  };
+
+  // Handle Applying ROI calculation directly to active quotation
+  const handleApplyRoiToActiveQuote = () => {
+    if (!activeQuote || !onUpdateQuotationsList) {
+      onShowNotification(`Applied ROI Proposed Unit Price ₱${roiProposedPrice.toLocaleString()} to Quotation!`);
+      setIsRoiModalOpen(false);
+      return;
+    }
+
+    const updatedList = quotationsList.map((q, idx) => {
+      if ((q.id && q.id === activeQuote.id) || idx === safeIndex) {
+        const updatedUnitPrice = roiProposedPrice;
+        const qty = q.quantity || 1;
+        const updatedTotal = qty * updatedUnitPrice;
+        const updatedItems = (q.items && q.items.length > 0)
+          ? q.items.map((it: any) => ({ ...it, unitPrice: updatedUnitPrice }))
+          : [{ id: `item-roi-${Date.now()}`, description: q.itemDescription || 'Medical Reagent Kit', packaging: q.packaging || '1 Box of 40', unitPrice: updatedUnitPrice }];
+
+        return {
+          ...q,
+          unitPrice: updatedUnitPrice,
+          totalAmount: updatedTotal,
+          totalPrice: updatedTotal,
+          marginPct: marginPct,
+          items: updatedItems,
+        };
+      }
+      return q;
+    });
+
+    onUpdateQuotationsList(updatedList);
+    onShowNotification(`Applied ₱${roiProposedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })} unit price & ${marginPct.toFixed(1)}% margin to Quote ${qrn}! Preview updated live.`);
+    onAddAuditLog(`Applied ROI calculation (${marginPct.toFixed(1)}% margin) to Sales Quote ${qrn}`);
+    setIsRoiModalOpen(false);
+  };
+
   const quotationDocumentContent = (
     <div
       id="printableQuotationDoc"
       className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-300 shadow-md max-w-4xl mx-auto space-y-6 text-slate-900"
+      style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
     >
       {/* Header Block with Corporate Dual Accents */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
@@ -98,8 +168,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Double Horizontal Accent Line */}
       <div className="space-y-0.5">
-        <div className="h-1 bg-blue-900 w-full" />
-        <div className="h-0.5 bg-red-600 w-full" />
+        <div className="h-1 bg-blue-900 w-full" style={{ backgroundColor: '#1e3a8a' }} />
+        <div className="h-0.5 bg-red-600 w-full" style={{ backgroundColor: '#dc2626' }} />
       </div>
 
       {/* Quotation Ref & Date */}
@@ -123,23 +193,45 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Product Description Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse border border-slate-300">
-          <thead className="bg-[#002060] text-white font-extrabold uppercase tracking-wider">
-            <tr>
-              <th className="p-3 border border-slate-300">PRODUCT DESCRIPTION</th>
-              <th className="p-3 border border-slate-300 text-center">PACKAGING</th>
-              <th className="p-3 border border-slate-300 text-right">UNIT PRICE</th>
+        <table className="w-full text-left text-xs border-collapse border border-slate-300" style={{ border: '1px solid #cbd5e1' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#002060', color: '#ffffff', fontWeight: 'bold' }} className="uppercase tracking-wider">
+              <th className="p-3 border border-slate-300" style={{ border: '1px solid #cbd5e1', backgroundColor: '#002060', color: '#ffffff' }}>PRODUCT DESCRIPTION</th>
+              <th className="p-3 border border-slate-300 text-center" style={{ border: '1px solid #cbd5e1', backgroundColor: '#002060', color: '#ffffff' }}>PACKAGING</th>
+              <th className="p-3 border border-slate-300 text-right" style={{ border: '1px solid #cbd5e1', backgroundColor: '#002060', color: '#ffffff' }}>UNIT PRICE (PHP)</th>
+              <th className="p-3 border border-slate-300 text-center no-print" style={{ border: '1px solid #cbd5e1', backgroundColor: '#002060', color: '#ffffff', width: '48px' }}>ACTION</th>
             </tr>
           </thead>
           <tbody className="font-bold text-slate-900">
-            <tr>
-              <td className="p-3 border border-slate-300">{itemDescription}</td>
-              <td className="p-3 border border-slate-300 text-center">{packaging}</td>
-              <td className="p-3 border border-slate-300 text-right font-mono">
-                {unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </td>
-            </tr>
+            {quoteItems.map((item, idx) => (
+              <tr key={item.id || idx} className="hover:bg-slate-50 transition">
+                <td className="p-3 border border-slate-300" style={{ border: '1px solid #cbd5e1' }}>{item.description}</td>
+                <td className="p-3 border border-slate-300 text-center" style={{ border: '1px solid #cbd5e1' }}>{item.packaging}</td>
+                <td className="p-3 border border-slate-300 text-right font-mono" style={{ border: '1px solid #cbd5e1' }}>
+                  ₱{Number(item.unitPrice || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </td>
+                <td className="p-3 border border-slate-300 text-center no-print" style={{ border: '1px solid #cbd5e1' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="p-1 rounded text-red-600 hover:bg-red-100 transition cursor-pointer"
+                    title="Remove item from quotation document"
+                  >
+                    <Trash2 className="w-4 h-4 mx-auto" />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
+          <tfoot>
+            <tr className="bg-slate-100 font-extrabold text-xs">
+              <td colSpan={2} className="p-3 border border-slate-300 text-right uppercase" style={{ border: '1px solid #cbd5e1' }}>Total Proposal Value:</td>
+              <td className="p-3 border border-slate-300 text-right font-mono text-blue-950 font-black text-sm" style={{ border: '1px solid #cbd5e1' }}>
+                ₱{totalQuotationAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </td>
+              <td className="p-3 border border-slate-300 no-print" style={{ border: '1px solid #cbd5e1' }} />
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -167,8 +259,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       {/* Bottom Footer Accent Bar */}
       <div className="pt-8 space-y-3">
         <div className="space-y-0.5">
-          <div className="h-1 bg-blue-900 w-full" />
-          <div className="h-0.5 bg-red-600 w-full" />
+          <div className="h-1 bg-blue-900 w-full" style={{ backgroundColor: '#1e3a8a' }} />
+          <div className="h-0.5 bg-red-600 w-full" style={{ backgroundColor: '#dc2626' }} />
         </div>
         <p className="text-[10px] text-center text-slate-500 font-mono">
           Accustandard Medical &amp; Diagnostic Supplies Corp. &bull; Official Quotation Document &bull; Generated via ERP Bridge
@@ -227,7 +319,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             onClick={onOpenCreateModal}
             className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
           >
-            <Send className="w-4 h-4 text-amber-400" />
+            <FileText className="w-4 h-4 text-amber-400" />
             <span>+ Create Sales Quote</span>
           </button>
 
@@ -235,7 +327,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             onClick={() => onSubmitForApproval(qrn)}
             className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <ShieldCheck className="w-4 h-4" />
             <span>Submit for Approval</span>
           </button>
 
@@ -279,7 +371,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
         <button
           type="button"
-          onClick={() => setIsRoiModalOpen(true)}
+          onClick={() => {
+            setRoiProposedPrice(activeQuote?.unitPrice || 31500);
+            setIsRoiModalOpen(true);
+          }}
           className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-md cursor-pointer transition active:scale-95 border border-emerald-600"
           title="Click to launch interactive Marketing Manager ROI & Contract Margin Calculator Popup"
         >
@@ -296,13 +391,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-black text-xs text-slate-800 uppercase tracking-wider">Select Quotation Document:</span>
                 <select
-                  value={selectedIndex}
+                  value={safeIndex}
                   onChange={(e) => setSelectedIndex(Number(e.target.value))}
                   className="bg-white border border-slate-300 font-extrabold text-xs sm:text-sm rounded-xl px-4 py-2 text-blue-950 focus:outline-none focus:border-blue-700 shadow-2xs cursor-pointer"
                 >
                   {quotationsList.map((q, idx) => (
                     <option key={q.id || idx} value={idx}>
-                      {q.qrn} — {q.clientFacility || q.clientName || 'Quotation'} (₱{Number(q.totalPrice || q.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })})
+                      {q.qrn} — {q.clientFacility || q.facilityName || q.clientName || 'Quotation'} (₱{Number(q.totalPrice || q.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })})
                     </option>
                   ))}
                 </select>
@@ -434,7 +529,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                     : 'bg-rose-100 text-rose-900 border-rose-300'
                 }`}>
                   {marginPct >= 30 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
                   ) : marginPct >= 20 ? (
                     <AlertTriangle className="w-4 h-4 text-amber-700" />
                   ) : (
@@ -663,7 +758,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                     <p className="text-xs text-slate-300 font-semibold pt-0.5">
                       {marginPct >= 30 ? (
                         <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                          <ShieldCheck className="w-4 h-4 shrink-0" />
                           Qualified for Fast-Track GM &amp; Chairman Approval
                         </span>
                       ) : marginPct >= 20 ? (
@@ -687,14 +782,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
               <button
                 type="button"
-                onClick={() => {
-                  onShowNotification(`Applied ROI Proposed Unit Price ₱${roiProposedPrice.toLocaleString()} to Quotation!`);
-                  onAddAuditLog(`Calculated ROI for census ${roiCensus}/day yielding ${marginPct.toFixed(1)}% margin`);
-                  setIsRoiModalOpen(false);
-                }}
+                onClick={handleApplyRoiToActiveQuote}
                 className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer border border-emerald-600"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                <ShieldCheck className="w-4 h-4 text-emerald-200" />
                 <span>Apply Calculation to Active Quote</span>
               </button>
 
@@ -709,6 +800,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           </div>
         </div>
       )}
+
       {/* Sales RFQ Document Inspector Modal */}
       {selectedRfqModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
@@ -760,13 +852,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="p-3.5 rounded-2xl border bg-emerald-50 border-emerald-300 text-emerald-950 space-y-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
+                  <ShieldCheck className="w-5 h-5 text-emerald-600 mx-auto" />
                   <p className="font-extrabold text-sm">1. Maker</p>
                   <p className="text-xs font-bold">{selectedRfqModal.requestedBy}</p>
                 </div>
                 <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedRfqModal.marketingRoiStatus === 'ROI_COMPLETED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-amber-50 border-amber-300 text-amber-950'}`}>
                   {selectedRfqModal.marketingRoiStatus === 'ROI_COMPLETED' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
+                    <ShieldCheck className="w-5 h-5 text-emerald-600 mx-auto" />
                   ) : (
                     <Clock className="w-5 h-5 text-amber-600 mx-auto" />
                   )}

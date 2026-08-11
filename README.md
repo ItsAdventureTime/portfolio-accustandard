@@ -48,7 +48,7 @@ Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / B
 - **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
 ### 3. Sales RFQ, Quotation Generator & Marketing ROI Engine
-Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). Submitting quotes soft-reserves stock for 3 days and updates the dynamic Official Quotation preview. Features an ROI calculator for landed costs and contract margins.
+Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). Submitting quotes soft-reserves stock for 3 days and immediately updates the live **Official Sales Quotation Document Preview**, the quotation selector dropdown, the COSO approval pipeline, and the **Official RFQ Form** (`RFQ Form.pdf` template). Features a Marketing Manager ROI Financial Engine popup where clicking "Apply Calculation to Active Quote" updates unit prices and contract margins in real-time, with an interactive item deletion tool (🗑️) to remove rows and recalculate proposal values live.
 
 ### 4. Statement of Account (SOA) & Multi-SOA Check Allocation
 Renders official SOA statements matching company templates without `NaN` errors. Includes an interactive multi-SOA check allocation modal tool to dynamically deduct allocated payments from invoice balances, recompute running balances, track unapplied credit, and queue QBO collections.
