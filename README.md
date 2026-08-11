@@ -170,7 +170,7 @@ podman run --rm --userns=keep-id \
   -v /workspace/node_modules \
   -v /workspace/.next \
   -w /workspace \
-  node:24-alpine \
+  node:lts-alpine \
   sh -lc "npm ci && npm run build"
 ```
 

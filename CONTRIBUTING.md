@@ -40,7 +40,7 @@ podman run --rm \
   -v /workspace/.next \
   -v /workspace/node_modules \
   -w /workspace \
-  node:24-alpine \
+  node:lts-alpine \
   sh -c "npm ci && npm run build"
 ```
 
