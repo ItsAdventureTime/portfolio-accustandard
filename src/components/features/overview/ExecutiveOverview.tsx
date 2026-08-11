@@ -183,13 +183,13 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
       {/* COSO 4-Layer Approval Pipeline Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-3">
-        <div className="p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="p-5 bg-white border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h2 className="text-base font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-blue-800" />
+            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-blue-600" />
               COSO 4-Layer Approval Chain Pipeline
             </h2>
-            <p className="text-xs text-slate-600 font-semibold mt-0.5">
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
               Maker &rarr; Reviewer (Marketing) &rarr; GM &rarr; DCS (Chairman)
             </p>
           </div>
@@ -202,20 +202,20 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                 onSelectTab('quotations');
               }
             }}
-            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs rounded-xl transition shadow-sm flex items-center gap-1.5 active:scale-95"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-md shadow-blue-600/20 flex items-center gap-1.5 active:scale-95 cursor-pointer"
           >
-            <Send className="w-4 h-4 text-blue-200" />
+            <Send className="w-4 h-4 text-white" />
             <span>+ Create New Quotation</span>
           </button>
         </div>
 
-        <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
+        <div className="block sm:hidden text-[11px] text-slate-500 font-semibold text-center py-1.5 bg-slate-50 border-b border-slate-100 uppercase tracking-wider">
           &larr; Swipe table horizontally for details &rarr;
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-100 text-slate-700 font-extrabold border-b border-slate-200 uppercase text-xs tracking-wider">
+            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs tracking-wider">
               <tr>
                 <th className="p-4">Document QRN / ID</th>
                 <th className="p-4">Type</th>
@@ -226,7 +226,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                 <th className="p-4 text-right">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
               {approvalsList.map((item) => {
                 const isReviewerApproved = item.reviewerStatus === 'APPROVED';
                 const isGmApproved = item.gmStatus === 'APPROVED';
@@ -236,13 +236,13 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                   <tr
                     key={item.id}
                     onClick={() => setSelectedDocModal(item)}
-                    className="hover:bg-blue-50/50 transition cursor-pointer group"
+                    className="hover:bg-blue-50/70 hover:shadow-xs transition-all duration-150 cursor-pointer group"
                   >
                     <td className="p-4">
                       <button
                         type="button"
                         onClick={() => setSelectedDocModal(item)}
-                        className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                        className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                         title="Click to inspect complete document breakdown & approval status"
                       >
                         <FileText className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
@@ -250,28 +250,38 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                         <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                       </button>
                     </td>
-                    <td className="p-4 text-xs font-bold text-slate-600">{item.type}</td>
-                    <td className="p-4 text-xs text-slate-700">{item.maker}</td>
+                    <td className="p-4">
+                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold whitespace-nowrap">
+                        {item.type}
+                      </span>
+                    </td>
+                    <td className="p-4 text-xs sm:text-sm font-semibold text-slate-900">{item.maker}</td>
 
                     {/* Stage 1: Reviewer */}
                     <td className="p-4 text-center">
                       {isReviewerApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
                       ) : canApproveReviewer ? (
                         <button
-                          onClick={() => onApproveItem(item.id, 'reviewer')}
-                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-amber-600/80 w-full max-w-[130px] mx-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'reviewer');
+                          }}
+                          className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-amber-600/80 w-full max-w-[130px] mx-auto cursor-pointer"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Approve Reviewer</span>
                         </button>
                       ) : (
                         <span
-                          onClick={() => onApproveItem(item.id, 'reviewer')}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'reviewer');
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
                           title={`Role [${viewAsRole}] cannot execute Reviewer Approval`}
                         >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -283,27 +293,33 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                     {/* Stage 2: GM */}
                     <td className="p-4 text-center">
                       {isGmApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
                       ) : !isReviewerApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
                           <span>Awaiting Reviewer</span>
                         </span>
                       ) : canApproveGM ? (
                         <button
-                          onClick={() => onApproveItem(item.id, 'gm')}
-                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-blue-700/80 w-full max-w-[130px] mx-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'gm');
+                          }}
+                          className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-blue-700/80 w-full max-w-[130px] mx-auto cursor-pointer"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Approve GM</span>
                         </button>
                       ) : (
                         <span
-                          onClick={() => onApproveItem(item.id, 'gm')}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'gm');
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
                           title={`Role [${viewAsRole}] cannot execute GM Approval`}
                         >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -315,27 +331,33 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                     {/* Stage 3: DCS Chairman */}
                     <td className="p-4 text-center">
                       {isDcsApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
                         </span>
                       ) : !isGmApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
                           <span>Awaiting GM</span>
                         </span>
                       ) : canApproveDCS ? (
                         <button
-                          onClick={() => onApproveItem(item.id, 'dcs')}
-                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white font-bold text-xs rounded-lg shadow-2xs hover:shadow-xs transition-all flex items-center justify-center gap-1.5 border border-indigo-700/80 w-full max-w-[130px] mx-auto"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'dcs');
+                          }}
+                          className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-indigo-700/80 w-full max-w-[130px] mx-auto cursor-pointer"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Approve DCS</span>
                         </button>
                       ) : (
                         <span
-                          onClick={() => onApproveItem(item.id, 'dcs')}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onApproveItem(item.id, 'dcs');
+                          }}
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
                           title={`Role [${viewAsRole}] cannot execute DCS Chairman Approval`}
                         >
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
@@ -344,7 +366,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                       )}
                     </td>
 
-                    <td className="p-4 text-right font-mono font-bold text-slate-900">
+                    <td className="p-4 text-right font-bold text-slate-900 text-xs sm:text-sm">
                       ₱{item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
