@@ -57,8 +57,9 @@ server-backed record, authorization, audit event, and refresh-safe test.
   approval, is row-locked/idempotent, and writes an audit event.
 - Open-PO shortage requests may create only the uncovered quantity when a
   non-empty shortage exception reason is supplied.
-- The runtime does not yet persist Admin-configured approval rules or enforce
-  conditional PO DCS routing; this remains a pre-acceptance gap.
+- RFP DCS routing is conditional on the optional `DCS_RFP_THRESHOLD` runtime
+  setting; Admin-managed rule persistence and conditional PO DCS routing remain
+  pre-acceptance gaps.
 - The demo API is unauthenticated and must not handle real company data.
 - QBO behavior in this runtime is a queue/demo stub, not a live QuickBooks
   Online integration.

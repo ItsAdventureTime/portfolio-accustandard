@@ -35,6 +35,7 @@ func InitDB(dsn string) (*gorm.DB, error) {
 		&models.ApprovalLog{},
 		&models.StatementOfAccount{},
 		&models.SOAItem{},
+		&models.CollectionPayment{},
 		&models.PurchaseOrder{},
 		&models.PaymentRequest{},
 		&models.QBOQueueItem{},

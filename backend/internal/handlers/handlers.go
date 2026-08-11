@@ -7,6 +7,8 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -204,6 +206,44 @@ func recordApprovalAudit(tx *gorm.DB, role, action string, log models.ApprovalLo
 		User:   role,
 		Action: fmt.Sprintf("%s %s approval record %s", action, log.DocType, log.QRN),
 	}).Error
+}
+
+func rfpRequiresDCS(amount float64) bool {
+	rawThreshold := strings.TrimSpace(os.Getenv("DCS_RFP_THRESHOLD"))
+	if rawThreshold == "" {
+		return false
+	}
+	threshold, err := strconv.ParseFloat(rawThreshold, 64)
+	return err == nil && threshold >= 0 && amount >= threshold
+}
+
+func enforceOpenPOControl(tx *gorm.DB, po *models.PurchaseOrder) error {
+	if po.SKU == "" {
+		return nil
+	}
+	var openPOs []models.PurchaseOrder
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("sku = ? AND status NOT IN ?", po.SKU, []string{"CLOSED", "CANCELLED", "VERIFIED_3WAY"}).
+		Find(&openPOs).Error; err != nil {
+		return err
+	}
+	var openQty int
+	for _, openPO := range openPOs {
+		openQty += openPO.POQty - openPO.RRQtyReceived
+	}
+	if openQty <= 0 {
+		return nil
+	}
+	if po.POQty <= openQty {
+		return workflowError{status: http.StatusConflict, message: "OPEN_PO_CONTROL: an open PO already covers this SKU"}
+	}
+	if !po.IsShortageException || po.ShortageReason == nil || !required(*po.ShortageReason) {
+		return workflowError{status: http.StatusConflict, message: "SHORTAGE_EXCEPTION_REQUIRED: explain the uncovered SKU quantity before creating a shortage PO"}
+	}
+	originalQty := po.POQty
+	po.POQty -= openQty
+	po.TotalAmount = po.TotalAmount * float64(po.POQty) / float64(originalQty)
+	return nil
 }
 
 func canReceivePO(status string) bool {
@@ -538,7 +578,11 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 			case log.DCSStatus == "APPROVED":
 				rfp.Status = "APPROVED_DCS"
 			case log.GMStatus == "APPROVED":
-				rfp.Status = "PENDING_DCS"
+				if log.DCSStatus == "PENDING" {
+					rfp.Status = "PENDING_DCS"
+				} else {
+					rfp.Status = "APPROVED"
+				}
 			}
 			if err := tx.Save(&rfp).Error; err != nil {
 				return err
@@ -631,6 +675,14 @@ func AllocateCollection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		var existingPayment models.CollectionPayment
+		paymentErr := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("check_no = ?", req.CheckNo).First(&existingPayment).Error
+		if paymentErr == nil {
+			return workflowError{status: http.StatusConflict, message: "collection check has already been allocated"}
+		}
+		if !errors.Is(paymentErr, gorm.ErrRecordNotFound) {
+			return paymentErr
+		}
 		for _, allocation := range req.Allocations {
 			var soaItem models.SOAItem
 			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -653,9 +705,55 @@ func AllocateCollection(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		return nil
+		unappliedCredit := req.Amount - totalAllocated
+		if unappliedCredit < 0 {
+			unappliedCredit = 0
+		}
+		var existingQueue models.QBOQueueItem
+		queueErr := tx.Where("doc_type = ? AND doc_number = ?", "Customer Payment Collection", req.CheckNo).First(&existingQueue).Error
+		if queueErr == nil {
+			return workflowError{status: http.StatusConflict, message: "collection check is already queued for export"}
+		}
+		if !errors.Is(queueErr, gorm.ErrRecordNotFound) {
+			return queueErr
+		}
+		now := time.Now()
+		if err := tx.Create(&models.CollectionPayment{
+			ID:              uuid.New(),
+			CheckNo:         req.CheckNo,
+			Bank:            req.Bank,
+			Amount:          req.Amount,
+			AllocatedTotal:  totalAllocated,
+			UnappliedCredit: unappliedCredit,
+		}).Error; err != nil {
+			return err
+		}
+		if err := tx.Create(&models.QBOQueueItem{
+			ID:           uuid.New(),
+			DocType:      "Customer Payment Collection",
+			DocNumber:    req.CheckNo,
+			EntityName:   "Customer Collection",
+			Amount:       req.Amount,
+			QBORefID:     "Awaiting Manual Export",
+			SyncStatus:   "QUEUED",
+			LastAttempt:  now,
+			ErrorMessage: "",
+		}).Error; err != nil {
+			return err
+		}
+		return tx.Create(&models.AuditLog{
+			ID:     uuid.New(),
+			Time:   now.UTC().Format(time.RFC3339),
+			User:   "Collection Allocation",
+			Action: fmt.Sprintf("Allocated collection check %s", req.CheckNo),
+		}).Error
 	})
 	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+			return
+		}
 		switch {
 		case errors.Is(txErr, errUnknownInvoice):
 			respondJSON(w, http.StatusNotFound, map[string]string{"error": txErr.Error()})
@@ -714,42 +812,27 @@ func CreatePurchaseOrder(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if po.SKU != "" {
-		var openQty int64
-		if err := db.DB.Model(&models.PurchaseOrder{}).
-			Where("sku = ? AND status NOT IN ?", po.SKU, []string{"CLOSED", "CANCELLED", "VERIFIED_3WAY"}).
-			Select("COALESCE(SUM(po_qty - rr_qty_received), 0)").Scan(&openQty).Error; err != nil {
-			respondDBError(w, err)
-			return
-		}
-		if openQty > 0 && po.POQty <= int(openQty) {
-			respondJSON(w, http.StatusConflict, map[string]interface{}{
-				"error":        "OPEN_PO_CONTROL: an open PO already covers this SKU",
-				"openQuantity": openQty,
-			})
-			return
-		}
-		if openQty > 0 {
-			if !po.IsShortageException || po.ShortageReason == nil || !required(*po.ShortageReason) {
-				respondJSON(w, http.StatusConflict, map[string]interface{}{
-					"error":        "SHORTAGE_EXCEPTION_REQUIRED: explain the uncovered SKU quantity before creating a shortage PO",
-					"openQuantity": openQty,
-				})
-				return
-			}
-			originalQty := po.POQty
-			po.POQty -= int(openQty)
-			po.TotalAmount = po.TotalAmount * float64(po.POQty) / float64(originalQty)
-		}
-	}
-
 	po.ID = uuid.New()
+	po.Status = "PENDING_ACCOUNTING"
+	po.RRQtyReceived = 0
+	po.InvoiceRef = "Awaiting Receipt"
 	if po.PONumber == "" {
 		po.PONumber = "PO-2026-" + time.Now().Format("0504")
 	}
 	po.CreatedAt = time.Now()
-	if err := db.DB.Create(&po).Error; err != nil {
-		respondDBError(w, err)
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := enforceOpenPOControl(tx, &po); err != nil {
+			return err
+		}
+		return tx.Create(&po).Error
+	})
+	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+		} else {
+			respondDBError(w, txErr)
+		}
 		return
 	}
 	respondJSON(w, http.StatusCreated, po)
@@ -773,6 +856,10 @@ func CreateRFP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	rfp.ID = uuid.New()
+	rfp.Status = "PENDING_GM"
+	rfp.ReleasedBank = nil
+	rfp.ReleasedRefNo = nil
+	rfp.ReleasedAt = nil
 	if rfp.RFPNumber == "" {
 		rfp.RFPNumber = "RFP-2026-" + time.Now().Format("0504")
 	}
@@ -781,6 +868,10 @@ func CreateRFP(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Create(&rfp).Error; err != nil {
 			return err
 		}
+		dcsStatus := "NOT_REQUIRED"
+		if rfpRequiresDCS(rfp.Amount) {
+			dcsStatus = "PENDING"
+		}
 		return tx.Create(&models.ApprovalLog{
 			ID:             uuid.New(),
 			QRN:            rfp.RFPNumber,
@@ -788,7 +879,7 @@ func CreateRFP(w http.ResponseWriter, r *http.Request) {
 			Maker:          rfp.RequestedBy,
 			ReviewerStatus: "APPROVED",
 			GMStatus:       "PENDING",
-			DCSStatus:      "PENDING",
+			DCSStatus:      dcsStatus,
 			TotalAmount:    rfp.Amount,
 		}).Error
 	})
@@ -826,7 +917,9 @@ func ReleaseRFP(w http.ResponseWriter, r *http.Request) {
 			if approval.GMStatus != "APPROVED" || (approval.DCSStatus != "APPROVED" && approval.DCSStatus != "NOT_REQUIRED") {
 				return workflowError{status: http.StatusConflict, message: "RFP release requires completed approval stages"}
 			}
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		} else if errors.Is(err, gorm.ErrRecordNotFound) {
+			return workflowError{status: http.StatusConflict, message: "RFP release requires an approval record"}
+		} else {
 			return err
 		}
 		now := time.Now()

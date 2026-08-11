@@ -120,6 +120,16 @@ type SOAItem struct {
 	RunningBalance float64   `gorm:"type:numeric(12,2);not null" json:"runningBalance"`
 }
 
+type CollectionPayment struct {
+	ID              uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	CheckNo         string    `gorm:"unique;not null" json:"checkNo"`
+	Bank            string    `gorm:"not null" json:"bank"`
+	Amount          float64   `gorm:"type:numeric(12,2);not null" json:"amount"`
+	AllocatedTotal  float64   `gorm:"type:numeric(12,2);not null" json:"allocatedTotal"`
+	UnappliedCredit float64   `gorm:"type:numeric(12,2);not null" json:"unappliedCredit"`
+	CreatedAt       time.Time `gorm:"autoCreateTime" json:"createdAt"`
+}
+
 type PurchaseOrder struct {
 	ID                  uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	PONumber            string    `gorm:"unique;not null" json:"poNumber"`
