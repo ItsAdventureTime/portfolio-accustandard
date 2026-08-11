@@ -174,7 +174,41 @@ A dashboard/overview screen for the **GM, Chairman (DCS), and Admin** showing at
 
 ---
 
-## 6. Technical & Delivery Guidance
+## 6. Modern UI/UX Design System & Interactive Ergonomics (2026 Standards)
+
+The web application UI/UX is built on a **Light Corporate Medical System** enforcing 2026 enterprise design best practices: clarity, depth hierarchy, responsive touch ergonomics, and feedback-driven micro-interactions.
+
+### 6.1 Color Palette & Visual Hierarchy
+- **Canvas / Background:** Crisp slate background (`#F8FAFC`, `bg-slate-100`).
+- **Containers & Cards:** Clean white containers (`#FFFFFF`) with high-contrast slate borders (`#E2E8F0`, `border-slate-200/80`).
+- **Brand Colors:** Deep Royal Navy (`#1E3A8A`) for primary actions and active state rails.
+- **Status Colors:** Bright Medical Red (`#DC2626`) for security blocks, Amber (`#D97706`) for pending reviews, and Emerald (`#059669`) for approvals.
+
+### 6.2 Purposeful Glassmorphism 2.0
+- **Navigation & Overlays:** Navigation bar headers enforce `bg-white/90 backdrop-blur-xl border-b border-slate-200/80`.
+- **Modal Backdrops:** All modal dialogs and alert windows use dark slate backdrop blur (`bg-slate-950/80 backdrop-blur-md`).
+- **Readability Assurance:** High-contrast text (`text-slate-900`, `font-extrabold`) ensures text is readable over frosted surfaces.
+
+### 6.3 Kinetic Micro-Interactions & Physics
+- **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
+- **Sidebar Translations:** Navigation links translate rightward on hover (`hover:translate-x-1 transition-all duration-200`).
+- **Dialog Entrance Motion:** Popups use smooth backdrop fade-in (`animate-in fade-in duration-200`) and dialog container zoom (`animate-in zoom-in-95 duration-200`).
+
+### 6.4 Standardized Interactive Pill Badge System
+Across all data tables, primary key badges use interactive pill containers (`bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-2xs group cursor-pointer`):
+- **Document QRN / ID:** `FileText` icon + QRN Code + `Eye` preview badge &rarr; opens Document Inspector Modal.
+- **SKU / Barcode:** `Barcode` icon + SKU Code + `Eye` preview badge &rarr; opens Stock Barcode Detail Modal.
+- **PO Number:** `FileText` icon + PO Code + `Eye` preview badge &rarr; opens 3-Way Match PO Modal.
+- **RFP Voucher ID:** `CreditCard` icon + RFP Code + `Eye` preview badge &rarr; opens Expense Voucher Inspector Modal.
+
+### 6.5 High-Visibility Notification Confirmation Popup Modal
+To ensure system updates, approval confirmations, and security alerts are never overlooked:
+- **Confirmation Window Modal:** Replaces auto-dismissing toast banners with a centered popup window modal (`SystemAlertModal.tsx`).
+- **Explicit Acknowledgment:** Requires an explicit user click on `"Acknowledge & Close"` / `"Got It"` to dismiss.
+
+---
+
+## 7. Technical & Delivery Guidance
 
 - **Platform:** Responsive web app (mobile-friendly is mandatory for barcode scanning and on-the-go approvals); PWA approach RECOMMENDED for camera scanning.
 - **Reusability goal:** Build as a configurable base ERP (tiers, approvers, locations, price lists all data-driven) so it can be adapted for future clients.

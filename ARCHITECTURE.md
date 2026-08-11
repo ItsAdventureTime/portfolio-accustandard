@@ -111,8 +111,9 @@ Across all 6 core data tables, interactive primary keys are rendered inside high
 - **USER NAME**: `User` (left) + `User Name` + `Eye` (right badge) &rarr; opens User Access Matrix Editor Modal.
 - **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
 
-### 4. Smooth Physics Entrance Animations
-All modal popups and drawers enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in duration-200`).
+### 4. Smooth Physics Entrance Animations & High-Visibility Notification Dialogs
+- **Modal Popups & Drawers:** All modal popups enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in-95 duration-200`).
+- **High-Visibility Notification Popups (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered popup window modals featuring explicit user confirmation buttons (`"Acknowledge & Close"`) so alerts and workflow updates cannot be overlooked.
 
 ---
 
