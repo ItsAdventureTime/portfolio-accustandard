@@ -17,7 +17,7 @@ import {
 interface RequestForPaymentProps {
   rfpList: any[];
   onOpenAddRFP: () => void;
-  onReleaseRFP?: (id: string, bank: string, refNo: string) => void;
+  onReleaseRFP?: (id: string, bank: string, refNo: string) => void | Promise<boolean | void>;
 }
 
 export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
@@ -30,11 +30,12 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
   const [bankSource, setBankSource] = useState('BDO Unibank — Corporate Acct #0012-9981-00');
   const [refNo, setRefNo] = useState('TXN-BDO-2026-9012');
 
-  const handleConfirmRelease = (e: React.FormEvent) => {
+  const handleConfirmRelease = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!releasingRfp) return;
     if (onReleaseRFP) {
-      onReleaseRFP(releasingRfp.id, bankSource, refNo);
+      const committed = await onReleaseRFP(releasingRfp.id, bankSource, refNo);
+      if (committed === false) return;
     }
     setReleasingRfp(null);
   };
@@ -290,4 +291,3 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
     </div>
   );
 };
-

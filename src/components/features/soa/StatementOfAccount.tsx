@@ -25,7 +25,7 @@ interface StatementOfAccountProps {
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onShowNotification: (msg: string) => void;
   onAddAuditLog: (action: string) => void;
-  onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void;
+  onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void | Promise<boolean | void>;
 }
 
 export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
@@ -243,7 +243,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     onOpenExportModal('Statement of Account Ledger', 'accustandard_soa_ledger', computedRows, 'printable-soa-target');
   };
 
-  const handleAllocateCheck = (e: React.FormEvent) => {
+  const handleAllocateCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     const allocations = [
       { invoiceNo: 'SI-6087', amount: Number(allocatedSi6087) },
@@ -251,15 +251,16 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     ];
 
     if (onAllocateCollection) {
-      onAllocateCollection(checkNo, bank, checkAmount, allocations);
+      const committed = await onAllocateCollection(checkNo, bank, checkAmount, allocations);
+      if (committed === false) return;
+    } else {
+      onShowNotification(
+        `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
+      );
+      onAddAuditLog(
+        `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
+      );
     }
-
-    onShowNotification(
-      `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
-    );
-    onAddAuditLog(
-      `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
-    );
     setIsCollectionModalOpen(false);
   };
 

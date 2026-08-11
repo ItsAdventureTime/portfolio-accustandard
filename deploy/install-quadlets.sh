@@ -4,7 +4,7 @@ set -euo pipefail
 echo "==> Setting up Accustandard Dashboard Podman Quadlets..."
 
 # Create Data Directories
-mkdir -p "$HOME/bridge-ph/accustandard-demo/db"
+mkdir -p "$HOME/bridge-ph/accustandard-demo/postgres-data"
 mkdir -p "$HOME/bridge-ph/accustandard/db"
 
 # Create Quadlet Systemd Directories

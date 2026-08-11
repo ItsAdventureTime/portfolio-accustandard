@@ -2,17 +2,18 @@
 
 /* 2026 Predictable Enterprise Wayfinding & Anti-Glare Design System */
 :root {
-  --slate-bg-app: #e2e8f0;       /* Anti-glare soft slate canvas */
+  --slate-bg-app: #f8fafc;       /* AccuStandard anti-glare canvas */
   --slate-bg-card: #ffffff;      /* Clean off-white surface container */
   --slate-bg-subtle: #f1f5f9;    /* Muted secondary surface */
-  --slate-border-subtle: #cbd5e1;/* Subtle border stroke */
+  --slate-border-subtle: #e2e8f0;/* AccuStandard border stroke */
   --slate-border-strong: #94a3b8;/* Strong border stroke */
   
   --slate-text-primary: #1e293b;  /* Dark slate primary text */
   --slate-text-secondary: #475569;/* Muted slate text */
   --slate-text-muted: #64748b;
 
-  --accustanda-blue: #1d4ed8;
+  --accustanda-navy: #1e3a8a;
+  --accustanda-blue: #2563eb;
   --accustanda-red: #dc2626;
 
   --slate-shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
@@ -44,9 +45,10 @@ input[type="number"] {
 
 /* Predictable Navigation Shell */
 .wayfinding-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid var(--slate-border-subtle);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(24px);
 }
 
 .wayfinding-nav-strip {
@@ -67,6 +69,18 @@ input[type="number"] {
 .wayfinding-card:hover {
   border-color: var(--slate-border-strong);
   box-shadow: var(--slate-shadow-hover);
+}
+
+button,
+select,
+input,
+textarea {
+  min-height: 44px;
+}
+
+:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 /* Decluttered Data Table with Responsive Mobile Scroll */

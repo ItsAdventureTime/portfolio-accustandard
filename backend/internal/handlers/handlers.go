@@ -2,7 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"accustandard-backend/internal/db"
@@ -10,7 +15,213 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
+
+var (
+	errInvalidPayload       = errors.New("invalid request payload")
+	errUnknownInvoice       = errors.New("invoice not found")
+	errAllocationOverrun    = errors.New("allocation exceeds available amount")
+	errOverReceipt          = errors.New("received quantity exceeds approved PO quantity limit")
+	errInvalidPOState       = errors.New("purchase order is not receivable in its current state")
+	errInventoryUnavailable = errors.New("linked inventory stock is unavailable")
+)
+
+type workflowError struct {
+	status  int
+	message string
+}
+
+func (e workflowError) Error() string { return e.message }
+
+const moneyTolerance = 0.000001
+
+type allocationInput struct {
+	InvoiceNo string  `json:"invoiceNo"`
+	Amount    float64 `json:"amount"`
+}
+
+type collectionInput struct {
+	CheckNo     string            `json:"checkNo"`
+	Bank        string            `json:"bank"`
+	Amount      float64           `json:"amount"`
+	Allocations []allocationInput `json:"allocations"`
+}
+
+func decodeJSON(r *http.Request, dst interface{}) error {
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(dst); err != nil {
+		return errInvalidPayload
+	}
+	var extra interface{}
+	if err := decoder.Decode(&extra); err != io.EOF {
+		return errInvalidPayload
+	}
+	return nil
+}
+
+func required(value string) bool {
+	return strings.TrimSpace(value) != ""
+}
+
+func parseOptionalDate(value *string) (*time.Time, error) {
+	if value == nil || strings.TrimSpace(*value) == "" {
+		return nil, nil
+	}
+	parsed, err := time.Parse("2006-01-02", strings.TrimSpace(*value))
+	if err != nil {
+		return nil, fmt.Errorf("expiryDate must use YYYY-MM-DD")
+	}
+	return &parsed, nil
+}
+
+func finite(value float64) bool {
+	return !math.IsNaN(value) && !math.IsInf(value, 0)
+}
+
+func validateAllocationInput(req collectionInput) (float64, error) {
+	if !required(req.CheckNo) || !required(req.Bank) || req.Amount <= 0 ||
+		!finite(req.Amount) || len(req.Allocations) == 0 {
+		return 0, errInvalidPayload
+	}
+
+	var total float64
+	for _, allocation := range req.Allocations {
+		if !required(allocation.InvoiceNo) || allocation.Amount <= 0 ||
+			!finite(allocation.Amount) {
+			return 0, errInvalidPayload
+		}
+		total += allocation.Amount
+	}
+	if total-req.Amount > moneyTolerance {
+		return 0, errAllocationOverrun
+	}
+	return total, nil
+}
+
+func validateApproval(role string) error {
+	if !required(role) {
+		return errInvalidPayload
+	}
+	return nil
+}
+
+func validateRejection(log models.ApprovalLog, role string) error {
+	if err := validateApproval(role); err != nil {
+		return err
+	}
+	if role == log.Maker {
+		return fmt.Errorf("segregation of duties blocks maker rejection")
+	}
+	switch role {
+	case "Marketing", "Reviewer":
+		if log.ReviewerStatus != "PENDING" {
+			return fmt.Errorf("reviewer stage is already finalized or invalid")
+		}
+	case "General Manager", "GM":
+		if log.ReviewerStatus != "APPROVED" || log.GMStatus != "PENDING" {
+			return fmt.Errorf("GM rejection requires an approved reviewer stage")
+		}
+	case "Chairman", "DCS", "Chairman (DCS)":
+		if log.DocType == "Sales Quotation" {
+			return fmt.Errorf("sales quotations do not have a DCS stage")
+		}
+		if log.GMStatus != "APPROVED" || log.DCSStatus != "PENDING" {
+			return fmt.Errorf("DCS rejection requires an approved GM stage")
+		}
+	default:
+		return fmt.Errorf("role is not allowed to reject this document")
+	}
+	return nil
+}
+
+func applyApproval(log *models.ApprovalLog, role string) error {
+	if err := validateApproval(role); err != nil {
+		return workflowError{status: http.StatusBadRequest, message: "Role is required"}
+	}
+	if role == "Admin" {
+		switch {
+		case log.ReviewerStatus == "PENDING":
+			role = "Marketing"
+		case log.GMStatus == "PENDING":
+			role = "General Manager"
+		case log.DCSStatus == "PENDING":
+			role = "Chairman (DCS)"
+		}
+	}
+	if role == log.Maker || (log.DocType == "Sales Quotation" && (role == "DCS" || role == "Chairman (DCS)")) {
+		return workflowError{status: http.StatusForbidden, message: "Segregation of Duties blocked self-approval or invalid Sales Quote DCS approval."}
+	}
+	switch {
+	case role == "Marketing" || role == "Reviewer":
+		if log.ReviewerStatus == "APPROVED" || log.ReviewerStatus == "REJECTED" {
+			return workflowError{status: http.StatusConflict, message: "Reviewer stage already finalized"}
+		}
+		log.ReviewerStatus = "APPROVED"
+	case role == "General Manager" || role == "GM":
+		if log.ReviewerStatus != "APPROVED" || log.GMStatus != "PENDING" {
+			return workflowError{status: http.StatusConflict, message: "GM approval requires an approved reviewer stage"}
+		}
+		log.GMStatus = "APPROVED"
+	case role == "Chairman" || role == "DCS" || role == "Chairman (DCS)":
+		if log.DocType == "Sales Quotation" {
+			return workflowError{status: http.StatusForbidden, message: "Sales Quotes end at GM approval; DCS stage is not required."}
+		}
+		if log.GMStatus != "APPROVED" || log.DCSStatus != "PENDING" {
+			return workflowError{status: http.StatusConflict, message: "DCS approval requires an approved GM stage"}
+		}
+		log.DCSStatus = "APPROVED"
+	default:
+		return workflowError{status: http.StatusForbidden, message: "Role is not allowed to approve this document"}
+	}
+	return nil
+}
+
+func applyRejection(log *models.ApprovalLog, role string) error {
+	if err := validateRejection(*log, role); err != nil {
+		status := http.StatusConflict
+		if strings.Contains(err.Error(), "role is not allowed") || strings.Contains(err.Error(), "segregation") {
+			status = http.StatusForbidden
+		}
+		return workflowError{status: status, message: err.Error()}
+	}
+	switch {
+	case role == "Marketing" || role == "Reviewer":
+		log.ReviewerStatus = "REJECTED"
+	case role == "General Manager" || role == "GM":
+		log.GMStatus = "REJECTED"
+	case role == "Chairman" || role == "DCS" || role == "Chairman (DCS)":
+		log.DCSStatus = "REJECTED"
+	}
+	return nil
+}
+
+func recordApprovalAudit(tx *gorm.DB, role, action string, log models.ApprovalLog) error {
+	return tx.Create(&models.AuditLog{
+		ID:     uuid.New(),
+		Time:   time.Now().UTC().Format(time.RFC3339),
+		User:   role,
+		Action: fmt.Sprintf("%s %s approval record %s", action, log.DocType, log.QRN),
+	}).Error
+}
+
+func canReceivePO(status string) bool {
+	switch status {
+	case "PENDING_RECEIVING", "PARTIALLY_RECEIVED", "APPROVED", "AWAITING_RECEIVING":
+		return true
+	default:
+		return false
+	}
+}
+
+func respondDBError(w http.ResponseWriter, err error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Record not found"})
+		return
+	}
+	respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "Database operation failed"})
+}
 
 func RegisterRoutes(r chi.Router) {
 	r.Get("/health", HealthCheck)
@@ -45,8 +256,16 @@ func HealthCheck(w http.ResponseWriter, r *http.Request) {
 }
 
 func ReadinessCheck(w http.ResponseWriter, r *http.Request) {
+	if db.DB == nil {
+		respondJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "unready", "db": "not initialized"})
+		return
+	}
 	sqlDB, err := db.DB.DB()
-	if err != nil || sqlDB.Ping() != nil {
+	if err != nil {
+		respondJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "unready", "db": "disconnected"})
+		return
+	}
+	if err := sqlDB.Ping(); err != nil {
 		respondJSON(w, http.StatusServiceUnavailable, map[string]string{"status": "unready", "db": "disconnected"})
 		return
 	}
@@ -55,14 +274,23 @@ func ReadinessCheck(w http.ResponseWriter, r *http.Request) {
 
 func GetInventory(w http.ResponseWriter, r *http.Request) {
 	var stocks []models.InventoryStock
-	db.DB.Find(&stocks)
+	if err := db.DB.Find(&stocks).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 
 	var result []map[string]interface{}
 	for _, s := range stocks {
 		var item models.Item
 		var loc models.Location
-		db.DB.First(&item, "id = ?", s.ItemID)
-		db.DB.First(&loc, "id = ?", s.LocationID)
+		if err := db.DB.First(&item, "id = ?", s.ItemID).Error; err != nil {
+			respondDBError(w, err)
+			return
+		}
+		if err := db.DB.First(&loc, "id = ?", s.LocationID).Error; err != nil {
+			respondDBError(w, err)
+			return
+		}
 
 		avail := s.QtyOnHand - s.QtyReserved
 		status := "NORMAL"
@@ -106,55 +334,157 @@ func GetInventory(w http.ResponseWriter, r *http.Request) {
 
 func ReceiveInventory(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		PONumber    string `json:"poNumber"`
-		QtyReceived int    `json:"qtyReceived"`
-		BatchNumber string `json:"batchNumber"`
+		PONumber     string  `json:"poNumber"`
+		QtyReceived  int     `json:"qtyReceived"`
+		BatchNumber  string  `json:"batchNumber"`
+		LocationCode string  `json:"locationCode"`
+		ExpiryDate   *string `json:"expiryDate"`
+		SerialNumber string  `json:"serialNumber"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := decodeJSON(r, &req); err != nil || !required(req.PONumber) || req.QtyReceived <= 0 {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
+		return
+	}
+	expiryDate, err := parseOptionalDate(req.ExpiryDate)
+	if err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
 	var po models.PurchaseOrder
-	if err := db.DB.Where("po_number = ?", req.PONumber).First(&po).Error; err != nil {
-		respondJSON(w, http.StatusNotFound, map[string]string{"error": "PO not found"})
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("po_number = ?", req.PONumber).First(&po).Error; err != nil {
+			return err
+		}
+		if !canReceivePO(po.Status) {
+			return errInvalidPOState
+		}
+		if po.POQty <= 0 || po.RRQtyReceived < 0 || po.RRQtyReceived > po.POQty {
+			return errInvalidPOState
+		}
+		if po.RRQtyReceived+req.QtyReceived > po.POQty {
+			return fmt.Errorf("HARD_BLOCK: %w", errOverReceipt)
+		}
+
+		var item models.Item
+		itemQuery := tx
+		if required(po.SKU) {
+			itemQuery = itemQuery.Where("sku = ?", po.SKU)
+		} else {
+			itemQuery = itemQuery.Where("description = ?", po.ItemDescription)
+		}
+		if err := itemQuery.First(&item).Error; err != nil {
+			return fmt.Errorf("%w: item for PO is unavailable: %v", errInventoryUnavailable, err)
+		}
+
+		var location models.Location
+		if required(req.LocationCode) {
+			if err := tx.Where("code = ?", req.LocationCode).First(&location).Error; err != nil {
+				return fmt.Errorf("%w: location %q", errInventoryUnavailable, req.LocationCode)
+			}
+			if !location.IsActive {
+				return fmt.Errorf("%w: location %q is inactive", errInventoryUnavailable, req.LocationCode)
+			}
+		}
+
+		var stock models.InventoryStock
+		stockQuery := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("item_id = ?", item.ID)
+		if location.ID != uuid.Nil {
+			stockQuery = stockQuery.Where("location_id = ?", location.ID)
+		}
+		if required(req.BatchNumber) {
+			stockQuery = stockQuery.Where("batch_number = ?", req.BatchNumber)
+		}
+		if required(req.SerialNumber) {
+			stockQuery = stockQuery.Where("serial_number = ?", req.SerialNumber)
+		}
+		stockErr := stockQuery.Order("id").First(&stock).Error
+		if errors.Is(stockErr, gorm.ErrRecordNotFound) && location.ID == uuid.Nil {
+			return fmt.Errorf("%w: locationCode is required when no stock exists", errInventoryUnavailable)
+		}
+		if stockErr != nil && !errors.Is(stockErr, gorm.ErrRecordNotFound) {
+			return stockErr
+		}
+		if errors.Is(stockErr, gorm.ErrRecordNotFound) {
+			if location.ID == uuid.Nil {
+				return errInventoryUnavailable
+			}
+			stock = models.InventoryStock{
+				ID:         uuid.New(),
+				LocationID: location.ID,
+				ItemID:     item.ID,
+				QtyOnHand:  0,
+			}
+		}
+		if stock.BatchNumber == nil && required(req.BatchNumber) {
+			stock.BatchNumber = &req.BatchNumber
+		}
+		if expiryDate != nil {
+			stock.ExpiryDate = expiryDate
+		}
+		if stock.SerialNumber == nil && required(req.SerialNumber) {
+			stock.SerialNumber = &req.SerialNumber
+		}
+		stock.QtyOnHand += req.QtyReceived
+		if stockErr == nil {
+			if err := tx.Save(&stock).Error; err != nil {
+				return err
+			}
+		} else if err := tx.Create(&stock).Error; err != nil {
+			return err
+		}
+
+		po.RRQtyReceived += req.QtyReceived
+		if po.RRQtyReceived >= po.POQty {
+			po.Status = "AWAITING_VENDOR_INVOICE"
+		} else {
+			po.Status = "PARTIALLY_RECEIVED"
+		}
+		return tx.Save(&po).Error
+	})
+	if txErr != nil {
+		if errors.Is(txErr, gorm.ErrRecordNotFound) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": "PO not found"})
+		} else if errors.Is(txErr, errInvalidPOState) {
+			respondJSON(w, http.StatusConflict, map[string]string{"error": txErr.Error()})
+		} else if errors.Is(txErr, errInventoryUnavailable) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": txErr.Error()})
+		} else if errors.Is(txErr, errOverReceipt) {
+			respondJSON(w, http.StatusConflict, map[string]string{"error": txErr.Error()})
+		} else {
+			respondDBError(w, txErr)
+		}
 		return
 	}
-
-	// COSO Fraud Control: Hard Block over-receiving beyond approved PO quantity
-	if po.RRQtyReceived+req.QtyReceived > po.POQty {
-		respondJSON(w, http.StatusForbidden, map[string]string{
-			"error": "HARD_BLOCK: Received quantity exceeds approved PO quantity limit. PO revision required.",
-		})
-		return
-	}
-
-	po.RRQtyReceived += req.QtyReceived
-	if po.RRQtyReceived >= po.POQty {
-		po.Status = "VERIFIED_3WAY"
-	} else {
-		po.Status = "PARTIALLY_RECEIVED"
-	}
-	db.DB.Save(&po)
 
 	respondJSON(w, http.StatusOK, po)
 }
 
 func GetReplenishment(w http.ResponseWriter, r *http.Request) {
 	var items []models.ReplenishmentItem
-	db.DB.Find(&items)
+	if err := db.DB.Find(&items).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, items)
 }
 
 func GetRFQs(w http.ResponseWriter, r *http.Request) {
 	var items []models.RFQItem
-	db.DB.Find(&items)
+	if err := db.DB.Find(&items).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, items)
 }
 
 func CreateRFQ(w http.ResponseWriter, r *http.Request) {
 	var item models.RFQItem
-	if err := json.NewDecoder(r.Body).Decode(&item); err != nil {
+	if err := decodeJSON(r, &item); err != nil || !required(item.CustomerName) ||
+		!required(item.RequestedBy) || item.CensusPerDay <= 0 ||
+		item.ExpectedContractMonths <= 0 || !required(item.MarketingROIStatus) ||
+		item.ProposedSellingPrice <= 0 || item.LandedCostPerUnit < 0 ||
+		item.ExpectedMarginPct < 0 || item.ExpectedMarginPct > 100 {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
@@ -162,13 +492,19 @@ func CreateRFQ(w http.ResponseWriter, r *http.Request) {
 	if item.RFQNo == "" {
 		item.RFQNo = "RFQ-2026-" + time.Now().Format("0504")
 	}
-	db.DB.Create(&item)
+	if err := db.DB.Create(&item).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusCreated, item)
 }
 
 func GetApprovals(w http.ResponseWriter, r *http.Request) {
 	var logs []models.ApprovalLog
-	db.DB.Find(&logs)
+	if err := db.DB.Find(&logs).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, logs)
 }
 
@@ -177,23 +513,50 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Role string `json:"role"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&req)
-
-	var log models.ApprovalLog
-	if err := db.DB.Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
-		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Approval record not found"})
+	if err := decodeJSON(r, &req); err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Role is required"})
 		return
 	}
 
-	// Advance approval pipeline according to role
-	if req.Role == "Marketing" || req.Role == "Reviewer" {
-		log.ReviewerStatus = "APPROVED"
-	} else if req.Role == "General Manager" || req.Role == "GM" {
-		log.GMStatus = "APPROVED"
-	} else if req.Role == "Chairman" || req.Role == "DCS" {
-		log.DCSStatus = "APPROVED"
+	var log models.ApprovalLog
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
+			return err
+		}
+		if err := applyApproval(&log, req.Role); err != nil {
+			return err
+		}
+		if err := tx.Save(&log).Error; err != nil {
+			return err
+		}
+		if log.DocType == "Request for Payment" {
+			var rfp models.PaymentRequest
+			if err := tx.Where("rfp_number = ?", log.QRN).First(&rfp).Error; err != nil {
+				return err
+			}
+			switch {
+			case log.DCSStatus == "APPROVED":
+				rfp.Status = "APPROVED_DCS"
+			case log.GMStatus == "APPROVED":
+				rfp.Status = "PENDING_DCS"
+			}
+			if err := tx.Save(&rfp).Error; err != nil {
+				return err
+			}
+		}
+		return recordApprovalAudit(tx, req.Role, "Approved", log)
+	})
+	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+		} else if errors.Is(txErr, gorm.ErrRecordNotFound) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": "Approval record not found"})
+		} else {
+			respondDBError(w, txErr)
+		}
+		return
 	}
-	db.DB.Save(&log)
 
 	respondJSON(w, http.StatusOK, log)
 }
@@ -204,60 +567,104 @@ func RejectDocument(w http.ResponseWriter, r *http.Request) {
 		Role    string `json:"role"`
 		Remarks string `json:"remarks"`
 	}
-	_ = json.NewDecoder(r.Body).Decode(&req)
-
-	var log models.ApprovalLog
-	if err := db.DB.Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
-		respondJSON(w, http.StatusNotFound, map[string]string{"error": "Approval record not found"})
+	if err := decodeJSON(r, &req); err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
 		return
 	}
 
-	if req.Role == "Marketing" || req.Role == "Reviewer" {
-		log.ReviewerStatus = "REJECTED"
-	} else if req.Role == "General Manager" || req.Role == "GM" {
-		log.GMStatus = "REJECTED"
-	} else if req.Role == "Chairman" || req.Role == "DCS" {
-		log.DCSStatus = "REJECTED"
+	var log models.ApprovalLog
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
+			return err
+		}
+		if err := applyRejection(&log, req.Role); err != nil {
+			return err
+		}
+		if err := tx.Save(&log).Error; err != nil {
+			return err
+		}
+		if log.DocType == "Request for Payment" {
+			if err := tx.Model(&models.PaymentRequest{}).Where("rfp_number = ?", log.QRN).Update("status", "REJECTED").Error; err != nil {
+				return err
+			}
+		}
+		return recordApprovalAudit(tx, req.Role, "Rejected", log)
+	})
+	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+		} else if errors.Is(txErr, gorm.ErrRecordNotFound) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": "Approval record not found"})
+		} else {
+			respondDBError(w, txErr)
+		}
+		return
 	}
-	db.DB.Save(&log)
 
 	respondJSON(w, http.StatusOK, log)
 }
 
 func GetSOA(w http.ResponseWriter, r *http.Request) {
 	var items []models.SOAItem
-	db.DB.Find(&items)
+	if err := db.DB.Find(&items).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, items)
 }
 
 func AllocateCollection(w http.ResponseWriter, r *http.Request) {
-	var req struct {
-		CheckNo    string `json:"checkNo"`
-		Bank       string `json:"bank"`
-		Amount     float64 `json:"amount"`
-		Allocations []struct {
-			InvoiceNo string  `json:"invoiceNo"`
-			Amount    float64 `json:"amount"`
-		} `json:"allocations"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var req collectionInput
+	if err := decodeJSON(r, &req); err != nil {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid payload"})
 		return
 	}
+	totalAllocated, err := validateAllocationInput(req)
+	if err != nil {
+		if errors.Is(err, errAllocationOverrun) {
+			respondJSON(w, http.StatusConflict, map[string]string{"error": err.Error()})
+		} else {
+			respondJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		return
+	}
 
-	var totalAllocated float64
-	for _, a := range req.Allocations {
-		totalAllocated += a.Amount
-		var soaItem models.SOAItem
-		if err := db.DB.Where("sales_invoice_no = ?", a.InvoiceNo).First(&soaItem).Error; err == nil {
-			soaItem.AmountPaid += a.Amount
-			if soaItem.InvoiceBalance >= a.Amount {
-				soaItem.InvoiceBalance -= a.Amount
-			} else {
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		for _, allocation := range req.Allocations {
+			var soaItem models.SOAItem
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("sales_invoice_no = ?", allocation.InvoiceNo).
+				First(&soaItem).Error; err != nil {
+				if errors.Is(err, gorm.ErrRecordNotFound) {
+					return fmt.Errorf("%w: %s", errUnknownInvoice, allocation.InvoiceNo)
+				}
+				return err
+			}
+			if allocation.Amount-soaItem.InvoiceBalance > moneyTolerance {
+				return fmt.Errorf("%w: %s", errAllocationOverrun, allocation.InvoiceNo)
+			}
+			soaItem.AmountPaid += allocation.Amount
+			soaItem.InvoiceBalance -= allocation.Amount
+			if math.Abs(soaItem.InvoiceBalance) <= moneyTolerance {
 				soaItem.InvoiceBalance = 0
 			}
-			db.DB.Save(&soaItem)
+			if err := tx.Save(&soaItem).Error; err != nil {
+				return err
+			}
 		}
+		return nil
+	})
+	if txErr != nil {
+		switch {
+		case errors.Is(txErr, errUnknownInvoice):
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": txErr.Error()})
+		case errors.Is(txErr, errAllocationOverrun):
+			respondJSON(w, http.StatusConflict, map[string]string{"error": txErr.Error()})
+		default:
+			respondDBError(w, txErr)
+		}
+		return
 	}
 
 	unapplied := req.Amount - totalAllocated
@@ -266,36 +673,74 @@ func AllocateCollection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondJSON(w, http.StatusOK, map[string]interface{}{
-		"status":           "SUCCESS",
-		"allocatedTotal":   totalAllocated,
+		"status":          "SUCCESS",
+		"allocatedTotal":  totalAllocated,
 		"unappliedCredit": unapplied,
 	})
 }
 
 func GetPurchaseOrders(w http.ResponseWriter, r *http.Request) {
 	var pos []models.PurchaseOrder
-	db.DB.Find(&pos)
+	if err := db.DB.Find(&pos).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, pos)
 }
 
 func CreatePurchaseOrder(w http.ResponseWriter, r *http.Request) {
-	var po models.PurchaseOrder
-	if err := json.NewDecoder(r.Body).Decode(&po); err != nil {
+	var payload struct {
+		models.PurchaseOrder
+		ItemClass        string `json:"itemClass"`
+		LinkedCustomerPO string `json:"linkedCustomerPO"`
+	}
+	if err := decodeJSON(r, &payload); err != nil {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return
+	}
+	po := payload.PurchaseOrder
+	po.ItemClass = payload.ItemClass
+	po.LinkedCustomerPO = payload.LinkedCustomerPO
+	if !required(po.VendorName) || !required(po.ItemDescription) || po.POQty <= 0 ||
+		po.TotalAmount <= 0 || !finite(po.TotalAmount) {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid purchase order payload"})
 		return
 	}
 
 	// Class 3 validation check
-	var req struct {
-		ItemClass        string `json:"itemClass"`
-		LinkedCustomerPO string `json:"linkedCustomerPO"`
-	}
-	_ = json.NewDecoder(r.Body).Decode(&req)
-	if req.ItemClass == "Class 3 (Short-Expiry / Special)" && (req.LinkedCustomerPO == "" || req.LinkedCustomerPO == "N/A") {
+	if payload.ItemClass == "Class 3 (Short-Expiry / Special)" && (payload.LinkedCustomerPO == "" || payload.LinkedCustomerPO == "N/A") {
 		respondJSON(w, http.StatusForbidden, map[string]string{
 			"error": "Class 3 items require a valid linked Customer PO before creating a supplier PO.",
 		})
 		return
+	}
+	if po.SKU != "" {
+		var openQty int64
+		if err := db.DB.Model(&models.PurchaseOrder{}).
+			Where("sku = ? AND status NOT IN ?", po.SKU, []string{"CLOSED", "CANCELLED", "VERIFIED_3WAY"}).
+			Select("COALESCE(SUM(po_qty - rr_qty_received), 0)").Scan(&openQty).Error; err != nil {
+			respondDBError(w, err)
+			return
+		}
+		if openQty > 0 && po.POQty <= int(openQty) {
+			respondJSON(w, http.StatusConflict, map[string]interface{}{
+				"error":        "OPEN_PO_CONTROL: an open PO already covers this SKU",
+				"openQuantity": openQty,
+			})
+			return
+		}
+		if openQty > 0 {
+			if !po.IsShortageException || po.ShortageReason == nil || !required(*po.ShortageReason) {
+				respondJSON(w, http.StatusConflict, map[string]interface{}{
+					"error":        "SHORTAGE_EXCEPTION_REQUIRED: explain the uncovered SKU quantity before creating a shortage PO",
+					"openQuantity": openQty,
+				})
+				return
+			}
+			originalQty := po.POQty
+			po.POQty -= int(openQty)
+			po.TotalAmount = po.TotalAmount * float64(po.POQty) / float64(originalQty)
+		}
 	}
 
 	po.ID = uuid.New()
@@ -303,19 +748,27 @@ func CreatePurchaseOrder(w http.ResponseWriter, r *http.Request) {
 		po.PONumber = "PO-2026-" + time.Now().Format("0504")
 	}
 	po.CreatedAt = time.Now()
-	db.DB.Create(&po)
+	if err := db.DB.Create(&po).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusCreated, po)
 }
 
 func GetRFPs(w http.ResponseWriter, r *http.Request) {
 	var rfps []models.PaymentRequest
-	db.DB.Find(&rfps)
+	if err := db.DB.Find(&rfps).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, rfps)
 }
 
 func CreateRFP(w http.ResponseWriter, r *http.Request) {
 	var rfp models.PaymentRequest
-	if err := json.NewDecoder(r.Body).Decode(&rfp); err != nil {
+	if err := decodeJSON(r, &rfp); err != nil || !required(rfp.Payee) ||
+		!required(rfp.GLAccount) || !required(rfp.Description) || rfp.Amount <= 0 ||
+		!finite(rfp.Amount) || !required(rfp.RequestedBy) {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
@@ -324,7 +777,25 @@ func CreateRFP(w http.ResponseWriter, r *http.Request) {
 		rfp.RFPNumber = "RFP-2026-" + time.Now().Format("0504")
 	}
 	rfp.CreatedAt = time.Now()
-	db.DB.Create(&rfp)
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&rfp).Error; err != nil {
+			return err
+		}
+		return tx.Create(&models.ApprovalLog{
+			ID:             uuid.New(),
+			QRN:            rfp.RFPNumber,
+			DocType:        "Request for Payment",
+			Maker:          rfp.RequestedBy,
+			ReviewerStatus: "APPROVED",
+			GMStatus:       "PENDING",
+			DCSStatus:      "PENDING",
+			TotalAmount:    rfp.Amount,
+		}).Error
+	})
+	if txErr != nil {
+		respondDBError(w, txErr)
+		return
+	}
 	respondJSON(w, http.StatusCreated, rfp)
 }
 
@@ -334,30 +805,66 @@ func ReleaseRFP(w http.ResponseWriter, r *http.Request) {
 		Bank  string `json:"bank"`
 		RefNo string `json:"refNo"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := decodeJSON(r, &req); err != nil || !required(req.Bank) || !required(req.RefNo) {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid payload"})
 		return
 	}
 
 	var rfp models.PaymentRequest
-	if err := db.DB.Where("id = ? OR rfp_number = ?", idStr, idStr).First(&rfp).Error; err != nil {
-		respondJSON(w, http.StatusNotFound, map[string]string{"error": "RFP not found"})
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR rfp_number = ?", idStr, idStr).First(&rfp).Error; err != nil {
+			return err
+		}
+		if rfp.Status == "DISBURSED_PAID" {
+			return workflowError{status: http.StatusConflict, message: "RFP has already been released"}
+		}
+		if rfp.Status != "APPROVED_DCS" && rfp.Status != "APPROVED" && rfp.Status != "PENDING_BANK_RELEASING" {
+			return workflowError{status: http.StatusConflict, message: "RFP release requires completed approval"}
+		}
+		var approval models.ApprovalLog
+		if err := tx.Where("qrn = ?", rfp.RFPNumber).First(&approval).Error; err == nil {
+			if approval.GMStatus != "APPROVED" || (approval.DCSStatus != "APPROVED" && approval.DCSStatus != "NOT_REQUIRED") {
+				return workflowError{status: http.StatusConflict, message: "RFP release requires completed approval stages"}
+			}
+		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+		now := time.Now()
+		rfp.Status = "DISBURSED_PAID"
+		rfp.ReleasedBank = &req.Bank
+		rfp.ReleasedRefNo = &req.RefNo
+		rfp.ReleasedAt = &now
+		if err := tx.Save(&rfp).Error; err != nil {
+			return err
+		}
+		return tx.Create(&models.AuditLog{
+			ID:     uuid.New(),
+			Time:   now.UTC().Format(time.RFC3339),
+			User:   "RFP Bank Release",
+			Action: fmt.Sprintf("Released RFP %s through bank %s", rfp.RFPNumber, req.Bank),
+		}).Error
+	})
+	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+		} else if errors.Is(txErr, gorm.ErrRecordNotFound) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": "RFP not found"})
+		} else {
+			respondDBError(w, txErr)
+		}
 		return
 	}
-
-	now := time.Now()
-	rfp.Status = "DISBURSED_PAID"
-	rfp.ReleasedBank = &req.Bank
-	rfp.ReleasedRefNo = &req.RefNo
-	rfp.ReleasedAt = &now
-	db.DB.Save(&rfp)
 
 	respondJSON(w, http.StatusOK, rfp)
 }
 
 func GetQBOQueue(w http.ResponseWriter, r *http.Request) {
 	var qbo []models.QBOQueueItem
-	db.DB.Find(&qbo)
+	if err := db.DB.Find(&qbo).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, qbo)
 }
 
@@ -365,21 +872,31 @@ func SyncQBOItem(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	var item models.QBOQueueItem
 	if err := db.DB.Where("id = ? OR doc_number = ?", idStr, idStr).First(&item).Error; err != nil {
-		respondJSON(w, http.StatusNotFound, map[string]string{"error": "QBO item not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			respondJSON(w, http.StatusNotFound, map[string]string{"error": "QBO item not found"})
+		} else {
+			respondDBError(w, err)
+		}
 		return
 	}
 
 	item.SyncStatus = "SYNCED"
 	item.QBORefID = "QBO-SYNC-" + time.Now().Format("150405")
 	item.LastAttempt = time.Now()
-	db.DB.Save(&item)
+	if err := db.DB.Save(&item).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 
 	respondJSON(w, http.StatusOK, item)
 }
 
 func GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 	var logs []models.AuditLog
-	db.DB.Find(&logs)
+	if err := db.DB.Find(&logs).Error; err != nil {
+		respondDBError(w, err)
+		return
+	}
 	respondJSON(w, http.StatusOK, logs)
 }
 
@@ -389,4 +906,3 @@ func respondJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.WriteHeader(code)
 	w.Write(response)
 }
-

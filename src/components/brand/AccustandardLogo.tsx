@@ -25,7 +25,7 @@ export const AccustandardLogo: React.FC<AccustandardLogoProps> = ({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={logoSrc}
-        alt="Accustandard Logo"
+        alt="AccuStandard Medical and Diagnostic Supplies Corporation"
         loading="eager"
         fetchPriority="high"
         decoding="async"

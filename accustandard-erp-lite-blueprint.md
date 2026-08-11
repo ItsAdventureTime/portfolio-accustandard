@@ -1,5 +1,10 @@
 # AccuStandard ERP-Lite — Workflow and Product Blueprint
 
+> **Reconciled 2026-08-12:** Sales Quote approval ends at GM; procurement and
+> RFP DCS approval is conditional on configured rules. v1 uses a manual QBO
+> export/queue; direct QBO integration remains future scope. See
+> `IMPLEMENTATION_STATUS.md` for the current demo boundary.
+
 ## Product direction
 
 Build a controlled operations layer that mirrors AccuStandard’s real workflow and feeds clean, approved transactions into QuickBooks. It is not a replacement accounting ledger. The system’s job is to connect sales, pricing, inventory, purchasing, receiving, fulfillment, billing, collections, and disbursement with a complete audit trail.
@@ -13,8 +18,8 @@ Primary source: [Aug 4, 2026 ERP workflow review](https://fathom.video/calls/771
 1. Sales Agent creates an RFQ/request, selecting the customer, products, quantities, expected term, delivery needs, and customer requirements.
 2. The system checks customer-specific price rules, available/on-order/allocated inventory, batch cost, expiry class, and any existing customer PO or contract.
 3. Marketing Manager prepares the sales quotation and ROI. ROI must show side-by-side cost and selling price, including landed cost, sponsorship, LIS connectivity, other account-specific overhead, and expected margin over the contract.
-4. Accounting reviews cost, taxes, margin, and account-specific expenses.
-5. GM reviews commercial reasonableness. President/DCS gives final approval where required by the approval matrix.
+4. GM reviews commercial reasonableness. Accounting and any configured DCS
+   review remain separate control stages where the approval matrix requires.
 6. Approved quotation becomes locked. A customer PO or signed contract/conforme is required before fulfillment; for Class 3/short-expiry items it is also required before any supplier PO.
 
 ### 2. Inventory allocation and fulfillment
@@ -39,7 +44,8 @@ Primary source: [Aug 4, 2026 ERP workflow review](https://fathom.video/calls/771
 
 1. Purchasing Officer converts an approved replenishment recommendation into a supplier PO.
 2. Accounting validates that the purchase is needed, checks existing stock/open POs/cash impact, and reviews financial terms.
-3. GM approves; President/DCS gives final approval based on the matrix.
+3. GM approves; DCS gives final approval only when the configured control rule
+   requires it.
 4. Warehouse records Goods Receipt independently, including partial receipts, batch/lot, expiry, and discrepancies. Inventory updates only from a posted receipt.
 5. Accounting records the vendor invoice and performs three-way matching: approved PO vs Goods Receipt vs Vendor Invoice.
 6. A payment request is released only within tolerance. Exceptions require a reason, attachment, and named approval.
@@ -56,7 +62,10 @@ Primary source: [Aug 4, 2026 ERP workflow review](https://fathom.video/calls/771
 
 ### 6. Accounting handoff
 
-Only approved/postable events enter the QuickBooks sync queue: sales invoice, inventory/COGS entry, vendor bill, payment, collection, and approved adjustment. Each record shows sync status, QuickBooks reference, last attempt, and any actionable error. Operational users never post directly to the ledger.
+Only approved/postable events enter the manual QuickBooks export queue: sales
+invoice, inventory/COGS entry, vendor bill, payment, collection, and approved
+adjustment. Each record shows export status, an optional QuickBooks reference,
+last attempt, and any actionable error. Direct QBO API posting is future scope.
 
 ## Roles and segregation of duties
 
@@ -75,9 +84,10 @@ Only approved/postable events enter the QuickBooks sync queue: sales invoice, in
 
 Use one visible status per record and a chronological history behind it.
 
-- RFQ: Draft → Submitted → Marketing Review → Quotation Draft → Accounting Review → GM Approval → DCS Approval → Approved/Returned/Rejected/Expired
+- RFQ/Sales Quote: Draft → Submitted → Marketing Review → Quotation Draft → GM Approval → Awaiting Client Acceptance → Accepted/Returned/Rejected/Expired (no DCS Sales Quote stage)
+- Procurement/RFP documents: Draft → Submitted → Review → GM Approval → DCS Approval when required by the configured control rule → Approved/Returned/Rejected/Expired
 - Customer order: Awaiting Customer PO → Confirmed → Reserved → Partially Fulfilled → Fulfilled → Billing Ready → Closed
-- Supplier PO: Draft → Accounting Validation → GM Approval → DCS Approval → Open → Partially Received → Fully Received/Closed/Cancelled
+- Supplier PO: Draft → Accounting Validation → GM Approval → Conditional DCS Approval → Open → Partially Received → Fully Received/Closed/Cancelled
 - Vendor invoice: Draft → Match Exception/Matched → Payment Approval → On Hold/Approved → Paid
 - Billing: Draft → Finalized → Partially Collected/Fully Collected → Closed; revision and credit memo are linked documents, never overwrites
 - Inventory count: Open → Frozen/Cutoff → Counted → Variance Review → Approved Adjustment → Posted

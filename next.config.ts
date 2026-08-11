@@ -6,11 +6,6 @@ const nextConfig: NextConfig = {
   basePath: '/accustandard/demo',
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
-  },
   images: {
     unoptimized: true,
   },

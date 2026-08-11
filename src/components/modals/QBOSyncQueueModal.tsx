@@ -41,13 +41,13 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                QuickBooks Online (QBO) Live Sync Queue
-                <span className="px-3 py-1 text-xs font-extrabold bg-emerald-100 text-emerald-900 rounded-full border border-emerald-300">
-                  Live API
+                QuickBooks Online (QBO) Export Queue
+                <span className="px-3 py-1 text-xs font-extrabold bg-amber-100 text-amber-900 rounded-full border border-amber-300">
+                  Manual export / demo
                 </span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                Only approved, control-validated transactions enter the QuickBooks ledger sync queue
+                Control-validated transactions are staged for manual export; direct QBO API integration is future scope.
               </p>
             </div>
           </div>
@@ -61,13 +61,13 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
 
         {/* Content Body */}
         <div className="p-6 sm:p-8 overflow-y-auto space-y-5 flex-1 text-sm font-semibold">
-          <div className="p-4 sm:p-5 bg-emerald-50 border border-emerald-300 rounded-2xl text-xs sm:text-sm text-emerald-950 space-y-1">
+          <div className="p-4 sm:p-5 bg-amber-50 border border-amber-300 rounded-2xl text-xs sm:text-sm text-amber-950 space-y-1">
             <p className="font-extrabold flex items-center gap-2 text-sm">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              COSO Internal Control Handoff Architecture
+              COSO Internal Control Handoff / Export Boundary
             </p>
             <p className="text-emerald-900 leading-relaxed font-semibold">
-              Operational users never post directly to QuickBooks. Only fully approved Sales Invoices, Vendor Bills, Customer Collections, and COGS entries pass validation into this sync queue.
+              Operational users never post directly to QuickBooks. Approved documents are staged here for manual export; the demo action only records a local queue reference.
             </p>
           </div>
 
@@ -92,19 +92,19 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
                     {item.syncStatus === 'SYNCED' && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-emerald-900 text-xs sm:text-sm font-extrabold rounded-xl border border-emerald-300">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        {item.qboRefId}
+                        Demo ref: {item.qboRefId}
                       </span>
                     )}
                     {item.syncStatus === 'QUEUED' && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-900 text-xs sm:text-sm font-extrabold rounded-xl border border-amber-300">
                         <Clock className="w-4 h-4 text-amber-600" />
-                        Queued for Sync
+                        Queued for Manual Export
                       </span>
                     )}
                     {item.syncStatus === 'ERROR' && (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-100 text-rose-900 text-xs sm:text-sm font-extrabold rounded-xl border border-rose-300">
                         <AlertCircle className="w-4 h-4 text-rose-600" />
-                        Sync Blocked
+                        Export Blocked
                       </span>
                     )}
                     <p className="text-xs text-slate-500 font-semibold mt-1">Last attempt: {item.lastAttempt}</p>
@@ -116,7 +116,7 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
                       className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-extrabold rounded-xl shadow-md transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
                     >
                       <RefreshCw className="w-4 h-4" />
-                      <span>Sync Now</span>
+                      <span>Mark Exported (Demo)</span>
                     </button>
                   )}
                 </div>
@@ -127,7 +127,7 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600 font-bold">
-          <span>Bridge Internal Control Handoff Engine v4.2</span>
+          <span>Bridge Internal Control Handoff Engine v4.2 · Direct QBO API future scope</span>
           <button
             onClick={onClose}
             className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"

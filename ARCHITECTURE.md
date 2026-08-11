@@ -23,7 +23,7 @@ The system is structured as a single-page Next.js App Router application optimiz
 |                    Global Store (useDemoStore.ts)                     |
 |  - Inventory SKUs (FEFO Expiry, QC & Pampanga Warehouses)             |
 |  - Demand Replenishment Planner (Class 1/2/3 Items)                  |
-|  - 4-Layer Approval Pipeline (Maker -> Reviewer -> GM -> Chairman)    |
+|  - Configurable Approval Pipeline (Sales Quote ends at GM; DCS conditional) |
 |  - QuickBooks Online Live Sync Queue (QBO Ref IDs)                   |
 |  - Multi-SOA Collection Allocations & Credit Ledger                   |
 +-----------------------------------------------------------------------+
@@ -31,18 +31,18 @@ The system is structured as a single-page Next.js App Router application optimiz
 
 ---
 
-## 🔐 Strict Git & GitHub CLI (`gh`) Version Control Standard
+## 🔐 GitHub CLI (`gh`) Remote Synchronization Standard
 
-To ensure auditability and consistent remote synchronization:
-- **Local Commits:** Use **ONLY** local `git` CLI commands (`git commit -m "..."`). SSH key signing is not required.
-- **Remote Operations:** ALWAYS use official GitHub CLI (`gh`) commands over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials. NEVER use `git` commands for remote operations.
+To ensure auditability and consistent remote synchronization, use only the
+official GitHub CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH
+remotes, passkeys, or SSH keys for remote work.
 
 ---
 
 ## 🔒 COSO Internal Control Architecture
 
 ### 1. Segregation of Duties
-Every operational transaction (Purchase Orders, Sales Quotations, RFP Expense Requests, Inventory Adjustments) enforces a 4-tier maker-checker-approver flow:
+Every operational transaction enforces its configured maker-checker-approver flow. Purchasing, RFP, and inventory-control records may use four stages; Sales Quotes use Sales Officer → Marketing Reviewer → GM, then client acceptance evidence before fulfillment:
 1. **Maker (Sales / Warehouse / Staff):** Drafts transaction.
 2. **Reviewer (Marketing Manager):** Audits margins, specifications, and terms.
 3. **General Manager (Karen):** Conducts operational approval.
@@ -72,7 +72,7 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 [ Caddy Reverse Proxy (caddy.service) ]
        |
        v /accustandard/demo
-[ Demo Pod: accustandard-demo-pod ] (localhost:3001)
+[ Demo Pod: accustandard-demo-pod ] (localhost:8080 API + mounted static web root)
 ```
 
 ### Path Specifications
@@ -81,8 +81,8 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 
 ### Quadlet Services (`deploy/quadlets/demo/`)
-- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 3001.
-- **`accustandard-demo-app.container`**: Web app container running demo static export files.
+- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 8080 for the Go API.
+- **`accustandard-demo-app.container`**: Go API container serving `/accustandard/demo/api/v1`.
 - **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
 
 ---
@@ -123,3 +123,13 @@ Products are managed under 3 distinct stock categories:
 - **Class 1 (Core Fast-Moving):** Automated reorder calculation triggered at critical levels + 10% safety buffer.
 - **Class 2 (Controlled Stock):** Reordering requires explicit forecast review by management.
 - **Class 3 (Short-Expiry / Special):** Hard-blocked from generating supplier POs without a linked Customer PO.
+
+## 2026 Control Corrections
+
+- Sales Quote approval ends at GM approval. Client acceptance evidence is a separate gate before fulfillment; no DCS task is generated.
+- Purchasing may use DCS approval only when its configured control rule requires it.
+- Go receiving updates are transactional and lock the PO row while enforcing the approved quantity ceiling; inventory synchronization remains subject to the deployed API acceptance run.
+- Frontend list hydration is backend-first; browser `localStorage` is not used as the business transaction store.
+
+See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and current
+validation record.

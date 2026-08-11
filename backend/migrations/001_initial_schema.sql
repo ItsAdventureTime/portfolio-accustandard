@@ -1,240 +1,150 @@
--- PostgreSQL 16 Initial Schema for Accustandard Medical ERP
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- AccuStandard ERP PostgreSQL Database Schema
+-- Version: 1.0.0
 
--- Users & RBAC
 CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email TEXT UNIQUE NOT NULL,
-    full_name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    id VARCHAR(64) PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Locations / Warehouses
-CREATE TABLE IF NOT EXISTS locations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    address TEXT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE NOT NULL
+CREATE TABLE IF NOT EXISTS inventory (
+    id VARCHAR(64) PRIMARY KEY,
+    sku VARCHAR(64) UNIQUE NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    location VARCHAR(100) NOT NULL,
+    lot_number VARCHAR(100) NOT NULL,
+    expiry_date DATE NOT NULL,
+    on_hand INT NOT NULL DEFAULT 0,
+    reserved INT NOT NULL DEFAULT 0,
+    available INT NOT NULL DEFAULT 0,
+    unit VARCHAR(32) NOT NULL,
+    wma_cost DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(32) NOT NULL DEFAULT 'NORMAL',
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Master Item Catalog
-CREATE TABLE IF NOT EXISTS items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sku TEXT UNIQUE NOT NULL,
-    barcode TEXT,
-    description TEXT NOT NULL,
-    category TEXT NOT NULL,
-    unit TEXT NOT NULL,
-    item_class TEXT DEFAULT 'Class 1 (Fast-Moving)' NOT NULL,
-    is_batch_tracked BOOLEAN DEFAULT TRUE NOT NULL,
-    is_expiry_tracked BOOLEAN DEFAULT TRUE NOT NULL,
-    is_serial_tracked BOOLEAN DEFAULT FALSE NOT NULL,
-    reorder_level INT DEFAULT 10 NOT NULL,
-    standard_price NUMERIC(12,2) NOT NULL,
-    cost_price NUMERIC(12,2) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE IF NOT EXISTS costing_history (
+    id VARCHAR(64) PRIMARY KEY,
+    sku VARCHAR(64) NOT NULL REFERENCES inventory(sku) ON DELETE CASCADE,
+    previous_wma DECIMAL(12, 2) NOT NULL,
+    incoming_qty INT NOT NULL,
+    incoming_unit_cost DECIMAL(12, 2) NOT NULL,
+    new_wma DECIMAL(12, 2) NOT NULL,
+    transaction_type VARCHAR(64) NOT NULL,
+    reference_no VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Inventory Stock
-CREATE TABLE IF NOT EXISTS inventory_stock (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    location_id UUID REFERENCES locations(id) ON DELETE CASCADE,
-    item_id UUID REFERENCES items(id) ON DELETE CASCADE,
-    batch_number TEXT,
-    expiry_date TIMESTAMP WITH TIME ZONE,
-    serial_number TEXT,
-    qty_on_hand INT DEFAULT 0 NOT NULL,
-    qty_reserved INT DEFAULT 0 NOT NULL
+CREATE TABLE IF NOT EXISTS rfqs (
+    id VARCHAR(64) PRIMARY KEY,
+    rfq_no VARCHAR(64) UNIQUE NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
+    requested_by VARCHAR(150) NOT NULL,
+    facility_ownership VARCHAR(64) NOT NULL,
+    institutional_character VARCHAR(64) NOT NULL,
+    setup_type VARCHAR(64) NOT NULL,
+    is_rtu BOOLEAN NOT NULL DEFAULT FALSE,
+    census_per_day INT DEFAULT 0,
+    existing_machine VARCHAR(150),
+    contract_years INT DEFAULT 3,
+    proposed_selling_price DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    landed_cost_per_unit DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    expected_margin_pct DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(64) NOT NULL DEFAULT 'PENDING_MARKETING_REVIEW',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Price Lists
-CREATE TABLE IF NOT EXISTS price_lists (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    tier_code TEXT UNIQUE NOT NULL,
-    is_approved BOOLEAN DEFAULT FALSE NOT NULL,
-    created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE IF NOT EXISTS quotations (
+    id VARCHAR(64) PRIMARY KEY,
+    qrn VARCHAR(64) UNIQUE NOT NULL,
+    rfq_no VARCHAR(64) REFERENCES rfqs(rfq_no),
+    customer VARCHAR(255) NOT NULL,
+    sku VARCHAR(64) NOT NULL,
+    item_description VARCHAR(255) NOT NULL,
+    qty INT NOT NULL,
+    unit_cost DECIMAL(12, 2) NOT NULL,
+    unit_price DECIMAL(12, 2) NOT NULL,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    gross_margin_pct DECIMAL(5, 2) NOT NULL,
+    owner_role VARCHAR(50) NOT NULL DEFAULT 'Sales',
+    status VARCHAR(64) NOT NULL DEFAULT 'PENDING_MARKETING_REVIEW',
+    has_client_acceptance BOOLEAN NOT NULL DEFAULT FALSE,
+    client_acceptance_file VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Vendors
-CREATE TABLE IF NOT EXISTS vendors (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    tin TEXT NOT NULL,
-    address TEXT NOT NULL,
-    bank_details TEXT NOT NULL,
-    contact_person TEXT NOT NULL,
-    is_approved BOOLEAN DEFAULT FALSE NOT NULL,
-    approved_by UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
--- GL Accounts
-CREATE TABLE IF NOT EXISTS gl_accounts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    code TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    category TEXT NOT NULL
-);
-
--- Sales Quotations
-CREATE TABLE IF NOT EXISTS sales_quotations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    qrn TEXT UNIQUE NOT NULL,
-    client_name TEXT NOT NULL,
-    client_address TEXT NOT NULL,
-    client_contact_person TEXT NOT NULL,
-    salesperson TEXT NOT NULL,
-    quotation_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    validity_days INT DEFAULT 30 NOT NULL,
-    reservation_expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    status TEXT DEFAULT 'DRAFT' NOT NULL,
-    total_amount NUMERIC(12,2) NOT NULL,
-    created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
--- Quotation Items
-CREATE TABLE IF NOT EXISTS quotation_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    quotation_id UUID REFERENCES sales_quotations(id) ON DELETE CASCADE,
-    item_id UUID REFERENCES items(id),
-    description TEXT NOT NULL,
-    packaging TEXT NOT NULL,
-    unit_price NUMERIC(12,2) NOT NULL,
-    quantity INT NOT NULL,
-    total_price NUMERIC(12,2) NOT NULL
-);
-
--- Statement of Accounts (SOA)
-CREATE TABLE IF NOT EXISTS statement_of_accounts (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    soa_number TEXT UNIQUE NOT NULL,
-    statement_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    client_name TEXT NOT NULL,
-    client_address TEXT NOT NULL,
-    terms TEXT DEFAULT '30 Days' NOT NULL,
-    salesperson TEXT NOT NULL,
-    total_current_balance NUMERIC(12,2) NOT NULL,
-    amount_due NUMERIC(12,2) NOT NULL,
-    not_yet_due NUMERIC(12,2) NOT NULL,
-    prepared_by TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
--- SOA Items
-CREATE TABLE IF NOT EXISTS soa_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    soa_id UUID REFERENCES statement_of_accounts(id) ON DELETE CASCADE,
-    sales_invoice_no TEXT NOT NULL,
-    dr_no TEXT NOT NULL,
-    si_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    due_date TIMESTAMP WITH TIME ZONE NOT NULL,
-    age_days INT NOT NULL,
-    invoice_amount NUMERIC(12,2) NOT NULL,
-    amount_paid NUMERIC(12,2) DEFAULT 0.00 NOT NULL,
-    invoice_balance NUMERIC(12,2) NOT NULL,
-    running_balance NUMERIC(12,2) NOT NULL
-);
-
--- Purchase Orders
 CREATE TABLE IF NOT EXISTS purchase_orders (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    po_number TEXT UNIQUE NOT NULL,
-    vendor_name TEXT NOT NULL,
-    item_description TEXT NOT NULL,
-    po_qty INT NOT NULL,
-    rr_qty_received INT DEFAULT 0 NOT NULL,
-    invoice_ref TEXT NOT NULL,
-    total_amount NUMERIC(12,2) NOT NULL,
-    status TEXT DEFAULT 'DRAFT' NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    id VARCHAR(64) PRIMARY KEY,
+    po_number VARCHAR(64) UNIQUE NOT NULL,
+    supplier VARCHAR(255) NOT NULL,
+    sku VARCHAR(64) NOT NULL,
+    item_description VARCHAR(255) NOT NULL,
+    qty INT NOT NULL,
+    unit_cost DECIMAL(12, 2) NOT NULL,
+    total_amount DECIMAL(12, 2) NOT NULL,
+    accounting_review_status VARCHAR(64) NOT NULL DEFAULT 'PENDING_ACCOUNTING_REVIEW',
+    gm_approval_status VARCHAR(64) NOT NULL DEFAULT 'PENDING_GM_APPROVAL',
+    dcs_approval_status VARCHAR(64) NOT NULL DEFAULT 'PENDING_DCS_APPROVAL',
+    overall_status VARCHAR(64) NOT NULL DEFAULT 'PENDING_ACCOUNTING_REVIEW',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Payment Requests (RFP)
-CREATE TABLE IF NOT EXISTS payment_requests (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    rfp_number TEXT UNIQUE NOT NULL,
-    payee TEXT NOT NULL,
-    gl_account TEXT NOT NULL,
-    description TEXT NOT NULL,
-    amount NUMERIC(12,2) NOT NULL,
-    requested_by TEXT NOT NULL,
-    status TEXT DEFAULT 'PENDING_GM' NOT NULL,
-    released_bank TEXT,
-    released_ref_no TEXT,
-    released_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE IF NOT EXISTS goods_receipts (
+    id VARCHAR(64) PRIMARY KEY,
+    rr_number VARCHAR(64) UNIQUE NOT NULL,
+    po_number VARCHAR(64) NOT NULL REFERENCES purchase_orders(po_number),
+    received_qty INT NOT NULL,
+    received_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    inspector_name VARCHAR(150) NOT NULL,
+    status VARCHAR(64) NOT NULL DEFAULT 'POSTED'
 );
 
--- Approval Pipeline Logs (COSO 4-layer)
-CREATE TABLE IF NOT EXISTS approval_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    qrn TEXT NOT NULL,
-    doc_type TEXT NOT NULL,
-    maker TEXT NOT NULL,
-    reviewer_status TEXT NOT NULL,
-    gm_status TEXT NOT NULL,
-    dcs_status TEXT NOT NULL,
-    total_amount NUMERIC(12,2) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+CREATE TABLE IF NOT EXISTS vendor_invoices (
+    id VARCHAR(64) PRIMARY KEY,
+    invoice_number VARCHAR(64) UNIQUE NOT NULL,
+    po_number VARCHAR(64) NOT NULL REFERENCES purchase_orders(po_number),
+    rr_number VARCHAR(64) NOT NULL REFERENCES goods_receipts(rr_number),
+    invoice_amount DECIMAL(12, 2) NOT NULL,
+    match_status VARCHAR(64) NOT NULL DEFAULT '3_WAY_MATCHED',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- QBO Sync Queue
-CREATE TABLE IF NOT EXISTS qbo_queue (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    doc_type TEXT NOT NULL,
-    doc_number TEXT NOT NULL,
-    entity_name TEXT NOT NULL,
-    amount NUMERIC(12,2) NOT NULL,
-    qbo_ref_id TEXT NOT NULL,
-    sync_status TEXT DEFAULT 'QUEUED' NOT NULL,
-    last_attempt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    error_message TEXT DEFAULT '' NOT NULL
+CREATE TABLE IF NOT EXISTS requests_for_payment (
+    id VARCHAR(64) PRIMARY KEY,
+    rfp_number VARCHAR(64) UNIQUE NOT NULL,
+    payee VARCHAR(255) NOT NULL,
+    amount DECIMAL(12, 2) NOT NULL,
+    gl_account VARCHAR(150) NOT NULL,
+    description TEXT,
+    bank_account VARCHAR(150),
+    proof_of_disbursement VARCHAR(255),
+    status VARCHAR(64) NOT NULL DEFAULT 'PENDING_GM_APPROVAL',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Replenishment Planning Items
-CREATE TABLE IF NOT EXISTS replenishment_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    sku TEXT UNIQUE NOT NULL,
-    description TEXT NOT NULL,
-    item_class TEXT NOT NULL,
-    available_stock INT NOT NULL,
-    reserved_stock INT NOT NULL,
-    open_customer_demand INT NOT NULL,
-    critical_level INT NOT NULL,
-    proposed_order_qty INT NOT NULL,
-    lead_time_days INT NOT NULL,
-    supplier TEXT NOT NULL,
-    linked_customer_po TEXT NOT NULL,
-    status TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS statements_of_account (
+    id VARCHAR(64) PRIMARY KEY,
+    invoice_no VARCHAR(64) UNIQUE NOT NULL,
+    client_name VARCHAR(255) NOT NULL,
+    invoice_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    invoice_amount DECIMAL(12, 2) NOT NULL,
+    collected_amount DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+    outstanding_balance DECIMAL(12, 2) NOT NULL,
+    status VARCHAR(64) NOT NULL DEFAULT 'UNPAID',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- RFQ Items
-CREATE TABLE IF NOT EXISTS rfq_items (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    rfq_no TEXT UNIQUE NOT NULL,
-    customer_name TEXT NOT NULL,
-    requested_by TEXT NOT NULL,
-    census_per_day INT NOT NULL,
-    lis_connectivity BOOLEAN DEFAULT FALSE NOT NULL,
-    expected_contract_months INT NOT NULL,
-    marketing_roi_status TEXT NOT NULL,
-    proposed_selling_price NUMERIC(12,2) NOT NULL,
-    landed_cost_per_unit NUMERIC(12,2) NOT NULL,
-    expected_margin_pct NUMERIC(5,2) NOT NULL
-);
-
--- Audit Logs
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    timestamp TEXT NOT NULL,
-    user_email TEXT NOT NULL,
-    action TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    id VARCHAR(64) PRIMARY KEY,
+    actor_name VARCHAR(150) NOT NULL,
+    actor_role VARCHAR(50) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    target_entity VARCHAR(100) NOT NULL,
+    details TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

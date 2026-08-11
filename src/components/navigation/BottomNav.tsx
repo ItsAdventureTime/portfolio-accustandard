@@ -19,7 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   allowedTabs = ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
 }) => {
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-300 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] flex items-center justify-around text-slate-700 no-print">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-300 shadow-[0_-4px_25px_rgba(0,0,0,0.08)] px-2 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] flex items-center justify-around text-slate-700 no-print">
       {/* 1. Overview */}
       {allowedTabs.includes('overview') && (
         <button

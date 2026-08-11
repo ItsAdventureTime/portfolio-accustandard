@@ -34,19 +34,19 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0">
           <button
             onClick={onOpenMobileDrawer}
-            className="md:hidden p-1.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer shrink-0 min-h-[40px] min-w-[40px] flex items-center justify-center"
+            className="lg:hidden p-1.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Open mobile menu"
           >
             <Menu className="w-5 h-5" />
           </button>
 
           {/* Mobile Logo Branding with max-w constraint to prevent notch collision */}
-          <div className="flex items-center md:hidden shrink min-w-0 max-w-[135px] xs:max-w-[160px] sm:max-w-none overflow-hidden">
+          <div className="flex items-center lg:hidden shrink min-w-0 max-w-[135px] xs:max-w-[160px] sm:max-w-none overflow-hidden">
             <AccustandardLogo size="sm" className="max-h-6 xs:max-h-7 sm:max-h-9" />
           </div>
 
           {/* Desktop Search Trigger / Command Palette */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={onOpenCommandPalette}
               className="flex items-center gap-3 bg-slate-50/80 hover:bg-white hover:border-blue-400 border border-slate-300/80 text-slate-700 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md w-80 justify-between cursor-pointer group"
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Desktop Barcode Scanner & PWA Buttons */}
           <button
             onClick={onOpenScanner}
-            className="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 hover:shadow-md text-white px-4 py-2.5 rounded-2xl text-sm font-extrabold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer"
+            className="hidden sm:flex items-center gap-2 bg-red-600 hover:bg-red-700 hover:shadow-md text-white px-4 py-2.5 rounded-2xl text-sm font-extrabold transition-all duration-200 shadow-sm active:scale-95 cursor-pointer min-h-[44px]"
             title="Open Live Barcode Camera Scanner"
           >
             <Camera className="w-4 h-4" />

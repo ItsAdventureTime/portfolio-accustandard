@@ -8,7 +8,7 @@ interface CreatePOModalProps {
   isOpen: boolean;
   onClose: () => void;
   inventoryList: any[];
-  onSubmitPO: (newPO: any) => void;
+  onSubmitPO: (newPO: any) => void | Promise<boolean | void>;
   existingPOs?: any[];
 }
 
@@ -26,6 +26,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const [linkedCustomerPO, setLinkedCustomerPO] = useState('');
   const [shortageReason, setShortageReason] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,7 +42,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const isCoveredByOpenPO = existingOpenPO && remainingQtyInOpenPO >= poQty;
   const isShortageException = existingOpenPO && remainingQtyInOpenPO > 0 && poQty > remainingQtyInOpenPO;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vendorName.trim()) return;
 
@@ -68,6 +69,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
       vendorName,
       itemDescription: selectedItem?.description || 'Medical Supply Kit',
       sku: selectedSku,
+      itemClass: selectedItem?.itemClass || '',
       poQty,
       rrQtyReceived: 0,
       invoiceRef: 'Awaiting Receipt',
@@ -82,8 +84,13 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
       ownerRole: 'Bookkeeper',
     };
 
-    onSubmitPO(newPO);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      const committed = await onSubmitPO(newPO);
+      if (committed !== false) onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -248,5 +255,3 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
     </div>
   );
 };
-
-

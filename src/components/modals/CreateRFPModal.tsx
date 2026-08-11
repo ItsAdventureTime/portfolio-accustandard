@@ -7,7 +7,7 @@ import { CurrencyInputField } from '@/components/common/CurrencyInputField';
 interface CreateRFPModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitRFP: (newRFP: any) => void;
+  onSubmitRFP: (newRFP: any) => void | Promise<boolean | void>;
 }
 
 export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({
@@ -19,10 +19,11 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({
   const [glAccount, setGlAccount] = useState('6100 - Freight & Delivery');
   const [description, setDescription] = useState('Cold-chain express shipping for Pampanga hospital orders');
   const [amount, setAmount] = useState(18500.0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payee.trim() || !description.trim()) return;
 
@@ -41,8 +42,13 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({
       ownerRole: 'General Manager',
     };
 
-    onSubmitRFP(newRFP);
-    onClose();
+    setIsSubmitting(true);
+    try {
+      const committed = await onSubmitRFP(newRFP);
+      if (committed !== false) onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

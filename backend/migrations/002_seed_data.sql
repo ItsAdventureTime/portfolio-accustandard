@@ -44,9 +44,9 @@ ON CONFLICT (rfq_no) DO NOTHING;
 -- Approval Pipeline (COSO 4-layer) Seed
 INSERT INTO approval_logs (id, qrn, doc_type, maker, reviewer_status, gm_status, dcs_status, total_amount)
 VALUES
-  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'QRN20240415037', 'Sales Quotation', 'Sales Officer', 'APPROVED', 'APPROVED', 'PENDING', 31500.00),
+  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'QRN20240415037', 'Sales Quotation', 'Sales Officer', 'APPROVED', 'APPROVED', 'NOT_REQUIRED', 31500.00),
   ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0891', 'Purchase Order', 'Purchasing Officer', 'APPROVED', 'PENDING', 'AWAITING', 142000.00),
-  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'RFP-2026-0104', 'Request for Payment', 'Bookkeeper (Aila)', 'APPROVED', 'APPROVED', 'PENDING', 18500.00)
+  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'RFP-2026-0104', 'Request for Payment', 'Bookkeeper (Aila)', 'APPROVED', 'APPROVED', 'APPROVED', 18500.00)
 ON CONFLICT (id) DO NOTHING;
 
 -- Statement of Account (SOA) Seed
@@ -65,9 +65,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Purchase Orders Seed
 INSERT INTO purchase_orders (id, po_number, vendor_name, item_description, po_qty, rr_qty_received, invoice_ref, total_amount, status)
 VALUES
-  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'PO-2026-0891', 'BioMerieux Diagnostics Corp', 'Calibration Sticks Bact Alert', 100, 100, 'SI #8812', 142000.00, 'VERIFIED_3WAY'),
+  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'PO-2026-0891', 'BioMerieux Diagnostics Corp', 'Calibration Sticks Bact Alert', 100, 100, 'SI #8812', 142000.00, 'AWAITING_VENDOR_INVOICE'),
   ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0914', 'Sysmex Philippines Inc.', 'Blood Chemistry Reagents Kit', 50, 0, 'Awaiting', 450000.00, 'PENDING_RECEIVING'),
-  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'PO-2026-0925', 'Mindray Medical Corp', 'Hematology Lyse Reagent 5L', 80, 80, 'SI #9901', 640000.00, 'VERIFIED_3WAY')
+  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'PO-2026-0925', 'Mindray Medical Corp', 'Hematology Lyse Reagent 5L', 80, 80, 'SI #9901', 640000.00, 'AWAITING_VENDOR_INVOICE')
 ON CONFLICT (po_number) DO NOTHING;
 
 -- Payment Requests (RFP) Seed

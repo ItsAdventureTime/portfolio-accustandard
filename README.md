@@ -2,7 +2,14 @@
 
 Welcome to the **Accustandard Medical ERP Dashboard**, built for **Accustandard Medical and Diagnostic Supplies Corporation** in partnership with **DelegateOps Business Support Services (DOS)**.
 
-This application is a control-first medical supply chain and internal financial platform. It enforces strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotations, receiving report 3-way matching, client aging statement of account (SOA) ledgers, non-PO expense management, and live QuickBooks Online (QBO) queue synchronization.
+This application is a control-first medical supply chain and internal financial platform. It is designed around strict segregation of duties across warehouse operations (Quezon City & Pampanga), sales quotations, receiving report controls, client aging statement of account (SOA) ledgers, non-PO expense management, and a QuickBooks Online (QBO) export queue.
+
+**Runtime qualification:** This repository is an incremental demo migration,
+not an accepted production ERP. The Go API currently provides a limited
+server-backed surface; several workflow screens remain local preview paths.
+QBO behavior is a queue/demo stub, not a live QuickBooks Online connection.
+See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the audited
+boundary and validation record.
 
 ---
 
@@ -19,9 +26,9 @@ This application is a control-first medical supply chain and internal financial 
 Medical supply chain operations handle high-value equipment, sensitive diagnostic reagents, and FEFO expiry constraints. Generic off-the-shelf software often lacks strict internal controls. Accustandard ERP solves this by embedding COSO internal control principles directly into everyday workflows:
 
 - **No Self-Approvals:** A user who creates a quote, purchase order, or expense request cannot approve it.
-- **3-Way Matching:** Receiving reports automatically verify Purchase Order quantities against Vendor Invoices to block over-receiving.
-- **3-Day Soft Inventory Reservations:** Quotations reserve physical stock for 3 days before automatically releasing it if unconfirmed.
-- **Audit Logging:** Every approval, override, and state change records a permanent audit trail.
+- **3-Way Match target:** The design verifies Purchase Order quantities against receiving and vendor-invoice evidence; the current Go demo hard-blocks over-receipt, while vendor-invoice matching remains an identified implementation gap.
+- **3-Day Reservation target:** The quotation UI models a 3-day soft reservation; server-side reservation expiry remains an implementation gap.
+- **Audit Logging:** Server-backed mutations expose audit records where implemented; acceptance-grade completeness remains unverified.
 
 ---
 
@@ -39,7 +46,7 @@ The dashboard uses a **Light Corporate Medical System**:
 ## 🛠️ Main Features & Modules
 
 ### 1. Executive Control & COSO Approval Pipeline
-Enforces a 4-tier approval sequence: `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`. Clickable **Document QRN / ID** button badges (`bg-blue-50`, `hover:bg-blue-900`, `FileText` icon) open an expanded **Document Inspector Modal** (`max-w-3xl`, 768px wide) with step-by-step COSO approval timeline tracking.
+Enforces the configured maker-checker approval sequence. Procurement and RFP documents may use `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`; Sales Quotes explicitly stop at GM, then require client acceptance evidence before fulfillment. Clickable **Document QRN / ID** button badges (`bg-blue-50`, `hover:bg-blue-900`, `FileText` icon) open an expanded **Document Inspector Modal** (`max-w-3xl`, 768px wide) with step-by-step COSO approval timeline tracking.
 
 ### 2. Multi-Location Inventory & Barcode Inspection
 Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / Barcode** button badges open an expanded **Stock Detail Modal** (`max-w-3xl`, 768px wide) with large GS1 barcode previews, batch FEFO expiry badges, and location metrics.
@@ -48,10 +55,10 @@ Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / B
 - **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
 ### 3. Sales RFQ, Quotation Generator & Marketing ROI Engine
-Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). Submitting quotes soft-reserves stock for 3 days and immediately updates the live **Official Sales Quotation Document Preview**, the quotation selector dropdown, the COSO approval pipeline, and Section 2 (`SETUP TYPE & TEST CATEGORY SELECTIONS`) in the **Official RFQ Form** (`RFQ Form.pdf` template) with dynamic SKU selections and custom row addition tools (`+ Add Row`). Recording signed client acceptance automatically generates a corresponding Sales Invoice in the **Statement of Account (SOA)** ledger live. Features a Marketing Manager ROI Financial Engine popup where clicking "Apply Calculation to Active Quote" updates unit prices and contract margins in real-time, with an interactive item deletion tool (🗑️) to remove rows and recalculate proposal values live.
+Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). The current runtime persists the RFQ through the Go API when connected; quotation approval, reservation expiry, client acceptance, and invoice generation remain UI preview paths pending server implementation. The UI includes the official quotation/RFQ previews, dynamic SKU selections, custom row tools, and Marketing ROI calculations.
 
 ### 4. Statement of Account (SOA) & Multi-SOA Check Allocation
-Renders official SOA statements matching company templates without `NaN` errors. Includes a dynamic client selector (`Gatchalian Medical Lab`, `ACE Medical Center`, `Pampanga Regional Hospital`, `Quezon City Diagnostic Center`), a `+ Add Invoice to SOA` modal, an `Edit Invoice Entry` modal, interactive row deletion tools (🗑️), and live recalculation of running balances, Amount Due (>30 Days), Not Yet Due (<=30 Days), and Total Current Balance. Includes an interactive multi-SOA check allocation modal tool to dynamically deduct allocated payments from invoice balances, track unapplied credit, and queue QBO collections.
+Renders official SOA statements matching company templates without `NaN` errors. Includes a dynamic client selector (`Gatchalian Medical Lab`, `ACE Medical Center`, `Pampanga Regional Hospital`, `Quezon City Diagnostic Center`), local preview tools for invoice add/edit/delete, live recalculation of balances, and a server-backed multi-SOA check allocation endpoint when the Go API is connected. QBO collection posting remains a queue/demo stub.
 
 ### 5. Purchasing & 3-Way Match Fraud Control
 PO numbers open an expanded **3-Way Match Inspection Modal** (`max-w-3xl`) displaying approved PO quantity vs. Goods Receipt (RR) vs. Vendor Invoice. Hard-blocks over-receiving fraud beyond approved PO limits.
@@ -62,8 +69,10 @@ RFP Voucher IDs open an expanded **Expense Voucher Inspector Modal** (`max-w-3xl
 ### 7. User Access Matrix & Dynamic Role Permissions Editor
 In User & Audit Logs, user rows open an expanded **User Access Profile & Role Permissions Modal** (`max-w-3xl`). Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
 
-### 8. QuickBooks Online (QBO) Live Sync Queue & Go REST API
-Dedicated sync queue drawer (`max-w-4xl`) holding validated transactions (Sales Invoices, Bills, Collections) backed by Go 1.22 REST controllers and PostgreSQL 16 database.
+### 8. QuickBooks Online (QBO) Export Queue & Go REST API
+Dedicated queue drawer (`max-w-4xl`) holding validated demo transactions
+backed by Go REST controllers and PostgreSQL 16. Direct QBO API integration
+remains future scope.
 
 ---
 
@@ -97,22 +106,16 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ---
 
-## 🚀 Git Local & GitHub CLI (`gh`) Remote Standard
+## 🚀 GitHub CLI (`gh`) Remote Standard
 
-To strictly separate local version control from remote GitHub repository management:
-
-1. **Local Commits:** Use **ONLY** local `git` CLI commands (no SSH key requirement).
+Remote synchronization uses only the official GitHub CLI (`gh`) over
+authenticated HTTPS. Do not use `git push`, SSH remotes, passkeys, or SSH
+keys for remote work.
    ```bash
-   git add .
-   git commit -m "type(scope): clear description of change"
-   ```
+   gh auth status
+   gh repo view ItsAdventureTime/bridge-accustandard
 
-2. **Remote Commit & Synchronization:** ALWAYS use official GitHub CLI (`gh`) commands over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials (`ItsAdventureTime`). NEVER use `git` commands for remote operations.
-   ```bash
-   # Synchronize remote repository state via GitHub CLI
-   gh repo sync
-
-   # Create Pull Requests or manage remote state
+   gh repo sync ItsAdventureTime/bridge-accustandard
    gh pr create --fill
    ```
 
@@ -121,7 +124,7 @@ To strictly separate local version control from remote GitHub repository managem
 ## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
-- Node.js 18+ or 20+
+- Node.js 20.9+ (Node.js 24 is used by the remote build container)
 - npm 9+
 - GitHub CLI (`gh`) authenticated via HTTPS
 
@@ -141,25 +144,32 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to test the 
 
 ---
 
-## 🐳 Building with Podman (Disposable Container)
+## 🐳 Remote VPS Build Policy
 
-To test static builds safely inside an isolated container:
+The deployment procedure performs no local build, compilation, or application
+execution. Source is synchronized to the VPS, where the frontend is built in a
+disposable container and the backend image is built for the existing Quadlet:
 
 ```bash
-podman run --rm \
-  -v "$(pwd):/workspace:Z" \
-  -v /workspace/.next \
+podman run --rm --userns=keep-id \
+  -v "/home/jk/bridge-ph/accustandard-demo/source:/workspace:Z" \
   -v /workspace/node_modules \
+  -v /workspace/.next \
   -w /workspace \
   node:24-alpine \
-  sh -c "npm ci && npm run build"
+  sh -lc "npm ci && npm run build"
 ```
+
+`--rm` removes the temporary frontend build container after it exits. The Go
+runtime image is intentionally retained because the Quadlet references it as
+`localhost/accustandard-bridge-backend:demo`.
 
 ---
 
 ## ⚡ 1-Command Automated Demo Deployment
 
-To build static files in an isolated Podman container, configure Quadlets, auto-format/validate Caddy, and sync static assets to the Demo VPS in **1 single command**:
+To synchronize source, build remotely, publish the static export, install the
+demo Quadlets, and restart only the demo API in **1 single command**:
 
 ```bash
 # Option A: Run via npm script
@@ -174,6 +184,8 @@ npm run deploy:demo
 - **Live Demo Site URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
 - **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
 - **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
+- **Remote Build Source:** `/home/jk/bridge-ph/accustandard-demo/source/`
+- **Static Export Root:** `/home/jk/bridge-ph/accustandard-demo/web-dist/`
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 - **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
 
@@ -181,12 +193,45 @@ npm run deploy:demo
 
 ## 📌 Repository & Development Workflow Policy
 
-0. **Documentation Synchronization Policy:** Every time code, components, dependencies, scripts, or design specs are changed, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) MUST be updated immediately.
-1. **Local Git Commit Protocol:** Local commits must be executed via standard `git` CLI (`git add . && git commit --no-gpg-sign -m "..."`) without triggering SSH keys, passkeys, or GPG signing.
-2. **GitHub Remote HTTPS Synchronization Policy:** Local commits must always be kept in 100% continuous synchronization with remote GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) using `git push origin main` or `gh` CLI over `https` authentication. SSH keys and passkeys are strictly avoided.
+0. **Documentation Synchronization Policy:** Update `IMPLEMENTATION_STATUS.md`
+   and every affected source-of-truth document when code, components,
+   dependencies, scripts, or design specs change. Do not copy an acceptance
+   PASS claim without current evidence.
+1. **Remote synchronization:** Use only `gh` over authenticated HTTPS. Do not
+   use `git push`, SSH remotes, passkeys, or SSH keys for remote work.
 
 ---
 
 ## 📄 License & Attribution
 
 Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** & **DelegateOps Business Support Services**. All rights reserved.
+
+## 2026 Implementation Baseline
+
+- The browser hydrates operational lists from `/accustandard/demo/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
+- Sales Quotes route Sales Officer → Marketing Reviewer → General Manager; DCS is not a Sales Quote approval stage.
+- Goods Receipt over-receiving is hard-blocked, and a fully received PO remains `AWAITING_VENDOR_INVOICE` until the vendor invoice is matched.
+- Desktop navigation supports a collapsed icon rail; mobile navigation remains thumb-zone oriented below 1024px.
+
+## 2026 Repository Audit Status
+
+The repository is in an incremental migration, not yet a complete acceptance
+release. The deployed runtime is the Go API in `backend/cmd/server` plus the
+Next.js static export; the older `backend/main.go` server and Drizzle schema
+remain legacy artifacts and are not the demo runtime source of truth.
+
+The current API covers inventory reads/receiving, RFQs, approval records, SOA
+allocation, purchase orders, RFPs, QBO queue records, and audit-log reads. The
+independent quotation, client-acceptance, ROI, vendor-invoice/3-way-match,
+delivery/invoice, admin-master, export, attachment, idempotency, and full
+server-side role-queue workflows required by the handoff still need backend
+implementation and acceptance tests. UI-only state or deterministic fallback
+data must not be reported as authoritative persistence.
+
+See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the concise
+runtime boundary and validation record.
+
+The acceptance matrix in
+`AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` is retained
+as a historical contract and explicitly marked **UNVERIFIED** pending a
+deployed Go/PostgreSQL test run.

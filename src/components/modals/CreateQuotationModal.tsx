@@ -9,7 +9,7 @@ interface CreateQuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
   inventoryList: any[];
-  onSubmitQuotation: (newQuote: any) => void;
+  onSubmitQuotation: (newQuote: any) => void | Promise<boolean | void>;
 }
 
 export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
@@ -29,7 +29,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
 
   const selectedItem = inventoryList.find((i) => i.sku === selectedSku) || inventoryList[0];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clientName.trim() || !facilityName.trim()) return;
 
@@ -41,7 +41,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
       maker: 'Sales Officer',
       reviewerStatus: 'PENDING',
       gmStatus: 'PENDING',
-      dcsStatus: 'PENDING',
+      dcsStatus: 'NOT_REQUIRED',
       totalAmount: quantity * unitPrice,
       totalPrice: quantity * unitPrice,
       clientName,
@@ -65,7 +65,8 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
       ],
     };
 
-    onSubmitQuotation(newQuote);
+    const committed = await onSubmitQuotation(newQuote);
+    if (committed === false) return;
     setClientName('');
     setFacilityName('');
     setAddress('');
