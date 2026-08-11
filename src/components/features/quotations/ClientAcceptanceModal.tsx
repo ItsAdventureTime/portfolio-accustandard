@@ -84,10 +84,10 @@ export const ClientAcceptanceModal: React.FC<ClientAcceptanceModalProps> = ({
           <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-950 font-medium space-y-1">
             <div className="flex items-center gap-1.5 font-bold text-amber-900">
               <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
-              <span>FR-005 Compliance Requirement:</span>
+              <span>Fulfillment Requirement:</span>
             </div>
             <p className="text-slate-700 leading-relaxed">
-              Downstream fulfillment (Delivery Receipt &amp; Stock Release) is hard-blocked until valid signed client acceptance evidence is uploaded and recorded.
+              Order fulfillment (Delivery Receipt and stock release) requires uploaded proof of signed client acceptance.
             </p>
           </div>
 

@@ -83,7 +83,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
               <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
                 Create &amp; Submit Sales Quotation
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Marketing (Reviewer) &rarr; GM &rarr; Awaiting Client Approval (AT-SALES-005 compliant)</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Marketing for review, then General Manager approval, then client acceptance.</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
@@ -94,7 +94,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
         {/* 3-Day Reservation Notice */}
         <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950 text-xs sm:text-sm flex items-center gap-3 font-semibold">
           <Lock className="w-5 h-5 text-amber-600 shrink-0" />
-          <span>Creating this quote will automatically trigger a 3-day stock reservation for the selected item in the warehouse.</span>
+          <span>Submitting this quote reserves the selected stock item for 3 days.</span>
         </div>
 
         {/* Form */}

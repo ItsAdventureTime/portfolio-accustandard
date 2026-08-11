@@ -70,7 +70,7 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
         {/* 3-Way Match Warning */}
         <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-xs sm:text-sm text-amber-950 flex items-center gap-3 font-semibold">
           <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
-          <span>3-Way Match Active: Receiving cannot exceed approved PO quantity ({selectedPO?.poQty || 0} units). Over-receiving is hard-blocked.</span>
+          <span>3-Way Match Verification: Quantities received cannot exceed the approved PO limit ({selectedPO?.poQty || 0} units).</span>
         </div>
 
         {hardBlockError && (

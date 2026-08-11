@@ -98,7 +98,7 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
               <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
                 Create Purchase Order (PO)
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Accounting (Review) &rarr; GM &rarr; Conditional DCS (AT-PO-003 / AT-PO-004)</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Accounting for review, followed by General Manager approval.</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
@@ -113,16 +113,16 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
           </div>
         )}
 
-        {/* AT-PO-001 Open PO Same-SKU Inspection Banner */}
+        {/* Open PO Same-SKU Inspection Banner */}
         {existingOpenPO && (
           <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950 space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-extrabold flex items-center gap-2 text-amber-900 text-xs uppercase tracking-wider">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
-                AT-PO-001 Open PO Same-SKU Control Banner
+                Active Open PO Found for this SKU
               </span>
               <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 font-black rounded-full text-xs">
-                Open PO: {existingOpenPO.poNumber}
+                PO: {existingOpenPO.poNumber}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-semibold text-slate-800 pt-1">

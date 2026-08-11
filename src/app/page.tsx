@@ -256,8 +256,8 @@ export default function Home() {
       ...prev,
     ]);
 
-    showNotification(`Created and routed Sales Quotation ${newQuote.qrn} for approval! Stock soft-reserved.`);
-    addAuditLog(`Created Sales Quotation ${newQuote.qrn} (3-day soft reservation active)`);
+    showNotification(`Created Sales Quote ${newQuote.qrn}. Stock reserved for 3 days.`);
+    addAuditLog(`Created Sales Quote ${newQuote.qrn} with 3-day stock reservation`);
     setActiveTab('quotations');
   };
 
@@ -388,8 +388,8 @@ export default function Home() {
       });
     }
 
-    showNotification(`Confirmed Goods Receipt RR for PO! Added ${receivedQty} units to inventory & recalculated WMA cost.`);
-    addAuditLog(`Received ${receivedQty} units for PO #${poId} (WMA recalculated)`);
+    showNotification(`Recorded Goods Receipt for PO. Updated stock by ${receivedQty} units and recalculated average cost.`);
+    addAuditLog(`Received ${receivedQty} units for PO #${poId} and updated moving average cost`);
   };
 
   // Handle RFP Release
@@ -407,7 +407,7 @@ export default function Home() {
         return rfp;
       })
     );
-    showNotification(`Released funds for RFP #${id} via ${bank} (Ref: ${refNo})!`);
+    showNotification(`Released payment for RFP #${id} via ${bank} (Ref: ${refNo}).`);
     addAuditLog(`Disbursed payment for RFP #${id} from ${bank}`);
   };
 
@@ -430,8 +430,8 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Added new stock batch ${newStock.lotNumber} (${newStock.sku}) to ${newStock.location}!`);
-    addAuditLog(`Added inventory batch ${newStock.lotNumber} (${newStock.sku})`);
+    showNotification(`Added stock batch ${newStock.lotNumber} (${newStock.sku}) to ${newStock.location}.`);
+    addAuditLog(`Added stock batch ${newStock.lotNumber} (${newStock.sku})`);
   };
 
   // Handle Purchase Order Submit
@@ -452,8 +452,8 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Created and routed Purchase Order ${newPO.poNumber} for approval!`);
-    addAuditLog(`Created Purchase Order ${newPO.poNumber}`);
+    showNotification(`Submitted Purchase Order ${newPO.poNumber} to Accounting for review.`);
+    addAuditLog(`Submitted Purchase Order ${newPO.poNumber}`);
   };
 
   // Handle RFP Submit
@@ -474,8 +474,8 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Created and routed RFP Voucher ${newRFP.rfpNo} for approval!`);
-    addAuditLog(`Created Payment Voucher ${newRFP.rfpNo}`);
+    showNotification(`Submitted RFP Voucher ${newRFP.rfpNo} to GM for approval.`);
+    addAuditLog(`Submitted Payment Voucher ${newRFP.rfpNo}`);
   };
 
   // Handle Approval Action
