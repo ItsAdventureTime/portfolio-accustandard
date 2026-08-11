@@ -75,7 +75,7 @@ export function exportToExcel(filename: string, sheetName: string, rows: object[
   }
 }
 
-// 3. Document Print Trigger isolating target element via clean CSS window print
+// 3. Document Print Trigger isolating target element via clean DOM print execution
 export function printDocumentElement(elementId: string) {
   const element = document.getElementById(elementId);
   if (!element) {
@@ -83,64 +83,16 @@ export function printDocumentElement(elementId: string) {
     return;
   }
 
-  try {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      window.print();
-      return;
-    }
+  // Clear previous print targets
+  document.querySelectorAll('.active-print-target').forEach((el) => {
+    el.classList.remove('active-print-target');
+  });
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Accustandard Printable Document</title>
-          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-          <style>
-            @page { size: A4 portrait; margin: 10mm; }
-            * {
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              color-adjust: exact !important;
-            }
-            body {
-              font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              background: #ffffff !important;
-              color: #0f172a !important;
-              margin: 0;
-              padding: 0;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            .print-page {
-              box-shadow: none !important;
-              border: none !important;
-              margin: 0 auto !important;
-              width: 100% !important;
-              max-width: 100% !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            .no-print { display: none !important; }
-          </style>
-        </head>
-        <body>
-          <div style="padding: 10px;">
-            ${element.innerHTML}
-          </div>
-          <script>
-            window.onload = function() {
-              window.focus();
-              window.print();
-              window.onafterprint = function() { window.close(); };
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  } catch (err) {
-    console.error('Popup printing fallback triggered:', err);
+  // Attach print target class directly to DOM node
+  element.classList.add('active-print-target');
+
+  // Trigger browser native print dialog on primary document (retains all app CSS)
+  setTimeout(() => {
     window.print();
-  }
+  }, 100);
 }

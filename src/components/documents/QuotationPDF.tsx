@@ -27,9 +27,20 @@ export interface QuotationData {
 
 export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: string) => void; isEditable?: boolean }> = ({ data, onRemoveItem, isEditable = true }) => {
   return (
-    <div className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans shrink-0">
-      {/* Header */}
-      <div className="flex justify-between items-start border-b-2 border-red-600 pb-4 mb-6">
+    <div
+      className="print-page w-[760px] min-w-[760px] mx-auto bg-white p-8 border border-gray-200 shadow-md text-gray-900 text-sm font-sans shrink-0"
+      style={{
+        WebkitPrintColorAdjust: 'exact',
+        printColorAdjust: 'exact',
+        backgroundColor: '#ffffff',
+        color: '#0f172a',
+      }}
+    >
+      {/* Header with Red Brand Divider Line */}
+      <div
+        className="flex justify-between items-start pb-4 mb-6"
+        style={{ borderBottom: '2px solid #dc2626' }}
+      >
         <div>
           <AccustandardLogo size="lg" />
         </div>
@@ -63,25 +74,38 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
 
       {/* Item Table */}
       <div className="mb-8">
-        <table className="w-full border-collapse">
+        <table
+          className="w-full border-collapse"
+          style={{ border: '1px solid #1e293b', width: '100%' }}
+        >
           <thead>
-            <tr className="bg-blue-900 text-white font-bold text-xs uppercase">
-              <th className="py-2.5 px-4 text-left border border-blue-900">Product Description</th>
-              <th className="py-2.5 px-4 text-center border border-blue-900 w-36">Packaging</th>
-              <th className="py-2.5 px-4 text-right border border-blue-900 w-44">Unit Price (PHP)</th>
-              {onRemoveItem && <th className="py-2.5 px-2 text-center border border-blue-900 w-12 no-print">Action</th>}
+            <tr
+              style={{
+                backgroundColor: '#1e3a8a',
+                color: '#ffffff',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                textTransform: 'uppercase',
+                WebkitPrintColorAdjust: 'exact',
+                printColorAdjust: 'exact',
+              }}
+            >
+              <th style={{ border: '1px solid #1e293b', padding: '8px 12px', textAlign: 'left', backgroundColor: '#1e3a8a', color: '#ffffff' }}>Product Description</th>
+              <th style={{ border: '1px solid #1e293b', padding: '8px 12px', textAlign: 'center', width: '144px', backgroundColor: '#1e3a8a', color: '#ffffff' }}>Packaging</th>
+              <th style={{ border: '1px solid #1e293b', padding: '8px 12px', textAlign: 'right', width: '176px', backgroundColor: '#1e3a8a', color: '#ffffff' }}>Unit Price (PHP)</th>
+              {onRemoveItem && <th className="no-print" style={{ border: '1px solid #1e293b', padding: '4px', textAlign: 'center', width: '48px', backgroundColor: '#1e3a8a', color: '#ffffff' }}>Action</th>}
             </tr>
           </thead>
           <tbody>
             {data.items.map((item, idx) => (
-              <tr key={item.id || idx} className="border-b border-gray-200 hover:bg-slate-50 transition">
-                <td className="py-3 px-4 text-gray-900 font-medium">{item.description}</td>
-                <td className="py-3 px-4 text-center text-gray-800">{item.packaging}</td>
-                <td className="py-3 px-4 text-right font-bold text-gray-900">
-                  {item.unitPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+              <tr key={item.id || idx} className="text-sm font-medium">
+                <td style={{ border: '1px solid #1e293b', padding: '8px 12px', color: '#0f172a', fontWeight: '500' }}>{item.description}</td>
+                <td style={{ border: '1px solid #1e293b', padding: '8px 12px', textAlign: 'center', color: '#334155' }}>{item.packaging}</td>
+                <td style={{ border: '1px solid #1e293b', padding: '8px 12px', textAlign: 'right', fontWeight: 'bold', color: '#0f172a' }}>
+                  ₱{item.unitPrice.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </td>
                 {onRemoveItem && (
-                  <td className="py-3 px-2 text-center border-b border-gray-200 no-print">
+                  <td className="no-print" style={{ border: '1px solid #1e293b', padding: '4px', textAlign: 'center' }}>
                     <button
                       onClick={() => onRemoveItem(item.id)}
                       disabled={!isEditable}
@@ -121,12 +145,15 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
       <div className="mt-12 mb-12">
         <p className="text-xs text-gray-700">Respectfully,</p>
         <div className="h-12"></div>
-        <p className="font-bold text-gray-900 border-b border-gray-400 inline-block pb-0.5">{data.signatoryName}</p>
+        <p className="font-bold text-gray-900 border-b border-gray-400 inline-block pb-0.5" style={{ borderBottom: '1px solid #475569' }}>{data.signatoryName}</p>
         <p className="text-xs text-gray-600">{data.signatoryTitle}</p>
       </div>
 
       {/* Footer */}
-      <div className="border-t-2 border-red-600 pt-3 text-center text-xs text-gray-600 flex justify-between">
+      <div
+        className="pt-3 text-center text-xs text-gray-600 flex justify-between"
+        style={{ borderTop: '2px solid #dc2626' }}
+      >
         <p>Email: accustandard1024@gmail.com</p>
         <p>Tel and Fax no.: (045) 966-6097</p>
       </div>
