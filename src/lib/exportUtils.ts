@@ -97,9 +97,30 @@ export function printDocumentElement(elementId: string) {
           <title>Accustandard Printable Document</title>
           <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
           <style>
-            @page { size: A4 portrait; margin: 12mm; }
-            body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #ffffff; color: #0f172a; margin: 0; padding: 0; }
-            .print-page { box-shadow: none !important; border: none !important; margin: 0 auto !important; width: 100% !important; max-width: 100% !important; }
+            @page { size: A4 portrait; margin: 10mm; }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+            body {
+              font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              background: #ffffff !important;
+              color: #0f172a !important;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .print-page {
+              box-shadow: none !important;
+              border: none !important;
+              margin: 0 auto !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
             .no-print { display: none !important; }
           </style>
         </head>
