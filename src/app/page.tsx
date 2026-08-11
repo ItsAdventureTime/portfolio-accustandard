@@ -381,7 +381,7 @@ export default function Home() {
     return true;
   };
 
-  // Handle Goods Receipt Receiving (Dynamic Inventory, PO & WMA Cost Update)
+  // Handle goods receipt receiving, inventory, PO, and WMA updates.
   const handleReceivePO = async (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }): Promise<boolean> => {
     const targetPo = poList.find((po) => po.id === poId);
     if (!targetPo || receivedQty <= 0) {
