@@ -98,6 +98,22 @@ func TestCanReceivePO(t *testing.T) {
 	}
 }
 
+func TestApplyApprovalRestrictsDocumentStageRoles(t *testing.T) {
+	po := models.ApprovalLog{
+		DocType: "Purchase Order", Maker: "Purchasing Officer",
+		ReviewerStatus: "PENDING", GMStatus: "PENDING", DCSStatus: "NOT_REQUIRED",
+	}
+	if err := applyApproval(&po, "Marketing"); err == nil {
+		t.Fatal("Marketing approval was accepted for a Purchase Order")
+	}
+	if err := applyApproval(&po, "Accounting"); err != nil || po.ReviewerStatus != "APPROVED" {
+		t.Fatalf("Accounting PO review = (%v, %s), want approved", err, po.ReviewerStatus)
+	}
+	if err := applyApproval(&po, "General Manager"); err != nil || po.GMStatus != "APPROVED" {
+		t.Fatalf("GM PO approval = (%v, %s), want approved", err, po.GMStatus)
+	}
+}
+
 func TestDecodeJSONRejectsMalformedPayload(t *testing.T) {
 	req := httptest.NewRequest("POST", "/", strings.NewReader(`{"role":"Reviewer"} {"role":"GM"}`))
 	var payload struct {

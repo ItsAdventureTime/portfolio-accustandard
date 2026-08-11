@@ -42,17 +42,20 @@ remotes, passkeys, or SSH keys for remote work.
 ## 🔒 COSO Internal Control Architecture
 
 ### 1. Segregation of Duties
-Every operational transaction enforces its configured maker-checker-approver flow. Purchasing, RFP, and inventory-control records may use four stages; Sales Quotes use Sales Officer → Marketing Reviewer → GM, then client acceptance evidence before fulfillment:
+Every operational transaction enforces its configured maker-checker-approver flow. Purchase Orders use Purchasing → Accounting → GM → optional DCS; RFPs use Maker → GM → optional DCS; Sales Quotes use Sales Officer → Marketing Reviewer → GM, then client acceptance evidence before fulfillment:
 1. **Maker (Sales / Warehouse / Staff):** Drafts transaction.
-2. **Reviewer (Marketing Manager):** Audits margins, specifications, and terms.
+2. **Accounting or Marketing Reviewer:** Reviews the document-specific control stage.
 3. **General Manager (Karen):** Conducts operational approval.
 4. **DCS Chairman:** Issues final corporate sign-off.
 
 A maker cannot approve their own document.
 
 ### 2. 3-Way Purchasing Match
-When receiving inventory from vendors, the system compares:
+When fully implemented, receiving compares:
 `Purchase Order Quantity` ↔ `Goods Receipt (RR)` ↔ `Vendor Invoice Amount`
+
+The current demo atomically enforces the PO/RR quantity gate; vendor-invoice
+matching remains a separate unimplemented acceptance step.
 
 If receiving quantities exceed the approved PO amount, the transaction is hard-blocked to prevent vendor over-billing.
 

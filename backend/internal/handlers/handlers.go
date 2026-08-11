@@ -117,7 +117,17 @@ func validateRejection(log models.ApprovalLog, role string) error {
 		return fmt.Errorf("segregation of duties blocks maker rejection")
 	}
 	switch role {
+	case "Accounting", "Bookkeeper":
+		if log.DocType != "Purchase Order" {
+			return fmt.Errorf("Accounting approval is limited to Purchase Orders")
+		}
+		if log.ReviewerStatus != "PENDING" {
+			return fmt.Errorf("reviewer stage is already finalized or invalid")
+		}
 	case "Marketing", "Reviewer":
+		if log.DocType != "Sales Quotation" {
+			return fmt.Errorf("Marketing approval is limited to Sales Quotes")
+		}
 		if log.ReviewerStatus != "PENDING" {
 			return fmt.Errorf("reviewer stage is already finalized or invalid")
 		}
@@ -145,18 +155,35 @@ func applyApproval(log *models.ApprovalLog, role string) error {
 	if role == "Admin" {
 		switch {
 		case log.ReviewerStatus == "PENDING":
-			role = "Marketing"
+			if log.DocType == "Purchase Order" {
+				role = "Accounting"
+			} else {
+				role = "Marketing"
+			}
 		case log.GMStatus == "PENDING":
 			role = "General Manager"
 		case log.DCSStatus == "PENDING":
 			role = "Chairman (DCS)"
 		}
 	}
+	switch {
+	case log.ReviewerStatus == "PENDING":
+		if log.DocType == "Purchase Order" && role != "Accounting" && role != "Bookkeeper" {
+			return workflowError{status: http.StatusForbidden, message: "Purchase Orders require Accounting review"}
+		}
+		if log.DocType == "Sales Quotation" && role != "Marketing" && role != "Reviewer" {
+			return workflowError{status: http.StatusForbidden, message: "Sales Quotes require Marketing review"}
+		}
+	case log.GMStatus == "PENDING" && role != "General Manager" && role != "GM":
+		return workflowError{status: http.StatusForbidden, message: "Only the General Manager may approve the GM stage"}
+	case log.DCSStatus == "PENDING" && role != "Chairman" && role != "DCS" && role != "Chairman (DCS)":
+		return workflowError{status: http.StatusForbidden, message: "Only the DCS Chairman may approve the DCS stage"}
+	}
 	if role == log.Maker || (log.DocType == "Sales Quotation" && (role == "DCS" || role == "Chairman (DCS)")) {
 		return workflowError{status: http.StatusForbidden, message: "Segregation of Duties blocked self-approval or invalid Sales Quote DCS approval."}
 	}
 	switch {
-	case role == "Marketing" || role == "Reviewer":
+	case role == "Accounting" || role == "Bookkeeper" || role == "Marketing" || role == "Reviewer":
 		if log.ReviewerStatus == "APPROVED" || log.ReviewerStatus == "REJECTED" {
 			return workflowError{status: http.StatusConflict, message: "Reviewer stage already finalized"}
 		}
@@ -189,7 +216,7 @@ func applyRejection(log *models.ApprovalLog, role string) error {
 		return workflowError{status: status, message: err.Error()}
 	}
 	switch {
-	case role == "Marketing" || role == "Reviewer":
+	case role == "Accounting" || role == "Bookkeeper" || role == "Marketing" || role == "Reviewer":
 		log.ReviewerStatus = "REJECTED"
 	case role == "General Manager" || role == "GM":
 		log.GMStatus = "REJECTED"
@@ -217,9 +244,21 @@ func rfpRequiresDCS(amount float64) bool {
 	return err == nil && threshold >= 0 && amount >= threshold
 }
 
+func poRequiresDCS(amount float64) bool {
+	rawThreshold := strings.TrimSpace(os.Getenv("DCS_PO_THRESHOLD"))
+	if rawThreshold == "" {
+		return false
+	}
+	threshold, err := strconv.ParseFloat(rawThreshold, 64)
+	return err == nil && threshold >= 0 && amount >= threshold
+}
+
 func enforceOpenPOControl(tx *gorm.DB, po *models.PurchaseOrder) error {
 	if po.SKU == "" {
 		return nil
+	}
+	if err := tx.Exec("SELECT pg_advisory_xact_lock(hashtext(?))", "accustandard-po:"+po.SKU).Error; err != nil {
+		return err
 	}
 	var openPOs []models.PurchaseOrder
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -588,6 +627,23 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
+		if log.DocType == "Purchase Order" {
+			var po models.PurchaseOrder
+			if err := tx.Where("po_number = ?", log.QRN).First(&po).Error; err != nil {
+				return err
+			}
+			switch {
+			case log.DCSStatus == "APPROVED" || (log.GMStatus == "APPROVED" && log.DCSStatus == "NOT_REQUIRED"):
+				po.Status = "APPROVED"
+			case log.GMStatus == "APPROVED":
+				po.Status = "PENDING_DCS"
+			case log.ReviewerStatus == "APPROVED":
+				po.Status = "PENDING_GM"
+			}
+			if err := tx.Save(&po).Error; err != nil {
+				return err
+			}
+		}
 		return recordApprovalAudit(tx, req.Role, "Approved", log)
 	})
 	if txErr != nil {
@@ -629,6 +685,11 @@ func RejectDocument(w http.ResponseWriter, r *http.Request) {
 		}
 		if log.DocType == "Request for Payment" {
 			if err := tx.Model(&models.PaymentRequest{}).Where("rfp_number = ?", log.QRN).Update("status", "REJECTED").Error; err != nil {
+				return err
+			}
+		}
+		if log.DocType == "Purchase Order" {
+			if err := tx.Model(&models.PurchaseOrder{}).Where("po_number = ?", log.QRN).Update("status", "REJECTED").Error; err != nil {
 				return err
 			}
 		}
@@ -824,7 +885,23 @@ func CreatePurchaseOrder(w http.ResponseWriter, r *http.Request) {
 		if err := enforceOpenPOControl(tx, &po); err != nil {
 			return err
 		}
-		return tx.Create(&po).Error
+		if err := tx.Create(&po).Error; err != nil {
+			return err
+		}
+		dcsStatus := "NOT_REQUIRED"
+		if poRequiresDCS(po.TotalAmount) {
+			dcsStatus = "PENDING"
+		}
+		return tx.Create(&models.ApprovalLog{
+			ID:             uuid.New(),
+			QRN:            po.PONumber,
+			DocType:        "Purchase Order",
+			Maker:          "Purchasing Officer",
+			ReviewerStatus: "PENDING",
+			GMStatus:       "PENDING",
+			DCSStatus:      dcsStatus,
+			TotalAmount:    po.TotalAmount,
+		}).Error
 	})
 	if txErr != nil {
 		var stateErr workflowError
@@ -964,20 +1041,36 @@ func GetQBOQueue(w http.ResponseWriter, r *http.Request) {
 func SyncQBOItem(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	var item models.QBOQueueItem
-	if err := db.DB.Where("id = ? OR doc_number = ?", idStr, idStr).First(&item).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	txErr := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR doc_number = ?", idStr, idStr).First(&item).Error; err != nil {
+			return err
+		}
+		if item.SyncStatus == "SYNCED" {
+			return workflowError{status: http.StatusConflict, message: "queue item is already marked as exported"}
+		}
+		now := time.Now()
+		item.SyncStatus = "SYNCED"
+		item.QBORefID = "DEMO-EXPORT-" + now.Format("150405")
+		item.LastAttempt = now
+		if err := tx.Save(&item).Error; err != nil {
+			return err
+		}
+		return tx.Create(&models.AuditLog{
+			ID:     uuid.New(),
+			Time:   now.UTC().Format(time.RFC3339),
+			User:   "Manual QBO Export",
+			Action: fmt.Sprintf("Marked queue item %s for manual export", item.DocNumber),
+		}).Error
+	})
+	if txErr != nil {
+		var stateErr workflowError
+		if errors.As(txErr, &stateErr) {
+			respondJSON(w, stateErr.status, map[string]string{"error": stateErr.message})
+		} else if errors.Is(txErr, gorm.ErrRecordNotFound) {
 			respondJSON(w, http.StatusNotFound, map[string]string{"error": "QBO item not found"})
 		} else {
-			respondDBError(w, err)
+			respondDBError(w, txErr)
 		}
-		return
-	}
-
-	item.SyncStatus = "SYNCED"
-	item.QBORefID = "QBO-SYNC-" + time.Now().Format("150405")
-	item.LastAttempt = time.Now()
-	if err := db.DB.Save(&item).Error; err != nil {
-		respondDBError(w, err)
 		return
 	}
 

@@ -55,6 +55,9 @@ server-backed record, authorization, audit event, and refresh-safe test.
 - Class 3 supplier POs require a linked customer PO.
 - RFP creation creates a server approval record; RFP release requires completed
   approval, is row-locked/idempotent, and writes an audit event.
+- PO creation creates a server approval record and supports Accounting → GM →
+  optional DCS transitions using `DCS_PO_THRESHOLD`; Admin-managed rule
+  persistence is still not implemented.
 - Open-PO shortage requests may create only the uncovered quantity when a
   non-empty shortage exception reason is supplied.
 - RFP DCS routing is conditional on the optional `DCS_RFP_THRESHOLD` runtime

@@ -46,7 +46,7 @@ The dashboard uses a **Light Corporate Medical System**:
 ## 🛠️ Main Features & Modules
 
 ### 1. Executive Control & COSO Approval Pipeline
-Enforces the configured maker-checker approval sequence. Procurement and RFP documents may use `Maker` &rarr; `Reviewer (Marketing)` &rarr; `General Manager (Karen)` &rarr; `DCS Chairman`; Sales Quotes explicitly stop at GM, then require client acceptance evidence before fulfillment. Clickable **Document QRN / ID** button badges (`bg-blue-50`, `hover:bg-blue-900`, `FileText` icon) open an expanded **Document Inspector Modal** (`max-w-3xl`, 768px wide) with step-by-step COSO approval timeline tracking.
+Enforces the configured maker-checker approval sequence. Purchase Orders use `Purchasing` &rarr; `Accounting` &rarr; `General Manager` &rarr; optional rule-triggered `DCS Chairman`; RFPs use `Maker` &rarr; `General Manager` &rarr; optional rule-triggered `DCS Chairman`; Sales Quotes stop at GM, then require client acceptance evidence before fulfillment. Clickable **Document QRN / ID** button badges (`bg-blue-50`, `hover:bg-blue-900`, `FileText` icon) open an expanded **Document Inspector Modal** (`max-w-3xl`, 768px wide) with step-by-step COSO approval timeline tracking.
 
 ### 2. Multi-Location Inventory & Barcode Inspection
 Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / Barcode** button badges open an expanded **Stock Detail Modal** (`max-w-3xl`, 768px wide) with large GS1 barcode previews, batch FEFO expiry badges, and location metrics.

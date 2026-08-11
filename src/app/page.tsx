@@ -540,6 +540,8 @@ export default function Home() {
         const saved = await createPurchaseOrder(newPO);
         if (!saved) throw new Error('The API did not commit the purchase order.');
         setPoList((prev) => [saved, ...prev]);
+        const refreshedApprovals = await getApprovals();
+        if (Array.isArray(refreshedApprovals)) setApprovalsList(refreshedApprovals);
         showNotification(`Purchase Order ${saved.poNumber} committed to the Go API.`);
         addAuditLog(`Committed Purchase Order ${saved.poNumber} through the Go API`);
         return true;
@@ -617,7 +619,8 @@ export default function Home() {
       showNotification('Sales Quotes do not have a DCS approval stage.');
       return false;
     }
-    if (stage === 'reviewer' && !['Admin', 'Marketing'].includes(viewAsRole)) {
+    const isPOAccountingReview = stage === 'reviewer' && target.type === 'Purchase Order';
+    if (stage === 'reviewer' && !['Admin', 'Marketing'].includes(viewAsRole) && !(isPOAccountingReview && viewAsRole === 'Bookkeeper')) {
       showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
       return false;
     }
@@ -632,7 +635,11 @@ export default function Home() {
 
     if (apiOnline) {
       try {
-        const role = stage === 'reviewer' ? 'Marketing' : stage === 'gm' ? 'General Manager' : 'Chairman (DCS)';
+        const role = stage === 'reviewer'
+          ? (isPOAccountingReview ? 'Accounting' : 'Marketing')
+          : stage === 'gm'
+            ? 'General Manager'
+            : 'Chairman (DCS)';
         const saved = await updateApproval(id, 'approve', viewAsRole === 'Admin' ? 'Admin' : role);
         if (!saved) throw new Error('The API did not commit the approval.');
         setApprovalsList((prev) => prev.map((item) => (
