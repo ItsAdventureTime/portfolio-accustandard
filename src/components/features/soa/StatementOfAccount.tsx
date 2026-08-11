@@ -25,7 +25,7 @@ interface StatementOfAccountProps {
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onShowNotification: (msg: string) => void;
   onAddAuditLog: (action: string) => void;
-  onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void;
+  onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void | Promise<boolean | void>;
 }
 
 export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
@@ -243,7 +243,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     onOpenExportModal('Statement of Account Ledger', 'accustandard_soa_ledger', computedRows, 'printable-soa-target');
   };
 
-  const handleAllocateCheck = (e: React.FormEvent) => {
+  const handleAllocateCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     const allocations = [
       { invoiceNo: 'SI-6087', amount: Number(allocatedSi6087) },
@@ -251,15 +251,16 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     ];
 
     if (onAllocateCollection) {
-      onAllocateCollection(checkNo, bank, checkAmount, allocations);
+      const committed = await onAllocateCollection(checkNo, bank, checkAmount, allocations);
+      if (committed === false) return;
+    } else {
+      onShowNotification(
+        `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
+      );
+      onAddAuditLog(
+        `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
+      );
     }
-
-    onShowNotification(
-      `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
-    );
-    onAddAuditLog(
-      `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
-    );
     setIsCollectionModalOpen(false);
   };
 
@@ -774,7 +775,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
             <form onSubmit={handleAllocateCheck} className="space-y-5 text-sm font-semibold">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs sm:text-sm text-blue-950 font-bold flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-blue-700 shrink-0" />
-                <span>Multi-SOA Check Allocation: Deducts payment against selected invoice balances and calculates unapplied customer credit in real-time.</span>
+                <span>Multi-SOA Check Allocation: Apply one payment to selected invoice balances and calculate any unapplied customer credit.</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/80 p-5 rounded-2xl border border-slate-300/80">

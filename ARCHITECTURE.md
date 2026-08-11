@@ -101,7 +101,7 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 
 ## 🎨 UI/UX Design System & Micro-Interaction Architecture
 
-The interface follows modern web ergonomics with physics-based motion, spatial alignment, and high-legibility visual hierarchy:
+The interface uses responsive layout, clear spacing, readable hierarchy, and restrained motion:
 
 ### 1. Viewport-Optimized Modal Container Sizes
 - **Inspector Modals (`max-w-3xl`, 768px wide)**: Document QRN Inspector, SKU Barcode Detail, PO 3-Way Match Audit, RFP Expense Breakdown, and User Access Matrix Editor.
@@ -123,11 +123,11 @@ Across all 6 core data tables, interactive primary keys are rendered inside high
 - **USER NAME**: `User` (left) + `User Name` + `Eye` (right badge) &rarr; opens User Access Matrix Editor Modal.
 - **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
 
-### 4. Smooth Physics Entrance Animations & High-Visibility Notification Dialogs
+### 4. Modal Motion & Confirmation Dialogs
 - **Modal Popups & Drawers:** Existing fixed blurred overlays receive native
   `modal-backdrop` / `modal-surface` CSS motion, including a reduced-motion
   override; the behavior does not depend on an animation-plugin utility.
-- **High-Visibility Notification Popups (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered popup window modals featuring explicit user confirmation buttons (`"Acknowledge & Close"`) so alerts and workflow updates cannot be overlooked.
+- **Confirmation notifications (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered dialogs and explicit confirmation buttons (`"Acknowledge & Close"`) so users can review alerts and workflow updates before dismissing them.
 
 ---
 

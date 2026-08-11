@@ -6,16 +6,9 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Stage 2: Production runtime using Node 24 Alpine image
-FROM node:24-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV PORT=3000
-
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
+# Stage 2: Static export runtime. `output: 'export'` writes `/out`.
+FROM nginx:alpine AS runner
+COPY --from=builder /app/out /usr/share/nginx/html/accustandard/demo
+COPY deploy/nginx/static.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3000
-CMD ["npm", "start"]

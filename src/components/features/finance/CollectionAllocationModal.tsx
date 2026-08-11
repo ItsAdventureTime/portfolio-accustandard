@@ -7,7 +7,7 @@ interface CollectionAllocationModalProps {
   isOpen: boolean;
   onClose: () => void;
   collectionData?: any;
-  onConfirmAllocation?: (allocationData: any) => void;
+  onConfirmAllocation?: (allocationData: any) => void | Promise<boolean | void>;
 }
 
 export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps> = ({
@@ -40,15 +40,16 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
     setAllocations(updated);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (onConfirmAllocation) {
-      onConfirmAllocation({
+      const committed = await onConfirmAllocation({
         checkNo,
         paymentAmount,
         totalAllocated,
         unallocatedAmount,
         allocations,
       });
+      if (committed === false) return;
     }
     onClose();
   };

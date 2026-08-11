@@ -7,7 +7,7 @@ interface ReceivingReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   poList: any[];
-  onReceivePO: (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }) => void;
+  onReceivePO: (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }) => void | Promise<boolean | void>;
 }
 
 export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
@@ -22,13 +22,14 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
   const [batchNumber, setBatchNumber] = useState('LOT-2026-REC-01');
   const [serialNumber, setSerialNumber] = useState('');
   const [hardBlockError, setHardBlockError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const selectedPO = poList.find((p) => p.id === selectedPoId) || poList[0];
   const maxAllowed = selectedPO ? selectedPO.poQty - selectedPO.rrQtyReceived : 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPO) return;
 
@@ -42,8 +43,13 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
     }
 
     setHardBlockError(null);
-    onReceivePO(selectedPO.id, Number(receivedQty), { batchNumber, serialNumber });
-    onClose();
+    setIsSubmitting(true);
+    try {
+      const committed = await onReceivePO(selectedPO.id, Number(receivedQty), { batchNumber, serialNumber });
+      if (committed !== false) onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -160,6 +166,8 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
               className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4" />
@@ -171,4 +179,3 @@ export const ReceivingReportModal: React.FC<ReceivingReportModalProps> = ({
     </div>
   );
 };
-

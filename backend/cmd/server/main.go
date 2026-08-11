@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"accustandard-backend/internal/db"
 	"accustandard-backend/internal/handlers"
@@ -27,7 +28,16 @@ func main() {
 	log.Printf("==> Accustandard Go Backend initializing (Port: %s)...", port)
 	_, err := db.InitDB(dsn)
 	if err != nil {
-		log.Printf("! Database init warning: %v", err)
+		log.Fatalf("! Database init failed: %v", err)
+	}
+
+	allowedOrigins := []string{
+		"https://delegateops.business",
+		"http://localhost:3000",
+		"http://localhost:3001",
+	}
+	if configuredOrigins := os.Getenv("CORS_ALLOWED_ORIGINS"); configuredOrigins != "" {
+		allowedOrigins = strings.Split(configuredOrigins, ",")
 	}
 
 	r := chi.NewRouter()
@@ -35,11 +45,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 		MaxAge:           300,
 	}))
 

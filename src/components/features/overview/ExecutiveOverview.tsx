@@ -65,9 +65,8 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   const lowStockSkus = (inventoryList || []).filter((item) => (item.available || item.onHand) < 50);
 
   // Role Approval Eligibility Checks
-  const canApproveReviewer = ['Admin', 'Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole);
-  const canApproveGM = ['Admin', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole);
-  const canApproveDCS = ['Admin', 'Chairman (DCS)'].includes(viewAsRole);
+  const canApproveReviewer = ['Admin', 'Marketing'].includes(viewAsRole);
+  const canApproveGM = ['Admin', 'General Manager'].includes(viewAsRole);
 
   return (
     <div className="space-y-6 text-slate-900">
@@ -84,7 +83,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
             Executive Control &amp; Operations Pipeline
           </h1>
           <p className="text-sm text-blue-100 font-medium mt-1">
-            Enforcing Segregation of Duties (Maker &rarr; Reviewer &rarr; GM &rarr; DCS Chairman) across Accustandard Medical operations.
+             Enforcing Segregation of Duties across Sales, Purchasing, Finance, and Warehouse operations.
           </p>
         </div>
 
@@ -190,7 +189,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
               COSO 4-Layer Approval Chain Pipeline
             </h2>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Maker &rarr; Reviewer (Marketing) &rarr; GM &rarr; DCS (Chairman)
+               Sales Quotes: Maker &rarr; Marketing Reviewer &rarr; GM. DCS applies only to configured purchasing controls.
             </p>
           </div>
 
@@ -222,7 +221,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                 <th className="p-4">Maker</th>
                 <th className="p-4 text-center">Reviewer Stage</th>
                 <th className="p-4 text-center">GM Approval Stage</th>
-                <th className="p-4 text-center">DCS (Chairman) Stage</th>
+                <th className="p-4 text-center">DCS / PO Control Stage</th>
                 <th className="p-4 text-right">Amount</th>
               </tr>
             </thead>
@@ -230,6 +229,8 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
               {approvalsList.map((item) => {
                 const isReviewerApproved = item.reviewerStatus === 'APPROVED';
                 const isGmApproved = item.gmStatus === 'APPROVED';
+                const isSalesQuote = item.type === 'Sales Quotation';
+                const isDcsNotRequired = isSalesQuote || item.dcsStatus === 'NOT_REQUIRED';
                 const isDcsApproved = item.dcsStatus === 'APPROVED';
 
                 return (
@@ -328,9 +329,14 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                       )}
                     </td>
 
-                    {/* Stage 3: DCS Chairman */}
+                    {/* Stage 3: DCS Chairman, never for Sales Quotes */}
                     <td className="p-4 text-center">
-                      {isDcsApproved ? (
+                      {isDcsNotRequired ? (
+                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-600 border border-slate-200/80 font-bold text-xs w-full max-w-[130px] mx-auto">
+                          <CheckCircle2 className="w-4 h-4 text-slate-500 shrink-0" />
+                          <span>Not Required</span>
+                        </span>
+                      ) : isDcsApproved ? (
                         <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                           <span>Approved</span>
@@ -340,7 +346,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
                           <span>Awaiting GM</span>
                         </span>
-                      ) : canApproveDCS ? (
+                      ) : ['Admin', 'Chairman (DCS)'].includes(viewAsRole) ? (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

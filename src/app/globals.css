@@ -1,28 +1,68 @@
 @import "tailwindcss";
 
-/* 2026 Predictable Enterprise Wayfinding & Anti-Glare Design System */
+/* Enterprise design tokens: color, typography, spacing, radius, shadow, motion. */
 :root {
-  --slate-bg-app: #e2e8f0;       /* Anti-glare soft slate canvas */
-  --slate-bg-card: #ffffff;      /* Clean off-white surface container */
-  --slate-bg-subtle: #f1f5f9;    /* Muted secondary surface */
-  --slate-border-subtle: #cbd5e1;/* Subtle border stroke */
-  --slate-border-strong: #94a3b8;/* Strong border stroke */
-  
-  --slate-text-primary: #1e293b;  /* Dark slate primary text */
-  --slate-text-secondary: #475569;/* Muted slate text */
-  --slate-text-muted: #64748b;
+  /* Color */
+  --color-surface-canvas: #f8fafc;
+  --color-surface-default: #ffffff;
+  --color-surface-subtle: #f1f5f9;
+  --color-border-subtle: #e2e8f0;
+  --color-border-strong: #94a3b8;
+  --color-content-primary: #0f172a;
+  --color-content-secondary: #334155;
+  --color-content-muted: #64748b;
+  --color-brand-navy: #1e3a8a;
+  --color-brand-blue: #2563eb;
+  --color-brand-danger: #dc2626;
 
-  --accustanda-blue: #1d4ed8;
-  --accustanda-red: #dc2626;
+  /* Typography */
+  --font-family-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-size-body-sm: 0.875rem;
+  --font-size-label: 0.8125rem;
+  --line-height-body: 1.4;
 
-  --slate-shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --slate-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+
+  /* Radius */
+  --radius-control: 0.375rem;
+  --radius-card: 0.5rem;
+
+  /* Shadow */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Duration and easing */
+  --duration-fast: 150ms;
+  --duration-standard: 200ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Existing semantic component tokens. */
+  --slate-bg-app: var(--color-surface-canvas);
+  --slate-bg-card: var(--color-surface-default);
+  --slate-bg-subtle: var(--color-surface-subtle);
+  --slate-border-subtle: var(--color-border-subtle);
+  --slate-border-strong: var(--color-border-strong);
+  --slate-text-primary: var(--color-content-primary);
+  --slate-text-secondary: var(--color-content-secondary);
+  --slate-text-muted: var(--color-content-muted);
+  --accustandard-navy: var(--color-brand-navy);
+  --accustandard-blue: var(--color-brand-blue);
+  --accustandard-red: var(--color-brand-danger);
+  --slate-shadow-card: var(--shadow-card);
+  --slate-shadow-hover: var(--shadow-hover);
+  --motion-duration-fast: var(--duration-fast);
+  --motion-duration-std: var(--duration-standard);
+  --motion-easing-default: var(--easing-standard);
 }
 
 body {
   background-color: var(--slate-bg-app);
   color: var(--slate-text-primary);
-  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-family: var(--font-family-sans);
   margin: 0;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -44,9 +84,10 @@ input[type="number"] {
 
 /* Predictable Navigation Shell */
 .wayfinding-header {
-  background-color: #ffffff;
-  border-bottom: 1px solid var(--slate-border-subtle);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(24px);
 }
 
 .wayfinding-nav-strip {
@@ -59,14 +100,30 @@ input[type="number"] {
 .wayfinding-card {
   background-color: var(--slate-bg-card);
   border: 1px solid var(--slate-border-subtle);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   box-shadow: var(--slate-shadow-card);
-  transition: all 0.15s ease-in-out;
+  transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard);
 }
 
 .wayfinding-card:hover {
   border-color: var(--slate-border-strong);
   box-shadow: var(--slate-shadow-hover);
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+select,
+textarea,
+input:not([type='checkbox']):not([type='radio']) {
+  min-height: 44px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: 2px;
 }
 
 /* Decluttered Data Table with Responsive Mobile Scroll */
@@ -113,7 +170,7 @@ input[type="number"] {
 /* Global Interactive Data Table Row Hover & Pointer Cursor */
 tbody tr {
   cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
+  transition: background-color var(--duration-fast) var(--easing-standard);
 }
 
 tbody tr:hover {
@@ -127,12 +184,51 @@ tbody tr:hover {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Reusable modal motion surfaces. The fixed selector covers legacy modal
+   markup that predates these semantic classes without affecting app chrome. */
+.modal-backdrop,
+.fixed.inset-0.z-50[class~='backdrop-blur-md'] {
+  animation: modal-backdrop-enter var(--duration-standard) var(--easing-standard) both;
+}
+
+.modal-surface,
+.fixed.inset-0.z-50[class~='backdrop-blur-md'] > :where(:not(script):not(style):not(template)) {
+  animation: modal-surface-enter var(--duration-standard) var(--easing-standard) both;
+}
+
+.modal-control {
+  min-height: 44px;
+  min-width: 44px;
+  transition: background-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard), transform var(--duration-fast) var(--easing-standard);
+}
+
+@keyframes modal-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-surface-enter {
+  from { opacity: 0; transform: translateY(0.5rem) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (max-width: 640px) {
   .mobile-modal-container {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
     margin-top: auto;
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

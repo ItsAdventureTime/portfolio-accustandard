@@ -1,6 +1,6 @@
 # Contributing to Accustandard Medical ERP
 
-> Read `IMPLEMENTATION_STATUS.md` first. The acceptance handoff is the
+> Read `STYLE_GUIDE.md` and `IMPLEMENTATION_STATUS.md` first. The acceptance handoff is the
 > contract; UI-only state and seeded statuses are not functional evidence.
 
 Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This guide outlines development standards, documentation synchronization rules, and remote GitHub (`gh` / HTTPS) synchronization guidelines.

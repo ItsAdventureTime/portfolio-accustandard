@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ExecutiveOverview } from '@/components/features/overview/ExecutiveOverview';
@@ -33,6 +33,26 @@ import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMat
 import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
 import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
+import {
+  getApprovals,
+  getAuditLogs,
+  getInventory,
+  getReadiness,
+  getReplenishment,
+  getRFQs,
+  getPurchaseOrders,
+  getQBOQueue,
+  getRFPs,
+  getSOA,
+  allocateCollection,
+  createRFQ,
+  createPurchaseOrder,
+  createRFP,
+  receiveGoods,
+  releaseRFP,
+  syncQBOItem,
+  updateApproval,
+} from '@/lib/api';
 
 import {
   useDemoStore,
@@ -65,6 +85,7 @@ export default function Home() {
   const { resetDemoData, formatTimer } = useDemoStore();
   const [viewAsRole, setViewAsRole] = useState('Admin');
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Core Data Arrays
@@ -79,6 +100,7 @@ export default function Home() {
   const [rfpList, setRfpList] = useState(DEFAULT_RFP_LIST);
   const [qboQueue, setQboQueue] = useState(DEFAULT_QBO_QUEUE);
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
+  const [apiOnline, setApiOnline] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,50 +140,36 @@ export default function Home() {
   const [selectedRfqData, setSelectedRfqData] = useState<any>(null);
   const [selectedPoData, setSelectedPoData] = useState<any>(null);
 
-  // Load state from localStorage on initial render
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('accustandard_demo_state');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed.inventoryList) setInventoryList(parsed.inventoryList);
-          if (parsed.quotationsList) setQuotationsList(parsed.quotationsList);
-          if (parsed.approvalsList) setApprovalsList(parsed.approvalsList);
-          if (parsed.soaRows) setSoaData({ rows: parsed.soaRows });
-          if (parsed.collectionsList) setCollectionsList(parsed.collectionsList);
-          if (parsed.poList) setPoList(parsed.poList);
-          if (parsed.rfpList) setRfpList(parsed.rfpList);
-          if (parsed.qboQueue) setQboQueue(parsed.qboQueue);
-          if (parsed.auditLogs) setAuditLogs(parsed.auditLogs);
-        }
-      } catch (e) {
-        console.warn('Failed to parse saved demo state:', e);
-      }
-    }
+  // Backend-first hydration. Seed data remains an in-memory offline fallback.
+  const hydrateFromApi = useCallback(async () => {
+    const [readiness, ...responses] = await Promise.all([
+      getReadiness(),
+      getInventory(),
+      getReplenishment(),
+      getRFQs(),
+      getApprovals(),
+      getSOA(),
+      getPurchaseOrders(),
+      getRFPs(),
+      getQBOQueue(),
+      getAuditLogs(),
+    ]);
+    const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
+    setApiOnline(readiness?.status === 'ready');
+    if (Array.isArray(inventory)) setInventoryList(inventory);
+    if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
+    if (Array.isArray(rfqs)) setRfqList(rfqs);
+    if (Array.isArray(approvals)) setApprovalsList(approvals);
+    if (Array.isArray(soa)) setSoaData({ rows: soa });
+    if (Array.isArray(purchaseOrders)) setPoList(purchaseOrders);
+    if (Array.isArray(rfps)) setRfpList(rfps);
+    if (Array.isArray(qboQueueData)) setQboQueue(qboQueueData);
+    if (Array.isArray(logs)) setAuditLogs(logs);
   }, []);
 
-  // Save state to localStorage whenever core state changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stateToSave = {
-          inventoryList,
-          quotationsList,
-          approvalsList,
-          soaRows: soaData.rows,
-          collectionsList,
-          poList,
-          rfpList,
-          qboQueue,
-          auditLogs,
-        };
-        localStorage.setItem('accustandard_demo_state', JSON.stringify(stateToSave));
-      } catch (e) {
-        console.warn('Failed to save demo state:', e);
-      }
-    }
-  }, [inventoryList, quotationsList, approvalsList, soaData, collectionsList, poList, rfpList, qboQueue, auditLogs]);
+    void hydrateFromApi();
+  }, [hydrateFromApi]);
 
   // Noticeable Confirmation Notification Helper (Popup Window Modal)
   const showNotification = (msg: string) => {
@@ -201,10 +209,7 @@ export default function Home() {
   };
 
   // Handle Quotation Submit (Dynamic Update & Soft Stock Reservation)
-  const handleSubmitQuotation = (newQuote: any) => {
-    setQuotationsList((prev: any[]) => [newQuote, ...prev]);
-
-    // Create matching dynamic RFQ item for RFQ Form preview
+  const handleSubmitQuotation = async (newQuote: any): Promise<boolean> => {
     const newRfq = {
       id: `rfq-${Date.now()}`,
       rfqNo: `RFQ-2026-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -220,11 +225,26 @@ export default function Home() {
       lisConnectivity: true,
       expectedContractMonths: 36,
       marketingRoiStatus: 'ROI_COMPLETED',
-      expectedMarginPct: newQuote.marginPct ? newQuote.marginPct.toFixed(1) : '30.8',
+      proposedSellingPrice: Number(newQuote.totalAmount || newQuote.unitPrice || 0),
+      landedCostPerUnit: Number(newQuote.unitPrice || 0),
+      expectedMarginPct: Number(newQuote.marginPct || 30.8),
     };
 
-    setRfqList((prev: any[]) => [newRfq, ...prev]);
-    setSelectedRfqData(newRfq);
+    let savedRfq = newRfq;
+    if (apiOnline) {
+      try {
+        const created = await createRFQ(newRfq);
+        if (!created) throw new Error('The API did not commit the RFQ.');
+        savedRfq = created;
+      } catch (error) {
+        showNotification(`RFQ was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
+    setQuotationsList((prev: any[]) => [newQuote, ...prev]);
+    setRfqList((prev: any[]) => [savedRfq, ...prev]);
+    setSelectedRfqData(savedRfq);
 
     // Soft-reserve stock for the selected item
     setInventoryList((prev) =>
@@ -254,18 +274,47 @@ export default function Home() {
       ...prev,
     ]);
 
-    showNotification(`Created Sales Quote ${newQuote.qrn}. Stock reserved for 3 days.`);
-    addAuditLog(`Created Sales Quote ${newQuote.qrn} with 3-day stock reservation`);
+    showNotification(
+      apiOnline
+        ? `RFQ ${savedRfq.rfqNo} committed. Quote approval and stock reservation remain UI preview-only.`
+        : `Offline demo preview only: Sales Quote ${newQuote.qrn} was not persisted.`
+    );
+    addAuditLog(
+      apiOnline
+        ? `Committed RFQ ${savedRfq.rfqNo}; Sales Quote ${newQuote.qrn} remains demo-only`
+        : `Demo-only preview of Sales Quote ${newQuote.qrn}`
+    );
     setActiveTab('quotations');
+    return true;
   };
 
   // Handle Multi-SOA Collection Check Allocation (Dynamic Update of SOA Ledger)
-  const handleAllocateCollection = (
+  const handleAllocateCollection = async (
     checkNo: string,
     bank: string,
     checkAmount: number,
     allocations: { invoiceNo: string; amount: number }[]
-  ) => {
+  ): Promise<boolean> => {
+    if (apiOnline) {
+      try {
+        const result = await allocateCollection({
+          checkNo,
+          bank,
+          amount: checkAmount,
+          allocations,
+        });
+        if (!result) throw new Error('The API did not commit the collection allocation.');
+        const refreshedSoa = await getSOA();
+        if (Array.isArray(refreshedSoa)) setSoaData({ rows: refreshedSoa });
+        showNotification(`Collection ${checkNo} committed to the Go API. SOA refreshed.`);
+        addAuditLog(`Committed Multi-SOA Check #${checkNo} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`Collection was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     let totalAllocated = 0;
     const updatedRows = soaData.rows.map((row) => {
       const match = allocations.find(
@@ -327,19 +376,53 @@ export default function Home() {
       ...prev,
     ]);
 
-    showNotification(`Multi-SOA Check #${checkNo} allocated! Statement of Account balances updated.`);
-    addAuditLog(`Allocated Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
+    showNotification(`Offline demo preview only: Multi-SOA Check #${checkNo} was not persisted.`);
+    addAuditLog(`Demo-only preview of Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
+    return true;
   };
 
   // Handle Goods Receipt Receiving (Dynamic Inventory, PO & WMA Cost Update)
-  const handleReceivePO = (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }) => {
-    let targetPo: any = null;
+  const handleReceivePO = async (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }): Promise<boolean> => {
+    const targetPo = poList.find((po) => po.id === poId);
+    if (!targetPo || receivedQty <= 0) {
+      showNotification('Receiving blocked: select a valid PO and enter a positive quantity.');
+      return false;
+    }
+    if (targetPo.rrQtyReceived + receivedQty > targetPo.poQty) {
+      showNotification(`HARD BLOCK: receipt exceeds ${targetPo.poNumber} approved quantity.`);
+      addAuditLog(`Blocked over-receipt attempt for PO ${targetPo.poNumber}`);
+      return false;
+    }
+
+    if (apiOnline) {
+      try {
+        const saved = await receiveGoods({
+          poNumber: targetPo.poNumber,
+          qtyReceived: receivedQty,
+          batchNumber: details?.batchNumber,
+          serialNumber: details?.serialNumber,
+          locationCode: (targetPo as any).locationCode || 'PAM',
+        });
+        if (!saved) throw new Error('The API did not commit the goods receipt.');
+        setPoList((prev) => prev.map((po) => (
+          po.id === saved.id || po.poNumber === saved.poNumber ? saved : po
+        )));
+        const refreshedInventory = await getInventory();
+        if (Array.isArray(refreshedInventory)) setInventoryList(refreshedInventory);
+        showNotification(`Goods Receipt for ${targetPo.poNumber} committed to the Go API.`);
+        addAuditLog(`Committed ${receivedQty} units for PO ${targetPo.poNumber} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`Goods Receipt was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     setPoList((prev) =>
       prev.map((po) => {
         if (po.id === poId) {
-          targetPo = po;
           const newRR = po.rrQtyReceived + receivedQty;
-          const newStatus = newRR >= po.poQty ? 'VERIFIED_3WAY' : 'PARTIALLY_RECEIVED';
+          const newStatus = newRR >= po.poQty ? 'AWAITING_VENDOR_INVOICE' : 'PARTIALLY_RECEIVED';
           return { ...po, rrQtyReceived: newRR, status: newStatus };
         }
         return po;
@@ -386,12 +469,29 @@ export default function Home() {
       });
     }
 
-    showNotification(`Recorded Goods Receipt for PO. Updated stock by ${receivedQty} units and recalculated average cost.`);
-    addAuditLog(`Received ${receivedQty} units for PO #${poId} and updated moving average cost`);
+    showNotification(`Offline demo preview only: Goods Receipt for PO ${targetPo.poNumber} was not persisted.`);
+    addAuditLog(`Demo-only preview of ${receivedQty} units for PO ${targetPo.poNumber}`);
+    return true;
   };
 
   // Handle RFP Release
-  const handleReleaseRFP = (id: string, bank: string, refNo: string) => {
+  const handleReleaseRFP = async (id: string, bank: string, refNo: string): Promise<boolean> => {
+    if (apiOnline) {
+      try {
+        const saved = await releaseRFP(id, { bank, refNo });
+        if (!saved) throw new Error('The API did not commit the RFP release.');
+        setRfpList((prev) => prev.map((rfp) => (
+          rfp.id === saved.id || rfp.rfpNo === saved.rfpNo ? saved : rfp
+        )));
+        showNotification(`RFP ${saved.rfpNo || id} release committed to the Go API.`);
+        addAuditLog(`Committed RFP release ${saved.rfpNo || id} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`RFP release was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     setRfpList((prev) =>
       prev.map((rfp) => {
         if (rfp.id === id) {
@@ -405,8 +505,9 @@ export default function Home() {
         return rfp;
       })
     );
-    showNotification(`Released payment for RFP #${id} via ${bank} (Ref: ${refNo}).`);
-    addAuditLog(`Disbursed payment for RFP #${id} from ${bank}`);
+    showNotification(`Offline demo preview only: RFP #${id} release was not persisted.`);
+    addAuditLog(`Demo-only preview of RFP #${id} disbursement from ${bank}`);
+    return true;
   };
 
   // Handle Add Stock Batch
@@ -428,12 +529,28 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Added stock batch ${newStock.lotNumber} (${newStock.sku}) to ${newStock.location}.`);
-    addAuditLog(`Added stock batch ${newStock.lotNumber} (${newStock.sku})`);
+    showNotification(`Preview only: stock batch ${newStock.lotNumber} (${newStock.sku}) was not persisted.`);
+    addAuditLog(`Demo-only preview of stock batch ${newStock.lotNumber} (${newStock.sku})`);
   };
 
   // Handle Purchase Order Submit
-  const handleSubmitPO = (newPO: any) => {
+  const handleSubmitPO = async (newPO: any): Promise<boolean> => {
+    if (apiOnline) {
+      try {
+        const saved = await createPurchaseOrder(newPO);
+        if (!saved) throw new Error('The API did not commit the purchase order.');
+        setPoList((prev) => [saved, ...prev]);
+        const refreshedApprovals = await getApprovals();
+        if (Array.isArray(refreshedApprovals)) setApprovalsList(refreshedApprovals);
+        showNotification(`Purchase Order ${saved.poNumber} committed to the Go API.`);
+        addAuditLog(`Committed Purchase Order ${saved.poNumber} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`Purchase Order was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     setPoList((prev) => [newPO, ...prev]);
     setApprovalsList((prev) => [
       {
@@ -450,12 +567,29 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Submitted Purchase Order ${newPO.poNumber} to Accounting for review.`);
-    addAuditLog(`Submitted Purchase Order ${newPO.poNumber}`);
+    showNotification(`Offline demo preview only: Purchase Order ${newPO.poNumber} was not persisted.`);
+    addAuditLog(`Demo-only preview of Purchase Order ${newPO.poNumber}`);
+    return true;
   };
 
   // Handle RFP Submit
-  const handleSubmitRFP = (newRFP: any) => {
+  const handleSubmitRFP = async (newRFP: any): Promise<boolean> => {
+    if (apiOnline) {
+      try {
+        const saved = await createRFP(newRFP);
+        if (!saved) throw new Error('The API did not commit the RFP.');
+        setRfpList((prev) => [saved, ...prev]);
+        const refreshedApprovals = await getApprovals();
+        if (Array.isArray(refreshedApprovals)) setApprovalsList(refreshedApprovals);
+        showNotification(`RFP ${saved.rfpNo} committed to the Go API.`);
+        addAuditLog(`Committed RFP ${saved.rfpNo} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`RFP was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     setRfpList((prev) => [newRFP, ...prev]);
     setApprovalsList((prev) => [
       {
@@ -472,23 +606,54 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Submitted RFP Voucher ${newRFP.rfpNo} to GM for approval.`);
-    addAuditLog(`Submitted Payment Voucher ${newRFP.rfpNo}`);
+    showNotification(`Offline demo preview only: RFP Voucher ${newRFP.rfpNo} was not persisted.`);
+    addAuditLog(`Demo-only preview of Payment Voucher ${newRFP.rfpNo}`);
+    return true;
   };
 
   // Handle Approval Action
-  const handleApproveItem = (id: string, stage: string) => {
-    if (stage === 'reviewer' && !['Admin', 'Marketing', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
-      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
-      return;
+  const handleApproveItem = async (id: string, stage: string): Promise<boolean> => {
+    const target = approvalsList.find((item) => item.id === id);
+    if (!target) return false;
+    if (stage === 'dcs' && target.type === 'Sales Quotation') {
+      showNotification('Sales Quotes do not have a DCS approval stage.');
+      return false;
     }
-    if (stage === 'gm' && !['Admin', 'General Manager', 'Chairman (DCS)'].includes(viewAsRole)) {
+    const isPOAccountingReview = stage === 'reviewer' && target.type === 'Purchase Order';
+    if (stage === 'reviewer' && !['Admin', 'Marketing'].includes(viewAsRole) && !(isPOAccountingReview && viewAsRole === 'Bookkeeper')) {
+      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
+      return false;
+    }
+    if (stage === 'gm' && !['Admin', 'General Manager'].includes(viewAsRole)) {
       showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute GM Approval.`);
-      return;
+      return false;
     }
     if (stage === 'dcs' && !['Admin', 'Chairman (DCS)'].includes(viewAsRole)) {
       showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute DCS Chairman Approval.`);
-      return;
+      return false;
+    }
+
+    if (apiOnline) {
+      try {
+        const role = stage === 'reviewer'
+          ? (isPOAccountingReview ? 'Accounting' : 'Marketing')
+          : stage === 'gm'
+            ? 'General Manager'
+            : 'Chairman (DCS)';
+        const saved = await updateApproval(id, 'approve', viewAsRole === 'Admin' ? 'Admin' : role);
+        if (!saved) throw new Error('The API did not commit the approval.');
+        setApprovalsList((prev) => prev.map((item) => (
+          item.id === saved.id || item.qrn === saved.qrn ? saved : item
+        )));
+        const refreshedRfps = await getRFPs();
+        if (Array.isArray(refreshedRfps)) setRfpList(refreshedRfps);
+        showNotification(`Approval stage ${stage.toUpperCase()} committed to the Go API.`);
+        addAuditLog(`Committed ${stage.toUpperCase()} approval for ${id} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`Approval was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
     }
 
     setApprovalsList((prev) =>
@@ -501,11 +666,28 @@ export default function Home() {
         return item;
       })
     );
-    showNotification(`Approved transaction stage: ${stage.toUpperCase()}`);
-    addAuditLog(`Approved transaction stage [${stage.toUpperCase()}] for item #${id}`);
+    showNotification(`Offline demo preview only: approval stage ${stage.toUpperCase()} was not persisted.`);
+    addAuditLog(`Demo-only preview of ${stage.toUpperCase()} approval for item #${id}`);
+    return true;
   };
 
-  const handleTriggerQboSync = (qboId: string) => {
+  const handleTriggerQboSync = async (qboId: string): Promise<boolean> => {
+    if (apiOnline) {
+      try {
+        const saved = await syncQBOItem(qboId);
+        if (!saved) throw new Error('The API did not commit the queue sync.');
+        setQboQueue((prev) => prev.map((item) => (
+          item.id === saved.id || item.docNumber === saved.docNumber ? saved : item
+        )));
+        showNotification(`Queue item ${saved.docNumber || qboId} committed to the Go API.`);
+        addAuditLog(`Committed QBO queue action for ${saved.docNumber || qboId} through the Go API`);
+        return true;
+      } catch (error) {
+        showNotification(`Queue sync was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        return false;
+      }
+    }
+
     setQboQueue((prev) =>
       prev.map((item) => {
         if (item.id === qboId) {
@@ -519,8 +701,9 @@ export default function Home() {
         return item;
       })
     );
-    showNotification(`Successfully posted item ${qboId} to QuickBooks Online ledger!`);
-    addAuditLog(`Synced operational item ${qboId} to QuickBooks Online`);
+    showNotification(`Offline demo preview only: queue item ${qboId} was not posted to QuickBooks.`);
+    addAuditLog(`Demo-only preview of QBO queue action for ${qboId}`);
+    return true;
   };
 
   // Open Export Modal Helper
@@ -540,11 +723,13 @@ export default function Home() {
     setIsPrintModalOpen(true);
   };
 
-  // Reset Demo Data (Clears localStorage & restores initial seed constants)
+  // Reset UI fallback data and request a fresh backend hydration on reload.
   const handleResetData = () => {
     resetDemoData();
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accustandard_demo_state');
+    if (apiOnline) {
+      void hydrateFromApi();
+      showNotification('Reloaded authoritative data from the Go API.');
+      return;
     }
     setInventoryList(DEFAULT_INVENTORY);
     setReplenishmentList(DEFAULT_REPLENISHMENT_PLANNER);
@@ -575,13 +760,15 @@ export default function Home() {
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
       />
 
-      {/* High-Visibility Confirmation Notification Modal */}
+      {/* Confirmation notification modal */}
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden w-full">
         {/* Desktop Navigation Sidebar */}
         <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
           activeTab={activeTab}
           onSelectTab={handleSelectTab}
           approvalsCount={approvalsList.length}
@@ -594,7 +781,19 @@ export default function Home() {
         />
 
         {/* Feature Module Workspace Container */}
-        <main aria-label="Enterprise Operations Workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 md:pb-8 w-full">
+        <main aria-label="Operations workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 lg:pb-8 w-full">
+          <div
+            role="status"
+            className={`rounded-2xl border px-4 py-3 text-xs font-bold ${
+              apiOnline
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                : 'border-amber-200 bg-amber-50 text-amber-950'
+            }`}
+          >
+            {apiOnline
+              ? 'Go API connected. Server-backed mutations show committed results; unsupported workflows remain preview-only.'
+              : 'Offline demo preview. Mutations are local only and are not persisted.'}
+          </div>
           {activeTab === 'overview' && (
             <ExecutiveOverview
               approvalsList={approvalsList}
@@ -648,8 +847,8 @@ export default function Home() {
                   },
                   ...prev,
                 ]);
-                showNotification(`Submitted Sales Quote ${qrn} for COSO Approval!`);
-                addAuditLog(`Routed Sales Quote ${qrn} for approval`);
+                showNotification(`Preview only: Sales Quote ${qrn} approval was not persisted.`);
+                addAuditLog(`Demo-only preview of Sales Quote ${qrn} approval routing`);
               }}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
@@ -776,18 +975,18 @@ export default function Home() {
         products={inventoryList as any}
         onAddProduct={(newProd) => {
           setInventoryList((prev) => [newProd as any, ...prev]);
-          showNotification(`Added product SKU: ${newProd.sku}`);
-          addAuditLog(`Registered product SKU: ${newProd.sku}`);
+          showNotification(`Preview only: product SKU ${newProd.sku} was not persisted.`);
+          addAuditLog(`Demo-only preview of product SKU registration: ${newProd.sku}`);
         }}
         onUpdateProduct={(updatedProd) => {
           setInventoryList((prev) => prev.map((p) => (p.id === updatedProd.id ? (updatedProd as any) : p)));
-          showNotification(`Updated product SKU: ${updatedProd.sku}`);
-          addAuditLog(`Revised product SKU: ${updatedProd.sku}`);
+          showNotification(`Preview only: product SKU ${updatedProd.sku} changes were not persisted.`);
+          addAuditLog(`Demo-only preview of product SKU revision: ${updatedProd.sku}`);
         }}
         onDeleteProduct={(prodId) => {
           setInventoryList((prev) => prev.filter((p) => p.id !== prodId));
-          showNotification('Deleted product SKU from registry.');
-          addAuditLog('Removed product SKU from registry');
+          showNotification('Preview only: product SKU removal was not persisted.');
+          addAuditLog('Demo-only preview of product SKU removal');
         }}
       />
 
@@ -869,8 +1068,8 @@ export default function Home() {
           setQuotationsList((prev) =>
             prev.map((q) => (q.qrn === evidence.quotationId || q.id === evidence.quotationId ? { ...q, status: 'CLIENT_APPROVED' } : q))
           );
-          showNotification('Recorded client acceptance evidence! Fulfillment unlocked.');
-          addAuditLog(`Uploaded signed client acceptance evidence (${evidence.clientPONumber})`);
+          showNotification('Preview only: client acceptance evidence was not persisted or used to unlock fulfillment.');
+          addAuditLog(`Demo-only preview of client acceptance evidence (${evidence.clientPONumber})`);
         }}
       />
 
@@ -879,8 +1078,8 @@ export default function Home() {
         onClose={() => setIsVendorInvoiceOpen(false)}
         poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
         onSaveInvoice={(inv) => {
-          showNotification(`Vendor Invoice ${inv.invoiceNo} recorded with attachment!`);
-          addAuditLog(`Recorded Vendor Invoice ${inv.invoiceNo} for PO ${inv.poNo}`);
+          showNotification(`Preview only: Vendor Invoice ${inv.invoiceNo} was not persisted.`);
+          addAuditLog(`Demo-only preview of Vendor Invoice ${inv.invoiceNo} for PO ${inv.poNo}`);
         }}
       />
 
@@ -889,8 +1088,8 @@ export default function Home() {
         onClose={() => setIsThreeWayMatchOpen(false)}
         poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
         onConfirmVerification={(match) => {
-          showNotification('3-Way Match Verified! Payment processing unlocked.');
-          addAuditLog(`Completed 3-Way Match verification for PO ${match.poNo}`);
+          showNotification('Preview only: 3-Way Match evidence was not persisted or used to unlock payment.');
+          addAuditLog(`Demo-only preview of 3-Way Match verification for PO ${match.poNo}`);
         }}
       />
 
@@ -898,18 +1097,23 @@ export default function Home() {
         isOpen={isCollectionAllocationOpen}
         onClose={() => setIsCollectionAllocationOpen(false)}
         collectionData={collectionsList[0] || { amount: 25000.0 }}
-        onConfirmAllocation={(alloc) => {
-          showNotification('Posted multi-invoice collection allocations to client SOA!');
-          addAuditLog(`Allocated payment ${alloc.checkNo} across ${alloc.allocations.length} invoices`);
-        }}
+        onConfirmAllocation={(alloc) => handleAllocateCollection(
+          alloc.checkNo,
+          'BDO Unibank',
+          Number(alloc.paymentAmount),
+          alloc.allocations.map((item: any) => ({
+            invoiceNo: item.salesInvoiceNo,
+            amount: Number(item.allocatedAmount),
+          }))
+        )}
       />
 
       <StartupImportModal
         isOpen={isStartupImportOpen}
         onClose={() => setIsStartupImportOpen(false)}
         onImportComplete={(summary) => {
-          showNotification(`Startup Data Batch ${summary.batchId} posted & reconciled!`);
-          addAuditLog(`Executed 5-stage cutover data import batch ${summary.batchId} (${summary.validRecords} posted)`);
+          showNotification(`Preview only: startup data batch ${summary.batchId} was not persisted or reconciled.`);
+          addAuditLog(`Demo-only preview of startup data import batch ${summary.batchId} (${summary.validRecords} records)`);
         }}
       />
     </div>

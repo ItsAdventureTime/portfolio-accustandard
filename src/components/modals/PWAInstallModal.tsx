@@ -83,14 +83,14 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
           </div>
         ) : null}
 
-        {/* 1-Click Native Install Button (Chrome / Android) */}
+        {/* Native install button (Chrome / Android) */}
         {deferredPrompt && (
           <button
             onClick={handleNativeInstall}
             className="w-full py-3.5 px-6 bg-blue-900 hover:bg-blue-800 text-white font-black rounded-2xl shadow-md flex items-center justify-center gap-2.5 transition-all active:scale-95 text-xs sm:text-sm cursor-pointer"
           >
             <Download className="w-5 h-5 text-amber-400" />
-            <span>Install App on Device (1-Click PWA Trigger)</span>
+            <span>Install app on device</span>
           </button>
         )}
 

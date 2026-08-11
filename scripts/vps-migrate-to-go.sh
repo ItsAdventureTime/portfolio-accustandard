@@ -10,6 +10,7 @@ set -euo pipefail
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 DEMO_ROOT="/home/jk/bridge-ph/accustandard-demo"
+SOURCE_ROOT="$DEMO_ROOT/source"
 QUADLET_DIR="/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo"
 
 echo "======================================================================"
@@ -19,20 +20,19 @@ echo "======================================================================"
 # 1. Ensure required directory structure exists
 mkdir -p "$DEMO_ROOT/postgres-data"
 mkdir -p "$DEMO_ROOT/web-dist"
-mkdir -p "$DEMO_ROOT/backend"
+mkdir -p "$SOURCE_ROOT"
 mkdir -p "$QUADLET_DIR"
 
 # 2. Build Go API Container Image on VPS if backend code is present
-if [ -d "$DEMO_ROOT/backend" ] && [ -f "$DEMO_ROOT/backend/Dockerfile" ]; then
+if [ -d "$SOURCE_ROOT/backend" ] && [ -f "$SOURCE_ROOT/backend/Dockerfile" ]; then
   echo "[1/3] Building Go Backend image (localhost/accustandard-bridge-backend:demo)..."
-  podman build -t localhost/accustandard-bridge-backend:demo -f "$DEMO_ROOT/backend/Dockerfile" "$DEMO_ROOT/backend"
+  podman build --pull=missing -t localhost/accustandard-bridge-backend:demo -f "$SOURCE_ROOT/backend/Dockerfile" "$SOURCE_ROOT/backend"
 fi
 
-# 3. Reload systemd daemon & restart quadlet services
-echo "[2/3] Reloading systemd user daemon & restarting container services..."
+# 3. Reload systemd daemon & restart only the API Quadlet
+echo "[2/3] Reloading systemd user daemon & restarting the API service..."
 systemctl --user daemon-reload
-systemctl --user restart accustandard-demo-db.service || systemctl --user start accustandard-demo-db.service || true
-systemctl --user restart accustandard-demo-app.service || systemctl --user start accustandard-demo-app.service || true
+systemctl --user restart accustandard-demo-app.service
 
 # 4. Verify DB & Go container execution status
 echo "[3/3] Checking container status..."

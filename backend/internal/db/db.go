@@ -35,37 +35,40 @@ func InitDB(dsn string) (*gorm.DB, error) {
 		&models.ApprovalLog{},
 		&models.StatementOfAccount{},
 		&models.SOAItem{},
+		&models.CollectionPayment{},
 		&models.PurchaseOrder{},
 		&models.PaymentRequest{},
 		&models.QBOQueueItem{},
 		&models.AuditLog{},
 	)
 	if err != nil {
-		log.Printf("! AutoMigrate warning: %v", err)
+		return nil, fmt.Errorf("failed to apply runtime schema: %w", err)
 	}
 
-	runMigrationsAndSeeds(db)
+	if err := runRuntimeSeed(db); err != nil {
+		return nil, err
+	}
 
 	return db, nil
 }
 
-func runMigrationsAndSeeds(db *gorm.DB) {
-	migrationFiles := []string{
-		"migrations/001_initial_schema.sql",
-		"migrations/002_seed_data.sql",
-	}
+func runRuntimeSeed(db *gorm.DB) error {
+	// The demo runtime uses the GORM model schema above. The older 001 and
+	// 002_seed_demo_data SQL files describe a different prototype schema and
+	// are intentionally not executed by the deployed service.
+	migrationFiles := []string{"migrations/002_seed_data.sql"}
 
 	for _, file := range migrationFiles {
 		cleanPath := filepath.Clean(file)
 		content, err := os.ReadFile(cleanPath)
 		if err != nil {
-			log.Printf("Notice: SQL file %s not found on host disk: %v", file, err)
-			continue
+			return fmt.Errorf("failed to read runtime seed %s: %w", file, err)
 		}
 
 		log.Printf("==> Executing SQL script: %s", file)
 		if err := db.Exec(string(content)).Error; err != nil {
-			log.Printf("! SQL execution warning for %s: %v", file, err)
+			return fmt.Errorf("failed to execute runtime seed %s: %w", file, err)
 		}
 	}
+	return nil
 }
