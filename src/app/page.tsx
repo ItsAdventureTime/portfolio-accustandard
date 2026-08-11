@@ -32,6 +32,7 @@ import { VendorInvoiceModal } from '@/components/features/purchasing/VendorInvoi
 import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMatchModal';
 import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
 import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
+import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
 
 import {
   useDemoStore,
@@ -162,12 +163,9 @@ export default function Home() {
     }
   }, [inventoryList, quotationsList, approvalsList, soaData, collectionsList, poList, rfpList, qboQueue, auditLogs]);
 
-  // Toast Notification Helper
+  // Noticeable Confirmation Notification Helper (Popup Window Modal)
   const showNotification = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
   };
 
   // Audit Log Helper
@@ -577,15 +575,8 @@ export default function Home() {
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
       />
 
-      {/* Center Screen Notification Toast */}
-      {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in duration-200">
-          <div className="bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 backdrop-blur-md flex items-center gap-3 text-xs font-bold">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping shrink-0" />
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+      {/* High-Visibility Confirmation Notification Modal */}
+      <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden w-full">
