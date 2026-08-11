@@ -5,6 +5,6 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgres://accustanda:accustandapass@localhost:5432/accustanda_db',
+    url: process.env.DATABASE_URL || 'postgres://accustandard:accustandardpass@localhost:5432/accustandard_db',
   },
 });

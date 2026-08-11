@@ -5,8 +5,9 @@ prompting, or unreferenced dated feedback. It is deliberately recoverable:
 nothing in this folder has been deleted.
 
 These files do not define current implementation or acceptance requirements.
-Use the root `README.md` and `IMPLEMENTATION_STATUS.md` for the source-of-truth
-order before retaining, restoring, or deleting any item here.
+Use the root `STYLE_GUIDE.md`, `README.md`, and `IMPLEMENTATION_STATUS.md` for
+the current writing and source-of-truth standards before retaining, restoring,
+or deleting any item here.
 
 ## Contents
 

@@ -199,7 +199,7 @@ The web application UI/UX is built on a **Light Corporate Medical System** enfor
 - **Readability Assurance:** High-contrast text (`text-slate-900`, `font-extrabold`) ensures text is readable over frosted surfaces.
 
 ### 6.3 Kinetic Micro-Interactions & Physics
-- **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
+- **Hover Elevation:** Cards and action items use a short upward translation and shadow change (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
 - **Sidebar Translations:** Navigation links translate rightward on hover (`hover:translate-x-1 transition-all duration-200`).
 - **Dialog Entrance Motion:** Popups use native backdrop fade and surface zoom
   motion (`modal-backdrop` and `modal-surface`) with a reduced-motion override.
@@ -211,8 +211,8 @@ Across all data tables, primary key badges use interactive pill containers (`bg-
 - **PO Number:** `FileText` icon + PO Code + `Eye` preview badge &rarr; opens 3-Way Match PO Modal.
 - **RFP Voucher ID:** `CreditCard` icon + RFP Code + `Eye` preview badge &rarr; opens Expense Voucher Inspector Modal.
 
-### 6.5 High-Visibility Notification Confirmation Popup Modal
-To ensure system updates, approval confirmations, and security alerts are never overlooked:
+### 6.5 Notification Confirmation Dialog
+To keep system updates, approval confirmations, and security alerts visible until the user reviews them:
 - **Confirmation Window Modal:** Replaces auto-dismissing toast banners with a centered popup window modal (`SystemAlertModal.tsx`).
 - **Explicit Acknowledgment:** Requires an explicit user click on `"Acknowledge & Close"` / `"Got It"` to dismiss.
 

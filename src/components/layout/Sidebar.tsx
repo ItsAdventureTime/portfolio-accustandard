@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Navigation List */}
       <div className={`${isCollapsed ? 'p-2' : 'p-4'} flex-1 overflow-y-auto space-y-2`}>
         <div className={`${isCollapsed ? 'justify-center' : 'justify-between'} px-2 pb-2 text-xs font-black uppercase text-slate-500 tracking-wider flex items-center`}>
-          {!isCollapsed && <span>Enterprise Operations</span>}
+          {!isCollapsed && <span>Operations</span>}
           <span className={`${isCollapsed ? 'p-1.5' : 'px-2.5 py-0.5'} text-[10px] text-blue-950 font-black bg-blue-100 border border-blue-200 rounded-full`} title={viewAsRole}>
             {isCollapsed ? viewAsRole.slice(0, 2).toUpperCase() : viewAsRole}
           </span>

@@ -15,10 +15,11 @@ boundary and validation record.
 
 Read documents in this order when requirements conflict:
 
-1. `IMPLEMENTATION_STATUS.md` for the verified runtime boundary.
-2. `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` for the acceptance contract.
-3. `AccuStandard_Developer_Handoff_UPDATED.md` for the product handoff.
-4. `accustandard-webapp-spec.md`, `accustandard-erp-lite-blueprint.md`, and `GO_MIGRATION_PLAN.md` for supporting specification and target architecture.
+1. `STYLE_GUIDE.md` for current writing and terminology standards.
+2. `IMPLEMENTATION_STATUS.md` for the verified runtime boundary.
+3. `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` for the acceptance contract.
+4. `AccuStandard_Developer_Handoff_UPDATED.md` for the product handoff.
+5. `accustandard-webapp-spec.md`, `accustandard-erp-lite-blueprint.md`, and `GO_MIGRATION_PLAN.md` for supporting specification and target architecture.
 
 Historical prompts, generic LLM references, the prior handoff, meeting
 transcript, and dated feedback are kept in `to-review-and-delete/` for manual
@@ -68,10 +69,10 @@ Tracks inventory across Quezon City and Pampanga warehouses. Clickable **SKU / B
 - **Class 3 (Short-Expiry / Special):** Blocks supplier PO generation unless directly linked to an approved Customer PO.
 
 ### 3. Sales RFQ, Quotation Generator & Marketing ROI Engine
-Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). The current runtime persists the RFQ through the Go API when connected; quotation approval, reservation expiry, client acceptance, and invoice generation remain UI preview paths pending server implementation. The UI includes the official quotation/RFQ previews, dynamic SKU selections, custom row tools, and Marketing ROI calculations.
+Allows sales officers to log client census data and launch modal quotes (`max-w-3xl`). The current runtime persists the RFQ through the Go API when connected; quotation approval, reservation expiry, client acceptance, and invoice generation remain UI preview paths pending server implementation. The UI includes the official quotation/RFQ previews, interactive SKU selection, custom row tools, and Marketing ROI calculations.
 
 ### 4. Statement of Account (SOA) & Multi-SOA Check Allocation
-Renders official SOA statements matching company templates without `NaN` errors. Includes a dynamic client selector (`Gatchalian Medical Lab`, `ACE Medical Center`, `Pampanga Regional Hospital`, `Quezon City Diagnostic Center`), local preview tools for invoice add/edit/delete, live recalculation of balances, and a server-backed multi-SOA check allocation endpoint when the Go API is connected. QBO collection posting remains a queue/demo stub.
+Renders official SOA statements matching company templates without `NaN` errors. Includes a client selector (`Gatchalian Medical Lab`, `ACE Medical Center`, `Pampanga Regional Hospital`, `Quezon City Diagnostic Center`), local preview tools for invoice add/edit/delete, live balance recalculation, and a server-backed multi-SOA check allocation endpoint when the Go API is connected. QBO collection posting remains a queue/demo stub.
 
 ### 5. Purchasing & 3-Way Match Fraud Control
 PO numbers open an expanded **3-Way Match Inspection Modal** (`max-w-3xl`) displaying approved PO quantity vs. Goods Receipt (RR) vs. Vendor Invoice. Hard-blocks over-receiving fraud beyond approved PO limits.
@@ -79,8 +80,8 @@ PO numbers open an expanded **3-Way Match Inspection Modal** (`max-w-3xl`) displ
 ### 6. Non-PO Request for Payment (RFP) Vouchers & Bank Releasing
 RFP Voucher IDs open an expanded **Expense Voucher Inspector Modal** (`max-w-3xl`) displaying GL Chart of Accounts picklists and Admin Bank Fund Releasing modal (BDO/Metrobank/BPI).
 
-### 7. User Access Matrix & Dynamic Role Permissions Editor
-In User & Audit Logs, user rows open an expanded **User Access Profile & Role Permissions Modal** (`max-w-3xl`). Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
+### 7. User Access Matrix & Role Permissions Editor
+In User & Audit Logs, user rows open an expanded **User Access Profile & Role Permissions Modal** (`max-w-3xl`). Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module-view checkboxes; non-admin roles remain read-only.
 
 ### 8. QuickBooks Online (QBO) Export Queue & Go REST API
 Dedicated queue drawer (`max-w-4xl`) holding validated demo transactions

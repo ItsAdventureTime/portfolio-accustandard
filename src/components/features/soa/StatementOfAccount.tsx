@@ -775,7 +775,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
             <form onSubmit={handleAllocateCheck} className="space-y-5 text-sm font-semibold">
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs sm:text-sm text-blue-950 font-bold flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-blue-700 shrink-0" />
-                <span>Multi-SOA Check Allocation: Deducts payment against selected invoice balances and calculates unapplied customer credit in real-time.</span>
+                <span>Multi-SOA Check Allocation: Apply one payment to selected invoice balances and calculate any unapplied customer credit.</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50/80 p-5 rounded-2xl border border-slate-300/80">

@@ -760,7 +760,7 @@ export default function Home() {
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
       />
 
-      {/* High-Visibility Confirmation Notification Modal */}
+      {/* Confirmation notification modal */}
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Main Workspace Layout */}
@@ -781,7 +781,7 @@ export default function Home() {
         />
 
         {/* Feature Module Workspace Container */}
-        <main aria-label="Enterprise Operations Workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 lg:pb-8 w-full">
+        <main aria-label="Operations workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 lg:pb-8 w-full">
           <div
             role="status"
             className={`rounded-2xl border px-4 py-3 text-xs font-bold ${
