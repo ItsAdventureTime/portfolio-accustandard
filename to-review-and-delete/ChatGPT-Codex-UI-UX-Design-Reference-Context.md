@@ -2,9 +2,13 @@
 
 > **Purpose:** Persistent context for ChatGPT Codex when planning, designing, implementing, reviewing, or refactoring web and mobile application interfaces.
 >
-> **Last reviewed:** 2026-07-23
+> **Last reviewed:** 2026-08-12
 >
 > **Use as:** `UI-UX-CODEX-CONTEXT.md`, a referenced specification, or selected sections inside `AGENTS.md`.
+>
+> **AccuStandard boundary:** This document is a generic UI/UX guide. It does
+> not override the repository's confirmed developer handoff, correction/
+> acceptance handoff, or `IMPLEMENTATION_STATUS.md`.
 
 ---
 

@@ -1,5 +1,9 @@
 # Execution Agent Copy-Paste Prompt
 
+> **2026-08-12 audit:** Read `IMPLEMENTATION_STATUS.md` first. The confirmed
+> handoff and acceptance handoff outrank this historical execution prompt;
+> seeded or UI-only states are not acceptance evidence.
+
 Copy and paste the prompt below into your next session or agent to execute the implementation plan.
 
 ---
@@ -12,13 +16,9 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
 0. **Documentation Synchronization Policy**:
    - Every time code, components, dependencies, scripts, or design specs are changed, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) MUST be updated immediately.
 
-1. **Local Git Commit Protocol**:
-   - Local commits MUST be executed using standard local `git` CLI (`git add . && git commit --no-gpg-sign -m "..."`).
-   - Do NOT use SSH keys, passkeys, or GPG signing for local commits.
-
-2. **GitHub Remote HTTPS Synchronization Policy**:
-   - Remote commit and repository synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST be kept in continuous 100% sync using `git push origin main` or official GitHub CLI (`gh`) over **HTTPS** authentication.
-   - Do NOT use SSH, SSH keys, or passkeys for remote operations.
+1. **GitHub Remote HTTPS Synchronization Policy**:
+   - Remote synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use only official GitHub CLI (`gh`) over authenticated HTTPS.
+   - Do not use `git push`, SSH remotes, SSH keys, or passkeys for remote operations.
 
 ## Execution Rules:
 
@@ -45,3 +45,10 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
      - Runs VPS deployment & Caddy repair non-interactively over SSH.
      - Syncs static export files to `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
 ```
+
+## Current Acceptance Corrections (2026-08-12)
+
+- Do not add a DCS approval task to Sales Quotes.
+- Enforce Marketing Reviewer → GM ordering and segregation of duties.
+- Block over-receiving atomically and leave fully received POs awaiting vendor invoice/3-way match.
+- Prefer the Go API for hydration; do not reintroduce browser `localStorage` as authoritative business state.

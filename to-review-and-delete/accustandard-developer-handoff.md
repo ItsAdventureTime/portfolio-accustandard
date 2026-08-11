@@ -1,5 +1,9 @@
 # Accustandard Developer Handoff Guide
 
+> **Current runtime note (2026-08-12):** This guide describes the intended
+> product. `IMPLEMENTATION_STATUS.md` records what the current demo actually
+> persists and what remains unverified.
+
 Welcome to the developer handoff guide for the **Accustandard Medical ERP Dashboard**. This document summarizes core client requirements and technical guidelines gathered during system planning.
 
 ---
@@ -20,8 +24,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
 - QuickBooks Online (QBO) acts as financial accounting ledger via live API queue
 - **Mandatory Repository & Version Control Policy:**
   0. **Documentation Sync:** Every code, UI, dependency, or architectural change MUST immediately update all documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`).
-  1. **Local Commits:** Local commits use standard local `git` CLI (`git commit --no-gpg-sign`) without SSH keys, passkeys, or GPG prompts.
-  2. **Remote GitHub Sync:** Remote commit and repository synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use `git push origin main` or official GitHub CLI (`gh`) over **HTTPS** authentication. SSH keys and passkeys are strictly avoided.
+  1. **Remote GitHub Sync:** Remote synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use only official GitHub CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH remotes, SSH keys, or passkeys.
 
 ---
 
@@ -50,8 +53,12 @@ Accustandard requires a single integrated ERP web application to serve as its op
 
 ## 🔒 Mandatory Business Rules
 
-- **Approval Chain:** Maker &rarr; Reviewer &rarr; GM &rarr; DCS Chairman.
+- **Approval Chain:** Sales Quote Maker &rarr; Marketing Reviewer &rarr; GM; DCS is not a Sales Quote stage. Purchasing/RFP DCS approval remains configurable.
 - **No Self-Approvals:** Maker cannot approve own document.
 - **Stock Reservations:** Unconfirmed quotes release reserved stock after 3 days.
 - **Class 3 Purchasing Lock:** Block PO creation without an approved linked Customer PO.
 - **3-Way Matching:** Prevent receiving report posting if quantity or price exceeds PO limits.
+
+## 2026 UI/API Baseline
+
+The Next.js shell uses the AccuStandard navy/sapphire/red token system, collapsible desktop navigation, and mobile bottom navigation below 1024px. Operational data hydrates from the Go API under `/accustandard/demo/api/v1`; the frontend seed is an offline fallback only.

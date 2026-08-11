@@ -1,5 +1,8 @@
 # AccuStandard ERP workflow review — 2026-08-04
 
+> Historical source material only. For current implementation decisions, use
+> the confirmed handoff, acceptance handoff, and `IMPLEMENTATION_STATUS.md`.
+
 Source: https://fathom.video/calls/771570646
 
 [00:00](https://fathom.video/calls/771570646?timestamp=0) Alyssa Dimaano: Hello po, sir. Good afternoon po.
@@ -382,4 +385,3 @@ Source: https://fathom.video/calls/771570646
 [2:20:48](https://fathom.video/calls/771570646?timestamp=8448) leonard espenida: Better,'am, better. At least, mas maganda po yan at makakapag-upersetari naman.
 [2:20:53](https://fathom.video/calls/771570646?timestamp=8453) Rob Pulido: Tama yung inventory. Ayun, so that's it na lang over on our end.
 [2:20:57](https://fathom.video/calls/771570646?timestamp=8457) Alyssa Dimaano: do you have any question or anything?
-

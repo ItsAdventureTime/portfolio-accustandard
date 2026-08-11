@@ -2,7 +2,12 @@
 
 > **Document type:** Spec-driven development (SDD) source-of-truth document.
 > **Audience:** Software/web developer and AI coding agents.
-> **Status:** Draft v4 — added named RFQ flow (Client → Sales RFQ → Marketing → GM → DCS).
+> **Status:** Draft v4, reconciled 2026-08-12 with the updated developer handoff.
+> Sales Quotes follow Sales → Marketing → GM, then client acceptance evidence;
+> no DCS Sales Quote stage.
+> Procurement/RFP DCS approval is conditional on an Admin-configured rule, and
+> v1 QuickBooks behavior is a manual export/queue contract rather than a live
+> QBO API integration.
 > **Convention:** Requirements use RFC-style keywords — MUST (mandatory), SHOULD (strongly recommended), MAY (optional).
 
 ---
@@ -46,7 +51,10 @@ Standard 4-layer approval chain (same concept as the Pimascor app, but applied t
   - Purchase orders
   - Inventory adjustments, transfers, and write-offs
   - Price list changes / pricing maintenance
-- **Launch decision:** At go-live, ALL documents route through the full chain up to **DCS (Chairman)** regardless of amount — this builds the Chairman's comfort with the process.
+- **Launch decision:** Procurement, RFP, and other configured documents route
+  through Accounting/GM and receive a DCS task only when the Admin-configured
+  control rule is triggered. Sales Quotes are the explicit exception and end at
+  GM approval.
 - The approval engine MUST still be built with **threshold-based routing** capability (configurable peso thresholds per document type), so tiered routing (e.g., small transactions stop at GM) can be switched on later without code changes.
 - Approvers MUST NOT be able to approve their own transactions.
 - Each approval step MUST capture approver identity, timestamp, and optional remarks; rejections MUST require a reason.
@@ -76,22 +84,23 @@ Standard 4-layer approval chain (same concept as the Pimascor app, but applied t
 
 ### 4.3 Sales — Quotation Routing with Inventory Reservation
 
-**Named flow (client-specified):** `Client → Sales RFQ → Marketing → GM → DCS`
+**Named flow (updated handoff):** `Client → Sales RFQ → Marketing → GM → Client Acceptance → Fulfillment`
 
 - **Client** submits a Request for Quotation (RFQ) — inquiry for pricing on specific items/quantities.
 - **Sales** (Maker) encodes the RFQ into a formal Sales Quotation in the system.
 - **Marketing** acts as the **Reviewer** role in this chain — checks the quotation (pricing, terms, completeness) before it proceeds.
-- **GM** and **DCS (Chairman)** approve per the standard approval matrix (§3).
+- **GM** approves the Sales Quote. **DCS is not a Sales Quote stage.**
+- Client acceptance evidence (signed PO, signed quotation, or recorded confirmation) is required before fulfillment.
 
-This maps onto the general Maker → Reviewer → GM → DCS pattern (§3), with **Sales = Maker** and **Marketing = Reviewer** specifically for quotations.
+This uses the general Maker → Reviewer → GM pattern, with **Sales = Maker** and **Marketing = Reviewer** specifically for quotations. The DCS stage remains available for purchasing, RFP, and other configured document types.
 
 Anti-fraud sales flow (this ordering is intentional):
 
 1. **Sales Quotation created (Sales / Maker)** — item, quantity, price tier.
 2. **Inventory reservation check FIRST:** Before a quotation can proceed/route for approval, the system MUST check available (not just on-hand) stock and **soft-reserve** the quantity, ensuring quoted stock actually exists.
-3. **Approval routing:** Quotation routes **Marketing (Reviewer) → GM → DCS** per thresholds, especially when price overrides or special deal pricing is applied.
-4. **On approval:** Reservation is confirmed/locked (hard reserve); converts to Sales Order.
-5. **Fulfillment:** Barcode-scanned picking → Delivery Receipt → Invoice.
+3. **Approval routing:** Quotation routes **Marketing (Reviewer) → GM** per the applicable quote rules, especially when price overrides or special deal pricing is applied; no DCS task is generated.
+4. **On GM approval:** Reservation is confirmed/locked (hard reserve), and the quote waits for client acceptance evidence.
+5. **Fulfillment:** After evidence is recorded, barcode-scanned picking → Delivery Receipt → Invoice.
 6. **Reservation expiry:** Unapproved/unconverted quotations MUST auto-release reserved stock after a configurable period. **Launch setting: 3 days** (placeholder — MUST be admin-configurable, anticipated to change).
 
 - Reserved stock MUST be excluded from "available" quantity shown to other quotations.
@@ -192,7 +201,8 @@ The web application UI/UX is built on a **Light Corporate Medical System** enfor
 ### 6.3 Kinetic Micro-Interactions & Physics
 - **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
 - **Sidebar Translations:** Navigation links translate rightward on hover (`hover:translate-x-1 transition-all duration-200`).
-- **Dialog Entrance Motion:** Popups use smooth backdrop fade-in (`animate-in fade-in duration-200`) and dialog container zoom (`animate-in zoom-in-95 duration-200`).
+- **Dialog Entrance Motion:** Popups use native backdrop fade and surface zoom
+  motion (`modal-backdrop` and `modal-surface`) with a reduced-motion override.
 
 ### 6.4 Standardized Interactive Pill Badge System
 Across all data tables, primary key badges use interactive pill containers (`bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-2xs group cursor-pointer`):
@@ -212,7 +222,7 @@ To ensure system updates, approval confirmations, and security alerts are never 
 
 - **Platform:** Responsive web app (mobile-friendly is mandatory for barcode scanning and on-the-go approvals); PWA approach RECOMMENDED for camera scanning.
 - **Reusability goal:** Build as a configurable base ERP (tiers, approvers, locations, price lists all data-driven) so it can be adapted for future clients.
-- **Development approach:** Spec-driven development — treat this document as the versioned source of truth; keep it in the repo, update it before changing behavior, and derive plans/tasks from it rather than ad-hoc prompting.
+- **Development approach:** Spec-driven development — treat this document as the baseline functional specification, while the updated developer handoff and correction/acceptance handoff control later workflow corrections. Keep all three versioned and reconcile them before changing behavior.
 - **Suggested build order:** (1) Core masters + RBAC + approval engine → (2) Inventory + barcode → (3) Purchasing → (4) Sales quotation/reservation/pricing → (5) Reports + QBO integration.
 
 ---
@@ -221,12 +231,12 @@ To ensure system updates, approval confirmations, and security alerts are never 
 
 | # | Topic | Decision |
 |---|---|---|
-| 1 | Approval thresholds | **All documents go to DCS (Chairman) at launch** — no amount-based shortcuts yet. Build the threshold/tier engine now, activate later. |
+| 1 | Approval thresholds | Procurement, RFP, and other configured documents route to DCS (Chairman) only when an Admin-configured rule is triggered; Sales Quotes stop at GM and require client acceptance evidence before fulfillment. Build the threshold/tier engine now. |
 | 2 | Locations at go-live | **2**: Quezon City and Pampanga (must scale to more without code changes). |
 | 3 | Reservation expiry | **3 days** for unapproved quotations (placeholder; admin-configurable). |
 | 4 | PO over-receiving | **Hard-blocked.** Receiving strictly per approved PO qty and amount. |
 | 5 | Pricing & vendor maintenance | Dedicated **Price Maintenance role** and dedicated **Vendor Maintenance role** (added as extra purchasing control). Specific users to be assigned later. |
-| 6 | QBO integration | **Both**: real-time API sync (client's own QBO connection) AND export/import for all modules. App keeps its own full database of records. |
+| 6 | QBO integration | v1 uses a validated manual export/queue contract for all modules. Direct real-time QBO API sync is future scope; the app keeps its own full database of records. |
 | 7 | Serial tracking | **Yes** — serial-number tracking for equipment, in addition to batch/expiry for supplies. |
 
 ## 8. Remaining Open Items

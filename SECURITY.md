@@ -1,5 +1,21 @@
 # Security Policy & Internal Controls
 
+## Current implementation boundary
+
+The demo API is not an authenticated production system. RBAC and approval
+identity are not yet enforced by authentication middleware, and attachment
+authorization, idempotency, and immutable audit guarantees remain incomplete.
+Do not expose the demo database or treat a role field in a request payload as
+proof of identity.
+
+The Go service defaults to an explicit origin allowlist and disables credential
+sharing. Production deployment must set `CORS_ALLOWED_ORIGINS` deliberately,
+use same-origin Caddy routing where possible, and add authenticated sessions or
+OIDC before handling real company data.
+
+See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and the
+acceptance claims that remain unverified.
+
 At **Accustandard Medical and Diagnostic Supplies Corporation**, system security, commit verification, and fraud control are core engineering requirements.
 
 ---
@@ -7,13 +23,17 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 ## 🔒 Security Principles
 
 ### 1. Fraud Control & Access Locks
-- **Role-Based Access Control (RBAC):** Navigation and document actions are strictly scoped to the user's role.
-- **Immutable Audit Logging:** Every approval step, system override, and record modification is permanently logged with timestamps and user identifiers.
-- **Strict Hard-Blocking:** Over-receiving supplier shipments or generating POs for Class 3 short-expiry items without customer POs is hard-blocked at the application layer.
+- **Role-Based Access Control (RBAC):** Navigation and document actions are role-scoped in the demo, but production identity enforcement still requires authentication middleware.
+- **Audit Logging:** Implemented server mutations create audit records, while end-to-end immutability and coverage are acceptance gaps rather than production guarantees.
+- **Strict Hard-Blocking:** The Go receiving endpoint rejects over-receipt atomically, and PO creation enforces the Class 3 linked-customer-PO control. Other controls remain subject to the documented demo boundary.
 
 ### 2. Commit Integrity & Remote Protocol Standards
-- **Local Commits:** All local commits must be signed using valid SSH keys (`git commit -S`) verified against GitHub user profiles.
-- **Remote Synchronization:** Remote operations must use the official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
+- **Remote synchronization for this repository:** Use only the official GitHub
+  CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH remotes, SSH
+  keys, passkeys, or signing claims as a substitute for review.
+- **Local working tree:** Preserve and review changes before any remote action.
+  A local commit is not evidence that the application passed the acceptance
+  matrix.
 
 ---
 

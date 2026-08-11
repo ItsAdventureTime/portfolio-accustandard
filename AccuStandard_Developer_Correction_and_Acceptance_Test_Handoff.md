@@ -907,6 +907,14 @@ Expected:
 
 Developer must return this table for every correction batch.
 
+> **Repository audit notice — 2026-08-12:** The matrix below is a historical
+> implementation claim captured in the handoff. It is not current runtime
+> evidence and must not be read as an accepted PASS state. The current
+> repository review found missing server-backed workflows, incomplete API
+> coverage, non-canonical migration families, and deployment verification
+> gaps. Treat each `PASS`/`None` entry as **UNVERIFIED** until the acceptance
+> test is rerun against the deployed Go/PostgreSQL stack.
+
 | Test / Requirement ID | Implemented | UI Location | Backend / State Change | Queue Change | Financial / Inventory Effect | Audit Event | Test Result | Known Gap |
 |---|---|---|---|---|---|---|---|---|
 | NBR-001 | Yes | Global | Authoritative state per transaction | All views sync from single source | Totals derive from source state | N/A | PASS | None |

@@ -10,6 +10,11 @@
 > * **Efficiency**: Formatted using clear XML sectioning (`<system_prompt>`, `<architectural_rules>`, `<mobile_rules>`, etc.) and strict token constraints to minimize token usage, eliminate fluff, and optimize context window retention.
 > * **Effectiveness**: Enforces low-entropy semantic component primitives (shadcn/ui, daisyUI), type-safe dynamic generative runtimes (`streamUI` via Vercel AI SDK), declarative mobile frameworks (SwiftUI, Jetpack Compose, KMP, Skip Fuse), and multi-state UI state contracts.
 
+> **AccuStandard use:** This is generic UI-generation guidance, not the
+> business workflow source of truth. For this repository, consult
+> `IMPLEMENTATION_STATUS.md`, the confirmed developer handoff, and the
+> correction/acceptance handoff before changing behavior.
+
 ---
 
 ```xml

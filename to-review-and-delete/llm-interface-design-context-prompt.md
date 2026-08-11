@@ -1,7 +1,7 @@
 ---
 title: "Context Prompt for LLM-Generated Web and Mobile Interfaces"
 version: "1.0"
-updated: "2026-08-03"
+updated: "2026-08-12"
 language: "English (US)"
 source_basis: "Design Intelligence for LLM-Generated Web and Mobile Interfaces"
 ---
@@ -13,6 +13,11 @@ This is a model-agnostic context prompt for designing, auditing, or implementing
 It is optimized around one governing idea:
 
 > Treat the LLM as a **policy-constrained interface architect and compiler**, not an unrestricted screen generator.
+
+For this repository, this prompt governs interface quality only. Business
+workflow, persistence, approval, and acceptance behavior are controlled by
+`IMPLEMENTATION_STATUS.md`, the confirmed developer handoff, and the
+correction/acceptance handoff.
 
 ## How to use
 

@@ -1,12 +1,19 @@
 # Technical Architecture & Internal Control System
 
-This document outlines the technical design, data flows, containerized deployment architecture, and remote version control standards for the **Accustandard Medical ERP Dashboard**.
+This document describes the target technical design, data flows, containerized
+deployment architecture, and remote version-control standards for the
+**Accustandard Medical ERP Dashboard**. It is not a completion claim: consult
+`IMPLEMENTATION_STATUS.md` for the deployed runtime boundary and open gaps.
 
 ---
 
 ## 🏗️ System Overview
 
-The system is structured as a single-page Next.js App Router application optimized for static export deployment (`output: 'export'`). It provides an interactive simulation of an enterprise ERP system with full role switching, real-time internal control validation, and QuickBooks Online integration queues.
+The system is a Next.js App Router static export (`output: 'export'`) paired
+with a Go API below `/accustandard/demo/api/v1`. The deployed demo offers
+limited server-backed reads and mutations; deterministic browser data is an
+offline rendering fallback, not business-state persistence. Role switching is
+a demo control surface, not authenticated production identity.
 
 ```
 +-----------------------------------------------------------------------+
@@ -20,44 +27,49 @@ The system is structured as a single-page Next.js App Router application optimiz
                                    |
                                    v
 +-----------------------------------------------------------------------+
-|                    Global Store (useDemoStore.ts)                     |
-|  - Inventory SKUs (FEFO Expiry, QC & Pampanga Warehouses)             |
-|  - Demand Replenishment Planner (Class 1/2/3 Items)                  |
-|  - 4-Layer Approval Pipeline (Maker -> Reviewer -> GM -> Chairman)    |
-|  - QuickBooks Online Live Sync Queue (QBO Ref IDs)                   |
-|  - Multi-SOA Collection Allocations & Credit Ledger                   |
+|        Go API + browser rendering fallback (demo only)                |
+|  - Limited read/mutation endpoints and transactional receiving         |
+|  - Class 1/2/3 replenishment and backend-first list hydration          |
+|  - Sales Quote GM-only approval; conditional Purchasing/RFP DCS        |
+|  - Manual QBO queue/export stub and SOA allocation support             |
 +-----------------------------------------------------------------------+
 ```
 
 ---
 
-## 🔐 Strict Git & GitHub CLI (`gh`) Version Control Standard
+## 🔐 GitHub CLI (`gh`) Remote Synchronization Standard
 
-To ensure auditability and consistent remote synchronization:
-- **Local Commits:** Use **ONLY** local `git` CLI commands (`git commit -m "..."`). SSH key signing is not required.
-- **Remote Operations:** ALWAYS use official GitHub CLI (`gh`) commands over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials. NEVER use `git` commands for remote operations.
+To ensure auditability and consistent remote synchronization, use only the
+official GitHub CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH
+remotes, passkeys, or SSH keys for remote work.
 
 ---
 
 ## 🔒 COSO Internal Control Architecture
 
 ### 1. Segregation of Duties
-Every operational transaction (Purchase Orders, Sales Quotations, RFP Expense Requests, Inventory Adjustments) enforces a 4-tier maker-checker-approver flow:
+Every operational transaction enforces its configured maker-checker-approver flow. Purchase Orders use Purchasing → Accounting → GM → optional DCS; RFPs use Maker → GM → optional DCS; Sales Quotes use Sales Officer → Marketing Reviewer → GM, then client acceptance evidence before fulfillment:
 1. **Maker (Sales / Warehouse / Staff):** Drafts transaction.
-2. **Reviewer (Marketing Manager):** Audits margins, specifications, and terms.
+2. **Accounting or Marketing Reviewer:** Reviews the document-specific control stage.
 3. **General Manager (Karen):** Conducts operational approval.
-4. **DCS Chairman:** Issues final corporate sign-off.
+4. **DCS Chairman:** Issues final corporate sign-off only for configured
+   Purchasing/RFP controls; Sales Quotes never create a DCS task.
 
 A maker cannot approve their own document.
 
 ### 2. 3-Way Purchasing Match
-When receiving inventory from vendors, the system compares:
+When fully implemented, receiving compares:
 `Purchase Order Quantity` ↔ `Goods Receipt (RR)` ↔ `Vendor Invoice Amount`
+
+The current demo atomically enforces the PO/RR quantity gate; vendor-invoice
+matching remains a separate unimplemented acceptance step.
 
 If receiving quantities exceed the approved PO amount, the transaction is hard-blocked to prevent vendor over-billing.
 
 ### 3. QuickBooks Online (QBO) Handoff Engine
-Operational users never post directly to accounting ledgers. Completed transactions pass through internal validation into the `QBO Live Sync Queue`. Approved items receive a unique QBO reference ID upon synchronization.
+Operational users never post directly to accounting ledgers. The current demo
+uses a manual QBO queue/export stub; no live QuickBooks synchronization or
+production accounting-posting guarantee is implemented.
 
 ---
 
@@ -72,7 +84,7 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 [ Caddy Reverse Proxy (caddy.service) ]
        |
        v /accustandard/demo
-[ Demo Pod: accustandard-demo-pod ] (localhost:3001)
+[ Demo Pod: accustandard-demo-pod ] (localhost:8080 API + mounted static web root)
 ```
 
 ### Path Specifications
@@ -81,8 +93,8 @@ Until leadership approves the demo site, all builds are deployed exclusively to 
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 
 ### Quadlet Services (`deploy/quadlets/demo/`)
-- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 3001.
-- **`accustandard-demo-app.container`**: Web app container running demo static export files.
+- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 8080 for the Go API.
+- **`accustandard-demo-app.container`**: Go API container serving `/accustandard/demo/api/v1`.
 - **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
 
 ---
@@ -112,7 +124,9 @@ Across all 6 core data tables, interactive primary keys are rendered inside high
 - **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
 
 ### 4. Smooth Physics Entrance Animations & High-Visibility Notification Dialogs
-- **Modal Popups & Drawers:** All modal popups enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in-95 duration-200`).
+- **Modal Popups & Drawers:** Existing fixed blurred overlays receive native
+  `modal-backdrop` / `modal-surface` CSS motion, including a reduced-motion
+  override; the behavior does not depend on an animation-plugin utility.
 - **High-Visibility Notification Popups (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered popup window modals featuring explicit user confirmation buttons (`"Acknowledge & Close"`) so alerts and workflow updates cannot be overlooked.
 
 ---
@@ -123,3 +137,13 @@ Products are managed under 3 distinct stock categories:
 - **Class 1 (Core Fast-Moving):** Automated reorder calculation triggered at critical levels + 10% safety buffer.
 - **Class 2 (Controlled Stock):** Reordering requires explicit forecast review by management.
 - **Class 3 (Short-Expiry / Special):** Hard-blocked from generating supplier POs without a linked Customer PO.
+
+## 2026 Control Corrections
+
+- Sales Quote approval ends at GM approval. Client acceptance evidence is a separate gate before fulfillment; no DCS task is generated.
+- Purchasing may use DCS approval only when its configured control rule requires it.
+- Go receiving updates are transactional and lock the PO row while enforcing the approved quantity ceiling; inventory synchronization remains subject to the deployed API acceptance run.
+- Frontend list hydration is backend-first; browser `localStorage` is not used as the business transaction store.
+
+See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and current
+validation record.
