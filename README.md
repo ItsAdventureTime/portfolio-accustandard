@@ -213,6 +213,14 @@ npm run deploy:demo
    PASS claim without current evidence.
 1. **Remote synchronization:** Use only `gh` over authenticated HTTPS. Do not
    use `git push`, SSH remotes, passkeys, or SSH keys for remote work.
+2. **Pre-execution research:** Check current official guidance for the tools and
+   frameworks in scope before running or changing them.
+3. **Backend validation:** When Podman is available, run the unpinned
+   `golang:alpine` container check documented in `CONTRIBUTING.md`. Record an
+   unavailable runtime and failed command instead of claiming a pass.
+4. **Local/remote consistency:** Commit the local result, update the remote with
+   `gh`, and keep the implementation, active documentation, and validation
+   record synchronized.
 
 ---
 

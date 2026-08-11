@@ -12,7 +12,8 @@ implements so that a visual demo is not mistaken for a completed ERP.
 1. `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md`
 2. `AccuStandard_Developer_Handoff_UPDATED.md`
 3. `accustandard-webapp-spec.md` and `accustandard-erp-lite-blueprint.md`
-4. Older handoffs, transcripts, prompts, and design-reference material
+4. `STYLE_GUIDE.md` for current writing and terminology
+5. Older handoffs, transcripts, prompts, and design-reference material
 
 Where an older document conflicts with the first two, the first two control.
 
@@ -82,9 +83,12 @@ server-backed record, authorization, audit event, and refresh-safe test.
 
 - `npm run lint` — passed on 2026-08-12.
 - `npm run build` — passed on 2026-08-12 with Next.js 16 static export.
-- `/usr/local/go/bin/go test ./...` — passed on 2026-08-12.
-- `/usr/local/go/bin/go test -race ./internal/handlers` — passed on 2026-08-12.
-- `/usr/local/go/bin/go vet ./...` — passed on 2026-08-12.
+- The required backend check is the disposable, unpinned
+  `golang:alpine` Podman command documented in `CONTRIBUTING.md`.
+- The current workspace has no `podman` executable, so the container check was
+  not run here. Do not treat the unavailable runtime as a passing result.
+- A previous host-specific `/usr/local/go/bin/go` validation record is not
+  reproducible in this workspace and is retained only as historical evidence.
 - PostgreSQL integration, remote VPS deployment, authentication, and full
   acceptance matrix — unverified.
 
