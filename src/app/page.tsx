@@ -248,8 +248,10 @@ export default function Home() {
         maker: newQuote.clientName || 'Sales Agent',
         reviewerStatus: 'PENDING',
         gmStatus: 'PENDING',
-        dcsStatus: 'PENDING',
+        dcsStatus: 'NOT_REQUIRED',
         totalAmount: newQuote.totalAmount || newQuote.unitPrice || 31500.0,
+        ownerRole: 'Marketing',
+        currentStage: 'PENDING_MARKETING_REVIEW',
       },
       ...prev,
     ]);
@@ -307,7 +309,7 @@ export default function Home() {
         customer: 'GATCHALIAN MEDICAL LABORATORY',
         allocatedInvoices: allocations.map((a) => ({ invoiceNo: a.invoiceNo, allocatedAmount: a.amount })),
         unappliedCredit,
-        status: 'QUEUED_QBO',
+        status: 'POSTED_TO_QBO',
       },
       ...prev,
     ]);
@@ -331,7 +333,7 @@ export default function Home() {
     addAuditLog(`Allocated Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
   };
 
-  // Handle Goods Receipt Receiving (Dynamic Inventory & PO Update)
+  // Handle Goods Receipt Receiving (Dynamic Inventory, PO & WMA Cost Update)
   const handleReceivePO = (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }) => {
     let targetPo: any = null;
     setPoList((prev) =>
@@ -352,13 +354,19 @@ export default function Home() {
         if (existingIndex >= 0) {
           return prev.map((item, idx) => {
             if (idx === existingIndex) {
-              const newOnHand = item.onHand + receivedQty;
+              const oldQty = item.onHand;
+              const oldWma = item.wmaCost || 500;
+              const incomingUnitCost = targetPo.totalAmount / targetPo.poQty;
+              const newWma = Number(((oldQty * oldWma + receivedQty * incomingUnitCost) / (oldQty + receivedQty)).toFixed(2));
+
+              const newOnHand = oldQty + receivedQty;
               const newAvail = newOnHand - item.reserved;
-              return { ...item, onHand: newOnHand, available: newAvail };
+              return { ...item, onHand: newOnHand, available: newAvail, wmaCost: newWma };
             }
             return item;
           });
         } else {
+          const incomingUnitCost = targetPo.totalAmount / targetPo.poQty;
           return [
             ...prev,
             {
@@ -372,6 +380,7 @@ export default function Home() {
               reserved: 0,
               available: receivedQty,
               unit: 'Boxes',
+              wmaCost: Number(incomingUnitCost.toFixed(2)),
               status: 'NORMAL',
             },
           ];
@@ -379,8 +388,8 @@ export default function Home() {
       });
     }
 
-    showNotification(`Confirmed Goods Receipt RR for PO! Added ${receivedQty} units to inventory.`);
-    addAuditLog(`Received ${receivedQty} units for PO #${poId}`);
+    showNotification(`Confirmed Goods Receipt RR for PO! Added ${receivedQty} units to inventory & recalculated WMA cost.`);
+    addAuditLog(`Received ${receivedQty} units for PO #${poId} (WMA recalculated)`);
   };
 
   // Handle RFP Release
@@ -416,6 +425,7 @@ export default function Home() {
         reserved: 0,
         available: newStock.qty,
         unit: newStock.unit || 'Boxes',
+        wmaCost: 500.0,
         status: 'NORMAL',
       },
       ...prev,
@@ -437,6 +447,8 @@ export default function Home() {
         gmStatus: 'PENDING',
         dcsStatus: 'PENDING',
         totalAmount: newPO.totalAmount,
+        ownerRole: 'Bookkeeper',
+        currentStage: 'PENDING_ACCOUNTING_REVIEW',
       },
       ...prev,
     ]);
@@ -457,6 +469,8 @@ export default function Home() {
         gmStatus: 'PENDING',
         dcsStatus: 'PENDING',
         totalAmount: newRFP.amount,
+        ownerRole: 'General Manager',
+        currentStage: 'PENDING_GM_APPROVAL',
       },
       ...prev,
     ]);
@@ -636,8 +650,10 @@ export default function Home() {
                     maker: 'Sales Officer (Logged In)',
                     reviewerStatus: 'PENDING',
                     gmStatus: 'PENDING',
-                    dcsStatus: 'PENDING',
+                    dcsStatus: 'NOT_REQUIRED',
                     totalAmount: 31500.0,
+                    ownerRole: 'Marketing',
+                    currentStage: 'PENDING_MARKETING_REVIEW',
                   },
                   ...prev,
                 ]);

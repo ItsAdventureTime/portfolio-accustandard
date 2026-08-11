@@ -15,6 +15,7 @@ export const DEFAULT_INVENTORY = [
     reserved: 5,
     available: 40,
     unit: 'Kits',
+    wmaCost: 500.0,
     status: 'NORMAL',
   },
   {
@@ -28,6 +29,7 @@ export const DEFAULT_INVENTORY = [
     reserved: 20,
     available: 100,
     unit: 'Boxes',
+    wmaCost: 650.0,
     status: 'NEAR_EXPIRY',
   },
   {
@@ -41,6 +43,7 @@ export const DEFAULT_INVENTORY = [
     reserved: 10,
     available: 190,
     unit: 'Bottles',
+    wmaCost: 420.0,
     status: 'NORMAL',
   },
   {
@@ -54,7 +57,22 @@ export const DEFAULT_INVENTORY = [
     reserved: 0,
     available: 85,
     unit: 'Canisters',
+    wmaCost: 180.0,
     status: 'NORMAL',
+  },
+];
+
+export const DEFAULT_COSTING_HISTORY = [
+  {
+    id: 'cost-1',
+    sku: 'ACC-BACT-01',
+    previousWma: 500.0,
+    incomingQty: 20,
+    incomingUnitCost: 600.0,
+    newWma: 516.67,
+    transactionType: 'GOODS_RECEIPT',
+    referenceNo: 'GR-2026-0041',
+    createdAt: '2026-08-04 10:15:00',
   },
 ];
 
@@ -68,7 +86,7 @@ export const DEFAULT_REPLENISHMENT_PLANNER = [
     reservedStock: 5,
     openCustomerDemand: 30,
     criticalLevel: 50,
-    proposedOrderQty: 60, // Critical + 10% buffer
+    proposedOrderQty: 60,
     leadTimeDays: 14,
     supplier: 'BioMerieux Corp',
     linkedCustomerPO: 'N/A',
@@ -101,7 +119,7 @@ export const DEFAULT_REPLENISHMENT_PLANNER = [
     proposedOrderQty: 5,
     leadTimeDays: 30,
     supplier: 'Shenzhen Lyphotronic Technology',
-    linkedCustomerPO: 'CUST-PO-2026-88', // Required for Class 3
+    linkedCustomerPO: 'CUST-PO-2026-88',
     status: 'PO_LINKED_READY',
   },
 ];
@@ -112,26 +130,76 @@ export const DEFAULT_RFQS = [
     rfqNo: 'RFQ-2026-0081',
     customerName: 'Allied Care Experts (ACE) Medical Center',
     requestedBy: 'Sales Agent (Mark)',
+    facilityOwnership: 'Private',
+    institutionalCharacter: 'Tertiary Hospital',
+    setupType: 'Initial Setup',
+    isRtu: true,
+    hasRtuCensusAttachment: true,
+    rtuCensusAttachmentName: 'ACE_Medical_3Month_Census_Validated.pdf',
     censusPerDay: 180,
-    lisConnectivity: true,
-    expectedContractMonths: 36,
+    existingMachine: 'Sysmex XN-550',
+    existingSupplier: 'MedTech Supplies Inc.',
+    contractYears: 3,
+    specialRequest: 'Requires LIS auto-bi-directional connection',
+    remarks: 'High priority customer for Q3 contract expansion',
     marketingRoiStatus: 'ROI_COMPLETED',
     proposedSellingPrice: 42000.0,
     landedCostPerUnit: 24500.0,
     expectedMarginPct: 41.6,
+    activeRoiId: 'roi-1',
+    ownerRole: 'Sales',
+    currentStage: 'PENDING_MARKETING_ROI',
   },
   {
     id: 'rfq-2',
     rfqNo: 'RFQ-2026-0094',
     customerName: 'Medical City Clark Diagnostic Center',
     requestedBy: 'Sales Agent (Mark)',
+    facilityOwnership: 'Private',
+    institutionalCharacter: 'Diagnostic Clinic',
+    setupType: 'Upgrade Only',
+    isRtu: true,
+    hasRtuCensusAttachment: false,
+    rtuCensusAttachmentName: null,
     censusPerDay: 95,
-    lisConnectivity: false,
-    expectedContractMonths: 12,
+    existingMachine: 'Mindray BS-240',
+    existingSupplier: 'Diagnostics Phils',
+    contractYears: 1,
+    specialRequest: 'Include 1-year PMS maintenance agreement',
+    remarks: 'Awaiting 3-month validated census attachment before marketing submission',
     marketingRoiStatus: 'PENDING_ROI',
     proposedSellingPrice: 58000.0,
     landedCostPerUnit: 34000.0,
     expectedMarginPct: 41.3,
+    activeRoiId: null,
+    ownerRole: 'Sales',
+    currentStage: 'DRAFT',
+  },
+];
+
+export const DEFAULT_ROIS = [
+  {
+    id: 'roi-1',
+    rfqId: 'rfq-1',
+    version: 1,
+    isActive: true,
+    equipmentCost: 250000.0,
+    installationCost: 35000.0,
+    operatingAssumptions: {
+      dailyTestVolume: 180,
+      reagentCostPerTest: 45.0,
+      sellingPricePerTest: 110.0,
+      workingDaysPerYear: 360,
+    },
+    postInstallCosts: {
+      annualPmsCost: 20000.0,
+      logisticsCostPerMonth: 5000.0,
+    },
+    perSkuEconomics: [
+      { sku: 'ACC-BACT-01', name: 'Calibration Sticks', cost: 500.0, price: 950.0, annualQty: 240 },
+    ],
+    annualContribution: 198000.0,
+    roiYears: 1.44,
   },
 ];
 
@@ -143,8 +211,10 @@ export const DEFAULT_APPROVALS = [
     maker: 'Sales Officer',
     reviewerStatus: 'APPROVED',
     gmStatus: 'APPROVED',
-    dcsStatus: 'PENDING',
+    dcsStatus: 'NOT_REQUIRED',
     totalAmount: 31500.0,
+    ownerRole: 'Client',
+    currentStage: 'AWAITING_CLIENT_APPROVAL',
   },
   {
     id: 'app-2',
@@ -152,9 +222,11 @@ export const DEFAULT_APPROVALS = [
     type: 'Purchase Order',
     maker: 'Purchasing Officer',
     reviewerStatus: 'APPROVED',
-    gmStatus: 'PENDING',
-    dcsStatus: 'AWAITING',
+    gmStatus: 'APPROVED',
+    dcsStatus: 'PENDING',
     totalAmount: 142000.0,
+    ownerRole: 'Chairman (DCS)',
+    currentStage: 'PENDING_DCS_APPROVAL',
   },
   {
     id: 'app-3',
@@ -163,8 +235,10 @@ export const DEFAULT_APPROVALS = [
     maker: 'Bookkeeper (Aila)',
     reviewerStatus: 'APPROVED',
     gmStatus: 'APPROVED',
-    dcsStatus: 'PENDING',
+    dcsStatus: 'APPROVED',
     totalAmount: 18500.0,
+    ownerRole: 'Chairman (DCS)',
+    currentStage: 'READY_FOR_RELEASE',
   },
 ];
 
@@ -172,6 +246,8 @@ export const DEFAULT_QUOTATIONS = [
   {
     id: 'quote-1',
     qrn: 'QRN20240415037',
+    rfqNo: 'RFQ-2026-0081',
+    roiId: 'roi-1',
     quotationDate: 'April 15, 2026',
     clientName: 'Ms. Katherine Porciuncula',
     clientFacility: 'Allied Care Experts Medical Center',
@@ -181,11 +257,17 @@ export const DEFAULT_QUOTATIONS = [
     unitPrice: 31500.0,
     quantity: 1,
     totalPrice: 31500.0,
-    status: 'APPROVED',
+    status: 'AWAITING_CLIENT_APPROVAL',
+    clientApprovalEvidence: null,
+    clientApprovalDate: null,
+    clientPoReference: null,
+    isFulfillmentAllowed: false,
   },
   {
     id: 'quote-2',
     qrn: 'QRN20260808091',
+    rfqNo: 'RFQ-2026-0094',
+    roiId: null,
     quotationDate: 'August 08, 2026',
     clientName: 'Dr. Manuel Santos',
     clientFacility: 'Medical City Clark Diagnostic Center',
@@ -195,13 +277,18 @@ export const DEFAULT_QUOTATIONS = [
     unitPrice: 58000.0,
     quantity: 1,
     totalPrice: 58000.0,
-    status: 'PENDING_APPROVAL',
+    status: 'DRAFT',
+    clientApprovalEvidence: null,
+    clientApprovalDate: null,
+    clientPoReference: null,
+    isFulfillmentAllowed: false,
   },
 ];
 
 export const DEFAULT_SOA_ROWS = [
   {
     id: 'soa-1',
+    clientName: 'Allied Care Experts (ACE) Medical Center',
     salesInvoiceNo: 'SI-6087',
     drNo: 'DR-6075',
     siDate: '18-Jun-2026',
@@ -212,9 +299,12 @@ export const DEFAULT_SOA_ROWS = [
     amountPaid: 0.0,
     invoiceBalance: 16960.0,
     runningBalance: 16960.0,
+    isFinalized: false,
+    finalizedByRole: null,
   },
   {
     id: 'soa-2',
+    clientName: 'Allied Care Experts (ACE) Medical Center',
     salesInvoiceNo: 'SI-6107',
     drNo: 'DR-6097',
     siDate: '26-Jun-2026',
@@ -225,9 +315,12 @@ export const DEFAULT_SOA_ROWS = [
     amountPaid: 0.0,
     invoiceBalance: 1968.0,
     runningBalance: 18928.0,
+    isFinalized: false,
+    finalizedByRole: null,
   },
   {
     id: 'soa-3',
+    clientName: 'Allied Care Experts (ACE) Medical Center',
     salesInvoiceNo: 'SI-6118',
     drNo: 'DR-6113',
     siDate: '30-Jun-2026',
@@ -238,6 +331,8 @@ export const DEFAULT_SOA_ROWS = [
     amountPaid: 0.0,
     invoiceBalance: 13280.0,
     runningBalance: 32208.0,
+    isFinalized: false,
+    finalizedByRole: null,
   },
 ];
 
@@ -264,34 +359,76 @@ export const DEFAULT_PO_LIST = [
     poNumber: 'PO-2026-0891',
     vendorName: 'BioMerieux Diagnostics Corp',
     itemDescription: 'Calibration Sticks Bact Alert',
+    sku: 'ACC-BACT-01',
     poQty: 100,
     rrQtyReceived: 100,
     invoiceRef: 'SI #8812',
     totalAmount: 142000.0,
+    accountingApproved: true,
+    gmApproved: true,
+    dcsApproved: true,
+    isShortageException: false,
+    shortageReason: null,
     status: 'VERIFIED_3WAY',
+    ownerRole: 'Warehouse',
   },
   {
     id: 'po-2',
     poNumber: 'PO-2026-0914',
     vendorName: 'Sysmex Philippines Inc.',
     itemDescription: 'Blood Chemistry Reagents Kit',
+    sku: 'ACC-REAG-04',
     poQty: 50,
     rrQtyReceived: 0,
     invoiceRef: 'Awaiting',
     totalAmount: 450000.0,
-    status: 'PENDING_RECEIVING',
+    accountingApproved: false,
+    gmApproved: false,
+    dcsApproved: false,
+    isShortageException: true,
+    shortageReason: 'Critical reagent demand spike at Pampanga facility',
+    status: 'PENDING_ACCOUNTING',
+    ownerRole: 'Bookkeeper',
   },
   {
     id: 'po-3',
     poNumber: 'PO-2026-0925',
     vendorName: 'Mindray Medical Corp',
     itemDescription: 'Hematology Lyse Reagent 5L',
+    sku: 'ACC-HEMA-09',
     poQty: 80,
     rrQtyReceived: 80,
     invoiceRef: 'SI #9901',
     totalAmount: 640000.0,
+    accountingApproved: true,
+    gmApproved: true,
+    dcsApproved: true,
+    isShortageException: false,
+    shortageReason: null,
     status: 'VERIFIED_3WAY',
+    ownerRole: 'Warehouse',
   },
+];
+
+export const DEFAULT_VENDOR_INVOICES = [
+  {
+    id: 'vi-1',
+    invoiceNumber: 'SI-8812',
+    poNumber: 'PO-2026-0891',
+    vendorName: 'BioMerieux Diagnostics Corp',
+    invoiceDate: '2026-07-28',
+    totalAmount: 142000.0,
+    attachmentUrl: 'BioMerieux_Vendor_Invoice_8812.pdf',
+    matchStatus: 'VERIFIED_3WAY',
+  },
+];
+
+export const DEFAULT_GL_ACCOUNTS = [
+  { code: '6100', name: 'Freight & Delivery', category: 'Expense', isActive: true },
+  { code: '6200', name: 'Utilities Expense', category: 'Expense', isActive: true },
+  { code: '6300', name: 'Professional & Calibration Fees', category: 'Expense', isActive: true },
+  { code: '6400', name: 'Office & Warehouse Supplies', category: 'Expense', isActive: true },
+  { code: '6500', name: 'Travel & Representation', category: 'Expense', isActive: false },
 ];
 
 export const DEFAULT_RFP_LIST = [
@@ -303,7 +440,10 @@ export const DEFAULT_RFP_LIST = [
     description: 'Cold-chain express shipping for Pampanga hospital orders',
     amount: 18500.0,
     requestedBy: 'Bookkeeper (Aila)',
-    status: 'APPROVED_DCS',
+    attachmentUrl: 'LBC_Courier_Waybill_104.pdf',
+    disbursementProof: 'BDO_Online_Transfer_Ref_992081.pdf',
+    status: 'RELEASED_PAID',
+    ownerRole: 'Chairman (DCS)',
   },
   {
     id: 'rfp-2',
@@ -313,17 +453,10 @@ export const DEFAULT_RFP_LIST = [
     description: 'San Fernando warehouse climate-control power bill',
     amount: 34200.0,
     requestedBy: 'General Manager',
+    attachmentUrl: 'Meralco_Bill_Aug2026.pdf',
+    disbursementProof: null,
     status: 'PENDING_GM',
-  },
-  {
-    id: 'rfp-3',
-    rfpNo: 'RFP-2026-0120',
-    payee: 'Calibration Certifications Phils',
-    glAccount: '6300 - Professional & Calibration Fees',
-    description: 'ISO 17025 annual calibration for Bact Alert analyzer units',
-    amount: 28000.0,
-    requestedBy: 'Marketing',
-    status: 'PENDING_MKTG',
+    ownerRole: 'General Manager',
   },
 ];
 
@@ -364,9 +497,9 @@ export const DEFAULT_QBO_QUEUE = [
 ];
 
 export const DEFAULT_AUDIT_LOGS = [
-  { id: '1', time: '02:55 PM', user: 'Sales Officer (Mark)', action: 'Created Quotation QRN20240415037 for Allied Care Experts' },
-  { id: '2', time: '03:10 PM', user: 'Marketing Officer (RMT)', action: 'Reviewed and Approved Quotation QRN20240415037' },
-  { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037' },
+  { id: '1', time: '02:55 PM', user: 'Sales Officer (Mark)', action: 'Created RFQ-2026-0081 with validated RTU census attachment' },
+  { id: '2', time: '03:10 PM', user: 'Marketing Officer (RMT)', action: 'Completed ROI calculation version 1 for RFQ-2026-0081' },
+  { id: '3', time: '03:14 PM', user: 'General Manager (Karen)', action: 'Approved Quotation QRN20240415037 (Direct to Client Approval)' },
 ];
 
 const RESET_INTERVAL_MS = 30 * 60 * 1000;
@@ -387,6 +520,7 @@ export function useDemoStore() {
     setLastResetTime(now);
     if (typeof window !== 'undefined') {
       localStorage.setItem('accustanda_demo_reset_time', String(now));
+      localStorage.removeItem('accustandard_demo_state');
     }
   }, []);
 
@@ -416,3 +550,4 @@ export function useDemoStore() {
     resetDemoData,
   };
 }
+

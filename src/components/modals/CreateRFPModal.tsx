@@ -34,7 +34,10 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({
       description,
       amount: Number(amount),
       requestedBy: 'Bookkeeper (Aila)',
-      status: 'APPROVED_DCS',
+      attachmentUrl: `${payee.replace(/\s+/g, '_')}_Voucher_Attachment.pdf`,
+      disbursementProof: null,
+      status: 'PENDING_GM',
+      ownerRole: 'General Manager',
     };
 
     onSubmitRFP(newRFP);

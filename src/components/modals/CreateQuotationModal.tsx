@@ -83,7 +83,7 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
               <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
                 Create &amp; Submit Sales Quotation
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Marketing (Reviewer) &rarr; GM &rarr; DCS for Approval</p>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">Routes to Marketing (Reviewer) &rarr; GM &rarr; Awaiting Client Approval (AT-SALES-005 compliant)</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
