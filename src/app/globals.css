@@ -107,7 +107,17 @@ input[type="number"] {
 }
 
 .wayfinding-grid tr:hover td {
-  background-color: #f8fafc;
+  background-color: #f0f7ff;
+}
+
+/* Global Interactive Data Table Row Hover & Pointer Cursor */
+tbody tr {
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+tbody tr:hover {
+  background-color: rgba(239, 246, 255, 0.7) !important;
 }
 
 /* Mobile Modal Bottom Sheet Styling */

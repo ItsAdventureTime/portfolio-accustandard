@@ -368,7 +368,26 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
                   {replenishmentPlannerList.map((item) => (
-                    <tr key={item.id} className="hover:bg-blue-50/50 transition group">
+                    <tr
+                      key={item.id}
+                      onClick={() => {
+                        const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
+                          id: item.id,
+                          sku: item.sku,
+                          description: item.description,
+                          location: 'Quezon City',
+                          lotNumber: 'LOT-2026-X1',
+                          expiryDate: '2027-12-31',
+                          onHand: item.availableStock,
+                          reserved: 0,
+                          available: item.availableStock,
+                          criticalLevel: item.criticalLevel,
+                          unit: 'Kits',
+                        };
+                        setSelectedSkuModal(matched);
+                      }}
+                      className="hover:bg-blue-50/70 hover:shadow-xs transition-all duration-150 cursor-pointer group"
+                    >
                       <td className="p-4">
                         <button
                           type="button"
