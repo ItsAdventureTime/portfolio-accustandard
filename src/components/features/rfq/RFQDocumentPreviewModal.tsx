@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { X, Printer, Download, CheckCircle2, Building2, UserCheck, ShieldCheck, FileCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Printer, CheckCircle2, ShieldCheck, FileCheck, Plus, Trash2 } from 'lucide-react';
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 interface RFQDocumentPreviewModalProps {
@@ -17,29 +17,53 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
 }) => {
   if (!isOpen) return null;
 
+  // Build initial dynamic category list matching quote item selections
+  const initialCategories = (rfqData.categories && rfqData.categories.length > 0)
+    ? rfqData.categories
+    : (rfqData.itemDescription || rfqData.sku)
+    ? [
+        {
+          name: rfqData.itemDescription ? rfqData.itemDescription.split(' ')[0] || 'Reagents' : 'Bacteriology',
+          selected: true,
+          machine: `${rfqData.sku || 'ACC-BACT-01'} (${rfqData.itemDescription || 'Calibration Sticks Bact Alert'})`,
+          census: rfqData.dailyCensus || 40,
+        },
+        { name: 'Chemistry', selected: true, machine: 'Lifotronic H8', census: 20 },
+        { name: 'HbA1c', selected: true, machine: 'H8 HPLC Column', census: 20 },
+        { name: 'Hematology', selected: true, machine: 'Sysmex XN-550', census: 35 },
+      ]
+    : [
+        { name: 'Chemistry', selected: true, machine: 'Lifotronic H8', census: 20 },
+        { name: 'Electrolytes', selected: false, machine: '-', census: 0 },
+        { name: 'HbA1c', selected: true, machine: 'H8 HPLC Column', census: 20 },
+        { name: 'Hematology', selected: true, machine: 'Sysmex XN-550', census: 35 },
+        { name: 'Immunology', selected: false, machine: '-', census: 0 },
+        { name: 'Microscopy (UA)', selected: false, machine: '-', census: 0 },
+      ];
+
+  const [categoriesList, setCategoriesList] = useState<any[]>(initialCategories);
+
+  // New Category Row State
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatMachine, setNewCatMachine] = useState('');
+  const [newCatCensus, setNewCatCensus] = useState(25);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+
   const data = {
     rfqNo: rfqData.rfqNo || 'RFQ-2026-0081',
-    date: rfqData.date || 'August 10, 2026',
-    facilityName: rfqData.customerName || 'Allied Care Experts (ACE) Medical Center',
-    address: rfqData.address || 'Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan, Region III',
-    addressee: rfqData.addressee || 'Dr. Amalia Santos',
+    date: rfqData.date || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    facilityName: rfqData.customerName || rfqData.facilityName || 'Allied Care Experts (ACE) Medical Center',
+    address: rfqData.address || rfqData.clientAddress || 'Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan, Region III',
+    addressee: rfqData.addressee || rfqData.clientName || 'Dr. Amalia Santos',
     addresseePosition: rfqData.addresseePosition || 'Medical Director',
     medTech: rfqData.medTech || 'Chief Med Tech: Ms. Katherine Porciuncula, RMT',
     pathologist: rfqData.pathologist || 'Pathologist: Dr. Roberto V. Ramos, MD',
-    contactPerson: rfqData.contactPerson || 'Mr. Jonathan Cruz (Procurement)',
+    contactPerson: rfqData.contactPerson || `${rfqData.clientName || 'Mr. Jonathan Cruz'} (Procurement)`,
     contactNumber: rfqData.contactNumber || '+63 917 555 0192',
     email: rfqData.email || 'procurement@acemedical.com.ph',
     ownership: rfqData.ownership || 'Private',
     character: rfqData.character || 'Hospital (150-Bed Level 2)',
     setupType: rfqData.setupType || 'Reagent Tie-Up (RTU) Upgrade',
-    categories: rfqData.categories || [
-      { name: 'Chemistry', selected: true, machine: 'Lifotronic H8', census: 20 },
-      { name: 'Electrolytes', selected: false, machine: '-', census: 0 },
-      { name: 'HbA1c', selected: true, machine: 'H8 HPLC Column', census: 20 },
-      { name: 'Hematology', selected: true, machine: 'Sysmex XN-550', census: 35 },
-      { name: 'Immunology', selected: false, machine: '-', census: 0 },
-      { name: 'Microscopy (UA)', selected: false, machine: '-', census: 0 },
-    ],
     dailyCensus: rfqData.dailyCensus || 180,
     existingMachine: rfqData.existingMachine || 'Bio-Rad D-10 Dual Program',
     existingSupplier: rfqData.existingSupplier || 'Legacy Bio-Tech Philippines',
@@ -50,6 +74,26 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
     hasCensusAttachment: rfqData.hasCensusAttachment ?? true,
   };
 
+  const handleAddCategoryRow = () => {
+    if (!newCatName.trim() || !newCatMachine.trim()) return;
+    setCategoriesList((prev) => [
+      ...prev,
+      {
+        name: newCatName,
+        selected: true,
+        machine: newCatMachine,
+        census: Number(newCatCensus) || 20,
+      },
+    ]);
+    setNewCatName('');
+    setNewCatMachine('');
+    setIsAddingCategory(false);
+  };
+
+  const handleRemoveCategoryRow = (idxToRemove: number) => {
+    setCategoriesList((prev) => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
   return (
     <div
       role="dialog"
@@ -58,7 +102,7 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
       className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
-        {/* Header Block Matching Screenshot 2 Design System */}
+        {/* Header Block Matching Screenshot Design System */}
         <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
           <div className="flex items-start gap-4">
             <div className="p-3 bg-blue-900 text-white rounded-2xl shrink-0 shadow-md">
@@ -94,9 +138,9 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
         {/* Document Body Container */}
         <div className="p-4 sm:p-8 overflow-y-auto flex-1 space-y-6 text-xs sm:text-sm bg-slate-50/50">
           {/* Printable A4 Page Frame */}
-          <div className="bg-white border border-slate-300 shadow-md p-6 sm:p-10 space-y-6 rounded-2xl max-w-3xl mx-auto font-sans text-slate-900">
+          <div className="bg-white border border-slate-300 shadow-md p-6 sm:p-10 space-y-6 rounded-2xl max-w-3xl mx-auto font-sans text-slate-900" style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
             {/* Header Identity */}
-            <div className="border-b-2 border-blue-900 pb-4 flex justify-between items-start">
+            <div className="border-b-2 border-blue-900 pb-4 flex justify-between items-start" style={{ borderBottom: '2px solid #1e3a8a' }}>
               <div>
                 <AccustandardLogo size="md" />
                 <p className="text-[11px] font-bold text-slate-600 mt-1 uppercase tracking-wider">
@@ -107,7 +151,7 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
                 </p>
               </div>
               <div className="text-right">
-                <span className="px-3 py-1 bg-blue-900 text-white text-xs font-black rounded-lg uppercase tracking-wider inline-block">
+                <span className="px-3 py-1 bg-blue-900 text-white text-xs font-black rounded-lg uppercase tracking-wider inline-block" style={{ backgroundColor: '#1e3a8a', color: '#ffffff' }}>
                   Request for Quotation
                 </span>
                 <p className="text-xs font-mono font-bold text-slate-800 mt-1">Ref No: {data.rfqNo}</p>
@@ -154,9 +198,64 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
 
             {/* Section 2: Setup Type & Test Category Selections */}
             <div className="space-y-3">
-              <h3 className="text-xs font-black uppercase tracking-wider text-blue-950 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200/80">
-                2. Setup Type &amp; Test Category Selections
-              </h3>
+              <div className="flex justify-between items-center bg-blue-50 px-3 py-1 rounded-lg border border-blue-200/80">
+                <h3 className="text-xs font-black uppercase tracking-wider text-blue-950">
+                  2. Setup Type &amp; Test Category Selections
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingCategory(!isAddingCategory)}
+                  className="px-2 py-0.5 bg-blue-900 text-white font-bold text-[11px] rounded flex items-center gap-1 cursor-pointer no-print"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Row</span>
+                </button>
+              </div>
+
+              {isAddingCategory && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-2 no-print text-xs font-semibold">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Test Category Name"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Proposed Machine / SKU"
+                      value={newCatMachine}
+                      onChange={(e) => setNewCatMachine(e.target.value)}
+                      className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Daily Census"
+                      value={newCatCensus}
+                      onChange={(e) => setNewCatCensus(Number(e.target.value))}
+                      className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-900 font-bold"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingCategory(false)}
+                      className="px-3 py-1 bg-slate-200 text-slate-800 rounded-lg font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddCategoryRow}
+                      className="px-3 py-1 bg-blue-900 text-white rounded-lg font-bold"
+                    >
+                      Save Row
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="p-3 bg-slate-100/80 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 flex justify-between items-center">
                 <span>Selected Acquisition Mode: <strong className="text-blue-900">{data.setupType}</strong></span>
                 <span>Contract Duration: <strong className="text-blue-900">{data.contractYears}</strong></span>
@@ -170,10 +269,11 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
                       <th className="p-2 text-center">Requested</th>
                       <th className="p-2">Proposed Machine / SKU</th>
                       <th className="p-2 text-right">Daily Test Census</th>
+                      <th className="p-2 text-center no-print w-10">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {data.categories.map((cat: any, idx: number) => (
+                    {categoriesList.map((cat: any, idx: number) => (
                       <tr key={idx} className={cat.selected ? 'bg-blue-50/40' : ''}>
                         <td className="p-2 font-bold text-slate-900">{cat.name}</td>
                         <td className="p-2 text-center">
@@ -181,8 +281,18 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
                             {cat.selected ? 'YES' : 'NO'}
                           </span>
                         </td>
-                        <td className="p-2 font-mono text-slate-800">{cat.machine}</td>
+                        <td className="p-2 font-mono text-slate-800 font-bold">{cat.machine}</td>
                         <td className="p-2 text-right font-mono font-bold text-slate-900">{cat.census || '-'}</td>
+                        <td className="p-2 text-center no-print">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveCategoryRow(idx)}
+                            className="p-1 text-red-600 hover:bg-red-100 rounded transition cursor-pointer"
+                            title="Remove category row"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mx-auto" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
