@@ -18,7 +18,10 @@ Accustandard requires a single integrated ERP web application to serve as its op
 - Read-only "View As" mode for administrators with audited overrides
 - Internal database acts as operational source of truth
 - QuickBooks Online (QBO) acts as financial accounting ledger via live API queue
-- **Version Control Policy:** Local commits use standard local `git` CLI with SSH key signatures. Remote commits and repo synchronization use the official GitHub CLI (`gh`) over **HTTPS** (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials.
+- **Mandatory Repository & Version Control Policy:**
+  0. **Documentation Sync:** Every code, UI, dependency, or architectural change MUST immediately update all documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`).
+  1. **Local Commits:** Local commits use standard local `git` CLI (`git commit --no-gpg-sign`) without SSH keys, passkeys, or GPG prompts.
+  2. **Remote GitHub Sync:** Remote commit and repository synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use `git push origin main` or official GitHub CLI (`gh`) over **HTTPS** authentication. SSH keys and passkeys are strictly avoided.
 
 ---
 
@@ -48,14 +51,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
 ## 🔒 Mandatory Business Rules
 
 - **Approval Chain:** Maker &rarr; Reviewer &rarr; GM &rarr; DCS Chairman.
-- **No Self-Approvals:** Users cannot approve their own submitted documents.
-- **Document Locking:** Approved documents are locked against editing; revisions restart the approval chain.
-- **Hard-Blocked Over-Receiving:** Warehouse cannot receive stock exceeding approved PO quantities.
-- **Stock Reservation Expiry:** Quotation stock reservations auto-release after 3 days if unconfirmed.
-
----
-
-## 📜 Client Sign-Off & Open Items
-
-- **Opening Balances:** Base physical count used for initial inventory load.
-- **Costing Method:** Moving average cost basis for margin calculations.
+- **No Self-Approvals:** Maker cannot approve own document.
+- **Stock Reservations:** Unconfirmed quotes release reserved stock after 3 days.
+- **Class 3 Purchasing Lock:** Block PO creation without an approved linked Customer PO.
+- **3-Way Matching:** Prevent receiving report posting if quantity or price exceeds PO limits.

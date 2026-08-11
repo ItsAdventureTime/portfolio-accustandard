@@ -5,9 +5,22 @@ Copy and paste the prompt below into your next session or agent to execute the i
 ---
 
 ```markdown
-You are an expert Go backend engineer and DevOps specialist. Execute the Go backend migration for the Accustandard Medical ERP project strictly adhering to the specification in `GO_MIGRATION_PLAN.md`.
+You are an expert Go backend engineer, frontend specialist, and DevOps engineer. Execute tasks for the Accustandard Medical ERP project strictly adhering to the specification in `GO_MIGRATION_PLAN.md` and repository guidelines.
 
-## Strict Execution Rules:
+## Mandatory Repository Workflow Rules:
+
+0. **Documentation Synchronization Policy**:
+   - Every time code, components, dependencies, scripts, or design specs are changed, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) MUST be updated immediately.
+
+1. **Local Git Commit Protocol**:
+   - Local commits MUST be executed using standard local `git` CLI (`git add . && git commit --no-gpg-sign -m "..."`).
+   - Do NOT use SSH keys, passkeys, or GPG signing for local commits.
+
+2. **GitHub Remote HTTPS Synchronization Policy**:
+   - Remote commit and repository synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST be kept in continuous 100% sync using `git push origin main` or official GitHub CLI (`gh`) over **HTTPS** authentication.
+   - Do NOT use SSH, SSH keys, or passkeys for remote operations.
+
+## Execution Rules:
 
 1. **Architecture & Scope**:
    - Keep the existing Next.js React UI in `src/` (do not rewrite the frontend). Build static export files to `out/` with `basePath: '/accustandard/demo'`.
@@ -31,8 +44,4 @@ You are an expert Go backend engineer and DevOps specialist. Execute the Go back
      - Runs local static build inside a disposable Podman container (`podman run --rm -v "$(pwd):/workspace:Z" node:24-alpine sh -c "npm ci && npm run build"`).
      - Runs VPS deployment & Caddy repair non-interactively over SSH.
      - Syncs static export files to `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
-
-5. **Version Control**:
-   - Local commits: ONLY use standard local `git` CLI (`git add .`, `git commit -m "..."`). SSH key is NOT required.
-   - Remote operations: ALWAYS use official GitHub CLI (`gh`) over HTTPS (`https://github.com/ItsAdventureTime/bridge-accustandard.git`), authenticated via default `gh auth` credentials (`ItsAdventureTime`). NEVER use `git` remote commands.
 ```

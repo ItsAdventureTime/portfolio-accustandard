@@ -179,6 +179,14 @@ npm run deploy:demo
 
 ---
 
+## 📌 Repository & Development Workflow Policy
+
+0. **Documentation Synchronization Policy:** Every time code, components, dependencies, scripts, or design specs are changed, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) MUST be updated immediately.
+1. **Local Git Commit Protocol:** Local commits must be executed via standard `git` CLI (`git add . && git commit --no-gpg-sign -m "..."`) without triggering SSH keys, passkeys, or GPG signing.
+2. **GitHub Remote HTTPS Synchronization Policy:** Local commits must always be kept in 100% continuous synchronization with remote GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) using `git push origin main` or `gh` CLI over `https` authentication. SSH keys and passkeys are strictly avoided.
+
+---
+
 ## 📄 License & Attribution
 
 Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** & **DelegateOps Business Support Services**. All rights reserved.

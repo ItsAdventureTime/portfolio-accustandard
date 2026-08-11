@@ -1,37 +1,40 @@
 # Contributing to Accustandard Medical ERP
 
-Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This guide outlines development standards, local `git` commit rules, and remote GitHub CLI (`gh`) synchronization guidelines.
+Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This guide outlines development standards, documentation synchronization rules, local `git` commit rules, and remote GitHub (`gh` / HTTPS) synchronization guidelines.
 
 ---
 
-## 🚀 Strict Version Control & Tooling Standard
+## 📌 Core Development & Repository Workflow Rules
 
-### 1. Local Commits (Standard Git CLI Only)
-- Use **only** local `git` CLI commands (`git add .`, `git commit -m "..."`).
-- SSH commit signing is **not required** for local commits.
+### Rule 0: Documentation Synchronization Policy
+- Every time code, UI components, dependencies, build scripts, or design specifications are modified, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) **MUST** be updated immediately.
+
+### Rule 1: Local Commit Protocol (Standard Git CLI Only)
+- Perform local commits using standard `git` CLI (`git add .`, `git commit --no-gpg-sign -m "..."`).
+- SSH keys, GPG signing, passkeys, and interactive prompts are strictly avoided.
 - Follow the **Conventional Commits** specification:
   - `feat`: New feature or user capability.
   - `fix`: Bug fix or error resolution.
+  - `style`: UI/UX, typography, layout, or print styling updates.
   - `docs`: Documentation updates.
   - `refactor`: Code improvements without functionality changes.
   - `chore`: Maintenance or script updates.
 
 ```bash
 git add .
-git commit -m "docs: update contribution guidelines for local git and gh remote sync"
+git commit --no-gpg-sign -m "style(ui): update design system alignment for COSO approval table"
 ```
 
-### 2. Remote Commit & Synchronization (GitHub CLI `gh` Only)
-- ALWAYS perform remote commits, PRs, and synchronization using official **GitHub CLI (`gh`)** over **HTTPS**.
-- **NEVER** use `git` commands for remote operations (e.g. do not use `git push`).
-- Repository Remote: `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- Ensure local `.git` and remote GitHub repository remain 100% synchronized.
+### Rule 2: Remote Commit & Synchronization (GitHub HTTPS / `gh` CLI)
+- Remote synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) must always be executed over authenticated **HTTPS** (`git push origin main` or `gh` CLI).
+- SSH keys, SSH passphrase prompts, and passkeys are strictly avoided.
+- Ensure local working directory and remote GitHub `main` branch remain 100% synchronized after every feature or bug fix.
 
 ```bash
-# Synchronize remote repository via GitHub CLI
-gh repo sync
+# Push local commits to remote main over authenticated HTTPS
+git push origin main
 
-# Verify GitHub CLI authentication status
+# Or check GitHub CLI authentication status
 gh auth status
 ```
 
