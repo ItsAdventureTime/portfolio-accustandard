@@ -32,6 +32,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Hide raw browser number input steppers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 /* Predictable Navigation Shell */
 .wayfinding-header {
   background-color: #ffffff;
@@ -203,6 +213,20 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Form Interaction State Styling (:user-invalid and :user-valid) */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
+  border-color: #dc2626 !important;
+  background-color: #fff1f2 !important;
+}
+
+input:required:user-valid,
+select:required:user-valid,
+textarea:required:user-valid {
+  border-color: #16a34a !important;
 }
 
 /* Printable Document CSS rules */

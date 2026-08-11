@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Upload, CheckCircle2, AlertCircle, FileSpreadsheet, ShieldCheck, RefreshCw, ArrowRight } from 'lucide-react';
+import { X, Upload, CheckCircle2, FileSpreadsheet, Database, Landmark, Receipt, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface StartupImportModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
 }) => {
   const [importType, setImportType] = useState<'MASTER' | 'INVENTORY' | 'FINANCIAL' | 'TRANSACTIONS'>('INVENTORY');
   const [currentStep, setCurrentStep] = useState<'UPLOAD' | 'VALIDATE' | 'PREVIEW' | 'RECONCILE'>('UPLOAD');
-  const [fileName, setFileName] = useState('AccuStandard_Cutover_Beginning_Inventory_2026.csv');
+  const [fileName] = useState('AccuStandard_Cutover_Beginning_Inventory_2026.csv');
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -52,25 +52,37 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
     }, 450);
   };
 
+  const steps = [
+    { id: 'UPLOAD', label: 'Upload File' },
+    { id: 'VALIDATE', label: 'Validate Staging' },
+    { id: 'PREVIEW', label: 'Preview & Resolve' },
+    { id: 'RECONCILE', label: 'Post & Reconcile' },
+  ];
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="Startup Cutover Data Import Modal"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-200 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
-        {/* Header Block Matching Screenshot 2 Design System */}
-        <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-900 text-white rounded-2xl shrink-0 shadow-md">
-              <Upload className="w-6 h-6" />
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-600/20 shrink-0">
+              <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900">
-                STARTUP / CUTOVER DATA IMPORT ENGINE (FR-025 &ndash; FR-031)
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-0.5">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                  Cutover Data Import Engine
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
+                  FR-025 – FR-031
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
                 Controlled 5-Stage Staging: Upload &rarr; Validate &rarr; Preview &rarr; Post &rarr; Reconcile
               </p>
             </div>
@@ -78,43 +90,76 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
           <button
             onClick={onClose}
             aria-label="Close Import Modal"
-            className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer shrink-0"
+            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step Stepper Indicator Bar */}
-        <div className="px-6 py-3 bg-slate-50/80 border-b border-slate-200 flex justify-between text-xs font-extrabold text-slate-600 shrink-0">
-          <span className={currentStep === 'UPLOAD' ? 'text-blue-900 font-black underline' : ''}>1. Upload File</span>
-          <span>&rarr;</span>
-          <span className={currentStep === 'VALIDATE' ? 'text-blue-900 font-black underline' : ''}>2. Validate Staging</span>
-          <span>&rarr;</span>
-          <span className={currentStep === 'PREVIEW' ? 'text-blue-900 font-black underline' : ''}>3. Preview &amp; Resolve</span>
-          <span>&rarr;</span>
-          <span className={currentStep === 'RECONCILE' ? 'text-emerald-800 font-black underline' : ''}>4. Post &amp; Reconcile</span>
+        <div className="px-6 py-3.5 bg-slate-50/90 border-b border-slate-100 flex items-center justify-between shrink-0">
+          {steps.map((step, idx) => {
+            const isCurrent = currentStep === step.id;
+            const isCompleted = steps.findIndex(s => s.id === currentStep) > idx;
+
+            return (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                      isCompleted
+                        ? 'bg-emerald-500 text-white'
+                        : isCurrent
+                        ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-600/20'
+                        : 'bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : idx + 1}
+                  </div>
+                  <span
+                    className={`text-xs font-semibold ${
+                      isCurrent
+                        ? 'text-blue-900 font-bold'
+                        : isCompleted
+                        ? 'text-emerald-700 font-semibold'
+                        : 'text-slate-500'
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+                {idx < steps.length - 1 && (
+                  <div className="h-0.5 flex-1 max-w-[28px] bg-slate-200 rounded-full mx-1" />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
 
         {/* Modal Content Body */}
-        <div className="p-6 sm:p-7 space-y-5 text-xs sm:text-sm overflow-y-auto flex-1 bg-white">
+        <div className="p-6 space-y-5 text-sm overflow-y-auto flex-1 bg-white">
           {currentStep === 'UPLOAD' && (
             <div className="space-y-4">
               <div>
-                <label className="block font-extrabold text-xs uppercase tracking-wider text-slate-700 mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
                   Select Cutover Data Import Type
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setImportType('INVENTORY')}
-                    className={`p-4 rounded-2xl border-2 font-bold text-left transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border-2 font-medium text-left transition-all cursor-pointer ${
                       importType === 'INVENTORY'
-                        ? 'bg-blue-50/70 border-blue-600 text-blue-950 shadow-sm'
-                        : 'bg-slate-50/50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/60'
+                        ? 'bg-blue-50/60 border-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    <span className="block font-black text-sm text-blue-950">Beginning Inventory (FR-027)</span>
-                    <span className="text-[11px] text-slate-500 font-semibold mt-0.5 block">
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <FileSpreadsheet className={`w-4 h-4 ${importType === 'INVENTORY' ? 'text-blue-600' : 'text-slate-400'}`} />
+                      <span className="font-bold text-sm text-slate-900">Beginning Inventory</span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">FR-027</span>
+                    </div>
+                    <span className="text-xs text-slate-500 block leading-relaxed">
                       Opening SKU quantities, batch lots &amp; WMA unit costs
                     </span>
                   </button>
@@ -122,14 +167,18 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setImportType('MASTER')}
-                    className={`p-4 rounded-2xl border-2 font-bold text-left transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border-2 font-medium text-left transition-all cursor-pointer ${
                       importType === 'MASTER'
-                        ? 'bg-blue-50/70 border-blue-600 text-blue-950 shadow-sm'
-                        : 'bg-slate-50/50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/60'
+                        ? 'bg-blue-50/60 border-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    <span className="block font-black text-sm text-blue-950">Master Data (FR-026)</span>
-                    <span className="text-[11px] text-slate-500 font-semibold mt-0.5 block">
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <Database className={`w-4 h-4 ${importType === 'MASTER' ? 'text-blue-600' : 'text-slate-400'}`} />
+                      <span className="font-bold text-sm text-slate-900">Master Data</span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">FR-026</span>
+                    </div>
+                    <span className="text-xs text-slate-500 block leading-relaxed">
                       Customers, Vendors, SKUs &amp; GL Account Master
                     </span>
                   </button>
@@ -137,14 +186,18 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setImportType('FINANCIAL')}
-                    className={`p-4 rounded-2xl border-2 font-bold text-left transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border-2 font-medium text-left transition-all cursor-pointer ${
                       importType === 'FINANCIAL'
-                        ? 'bg-blue-50/70 border-blue-600 text-blue-950 shadow-sm'
-                        : 'bg-slate-50/50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/60'
+                        ? 'bg-blue-50/60 border-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    <span className="block font-black text-sm text-blue-950">Financial Balances (FR-028)</span>
-                    <span className="text-[11px] text-slate-500 font-semibold mt-0.5 block">
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <Landmark className={`w-4 h-4 ${importType === 'FINANCIAL' ? 'text-blue-600' : 'text-slate-400'}`} />
+                      <span className="font-bold text-sm text-slate-900">Financial Balances</span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">FR-028</span>
+                    </div>
+                    <span className="text-xs text-slate-500 block leading-relaxed">
                       Opening GL, AR &amp; AP ledger cutover balances
                     </span>
                   </button>
@@ -152,50 +205,57 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setImportType('TRANSACTIONS')}
-                    className={`p-4 rounded-2xl border-2 font-bold text-left transition-all cursor-pointer ${
+                    className={`p-4 rounded-xl border-2 font-medium text-left transition-all cursor-pointer ${
                       importType === 'TRANSACTIONS'
-                        ? 'bg-blue-50/70 border-blue-600 text-blue-950 shadow-sm'
-                        : 'bg-slate-50/50 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-100/60'
+                        ? 'bg-blue-50/60 border-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    <span className="block font-black text-sm text-blue-950">Open Transactions (FR-029)</span>
-                    <span className="text-[11px] text-slate-500 font-semibold mt-0.5 block">
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <Receipt className={`w-4 h-4 ${importType === 'TRANSACTIONS' ? 'text-blue-600' : 'text-slate-400'}`} />
+                      <span className="font-bold text-sm text-slate-900">Open Transactions</span>
+                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">FR-029</span>
+                    </div>
+                    <span className="text-xs text-slate-500 block leading-relaxed">
                       Ongoing uncollected invoices &amp; open POs
                     </span>
                   </button>
                 </div>
               </div>
 
-              <div className="border-2 border-dashed border-blue-400/80 rounded-2xl p-6 bg-blue-50/30 text-center space-y-2 hover:bg-blue-50/60 transition cursor-pointer">
-                <FileSpreadsheet className="w-9 h-9 text-blue-700 mx-auto" />
-                <div className="text-xs font-black text-blue-950">
+              <div className="border-2 border-dashed border-blue-200 hover:border-blue-400 rounded-xl p-6 bg-blue-50/20 text-center space-y-2.5 transition cursor-pointer">
+                <FileSpreadsheet className="w-8 h-8 text-blue-600 mx-auto" />
+                <div>
                   {fileName ? (
-                    <span className="text-blue-900 font-mono bg-blue-100 px-3.5 py-1.5 rounded-xl border border-blue-300 inline-block shadow-2xs">
-                      ✓ Selected File: {fileName}
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100/80 text-blue-900 font-semibold text-xs rounded-lg border border-blue-200">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-700" />
+                      Selected File: {fileName}
                     </span>
                   ) : (
-                    'Click or drag Excel / CSV cutover migration file here'
+                    <span className="text-xs font-semibold text-slate-800">
+                      Click or drag Excel / CSV cutover migration file here
+                    </span>
                   )}
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium">Supports .xlsx, .csv formatted cutover files up to 50MB</p>
+                <p className="text-xs text-slate-500 font-medium">Supports .xlsx, .csv formatted cutover files up to 50MB</p>
               </div>
             </div>
           )}
 
           {(currentStep === 'VALIDATE' || currentStep === 'PREVIEW') && (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center">
+              <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Total Staged Records</span>
-                  <span className="font-mono font-black text-slate-900 text-lg">{mockValidationResults.totalRecords}</span>
+                  <span className="text-xs font-medium text-slate-500 uppercase block">Total Staged Records</span>
+                  <span className="font-bold text-slate-900 text-lg">{mockValidationResults.totalRecords}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Valid &amp; Ready</span>
-                  <span className="font-mono font-black text-emerald-700 text-lg">{mockValidationResults.validRecords}</span>
+                  <span className="text-xs font-medium text-slate-500 uppercase block">Valid &amp; Ready</span>
+                  <span className="font-bold text-emerald-700 text-lg">{mockValidationResults.validRecords}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Flagged Exceptions</span>
-                  <span className="font-mono font-black text-rose-700 text-lg">{mockValidationResults.errorRecords}</span>
+                  <span className="text-xs font-medium text-slate-500 uppercase block">Flagged Exceptions</span>
+                  <span className="font-bold text-rose-700 text-lg">{mockValidationResults.errorRecords}</span>
                 </div>
               </div>
 
@@ -203,9 +263,9 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                 <span className="text-xs font-bold text-slate-700 block">Staging Exceptions &amp; Validation Errors:</span>
                 <div className="space-y-2 max-h-44 overflow-y-auto">
                   {mockValidationResults.errors.map((err, idx) => (
-                    <div key={idx} className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 flex justify-between items-center">
+                    <div key={idx} className="p-3 bg-rose-50/70 border border-rose-200 rounded-xl text-xs text-rose-900 flex justify-between items-center">
                       <span>Row {err.row} ({err.sku}): <strong>{err.issue}</strong></span>
-                      <span className="text-[10px] font-black px-2.5 py-1 bg-rose-100 rounded-lg border border-rose-300">SKIPPED</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-rose-100 rounded text-rose-800">SKIPPED</span>
                     </div>
                   ))}
                 </div>
@@ -214,32 +274,33 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
           )}
 
           {currentStep === 'RECONCILE' && (
-            <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-3">
-              <div className="flex items-center gap-2 text-emerald-950 font-black text-base">
-                <CheckCircle2 className="w-6 h-6 text-emerald-700 shrink-0" />
+            <div className="p-5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
+              <div className="flex items-center gap-2 text-emerald-950 font-bold text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span>Import Batch Posted &amp; Reconciled Successfully!</span>
               </div>
-              <p className="text-xs text-emerald-900 font-semibold">
-                Import Batch ID: <strong className="font-mono text-emerald-950">{mockValidationResults.batchId}</strong>
+              <p className="text-xs text-emerald-900 font-medium">
+                Import Batch ID: <strong className="font-semibold text-emerald-950">{mockValidationResults.batchId}</strong>
               </p>
-              <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-slate-800 pt-3 border-t border-emerald-200">
-                <div>Total Inventory Units Posted: <strong className="font-mono text-slate-950">{mockValidationResults.reconciliation.totalQuantity}</strong></div>
-                <div>Total Inventory Valuation: <strong className="font-mono text-slate-950">{mockValidationResults.reconciliation.totalValuation}</strong></div>
+              <div className="grid grid-cols-2 gap-3 text-xs font-medium text-slate-800 pt-3 border-t border-emerald-200">
+                <div>Total Inventory Units Posted: <strong className="text-slate-950">{mockValidationResults.reconciliation.totalQuantity}</strong></div>
+                <div>Total Inventory Valuation: <strong className="text-slate-950">{mockValidationResults.reconciliation.totalValuation}</strong></div>
               </div>
             </div>
           )}
 
-          <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-slate-700 font-semibold flex items-center justify-between">
+          <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-900 font-medium flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
             <span>Rule FR-031: Staged imports prevent silent overwrites and record reconciliation totals.</span>
           </div>
         </div>
 
-        {/* Modal Footer Controls Matching Screenshot 2 Design System */}
-        <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0">
+        {/* Modal Footer Controls */}
+        <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-2xl transition text-xs sm:text-sm cursor-pointer"
+            className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl transition text-xs sm:text-sm cursor-pointer shadow-xs"
           >
             {currentStep === 'RECONCILE' ? 'Close' : 'Cancel'}
           </button>
@@ -248,7 +309,7 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
               type="button"
               onClick={handleNextStep}
               disabled={isProcessing}
-              className="px-6 py-2.5 bg-blue-900 hover:bg-blue-950 text-white font-extrabold rounded-2xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer active:scale-95"
             >
               <span>{isProcessing ? 'Processing Staging...' : currentStep === 'PREVIEW' ? 'Approve & Post Import Batch' : 'Next Step'}</span>
               <ArrowRight className="w-4 h-4" />
