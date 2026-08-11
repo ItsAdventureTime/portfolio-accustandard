@@ -57,3 +57,28 @@ Deployments currently target **strictly the Demo Environment**:
 ## Workflow Guardrails
 
 When changing workflow code, preserve the single-source API state model, role-specific queues, no-self-approval rules, Sales Quote GM-only approval, client acceptance evidence gate, and atomic Goods Receipt quantity checks. Validate with `npm run lint`, `npm run build`, and `go build ./...` from their respective project roots.
+
+### Rule 2: Documentation and validation synchronization
+
+Before execution, check current official guidance for the tools and frameworks
+in scope. After any code, configuration, dependency, script, or workflow change,
+update every affected active document and guide so the written runtime boundary,
+validation record, and deployment instructions match the repository.
+
+For backend validation, use the disposable, unpinned Go Alpine image when Podman
+is available:
+
+```bash
+podman run --rm \
+  --mount type=bind,src="$PWD/backend",dst=/workspace,ro \
+  --workdir /workspace \
+  golang:alpine \
+  sh -lc 'go test ./... && go build ./...'
+```
+
+If the required runtime is unavailable, record that fact and the exact failed
+command. Do not report an unrun check as passed.
+
+Commit the local result, then update the remote branch through authenticated
+GitHub CLI (`gh`). Keep the commit, remote branch, documentation, and validation
+record in sync; do not force-overwrite diverged upstream history.

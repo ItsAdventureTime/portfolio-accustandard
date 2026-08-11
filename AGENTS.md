@@ -16,3 +16,11 @@ professional, conversational, and engaging tone. Prefer active voice, concise
 sentences, specific verbs, consistent terminology, and a final proofreading pass.
 Avoid hype, filler, vague claims, and AI-patterned phrasing. Preserve technical
 identifiers, workflow statuses, audit evidence, and COSO control language.
+
+## Delivery standard
+
+Before execution, review current official guidance for the tools and frameworks
+in scope. Update every affected active document and guide after implementation so
+the runtime boundary, deployment instructions, and validation record stay in
+sync. Commit locally, then update the remote through authenticated `gh`; never
+claim a check passed when its required runtime was unavailable.
