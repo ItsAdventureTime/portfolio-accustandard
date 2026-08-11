@@ -663,12 +663,13 @@ export default function Home() {
           {activeTab === 'soa' && (
             <StatementOfAccount
               soaRows={soaData.rows}
+              onUpdateSoaRows={(newRows) => setSoaData({ rows: newRows })}
               collectionsList={collectionsList}
               onOpenPrintModal={handleOpenPrintModal}
               onOpenExportModal={handleOpenExportModal}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
-              onAllocateCollection={() => setIsCollectionAllocationOpen(true)}
+              onAllocateCollection={handleAllocateCollection}
             />
           )}
 
