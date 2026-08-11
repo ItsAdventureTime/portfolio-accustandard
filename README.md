@@ -11,6 +11,19 @@ QBO behavior is a queue/demo stub, not a live QuickBooks Online connection.
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the audited
 boundary and validation record.
 
+## Documentation authority
+
+Read documents in this order when requirements conflict:
+
+1. `IMPLEMENTATION_STATUS.md` for the verified runtime boundary.
+2. `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` for the acceptance contract.
+3. `AccuStandard_Developer_Handoff_UPDATED.md` for the product handoff.
+4. `accustandard-webapp-spec.md`, `accustandard-erp-lite-blueprint.md`, and `GO_MIGRATION_PLAN.md` for supporting specification and target architecture.
+
+Historical prompts, generic LLM references, the prior handoff, meeting
+transcript, and dated feedback are kept in `to-review-and-delete/` for manual
+retention or deletion review; they are not active instructions.
+
 ---
 
 ## 🌐 Live Demo System URL
