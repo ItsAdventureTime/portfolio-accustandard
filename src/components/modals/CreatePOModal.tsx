@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Building2, Send, AlertTriangle, ShieldAlert, FileText, CheckCircle2 } from 'lucide-react';
+import { CurrencyInputField } from '@/components/common/CurrencyInputField';
 
 interface CreatePOModalProps {
   isOpen: boolean;
@@ -214,15 +215,11 @@ export const CreatePOModal: React.FC<CreatePOModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Unit Cost (₱)</label>
-              <input
-                type="number"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-mono font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
-              />
-            </div>
+            <CurrencyInputField
+              label="Unit Cost"
+              value={unitPrice}
+              onChange={(val) => setUnitPrice(val)}
+            />
           </div>
 
           <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl flex justify-between items-center font-bold shadow-md">

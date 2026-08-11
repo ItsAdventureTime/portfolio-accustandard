@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { X, FileText, Send, Lock } from 'lucide-react';
 
+import { CurrencyInputField } from '@/components/common/CurrencyInputField';
+
 interface CreateQuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -164,15 +166,11 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Unit Price (₱)</label>
-              <input
-                type="number"
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(Math.max(0, Number(e.target.value)))}
-                className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-mono font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600"
-              />
-            </div>
+            <CurrencyInputField
+              label="Unit Price"
+              value={unitPrice}
+              onChange={(val) => setUnitPrice(val)}
+            />
           </div>
 
           {/* Total Value Card */}

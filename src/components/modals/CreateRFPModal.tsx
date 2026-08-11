@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, CreditCard, Send, Plus } from 'lucide-react';
+import { X, CreditCard, Send, Paperclip } from 'lucide-react';
+import { CurrencyInputField } from '@/components/common/CurrencyInputField';
 
 interface CreateRFPModalProps {
   isOpen: boolean;
@@ -108,16 +109,12 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({
             />
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Total Voucher Amount (₱) *</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full bg-slate-50 border border-slate-300 text-purple-950 font-mono font-black text-lg sm:text-xl rounded-xl px-4 py-3 focus:outline-none focus:border-blue-700"
-              required
-            />
-          </div>
+          <CurrencyInputField
+            label="Total Voucher Amount"
+            required
+            value={amount}
+            onChange={(val) => setAmount(val)}
+          />
 
           {/* Action Footer */}
           <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
