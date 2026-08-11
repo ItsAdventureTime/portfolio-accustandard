@@ -1,12 +1,19 @@
 # Technical Architecture & Internal Control System
 
-This document outlines the technical design, data flows, containerized deployment architecture, and remote version control standards for the **Accustandard Medical ERP Dashboard**.
+This document describes the target technical design, data flows, containerized
+deployment architecture, and remote version-control standards for the
+**Accustandard Medical ERP Dashboard**. It is not a completion claim: consult
+`IMPLEMENTATION_STATUS.md` for the deployed runtime boundary and open gaps.
 
 ---
 
 ## 🏗️ System Overview
 
-The system is structured as a single-page Next.js App Router application optimized for static export deployment (`output: 'export'`). It provides an interactive simulation of an enterprise ERP system with full role switching, real-time internal control validation, and QuickBooks Online integration queues.
+The system is a Next.js App Router static export (`output: 'export'`) paired
+with a Go API below `/accustandard/demo/api/v1`. The deployed demo offers
+limited server-backed reads and mutations; deterministic browser data is an
+offline rendering fallback, not business-state persistence. Role switching is
+a demo control surface, not authenticated production identity.
 
 ```
 +-----------------------------------------------------------------------+
@@ -20,12 +27,11 @@ The system is structured as a single-page Next.js App Router application optimiz
                                    |
                                    v
 +-----------------------------------------------------------------------+
-|                    Global Store (useDemoStore.ts)                     |
-|  - Inventory SKUs (FEFO Expiry, QC & Pampanga Warehouses)             |
-|  - Demand Replenishment Planner (Class 1/2/3 Items)                  |
-|  - Configurable Approval Pipeline (Sales Quote ends at GM; DCS conditional) |
-|  - QuickBooks Online Live Sync Queue (QBO Ref IDs)                   |
-|  - Multi-SOA Collection Allocations & Credit Ledger                   |
+|        Go API + browser rendering fallback (demo only)                |
+|  - Limited read/mutation endpoints and transactional receiving         |
+|  - Class 1/2/3 replenishment and backend-first list hydration          |
+|  - Sales Quote GM-only approval; conditional Purchasing/RFP DCS        |
+|  - Manual QBO queue/export stub and SOA allocation support             |
 +-----------------------------------------------------------------------+
 ```
 
@@ -46,7 +52,8 @@ Every operational transaction enforces its configured maker-checker-approver flo
 1. **Maker (Sales / Warehouse / Staff):** Drafts transaction.
 2. **Accounting or Marketing Reviewer:** Reviews the document-specific control stage.
 3. **General Manager (Karen):** Conducts operational approval.
-4. **DCS Chairman:** Issues final corporate sign-off.
+4. **DCS Chairman:** Issues final corporate sign-off only for configured
+   Purchasing/RFP controls; Sales Quotes never create a DCS task.
 
 A maker cannot approve their own document.
 
@@ -60,7 +67,9 @@ matching remains a separate unimplemented acceptance step.
 If receiving quantities exceed the approved PO amount, the transaction is hard-blocked to prevent vendor over-billing.
 
 ### 3. QuickBooks Online (QBO) Handoff Engine
-Operational users never post directly to accounting ledgers. Completed transactions pass through internal validation into the `QBO Live Sync Queue`. Approved items receive a unique QBO reference ID upon synchronization.
+Operational users never post directly to accounting ledgers. The current demo
+uses a manual QBO queue/export stub; no live QuickBooks synchronization or
+production accounting-posting guarantee is implemented.
 
 ---
 
@@ -115,7 +124,9 @@ Across all 6 core data tables, interactive primary keys are rendered inside high
 - **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
 
 ### 4. Smooth Physics Entrance Animations & High-Visibility Notification Dialogs
-- **Modal Popups & Drawers:** All modal popups enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in-95 duration-200`).
+- **Modal Popups & Drawers:** Existing fixed blurred overlays receive native
+  `modal-backdrop` / `modal-surface` CSS motion, including a reduced-motion
+  override; the behavior does not depend on an animation-plugin utility.
 - **High-Visibility Notification Popups (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered popup window modals featuring explicit user confirmation buttons (`"Acknowledge & Close"`) so alerts and workflow updates cannot be overlooked.
 
 ---

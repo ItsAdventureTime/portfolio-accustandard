@@ -1,6 +1,6 @@
 # AccuStandard implementation status
 
-**Audit date:** 2026-08-12  
+**Audit date:** 2026-08-12
 **Status:** Demo runtime; not a production acceptance release
 
 This file is the short operational companion to the confirmed developer
@@ -15,6 +15,15 @@ implements so that a visual demo is not mistaken for a completed ERP.
 4. Older handoffs, transcripts, prompts, and design-reference material
 
 Where an older document conflicts with the first two, the first two control.
+
+## Documentation review
+
+On 2026-08-12, historical copy-paste prompts, generic LLM/UI references, the
+prior developer handoff, the August workflow transcript, and unreferenced
+dated feedback were moved to `to-review-and-delete/` for manual retention or
+deletion review. They are not active instructions. The RFQ form PDF and ROI
+workbook remain active source artifacts because current requirements and UI
+behavior reference them.
 
 ## Runtime boundary
 

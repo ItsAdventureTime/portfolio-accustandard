@@ -17,9 +17,13 @@ Primary source: [Aug 4, 2026 ERP workflow review](https://fathom.video/calls/771
 
 1. Sales Agent creates an RFQ/request, selecting the customer, products, quantities, expected term, delivery needs, and customer requirements.
 2. The system checks customer-specific price rules, available/on-order/allocated inventory, batch cost, expiry class, and any existing customer PO or contract.
-3. Marketing Manager prepares the sales quotation and ROI. ROI must show side-by-side cost and selling price, including landed cost, sponsorship, LIS connectivity, other account-specific overhead, and expected margin over the contract.
-4. GM reviews commercial reasonableness. Accounting and any configured DCS
-   review remain separate control stages where the approval matrix requires.
+3. Sales prepares the sales quotation and Marketing reviews it with the ROI.
+   The ROI must show side-by-side cost and selling price, including landed cost,
+   sponsorship, LIS connectivity, other account-specific overhead, and expected
+   margin over the contract.
+4. GM reviews commercial reasonableness. The Sales Quote then waits for client
+   acceptance evidence; Accounting and conditional DCS review do not apply to
+   this sales approval chain.
 6. Approved quotation becomes locked. A customer PO or signed contract/conforme is required before fulfillment; for Class 3/short-expiry items it is also required before any supplier PO.
 
 ### 2. Inventory allocation and fulfillment

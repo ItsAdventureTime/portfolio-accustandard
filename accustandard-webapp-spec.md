@@ -201,7 +201,8 @@ The web application UI/UX is built on a **Light Corporate Medical System** enfor
 ### 6.3 Kinetic Micro-Interactions & Physics
 - **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
 - **Sidebar Translations:** Navigation links translate rightward on hover (`hover:translate-x-1 transition-all duration-200`).
-- **Dialog Entrance Motion:** Popups use smooth backdrop fade-in (`animate-in fade-in duration-200`) and dialog container zoom (`animate-in zoom-in-95 duration-200`).
+- **Dialog Entrance Motion:** Popups use native backdrop fade and surface zoom
+  motion (`modal-backdrop` and `modal-surface`) with a reduced-motion override.
 
 ### 6.4 Standardized Interactive Pill Badge System
 Across all data tables, primary key badges use interactive pill containers (`bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-2xs group cursor-pointer`):
