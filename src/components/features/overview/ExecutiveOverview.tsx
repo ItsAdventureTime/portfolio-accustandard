@@ -18,6 +18,7 @@ import {
   Eye,
   ExternalLink,
 } from 'lucide-react';
+import { RoleActionCenter } from '@/components/features/overview/RoleActionCenter';
 
 interface ExecutiveOverviewProps {
   approvalsList: any[];
@@ -25,7 +26,10 @@ interface ExecutiveOverviewProps {
   soaRows: any[];
   poList: any[];
   rfpList: any[];
+  rfqList?: any[];
   qboQueue?: any[];
+  quotationsList?: any[];
+  collectionsList?: any[];
   viewAsRole: string;
   onApproveItem: (id: string, stage: string) => void;
   onSelectTab: (tabKey: string) => void;
@@ -40,7 +44,10 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   soaRows,
   poList,
   rfpList,
+  rfqList = [],
   qboQueue = [],
+  quotationsList = [],
+  collectionsList = [],
   viewAsRole,
   onApproveItem,
   onSelectTab,
@@ -70,6 +77,21 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
 
   return (
     <div className="space-y-6 text-slate-900">
+      <RoleActionCenter
+        viewAsRole={viewAsRole}
+        approvalsList={approvalsList}
+        inventoryList={inventoryList}
+        rfqList={rfqList}
+        quotationsList={quotationsList}
+        poList={poList}
+        soaRows={soaRows}
+        collectionsList={collectionsList}
+        qboQueue={qboQueue}
+        onSelectTab={onSelectTab}
+        onApproveItem={onApproveItem}
+        onOpenQBOQueue={onOpenQBOQueue}
+        onOpenCreateQuotationModal={onOpenCreateQuotationModal}
+      />
       {/* Banner / Overview Title */}
       <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-6 rounded-2xl shadow-md border border-blue-950 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
