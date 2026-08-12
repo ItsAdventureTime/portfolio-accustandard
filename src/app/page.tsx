@@ -69,8 +69,6 @@ import {
   DEFAULT_AUDIT_LOGS,
 } from '@/lib/useDemoStore';
 
-import { Layers, Package, FileText, FileCheck, ShoppingCart, DollarSign, ShieldAlert, Menu } from 'lucide-react';
-
 const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   'Admin': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
@@ -746,6 +744,22 @@ export default function Home() {
     addAuditLog('Restored system demo state to default seed data');
   };
 
+  const handleOpenOperationsExport = () => {
+    handleOpenExportModal(
+      'Operations summary',
+      'accustandard_operations_summary',
+      [{
+        role: viewAsRole,
+        generatedAt: new Date().toISOString(),
+        pendingApprovals: approvalsList.length,
+        inventoryItems: inventoryList.length,
+        activeRFQs: rfqList.length,
+        purchaseOrders: poList.length,
+        qboQueueItems: qboQueue.length,
+      }],
+    );
+  };
+
   const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
 
   return (
@@ -758,6 +772,11 @@ export default function Home() {
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+        onOpenExport={handleOpenOperationsExport}
+        onOpenStartupImport={() => setIsStartupImportOpen(true)}
+        onOpenQBOQueue={() => setIsQboQueueOpen(true)}
+        onOpenProductManager={() => setIsProductManagerOpen(true)}
+        qboQueueCount={qboQueue.filter((item) => item.syncStatus !== 'SYNCED').length}
       />
 
       {/* High-Visibility Confirmation Notification Modal */}
@@ -801,7 +820,10 @@ export default function Home() {
               soaRows={soaData.rows}
               poList={poList}
               rfpList={rfpList}
+              rfqList={rfqList}
               qboQueue={qboQueue}
+              quotationsList={quotationsList}
+              collectionsList={collectionsList}
               viewAsRole={viewAsRole}
               onApproveItem={handleApproveItem}
               onSelectTab={handleSelectTab}

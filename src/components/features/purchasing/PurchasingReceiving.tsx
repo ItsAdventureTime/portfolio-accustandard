@@ -14,6 +14,7 @@ import {
   X,
   FileCheck,
 } from 'lucide-react';
+import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 
 interface PurchasingReceivingProps {
   poList: any[];
@@ -101,16 +102,14 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
                 <th className="p-4">PO Number</th>
                 <th className="p-4">Vendor Name</th>
-                <th className="p-4">Item Description</th>
-                <th className="p-4 text-right">PO Qty</th>
-                <th className="p-4 text-right">RR Received</th>
-                <th className="p-4">Invoice Ref</th>
+                <th className="p-4">Date</th>
+                <th className="p-4 text-center">Status</th>
                 <th className="p-4 text-right">Total Amount</th>
-                <th className="p-4 text-center">3-Way Status</th>
+                <th className="p-4 text-center">Primary action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -133,25 +132,19 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                     </button>
                   </td>
                   <td className="p-4 font-bold text-slate-900">{po.vendorName}</td>
-                  <td className="p-4 text-xs font-semibold text-slate-700">{po.itemDescription}</td>
-                  <td className="p-4 text-right font-mono font-bold text-slate-900">{po.poQty}</td>
-                  <td className="p-4 text-right font-mono font-bold text-emerald-800">
-                    {po.rrQtyReceived}
+                  <td className="p-4 text-xs font-semibold text-slate-700">{po.createdAt || po.orderDate || '—'}</td>
+                  <td className="p-4 text-center">
+                    {po.rrQtyReceived >= po.poQty ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Complete</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900"><Clock className="h-4 w-4 text-amber-600" /> Pending receiving</span>
+                    )}
                   </td>
-                  <td className="p-4 font-mono text-xs text-slate-600">{po.invoiceRef}</td>
                   <td className="p-4 text-right font-mono font-extrabold text-slate-900">
                     ₱{po.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="p-4 text-center">
-                    {po.rrQtyReceived >= po.poQty ? (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 font-extrabold text-xs shadow-2xs">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> 3-Way Verified
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-xs shadow-2xs">
-                        <Clock className="w-4 h-4 text-amber-600" /> Pending Receiving
-                      </span>
-                    )}
+                    <button type="button" onClick={() => setSelectedPoModal(po)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button>
                   </td>
                 </tr>
               ))}
@@ -184,6 +177,8 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                 <X className="w-6 h-6" />
               </button>
             </div>
+
+            <WorkflowStepper currentStep="PO" compact />
 
             {/* PO Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm">

@@ -196,16 +196,14 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
                     <th className="p-4">SKU / Barcode</th>
                     <th className="p-4">Item Description</th>
                     <th className="p-4">Location</th>
-                    <th className="p-4">Batch / Lot</th>
-                    <th className="p-4">Expiry Date</th>
-                    <th className="p-4 text-right">On-Hand</th>
-                    <th className="p-4 text-right">Reserved (3-Day)</th>
                     <th className="p-4 text-right">Available</th>
+                    <th className="p-4 text-center">Status</th>
+                    <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -234,20 +232,13 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                           {item.location}
                         </span>
                       </td>
-                      <td className="p-4 font-mono text-xs text-slate-700">{item.lotNumber}</td>
-                      <td className="p-4">
-                        <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold flex items-center gap-1.5 w-fit">
-                          <Calendar className="w-3.5 h-3.5 text-amber-700" />
-                          {item.expiryDate}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right font-mono font-bold text-slate-900">{item.onHand}</td>
-                      <td className="p-4 text-right font-mono text-xs text-amber-700 font-bold">
-                        {item.reserved}
-                      </td>
                       <td className="p-4 text-right font-mono font-extrabold text-emerald-800 text-base">
                         {item.available}
                       </td>
+                      <td className="p-4 text-center">
+                        {Number(item.available ?? item.onHand ?? 0) < 50 ? <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Critical stock</span> : <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Available</span>}
+                      </td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedSkuModal(item)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -355,15 +346,14 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
                     <th className="p-4">SKU / Class</th>
                     <th className="p-4">Description / Supplier</th>
-                    <th className="p-4 text-right">Available Stock</th>
-                    <th className="p-4 text-right">Open Demand</th>
-                    <th className="p-4 text-right">Critical Level</th>
                     <th className="p-4 text-right">Proposed Order Qty</th>
-                    <th className="p-4">Class Controls &amp; Status</th>
+                    <th className="p-4 text-center">Stock signal</th>
+                    <th className="p-4 text-center">Status</th>
+                    <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -422,13 +412,13 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                         <div className="font-extrabold text-slate-900 text-sm sm:text-base">{item.description}</div>
                         <div className="text-xs text-slate-600 font-semibold mt-0.5">{item.supplier} &bull; Lead Time: <span className="font-bold text-slate-800">{item.leadTimeDays} days</span></div>
                       </td>
-                      <td className="p-4 text-right font-mono font-black text-slate-900 text-sm sm:text-base">{item.availableStock}</td>
-                      <td className="p-4 text-right font-mono font-black text-amber-700 text-sm sm:text-base">{item.openCustomerDemand}</td>
-                      <td className="p-4 text-right font-mono font-black text-slate-700 text-sm sm:text-base">{item.criticalLevel}</td>
                       <td className="p-4 text-right font-mono font-black text-blue-900 text-base sm:text-lg">
                         {item.proposedOrderQty}
                       </td>
                       <td className="p-4">
+                        <span className="text-xs font-bold text-slate-700">{item.availableStock} available · {item.openCustomerDemand} open demand</span>
+                      </td>
+                      <td className="p-4 text-center">
                         {item.itemClass.includes('Class 3') && (
                           <div className="space-y-1">
                             <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
@@ -451,6 +441,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                           </span>
                         )}
                       </td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => { const matched = inventoryList.find((i: any) => i.sku === item.sku) || { id: item.id, sku: item.sku, description: item.description, location: 'Quezon City', lotNumber: 'LOT-2026-X1', expiryDate: '2027-12-31', onHand: item.availableStock, reserved: 0, available: item.availableStock, criticalLevel: item.criticalLevel, unit: 'Kits' }; setSelectedSkuModal(matched); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>
