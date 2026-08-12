@@ -41,9 +41,10 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 1. **Frontend**: Next.js App Router (React), Tailwind CSS, Lucide Icons, Radix UI.
    - Build Mode: Static Export (`output: 'export'` in `next.config.ts`).
    - Base Path: `/accustandard/demo`.
-2. **Backend**: Go from the moving official `golang:alpine` build image
-   (`go-chi/chi/v5` router, PostgreSQL driver `pgx/v5` or `gorm`). Do not
-   replace the floating build image with a version-pinned Go image.
+2. **Backend**: Go from the moving official
+   `docker.io/library/golang:alpine` build image (`go-chi/chi/v5` router,
+   PostgreSQL driver `pgx/v5` or `gorm`). Do not replace the floating build
+   image with a version-pinned Go image.
    - REST API Base Path: `/accustandard/demo/api/v1`.
 3. **Database**: PostgreSQL 17 (`accustandard_demo_db`).
 4. **Containerization**: Podman Quadlet (`~/.config/containers/systemd/bridge-ph/accustandard-demo/`).

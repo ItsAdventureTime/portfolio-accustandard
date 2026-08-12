@@ -186,7 +186,7 @@ podman run --rm --userns=keep-id \
   -v /workspace/node_modules \
   -v /workspace/.next \
   -w /workspace \
-node:lts-alpine \
+docker.io/library/node:lts-alpine \
   sh -lc "npm ci --no-audit --no-fund && npm run build"
 ```
 
@@ -195,9 +195,10 @@ Turbopack by default, but the demo builder is resource-constrained and the
 Turbopack build was killed by the available container memory. Keep this
 fallback until the VPS build host has been sized and verified for Turbopack.
 
-The backend builder intentionally uses the moving official `golang:alpine`
-tag in `backend/Dockerfile`. Validation and VPS builds must use that exact
-tag; do not substitute a versioned Go image.
+The backend builder intentionally uses the moving official
+`docker.io/library/golang:alpine` tag in `backend/Dockerfile`. Validation and
+VPS builds must use that exact floating tag; do not substitute a versioned Go
+image.
 
 `--rm` removes the temporary frontend build container and its anonymous
 dependency volumes after it exits. The Go build uses `--layers=false` and

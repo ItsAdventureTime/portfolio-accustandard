@@ -80,9 +80,10 @@ Migrate the system from client-side `localStorage` state into an authoritative *
 
 ### 2.1 Backend Architecture & Tech Stack
 - Directory: `backend/`
-- Language/Framework: Go from the moving official `golang:alpine` build image,
-  with `go-chi/chi/v5` and PostgreSQL driver (`pgx/v5` or `gorm`). Do not
-  replace the floating image with a version-pinned Go image.
+- Language/Framework: Go from the moving official
+  `docker.io/library/golang:alpine` build image, with `go-chi/chi/v5` and
+  PostgreSQL driver (`pgx/v5` or `gorm`). Do not replace the floating image
+  with a version-pinned Go image.
 - REST API Base Path: `/accustandard/demo/api/v1/*`.
 - Database: PostgreSQL 17 (`accustandard_demo_db`).
 - Runtime schema: GORM `AutoMigrate` plus idempotent `backend/migrations/002_seed_data.sql` demo seed.

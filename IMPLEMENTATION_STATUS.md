@@ -115,8 +115,8 @@ production acceptance release from a lint/build result alone.
 
 - `git diff --check`: passed.
 - `bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh`: passed.
-- Disposable `node:lts-alpine` Podman: `npm run lint`: passed.
-- Disposable `node:lts-alpine` Podman: `npm run build`: passed with Next.js 16 Webpack
+- Disposable `docker.io/library/node:lts-alpine` Podman: `npm run lint`: passed.
+- Disposable `docker.io/library/node:lts-alpine` Podman: `npm run build`: passed with Next.js 16 Webpack
   static export (`/` and `/_not-found` prerendered).
 - The default Next.js 16 Turbopack build was killed by the available local
   Podman VM memory; this is why the package build uses the documented

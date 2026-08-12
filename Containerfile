@@ -1,7 +1,7 @@
 # 2026 Podman Isolated Disposable Static Export Builder
-# Image: node:lts-alpine
+# Image: docker.io/library/node:lts-alpine
 
-FROM node:lts-alpine AS builder
+FROM docker.io/library/node:lts-alpine AS builder
 
 WORKDIR /workspace
 

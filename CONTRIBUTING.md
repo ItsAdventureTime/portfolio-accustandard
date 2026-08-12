@@ -57,7 +57,7 @@ the repository:
   -v "$(pwd):/src:ro,Z" \
   -v /workspace \
   -w /workspace \
-node:lts-alpine \
+docker.io/library/node:lts-alpine \
   sh -lc 'cp -a /src/. /workspace/ && npm ci && npm run lint && npm run build'
 ```
 
