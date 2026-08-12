@@ -1,5 +1,5 @@
-# Stage 1: Build application using Node 24 Alpine (node:24-alpine)
-FROM node:24-alpine AS builder
+# Stage 1: Build application using the floating Node Alpine image.
+FROM node:lts-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci

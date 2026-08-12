@@ -1,22 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  ShieldCheck,
-  Building2,
   CheckCircle2,
   Clock,
-  ArrowRight,
-  TrendingUp,
-  AlertTriangle,
-  Send,
-  Lock,
-  Database,
-  RefreshCw,
-  X,
-  FileText,
-  Eye,
   ExternalLink,
+  Eye,
+  FileText,
+  Lock,
+  ShieldCheck,
+  X,
 } from 'lucide-react';
 import { RoleActionCenter } from '@/components/features/overview/RoleActionCenter';
 
@@ -33,10 +26,49 @@ interface ExecutiveOverviewProps {
   viewAsRole: string;
   onApproveItem: (id: string, stage: string) => void;
   onSelectTab: (tabKey: string) => void;
-  onOpenScanner: () => void;
   onOpenQBOQueue?: () => void;
   onOpenCreateQuotationModal?: () => void;
 }
+
+type ApprovalStage = 'reviewer' | 'gm' | 'dcs';
+
+const stageLabel: Record<ApprovalStage, string> = {
+  reviewer: 'Reviewer',
+  gm: 'GM',
+  dcs: 'DCS',
+};
+
+const getNextApprovalStage = (item: any): ApprovalStage | null => {
+  if (item.reviewerStatus === 'PENDING') return 'reviewer';
+  if (item.gmStatus === 'PENDING') return 'gm';
+  if (item.type !== 'Sales Quotation' && item.dcsStatus === 'PENDING') return 'dcs';
+  return null;
+};
+
+const canApproveStage = (role: string, stage: ApprovalStage, item: any) => {
+  if (stage === 'reviewer') return ['Admin', 'Marketing'].includes(role) || (role === 'Bookkeeper' && item.type === 'Purchase Order');
+  if (stage === 'gm') return ['Admin', 'General Manager'].includes(role);
+  return ['Admin', 'Chairman (DCS)'].includes(role) && item.type !== 'Sales Quotation';
+};
+
+const getApprovalStatus = (item: any) => {
+  if (item.type === 'Sales Quotation' && item.gmStatus === 'APPROVED') return 'Awaiting client acceptance';
+  if (item.dcsStatus === 'APPROVED' || item.dcsStatus === 'NOT_REQUIRED') return 'Approved';
+  if (item.gmStatus === 'APPROVED') return 'Pending';
+  if (item.reviewerStatus === 'APPROVED') return 'Pending';
+  return 'Pending';
+};
+
+const statusStyles = (status: string) => status === 'Approved'
+  ? 'border-emerald-200 bg-emerald-600 text-white shadow-sm'
+  : 'border-amber-200 bg-amber-500 text-white shadow-sm';
+
+const formatDate = (value: unknown) => {
+  if (!value) return '—';
+  const date = new Date(String(value));
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString('en-US');
+};
 
 export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   approvalsList,
@@ -51,32 +83,50 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   viewAsRole,
   onApproveItem,
   onSelectTab,
-  onOpenScanner,
   onOpenQBOQueue,
   onOpenCreateQuotationModal,
 }) => {
   const [selectedDocModal, setSelectedDocModal] = useState<any | null>(null);
+  const recentQueue = useMemo(() => poList.slice(0, 8).map((purchaseOrder) => {
+    const approval = approvalsList.find((item) => item.qrn === purchaseOrder.poNumber);
+    return {
+      ...(approval || {}),
+      ...purchaseOrder,
+      id: approval?.id || '',
+      qrn: purchaseOrder.poNumber,
+      type: 'Purchase Order',
+      maker: approval?.maker || purchaseOrder.ownerRole || 'Purchasing Officer',
+      reviewerStatus: approval?.reviewerStatus || (purchaseOrder.accountingApproved ? 'APPROVED' : 'PENDING'),
+      gmStatus: approval?.gmStatus || (purchaseOrder.gmApproved ? 'APPROVED' : 'PENDING'),
+      dcsStatus: approval?.dcsStatus || (purchaseOrder.dcsApproved ? 'APPROVED' : 'PENDING'),
+    };
+  }), [approvalsList, poList]);
+  const selectedStage = selectedDocModal ? getNextApprovalStage(selectedDocModal) : null;
+  const selectedStageCanApprove = selectedDocModal && selectedStage
+    ? canApproveStage(viewAsRole, selectedStage, selectedDocModal)
+    : false;
 
-  const pendingApprovalsCount = approvalsList.filter(
-    (item) =>
-      item.reviewerStatus === 'PENDING' ||
-      item.gmStatus === 'PENDING' ||
-      item.dcsStatus === 'PENDING'
-  ).length;
+  const reviewApprovals = () => {
+    const firstActionable = recentQueue.find((item) => {
+      const nextStage = getNextApprovalStage(item);
+      return nextStage && canApproveStage(viewAsRole, nextStage, item);
+    });
+    if (firstActionable) {
+      setSelectedDocModal(firstActionable);
+      return;
+    }
+    document.getElementById('approval-activity-table')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
-  const totalArBalance = (soaRows || []).reduce(
-    (acc, row) => acc + (Number(row.totalBalance) || Number(row.runningBalance) || Number(row.invoiceBalance) || 0),
-    0
-  );
+  const getVendor = (item: any) => item.vendorName || item.ownerRole || item.maker || '—';
 
-  const lowStockSkus = (inventoryList || []).filter((item) => (item.available || item.onHand) < 50);
-
-  // Role Approval Eligibility Checks
-  const canApproveReviewer = ['Admin', 'Marketing'].includes(viewAsRole);
-  const canApproveGM = ['Admin', 'General Manager'].includes(viewAsRole);
+  const getDate = (item: any) => formatDate(item.orderDate || item.createdAt || item.date || item.quotationDate);
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="space-y-8">
       <RoleActionCenter
         viewAsRole={viewAsRole}
         approvalsList={approvalsList}
@@ -88,314 +138,54 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
         collectionsList={collectionsList}
         qboQueue={qboQueue}
         onSelectTab={onSelectTab}
-        onApproveItem={onApproveItem}
+        onOpenApprovals={reviewApprovals}
         onOpenQBOQueue={onOpenQBOQueue}
         onOpenCreateQuotationModal={onOpenCreateQuotationModal}
       />
-      {/* Banner / Overview Title */}
-      <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white p-6 rounded-2xl shadow-md border border-blue-950 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="bg-red-600 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              COSO Internal Control System
-            </span>
-            <span className="text-blue-200 text-xs font-bold">&bull; Active Role: {viewAsRole}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Executive Control &amp; Operations Pipeline
-          </h1>
-          <p className="text-sm text-blue-100 font-medium mt-1">
-             Enforcing Segregation of Duties across Sales, Purchasing, Finance, and Warehouse operations.
-          </p>
+
+      <section id="approval-activity-table" tabIndex={-1} aria-labelledby="approval-table-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">
+        <div className="sr-only">
+          <h2 id="approval-table-title">Purchase order approval activity</h2>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          {onOpenQBOQueue && (
-            <button
-              onClick={onOpenQBOQueue}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm rounded-xl transition flex items-center gap-2 shadow-sm"
-            >
-              <Database className="w-4 h-4 text-emerald-200" />
-              <span>QBO Sync Queue ({qboQueue.length})</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => onSelectTab('inventory')}
-            className="px-4 py-2.5 bg-white text-blue-950 hover:bg-slate-100 font-extrabold text-sm rounded-xl transition flex items-center gap-2 shadow-sm"
-          >
-            <span>View Warehouses</span>
-            <ArrowRight className="w-4 h-4 text-blue-700" />
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Pending Approvals Card */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Pending Approvals</span>
-            <div className="p-2.5 bg-amber-100/90 text-amber-800 rounded-xl shadow-2xs">
-              <Clock className="w-5 h-5" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black text-slate-900">{pendingApprovalsCount}</span>
-              <span className="text-xs font-black text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Awaiting Action</span>
-            </div>
-            <p className="text-xs text-slate-600 font-bold mt-1">Across Sales Quotes, POs &amp; RFPs</p>
-          </div>
-        </div>
-
-        {/* Total Accounts Receivable Card */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Accounts Receivable</span>
-            <div className="p-2.5 bg-emerald-100/90 text-emerald-800 rounded-xl shadow-2xs">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-black font-mono text-emerald-950">
-                ₱{totalArBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-            <p className="text-xs text-slate-600 font-bold mt-1">{(soaRows || []).length} Active SOA Client Invoices</p>
-          </div>
-        </div>
-
-        {/* Low Stock SKUs Card */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Low Stock SKUs</span>
-            <div className="p-2.5 bg-red-100/90 text-red-700 rounded-xl shadow-2xs">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black text-slate-900">{lowStockSkus.length}</span>
-              <span className="text-xs font-black text-red-700 bg-red-50 px-2 py-0.5 rounded-full border border-red-200">Items &lt; 50 units</span>
-            </div>
-            <p className="text-xs text-slate-600 font-bold mt-1">QC &amp; Pampanga Warehouses</p>
-          </div>
-        </div>
-
-        {/* Unverified POs Card */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-200 space-y-3 h-full flex flex-col justify-between">
-          <div className="flex justify-between items-center">
-            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Unverified POs</span>
-            <div className="p-2.5 bg-indigo-100/90 text-indigo-800 rounded-xl shadow-2xs">
-              <Building2 className="w-5 h-5" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl sm:text-4xl font-black text-slate-900">{(poList || []).length}</span>
-              <span className="text-xs font-black text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">Pending Match</span>
-            </div>
-            <p className="text-xs text-slate-600 font-bold mt-1">Supplier PO &harr; RR &harr; Invoice</p>
-          </div>
-        </div>
-      </div>
-
-      {/* COSO 4-Layer Approval Pipeline Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-3">
-        <div className="p-5 bg-white border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-blue-600" />
-              COSO 4-Layer Approval Chain Pipeline
-            </h2>
-            <p className="text-xs text-slate-500 font-medium mt-0.5">
-               Sales Quotes: Maker &rarr; Marketing Reviewer &rarr; GM. DCS applies only to configured purchasing controls.
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              if (onOpenCreateQuotationModal) {
-                onOpenCreateQuotationModal();
-              } else {
-                onSelectTab('quotations');
-              }
-            }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl transition shadow-md shadow-blue-600/20 flex items-center gap-1.5 active:scale-95 cursor-pointer"
-          >
-            <Send className="w-4 h-4 text-white" />
-            <span>+ Create New Quotation</span>
-          </button>
-        </div>
-
-        <div className="block sm:hidden text-[11px] text-slate-500 font-semibold text-center py-1.5 bg-slate-50 border-b border-slate-100 uppercase tracking-wider">
-          &larr; Swipe table horizontally for details &rarr;
-        </div>
-
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs tracking-wider">
+          <table className="w-full min-w-[760px] border-collapse text-left">
+            <caption className="sr-only">Recent purchase orders and approval status</caption>
+            <thead className="border-b border-slate-200 bg-white text-base text-slate-950">
               <tr>
-                <th className="p-4">Document QRN / ID</th>
-                <th className="p-4">Type</th>
-                <th className="p-4">Maker</th>
-                <th className="p-4 text-center">Reviewer Stage</th>
-                <th className="p-4 text-center">GM Approval Stage</th>
-                <th className="p-4 text-center">DCS / PO Control Stage</th>
-                <th className="p-4 text-right">Amount</th>
+                <th scope="col" className="px-6 py-4 font-medium">PO Number <span className="ml-1 text-slate-400">↕</span></th>
+                <th scope="col" className="px-6 py-4 font-medium">Vendor</th>
+                <th scope="col" className="px-6 py-4 font-medium">Amount (PHP)</th>
+                <th scope="col" className="px-6 py-4 font-medium">Date <span className="ml-1 text-slate-400">↕</span></th>
+                <th scope="col" className="px-6 py-4 font-medium">Status <span className="ml-1 inline-flex align-middle text-slate-500"><ShieldCheck className="h-4 w-4" /></span></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-              {approvalsList.map((item) => {
-                const isReviewerApproved = item.reviewerStatus === 'APPROVED';
-                const isGmApproved = item.gmStatus === 'APPROVED';
-                const isSalesQuote = item.type === 'Sales Quotation';
-                const isDcsNotRequired = isSalesQuote || item.dcsStatus === 'NOT_REQUIRED';
-                const isDcsApproved = item.dcsStatus === 'APPROVED';
-
+            <tbody className="text-base text-slate-950">
+              {recentQueue.map((item) => {
+                const nextStage = getNextApprovalStage(item);
+                const status = getApprovalStatus(item);
+                const canApprove = Boolean(item.id) && nextStage ? canApproveStage(viewAsRole, nextStage, item) : false;
                 return (
-                  <tr
-                    key={item.id}
-                    onClick={() => setSelectedDocModal(item)}
-                    className="hover:bg-blue-50/70 hover:shadow-xs transition-all duration-150 cursor-pointer group"
-                  >
-                    <td className="p-4">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedDocModal(item)}
-                        className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
-                        title="Click to inspect complete document breakdown & approval status"
-                      >
-                        <FileText className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
-                        <span>{item.qrn}</span>
-                        <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
-                      </button>
+                  <tr key={item.id} className="border-b border-slate-200 last:border-b-0 hover:bg-slate-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{item.qrn || '—'}</span>
+                        <button type="button" onClick={() => setSelectedDocModal(item)} className="inline-flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-slate-700" aria-label={`Inspect ${item.qrn || 'document'}`}>
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold whitespace-nowrap">
-                        {item.type}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs sm:text-sm font-semibold text-slate-900">{item.maker}</td>
-
-                    {/* Stage 1: Reviewer */}
-                    <td className="p-4 text-center">
-                      {isReviewerApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>Approved</span>
-                        </span>
-                      ) : canApproveReviewer ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'reviewer');
-                          }}
-                          className="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-amber-600/80 w-full max-w-[130px] mx-auto cursor-pointer"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Approve Reviewer</span>
+                    <td className="px-6 py-4">{getVendor(item)}</td>
+                    <td className="px-6 py-4 font-medium tabular-nums">₱{Number(item.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                    <td className="px-6 py-4 text-slate-700">{getDate(item)}</td>
+                    <td className="px-6 py-4">
+                      {canApprove && nextStage ? (
+                        <button type="button" onClick={() => onApproveItem(item.id, nextStage)} className={`inline-flex min-h-[36px] items-center rounded-full border px-3.5 py-1 text-sm font-medium transition hover:brightness-95 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 ${statusStyles(status)}`}>
+                          {status}
+                          <span className="sr-only">, approve {stageLabel[nextStage]}</span>
                         </button>
                       ) : (
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'reviewer');
-                          }}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
-                          title={`Role [${viewAsRole}] cannot execute Reviewer Approval`}
-                        >
-                          <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Role Locked</span>
-                        </span>
+                        <span className={`inline-flex min-h-[36px] items-center rounded-full border px-3.5 py-1 text-sm font-medium ${statusStyles(status)}`}>{status}</span>
                       )}
-                    </td>
-
-                    {/* Stage 2: GM */}
-                    <td className="p-4 text-center">
-                      {isGmApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>Approved</span>
-                        </span>
-                      ) : !isReviewerApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
-                          <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Awaiting Reviewer</span>
-                        </span>
-                      ) : canApproveGM ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'gm');
-                          }}
-                          className="px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-blue-700/80 w-full max-w-[130px] mx-auto cursor-pointer"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Approve GM</span>
-                        </button>
-                      ) : (
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'gm');
-                          }}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
-                          title={`Role [${viewAsRole}] cannot execute GM Approval`}
-                        >
-                          <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Role Locked</span>
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Stage 3: DCS Chairman, never for Sales Quotes */}
-                    <td className="p-4 text-center">
-                      {isDcsNotRequired ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-600 border border-slate-200/80 font-bold text-xs w-full max-w-[130px] mx-auto">
-                          <CheckCircle2 className="w-4 h-4 text-slate-500 shrink-0" />
-                          <span>Not Required</span>
-                        </span>
-                      ) : isDcsApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 text-emerald-800 border border-emerald-200/90 font-bold text-xs shadow-2xs w-full max-w-[130px] mx-auto">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                          <span>Approved</span>
-                        </span>
-                      ) : !isGmApproved ? (
-                        <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-not-allowed">
-                          <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Awaiting GM</span>
-                        </span>
-                      ) : ['Admin', 'Chairman (DCS)'].includes(viewAsRole) ? (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'dcs');
-                          }}
-                          className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-1.5 border border-indigo-700/80 w-full max-w-[130px] mx-auto cursor-pointer"
-                        >
-                          <ShieldCheck className="w-3.5 h-3.5" />
-                          <span>Approve DCS</span>
-                        </button>
-                      ) : (
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onApproveItem(item.id, 'dcs');
-                          }}
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 text-slate-500 border border-slate-200/80 font-medium text-xs w-full max-w-[130px] mx-auto cursor-pointer hover:bg-slate-200/60 transition"
-                          title={`Role [${viewAsRole}] cannot execute DCS Chairman Approval`}
-                        >
-                          <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Role Locked</span>
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="p-4 text-right font-bold text-slate-900 text-xs sm:text-sm">
-                      ₱{item.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
                 );
@@ -403,135 +193,19 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
+        {recentQueue.length === 0 && <p className="p-6 text-sm font-semibold text-slate-600">No approval activity is available yet.</p>}
+      </section>
 
-      {/* Document Inspector Modal Overlay */}
       {selectedDocModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
-                  <FileText className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                    <span>Document Inspector: {selectedDocModal.qrn}</span>
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 font-medium">{selectedDocModal.type} &bull; Originator: {selectedDocModal.maker}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedDocModal(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
-              >
-                <X className="w-6 h-6" />
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 text-slate-900 backdrop-blur-md" role="dialog" aria-modal="true" aria-labelledby="document-inspector-title">
+          <div className="w-full max-w-3xl space-y-6 rounded-2xl border border-slate-300 bg-white p-6 shadow-2xl sm:p-8">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+              <div className="flex items-center gap-3"><div className="rounded-xl bg-slate-900 p-3 text-white"><FileText className="h-5 w-5" /></div><div><h2 id="document-inspector-title" className="text-base font-semibold sm:text-lg">Document inspector: {selectedDocModal.qrn}</h2><p className="text-xs text-slate-600 sm:text-sm">{selectedDocModal.type} · Originator: {selectedDocModal.maker}</p></div></div>
+              <button type="button" onClick={() => setSelectedDocModal(null)} aria-label="Close document inspector" className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-700"><X className="h-5 w-5" /></button>
             </div>
-
-            {/* Document Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-semibold">
-              <div>
-                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Document Type</span>
-                <span className="font-extrabold text-blue-950 text-base">{selectedDocModal.type}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Total Transaction Value</span>
-                <span className="font-mono font-black text-emerald-800 text-lg">
-                  ₱{Number(selectedDocModal.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Maker / Originator</span>
-                <span className="font-extrabold text-slate-900 text-sm sm:text-base">{selectedDocModal.maker}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">COSO Internal Control Status</span>
-                <span className="font-extrabold text-amber-900 text-sm sm:text-base">
-                  {selectedDocModal.dcsStatus === 'APPROVED'
-                    ? '✓ Fully Approved (DCS Chairman)'
-                    : selectedDocModal.gmStatus === 'APPROVED'
-                    ? 'Awaiting DCS Chairman Approval'
-                    : selectedDocModal.reviewerStatus === 'APPROVED'
-                    ? 'Awaiting GM Approval'
-                    : 'Awaiting Reviewer (Marketing) Approval'}
-                </span>
-              </div>
-            </div>
-
-            {/* Step-by-Step Approval Pipeline Progress */}
-            <div className="space-y-3 border-t border-slate-200 pt-4">
-              <span className="font-black uppercase text-xs text-slate-700 tracking-wider block">
-                COSO 4-Layer Approval Pipeline Status Tracker
-              </span>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs font-bold">
-                {/* Step 1 */}
-                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 space-y-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
-                  <p className="font-extrabold text-sm">1. Maker</p>
-                  <p className="text-xs text-emerald-700 font-bold">Created</p>
-                </div>
-
-                {/* Step 2 */}
-                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : 'bg-amber-50 border-amber-300 text-amber-950'}`}>
-                  {selectedDocModal.reviewerStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-amber-600 mx-auto animate-pulse" />
-                  )}
-                  <p className="font-extrabold text-sm">2. Reviewer</p>
-                  <p className="text-xs font-bold">{selectedDocModal.reviewerStatus}</p>
-                </div>
-
-                {/* Step 3 */}
-                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.gmStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.reviewerStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
-                  {selectedDocModal.gmStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400 mx-auto" />
-                  )}
-                  <p className="font-extrabold text-sm">3. GM</p>
-                  <p className="text-xs font-bold">{selectedDocModal.gmStatus}</p>
-                </div>
-
-                {/* Step 4 */}
-                <div className={`p-3.5 rounded-2xl border space-y-1 ${selectedDocModal.dcsStatus === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-950' : selectedDocModal.gmStatus === 'APPROVED' ? 'bg-amber-50 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-200 text-slate-400'}`}>
-                  {selectedDocModal.dcsStatus === 'APPROVED' ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600 mx-auto" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400 mx-auto" />
-                  )}
-                  <p className="font-extrabold text-sm">4. DCS</p>
-                  <p className="text-xs font-bold">{selectedDocModal.dcsStatus}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  const targetTab = selectedDocModal.type.includes('Quotation') ? 'quotations' : selectedDocModal.type.includes('Purchase') ? 'purchasing' : 'rfp';
-                  setSelectedDocModal(null);
-                  onSelectTab(targetTab);
-                }}
-                className="px-5 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
-              >
-                <ExternalLink className="w-4 h-4 text-blue-200" />
-                <span>Open Module Workspace</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedDocModal(null)}
-                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
-              >
-                Close Inspector
-              </button>
-            </div>
+            <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold sm:grid-cols-2"><div><span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Document type</span><span className="font-semibold text-slate-950">{selectedDocModal.type}</span></div><div><span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Total transaction value</span><span className="font-mono text-lg font-semibold text-slate-950">₱{Number(selectedDocModal.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div><div><span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Maker / originator</span><span className="font-semibold text-slate-900">{selectedDocModal.maker || '—'}</span></div><div><span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Current status</span><span className="font-semibold text-amber-900">{getApprovalStatus(selectedDocModal)}</span></div></div>
+            <div className="space-y-3 border-t border-slate-200 pt-4"><span className="block text-xs font-bold uppercase tracking-wider text-slate-700">COSO approval timeline</span><div className="grid gap-3 sm:grid-cols-4">{(['Maker', 'Reviewer', 'GM', 'DCS'] as const).map((label, index) => { const status = index === 0 ? 'APPROVED' : index === 1 ? selectedDocModal.reviewerStatus : index === 2 ? selectedDocModal.gmStatus : selectedDocModal.type === 'Sales Quotation' ? 'NOT_REQUIRED' : selectedDocModal.dcsStatus; const complete = status === 'APPROVED' || status === 'NOT_REQUIRED'; return <div key={label} className={`rounded-xl border p-3 text-center ${complete ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : status === 'PENDING' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-slate-200 bg-slate-100 text-slate-500'}`}><span className="mx-auto flex w-fit rounded-full bg-white/70 p-2">{complete ? <CheckCircle2 className="h-5 w-5 text-emerald-700" /> : status === 'PENDING' ? <Clock className="h-5 w-5 text-amber-700" /> : <Lock className="h-5 w-5 text-slate-400" />}</span><p className="mt-1 text-sm font-semibold">{index + 1}. {label}</p><p className="text-xs font-bold">{status}</p></div>; })}</div></div>
+            <div className="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap gap-2">{selectedStage && selectedStageCanApprove && <button type="button" onClick={() => { onApproveItem(selectedDocModal.id, selectedStage); setSelectedDocModal(null); }} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"><ShieldCheck className="h-4 w-4" /> Approve {stageLabel[selectedStage]}</button>}{selectedStage && !selectedStageCanApprove && <span className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-600"><Lock className="h-4 w-4" /> {stageLabel[selectedStage]} action locked for {viewAsRole}</span>}<button type="button" onClick={() => { const targetTab = selectedDocModal.type.includes('Quotation') ? 'quotations' : selectedDocModal.type.includes('Purchase') ? 'purchasing' : 'rfp'; setSelectedDocModal(null); onSelectTab(targetTab); }} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"><ExternalLink className="h-4 w-4" /> Open module</button></div><button type="button" onClick={() => setSelectedDocModal(null)} className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-slate-200 px-5 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-300 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">Close inspector</button></div>
           </div>
         </div>
       )}

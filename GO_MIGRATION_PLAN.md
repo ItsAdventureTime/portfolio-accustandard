@@ -7,6 +7,10 @@
 
 This document provides the technical blueprint for migrating the **Accustandard Medical ERP Dashboard** from a client-side store into a **Go REST API Backend + Next.js Static Frontend** stack.
 
+UI/UX scope is governed by `implementation_plan.md`; business rules by the
+confirmed acceptance handoff; runtime status by `IMPLEMENTATION_STATUS.md`;
+operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
+
 ---
 
 ## 🏛️ System Architecture
@@ -26,7 +30,7 @@ This document provides the technical blueprint for migrating the **Accustandard 
 (Next.js React SPA)                      (go-chi/v5 + REST Controllers)
                                                   |
                                                   v
-                                         [ PostgreSQL 16 DB ]
+ [ PostgreSQL 17 DB ]
                                          (accustandard_demo_db)
 ```
 
@@ -37,9 +41,11 @@ This document provides the technical blueprint for migrating the **Accustandard 
 1. **Frontend**: Next.js App Router (React), Tailwind CSS, Lucide Icons, Radix UI.
    - Build Mode: Static Export (`output: 'export'` in `next.config.ts`).
    - Base Path: `/accustandard/demo`.
-2. **Backend**: Go 1.22+ (`go-chi/chi/v5` router, PostgreSQL driver `pgx/v5` or `gorm`).
+2. **Backend**: Go from the moving official `golang:alpine` build image
+   (`go-chi/chi/v5` router, PostgreSQL driver `pgx/v5` or `gorm`). Do not
+   replace the floating build image with a version-pinned Go image.
    - REST API Base Path: `/accustandard/demo/api/v1`.
-3. **Database**: PostgreSQL 16 (`accustandard_demo_db`).
+3. **Database**: PostgreSQL 17 (`accustandard_demo_db`).
 4. **Containerization**: Podman Quadlet (`~/.config/containers/systemd/bridge-ph/accustandard-demo/`).
 
 ---
@@ -70,7 +76,7 @@ rsync -az --delete --exclude node_modules --exclude .next --exclude out/ \
   ./ jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/source/
 
 # 2. Build remotely in podman run --rm, build the persistent Go image,
-#    publish out/, and restart only the demo API Quadlet.
+#    publish out/, start/wait for PostgreSQL, and restart the demo API Quadlet.
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 ```
 
@@ -78,9 +84,12 @@ ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 
 ## 🔐 Version Control Protocol
 
-- **Remote Operations**: Use only official GitHub CLI (`gh`) over authenticated
-  HTTPS (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Do not
-  use `git push`, SSH remotes, SSH keys, or passkeys.
+- **GitHub repository operations**: Follow `GITHUB_HTTPS_WORKFLOW.md`. Use
+  official GitHub CLI (`gh`) to authenticate/configure Git, then synchronize
+  only through the authenticated HTTPS remote
+  (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Never use
+  SSH remotes, SSH keys, `gh ssh-key`, or passkeys. Demo VPS transfer remains a
+  separate user-run SSH/rsync operation.
 
 ## 2026 Backend Enforcement Baseline
 
@@ -100,24 +109,26 @@ deployment client only uses SSH/rsync to synchronize source into
 `/home/jk/bridge-ph/accustandard-demo/source/`. The VPS then runs the
 disposable frontend build, builds the persistent Go image, publishes `out/`
 to `web-dist/`, installs the demo Quadlets into
-`/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`, and
-restarts only `accustandard-demo-app.service`.
+`/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`, starts the
+database if needed, waits for `pg_isready`, restarts
+`accustandard-demo-app.service`, and verifies the API readiness endpoint.
 
-The database service is not restarted during a frontend/API update, and broad
-legacy-container cleanup is intentionally excluded from the deployment path.
+The database data directory persists across normal frontend and API updates.
+For this disposable demo only, a data directory whose `PG_VERSION` is not 17
+is removed and reinitialized as PostgreSQL 17; no recoverable backup is kept.
+The API also removes the obsolete prototype table family before GORM
+`AutoMigrate` on the first compatible startup.
 
 ## 2026 Repository Audit Status
 
 The Go migration is partially implemented. The demo runtime uses the GORM
-models and handlers under `backend/cmd/server`; the root `backend/main.go`
-server is legacy and must not be used for deployment. The frontend still has
+models and handlers under `backend/cmd/server`; obsolete prototype runtime
+files have been removed. The frontend still has
 local-only callbacks for several handoff workflows, so it is not yet a fully
 authoritative server-backed ERP.
 
-The migration directory currently contains two incompatible seed/schema
-families (`001_initial_schema.sql`/`002_seed_demo_data.sql` and the GORM-shaped
-`002_seed_data.sql`). Until a single versioned migration chain is selected,
-these files are not evidence of a clean PostgreSQL cutover. Do not run them
+The migration directory contains the GORM-shaped idempotent demo seed
+`002_seed_data.sql`; it is not a production migration chain. Do not run it
 against production as an acceptance step. Canonical migration design,
 idempotency keys, authenticated RBAC, complete document endpoints, and
 integration tests remain release-blocking work.

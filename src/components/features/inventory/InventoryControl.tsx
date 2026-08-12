@@ -25,6 +25,7 @@ interface InventoryControlProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOpenAddStock: () => void;
+  onOpenCreatePO?: () => void;
   onOpenProductManager: () => void;
   onOpenScanner: () => void;
 }
@@ -35,18 +36,33 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
   searchQuery,
   onSearchChange,
   onOpenAddStock,
+  onOpenCreatePO,
   onOpenProductManager,
   onOpenScanner,
 }) => {
   const [activeTab, setActiveTab] = useState<'LIVE' | 'REPLENISHMENT'>('LIVE');
+  const [activeStockClass, setActiveStockClass] = useState<'ALL' | 'Class 1' | 'Class 2' | 'Class 3'>('ALL');
   const [selectedSkuModal, setSelectedSkuModal] = useState<any | null>(null);
+
+  const getStockClass = (item: any) => {
+    if (item.itemClass?.includes('Class 1')) return 'Class 1';
+    if (item.itemClass?.includes('Class 2')) return 'Class 2';
+    if (item.itemClass?.includes('Class 3')) return 'Class 3';
+    return 'Unclassified';
+  };
 
   const filteredInventory = inventoryList.filter(
     (item) =>
       item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.location.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).filter((item) => activeStockClass === 'ALL' || getStockClass(item) === activeStockClass);
+  const criticalItems = inventoryList.filter((item) => Number(item.available ?? item.onHand ?? 0) < 50);
+  const stockClassCards = [
+    { key: 'Class 1' as const, label: 'Class 1 · Core', detail: 'Fast-moving stock', tone: 'emerald' },
+    { key: 'Class 2' as const, label: 'Class 2 · Controlled', detail: 'Forecast review', tone: 'amber' },
+    { key: 'Class 3' as const, label: 'Class 3 · Special', detail: 'Customer PO required', tone: 'rose' },
+  ];
 
   return (
     <div className="space-y-6 text-slate-900">
@@ -78,6 +94,16 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             <Plus className="w-4 h-4" />
             <span>Add Stock Batch</span>
           </button>
+          {criticalItems.length > 0 && onOpenCreatePO && (
+            <button
+              type="button"
+              onClick={onOpenCreatePO}
+              className="flex-1 sm:flex-initial px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>Create reorder PO ({criticalItems.length})</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -132,6 +158,33 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
               <span>Camera Barcode Scanner</span>
             </button>
           </div>
+
+          <div className="grid gap-3 sm:grid-cols-3" aria-label="Inventory stock categories">
+            {stockClassCards.map((card) => {
+              const count = inventoryList.filter((item) => getStockClass(item) === card.key).length;
+              const isActive = activeStockClass === card.key;
+              return (
+                <button
+                  key={card.key}
+                  type="button"
+                  onClick={() => setActiveStockClass(isActive ? 'ALL' : card.key)}
+                  aria-pressed={isActive}
+                  className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${isActive ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100' : 'border-slate-200 bg-white'}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-black text-slate-900">{card.label}</span>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-black ${card.tone === 'emerald' ? 'bg-emerald-100 text-emerald-900' : card.tone === 'amber' ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-900'}`}>{count}</span>
+                  </div>
+                  <span className="mt-1 block text-xs font-semibold text-slate-500">{card.detail}</span>
+                </button>
+              );
+            })}
+          </div>
+          {activeStockClass !== 'ALL' && (
+            <button type="button" onClick={() => setActiveStockClass('ALL')} className="text-left text-xs font-black text-blue-900 underline decoration-blue-300 underline-offset-4 hover:text-blue-700">
+              Show all stock categories
+            </button>
+          )}
 
           {/* Inventory Table & Mobile Cards */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

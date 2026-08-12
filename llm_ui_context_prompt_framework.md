@@ -15,6 +15,12 @@
 > `IMPLEMENTATION_STATUS.md`, the confirmed developer handoff, and the
 > correction/acceptance handoff before changing behavior.
 
+> **Authority map:** `implementation_plan.md` governs UI/UX scope; the
+> confirmed acceptance handoff governs business rules; `IMPLEMENTATION_STATUS.md`
+> governs actual runtime status; `README.md`, `ARCHITECTURE.md`, and
+> `CONTRIBUTING.md` govern operations. This generic framework is historical and
+> non-authoritative for repository behavior.
+
 ---
 
 ```xml

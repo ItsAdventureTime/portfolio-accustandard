@@ -1,7 +1,7 @@
 # 2026 Podman Isolated Disposable Static Export Builder
-# Image: node:24-alpine
+# Image: node:lts-alpine
 
-FROM node:24-alpine AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /workspace
 

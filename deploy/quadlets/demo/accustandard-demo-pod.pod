@@ -3,4 +3,8 @@ Description=Accustandard Dashboard Demo Pod
 
 [Pod]
 PodName=accustandard-demo-pod
+PodmanArgs=--replace
 PublishPort=8080:8080
+
+[Service]
+TimeoutStartSec=900

@@ -23,6 +23,7 @@ interface SidebarProps {
   activeTab: string;
   onSelectTab: (tabKey: string) => void;
   approvalsCount: number;
+  quotationsCount: number;
   inventoryCount: number;
   soaCount: number;
   auditCount: number;
@@ -38,15 +39,16 @@ const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['inventory', 'purchasing'],
+  Warehouse: ['overview', 'inventory', 'purchasing'],
   Marketing: ['overview', 'quotations'],
-  Sales: ['quotations', 'inventory'],
+  Sales: ['overview', 'quotations', 'inventory'],
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   approvalsCount,
+  quotationsCount,
   inventoryCount,
   soaCount,
   auditCount,
@@ -83,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Quotation Generator',
       subtitle: 'Stock Reservation & Pricing',
       icon: FileText,
-      badge: 1,
+      badge: quotationsCount,
       badgeColor: 'bg-amber-600 text-white',
     },
     {

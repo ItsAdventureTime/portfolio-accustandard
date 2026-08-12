@@ -45,7 +45,7 @@ ON CONFLICT (rfq_no) DO NOTHING;
 INSERT INTO approval_logs (id, qrn, doc_type, maker, reviewer_status, gm_status, dcs_status, total_amount)
 VALUES
   ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'QRN20240415037', 'Sales Quotation', 'Sales Officer', 'APPROVED', 'APPROVED', 'NOT_REQUIRED', 31500.00),
-  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0891', 'Purchase Order', 'Purchasing Officer', 'APPROVED', 'PENDING', 'AWAITING', 142000.00),
+  ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0891', 'Purchase Order', 'Purchasing Officer', 'APPROVED', 'PENDING', 'PENDING', 142000.00),
   ('f1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'RFP-2026-0104', 'Request for Payment', 'Bookkeeper (Aila)', 'APPROVED', 'APPROVED', 'APPROVED', 18500.00)
 ON CONFLICT (id) DO NOTHING;
 

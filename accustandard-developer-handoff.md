@@ -4,7 +4,12 @@
 > product. `IMPLEMENTATION_STATUS.md` records what the current demo actually
 > persists and what remains unverified.
 
-Welcome to the developer handoff guide for the **Accustandard Medical ERP Dashboard**. This document summarizes core client requirements and technical guidelines gathered during system planning.
+> **Authority:** `implementation_plan.md` governs UI/UX scope. The confirmed
+> acceptance handoff governs business rules; `IMPLEMENTATION_STATUS.md`
+> governs runtime status; `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`
+> govern operations.
+
+Welcome to the developer handoff guide for the **Accustandard Medical ERP Dashboard**. This document summarizes core client requirements and technical guidelines gathered during system planning; it is not evidence that the demo runtime has completed acceptance.
 
 ---
 
@@ -21,10 +26,15 @@ Accustandard requires a single integrated ERP web application to serve as its op
 - Role-based access control enforced at navigation and action levels
 - Read-only "View As" mode for administrators with audited overrides
 - Internal database acts as operational source of truth
-- QuickBooks Online (QBO) acts as financial accounting ledger via live API queue
+- QuickBooks Online (QBO) is a future accounting integration; v1 uses a manual export/queue boundary
 - **Mandatory Repository & Version Control Policy:**
-  0. **Documentation Sync:** Every code, UI, dependency, or architectural change MUST immediately update all documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`).
-  1. **Remote GitHub Sync:** Remote synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use only official GitHub CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH remotes, SSH keys, or passkeys.
+  0. **Documentation Sync:** Every code, UI, dependency, or architectural change MUST update the applicable source-of-truth document and every affected operational guide. Historical prompts and transcripts remain explicitly non-authoritative rather than receiving copied stale instructions.
+  1. **Remote GitHub Sync:** Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official
+     GitHub CLI (`gh`) to authenticate/configure Git, then synchronize only
+     through the authenticated HTTPS remote
+     (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Never use
+     SSH remotes, SSH keys, `gh ssh-key`, or passkeys. Demo VPS transfer is a
+     separate user-run SSH/rsync operation.
 
 ---
 

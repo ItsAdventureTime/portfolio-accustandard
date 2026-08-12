@@ -2,24 +2,29 @@
 
 import React from 'react';
 import {
+  Barcode,
+  Bell,
+  ChevronDown,
+  Database,
+  Download,
+  Menu,
+  MoreHorizontal,
+  Plus,
+  ScanLine,
   Search,
   Smartphone,
-  Eye,
-  Menu,
-  Wrench,
-  ChevronDown,
-  Download,
   Upload,
-  Database,
-  Barcode,
-  ScanLine,
+  UserCircle2,
 } from 'lucide-react';
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 
 interface HeaderProps {
+  activeTab: string;
   viewAsRole: string;
+  onSelectTab: (tabKey: string) => void;
   onChangeRole: (role: string) => void;
   onOpenCommandPalette: () => void;
+  onOpenCreateNew: () => void;
   onOpenScanner: () => void;
   onOpenPWAInstall: () => void;
   onOpenMobileDrawer: () => void;
@@ -28,12 +33,36 @@ interface HeaderProps {
   onOpenQBOQueue: () => void;
   onOpenProductManager: () => void;
   qboQueueCount: number;
+  allowedTabs?: string[];
 }
 
+const ROLE_ALLOWED_TABS: Record<string, string[]> = {
+  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
+  Warehouse: ['overview', 'inventory', 'purchasing'],
+  Marketing: ['overview', 'quotations'],
+  Sales: ['overview', 'quotations', 'inventory'],
+};
+
+const roleOptions = [
+  ['Admin', 'Admin'],
+  ['Chairman (DCS)', 'Chairman (DCS)'],
+  ['General Manager', 'General Manager'],
+  ['Bookkeeper', 'Bookkeeper'],
+  ['Warehouse', 'Warehouse'],
+  ['Marketing', 'Marketing'],
+  ['Sales', 'Sales Officer'],
+];
+
 export const Header: React.FC<HeaderProps> = ({
+  activeTab,
   viewAsRole,
+  onSelectTab,
   onChangeRole,
   onOpenCommandPalette,
+  onOpenCreateNew,
   onOpenScanner,
   onOpenPWAInstall,
   onOpenMobileDrawer,
@@ -42,128 +71,127 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenQBOQueue,
   onOpenProductManager,
   qboQueueCount,
+  allowedTabs,
 }) => {
   const [isToolsOpen, setIsToolsOpen] = React.useState(false);
+  const allowed = allowedTabs || ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS.Admin;
+  const ordersTarget = allowed.includes('quotations') ? 'quotations' : 'purchasing';
+  const financeTarget = allowed.includes('soa') ? 'soa' : 'rfp';
+  const navigation = [
+    { label: 'Dashboard', key: 'overview', target: 'overview', visible: allowed.includes('overview') },
+    { label: 'Inventory', key: 'inventory', target: 'inventory', visible: allowed.includes('inventory') },
+    { label: 'Orders', key: 'orders', target: ordersTarget, visible: allowed.includes('quotations') || allowed.includes('purchasing') },
+    { label: 'Finance', key: 'finance', target: financeTarget, visible: allowed.includes('soa') || allowed.includes('rfp') },
+    { label: 'Reports', key: 'reports', target: 'admin', visible: allowed.includes('admin') },
+  ].filter((item) => item.visible);
+
+  const isActive = (key: string, target: string) => {
+    if (key === 'orders') return ['quotations', 'purchasing'].includes(activeTab);
+    if (key === 'finance') return ['soa', 'rfp'].includes(activeTab);
+    return activeTab === target;
+  };
 
   return (
-    <header role="banner" className="bg-white/90 backdrop-blur-xl border-b border-slate-200/80 text-slate-900 sticky top-0 z-30 shadow-xs w-full transition-all duration-200 pt-[env(safe-area-inset-top,0px)]">
-      <div className="w-full px-2.5 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4">
-        {/* Left: Mobile Menu Toggle & Brand Logo */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink min-w-0">
+    <header
+      role="banner"
+      className="sticky top-0 z-30 w-full border-b border-slate-200 bg-white/95 text-slate-950 shadow-[0_1px_8px_rgba(15,23,42,0.06)] backdrop-blur-xl pt-[env(safe-area-inset-top,0px)]"
+    >
+      <div className="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center gap-5 px-4 py-3 sm:px-6 lg:px-7">
+        <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <button
+            type="button"
             onClick={onOpenMobileDrawer}
-            className="lg:hidden p-1.5 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 border border-slate-200 active:scale-95 cursor-pointer shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 lg:hidden"
             aria-label="Open mobile menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="h-5 w-5" />
           </button>
-
-          {/* Mobile Logo Branding with max-w constraint to prevent notch collision */}
-          <div className="flex items-center lg:hidden shrink min-w-0 max-w-[135px] xs:max-w-[160px] sm:max-w-none overflow-hidden">
-            <AccustandardLogo size="sm" className="max-h-6 xs:max-h-7 sm:max-h-9" />
-          </div>
-
-          {/* Desktop Search Trigger / Command Palette */}
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={onOpenCommandPalette}
-              className="flex items-center gap-3 bg-slate-50/80 hover:bg-white hover:border-blue-400 border border-slate-300/80 text-slate-700 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-md w-80 justify-between cursor-pointer group"
-            >
-              <span className="flex items-center gap-2.5">
-                <Search className="w-4 h-4 text-blue-700 group-hover:scale-110 transition-transform duration-200" />
-                <span className="font-bold text-slate-500 group-hover:text-slate-800 transition-colors">Search SKU, PO, RFP...</span>
-              </span>
-              <kbd className="bg-white text-slate-700 font-mono text-xs px-2 py-0.5 rounded-lg border border-slate-300 shadow-2xs font-black group-hover:border-blue-300">
-                ⌘K
-              </kbd>
-            </button>
-          </div>
+          <AccustandardLogo size="sm" className="max-w-[154px] sm:max-w-[190px]" />
         </div>
 
-        {/* Right: Actions & Role Impersonation */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Role Impersonation Control */}
-          <div className="bg-blue-50/90 border border-blue-200/90 hover:border-blue-400 rounded-2xl px-3 py-1.5 flex items-center gap-2 sm:gap-3 shadow-2xs transition-all duration-200">
-            <Eye className="w-4 h-4 text-blue-700 shrink-0" />
-            <div className="hidden sm:block text-left">
-              <span className="text-[10px] text-blue-800 font-black uppercase tracking-wider block leading-none mb-0.5">
-                Simulate Role
-              </span>
-              <select
-                value={viewAsRole}
-                onChange={(e) => onChangeRole(e.target.value)}
-                className="bg-transparent text-blue-950 font-black text-sm focus:outline-none cursor-pointer pr-1"
+        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-6 lg:flex">
+          {navigation.map((item) => {
+            const active = isActive(item.key, item.target);
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => onSelectTab(item.target)}
+                className={`relative flex min-h-[44px] items-center px-1 text-[15px] font-medium transition-colors after:absolute after:bottom-[-13px] after:left-0 after:right-0 after:h-0.5 after:rounded-full ${active ? 'text-slate-950 after:bg-slate-900' : 'text-slate-700 after:bg-transparent hover:text-slate-950'}`}
+                aria-current={active ? 'page' : undefined}
               >
-                <option value="Admin" className="bg-white text-slate-900 font-bold">Admin (Bridge)</option>
-                <option value="Chairman (DCS)" className="bg-white text-slate-900 font-bold">Chairman (DCS)</option>
-                <option value="General Manager" className="bg-white text-slate-900 font-bold">General Manager (Karen)</option>
-                <option value="Bookkeeper" className="bg-white text-slate-900 font-bold">Bookkeeper (Aila)</option>
-                <option value="Warehouse" className="bg-white text-slate-900 font-bold">Warehouse (Marie)</option>
-                <option value="Marketing" className="bg-white text-slate-900 font-bold">Marketing (Reviewer)</option>
-                <option value="Sales" className="bg-white text-slate-900 font-bold">Sales Officer</option>
-              </select>
-            </div>
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
 
-            {/* Mobile Compact Role Select */}
+        <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={onOpenCommandPalette}
+            className="hidden h-10 w-[290px] items-center justify-between rounded-lg bg-slate-800 px-3.5 text-left text-sm text-slate-300 shadow-inner transition hover:bg-slate-700 xl:flex"
+            aria-label="Quick search"
+          >
+            <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Quick search</span>
+            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-300">⌘K</kbd>
+          </button>
+
+          <div className="flex min-h-[44px] items-center gap-1 rounded-full bg-slate-800 px-3 text-white shadow-sm">
             <select
+              aria-label="View as role"
               value={viewAsRole}
-              onChange={(e) => onChangeRole(e.target.value)}
-              className="sm:hidden bg-transparent text-blue-950 font-black text-xs focus:outline-none cursor-pointer py-0.5"
+              onChange={(event) => onChangeRole(event.target.value)}
+              className="max-w-[132px] bg-transparent text-sm font-medium outline-none sm:max-w-[170px]"
             >
-              <option value="Admin" className="bg-white text-slate-900">Admin</option>
-              <option value="Chairman (DCS)" className="bg-white text-slate-900">Chairman</option>
-              <option value="General Manager" className="bg-white text-slate-900">GM</option>
-              <option value="Bookkeeper" className="bg-white text-slate-900">Bookkeeper</option>
-              <option value="Warehouse" className="bg-white text-slate-900">Warehouse</option>
-              <option value="Marketing" className="bg-white text-slate-900">Marketing</option>
-              <option value="Sales" className="bg-white text-slate-900">Sales</option>
+              {roleOptions.map(([value, label]) => (
+                <option key={value} value={value} className="bg-white text-slate-900">{label}</option>
+              ))}
             </select>
+            <ChevronDown aria-hidden="true" className="h-4 w-4 text-slate-300" />
           </div>
 
-          {/* Secondary operations stay together so the primary header stays focused. */}
-          <div className="relative hidden sm:block">
+          <span className="hidden h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-slate-700 sm:inline-flex" aria-label="Current user">
+            <UserCircle2 className="h-8 w-8" />
+          </span>
+
+          <button
+            type="button"
+            onClick={onOpenQBOQueue}
+            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100"
+            aria-label={`Open notifications${qboQueueCount ? ` (${qboQueueCount})` : ''}`}
+          >
+            <Bell className="h-5 w-5" />
+            {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />}
+          </button>
+
+          <div className="relative hidden lg:block">
             <button
               type="button"
               onClick={() => setIsToolsOpen((open) => !open)}
               aria-expanded={isToolsOpen}
               aria-haspopup="menu"
-              className="flex min-h-[44px] items-center gap-2 rounded-2xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-extrabold text-slate-800 shadow-xs transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
+              aria-label="Open operations and tools"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100"
             >
-              <Wrench className="h-4 w-4 text-blue-800" />
-              <span>Operations &amp; tools</span>
-              {qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}
-              <ChevronDown className={`h-4 w-4 transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
+              <MoreHorizontal className="h-5 w-5" />
             </button>
             {isToolsOpen && (
-              <div role="menu" className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+              <div role="menu" className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
                 <p className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Operations &amp; tools</p>
-                <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100">
-                  <Download className="h-4 w-4 text-blue-700" /> Export report
-                </button>
-                <button type="button" role="menuitem" onClick={() => { onOpenStartupImport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100">
-                  <Upload className="h-4 w-4 text-blue-700" /> Startup import
-                </button>
-                <button type="button" role="menuitem" onClick={() => { onOpenQBOQueue(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100">
-                  <span className="flex items-center gap-3"><Database className="h-4 w-4 text-emerald-700" /> QBO sync queue</span>
-                  {qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}
-                </button>
-                <button type="button" role="menuitem" onClick={() => { onOpenProductManager(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100">
-                  <Barcode className="h-4 w-4 text-indigo-700" /> Barcode manager
-                </button>
-                <button type="button" role="menuitem" onClick={() => { onOpenScanner(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-bold text-slate-800 transition hover:bg-slate-100">
-                  <ScanLine className="h-4 w-4 text-rose-700" /> Barcode scanner
-                </button>
+                <button type="button" role="menuitem" onClick={() => { onOpenCreateNew(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Plus className="h-4 w-4 text-blue-700" /> Create new</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Download className="h-4 w-4 text-blue-700" /> Export report</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenStartupImport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Upload className="h-4 w-4 text-blue-700" /> Startup import</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenQBOQueue(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><span className="flex items-center gap-3"><Database className="h-4 w-4 text-emerald-700" /> QBO sync queue</span>{qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenProductManager(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Barcode className="h-4 w-4 text-indigo-700" /> Barcode manager</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenScanner(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><ScanLine className="h-4 w-4 text-rose-700" /> Barcode scanner</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenPWAInstall(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Smartphone className="h-4 w-4 text-blue-700" /> Install app</button>
               </div>
             )}
           </div>
 
-          <button
-            onClick={onOpenPWAInstall}
-            className="hidden sm:block p-2.5 bg-slate-100/80 hover:bg-slate-200 hover:border-slate-400 text-slate-700 hover:text-slate-900 rounded-2xl transition-all duration-200 border border-slate-300 active:scale-95 cursor-pointer"
-            title="Install as PWA Instructions"
-          >
-            <Smartphone className="w-5 h-5 text-blue-800" />
-          </button>
+          <button type="button" onClick={onOpenCommandPalette} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100 xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
+          <button type="button" onClick={onOpenPWAInstall} className="hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100 sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
         </div>
       </div>
     </header>

@@ -2,11 +2,19 @@
 
 This document outlines the technical design, data flows, containerized deployment architecture, and remote version control standards for the **Accustandard Medical ERP Dashboard**.
 
+**Source of truth:** `implementation_plan.md` governs UI/UX scope; the
+confirmed acceptance handoff governs business rules; `IMPLEMENTATION_STATUS.md`
+governs current runtime status; `README.md`, this document, and
+`CONTRIBUTING.md` govern operations.
+
 ---
 
 ## 🏗️ System Overview
 
-The system is structured as a single-page Next.js App Router application optimized for static export deployment (`output: 'export'`). It provides an interactive simulation of an enterprise ERP system with full role switching, real-time internal control validation, and QuickBooks Online integration queues.
+The system is structured as a single-page Next.js App Router application
+optimized for static export deployment (`output: 'export'`). It provides an
+interactive demo with role switching, UI control validation, and a manual
+QuickBooks Online export queue boundary; it is not a live QBO integration.
 
 ```
 +-----------------------------------------------------------------------+
@@ -24,7 +32,7 @@ The system is structured as a single-page Next.js App Router application optimiz
 |  - Inventory SKUs (FEFO Expiry, QC & Pampanga Warehouses)             |
 |  - Demand Replenishment Planner (Class 1/2/3 Items)                  |
 |  - Configurable Approval Pipeline (Sales Quote ends at GM; DCS conditional) |
-|  - QuickBooks Online Live Sync Queue (QBO Ref IDs)                   |
+|  - Manual QBO export/queue boundary (QBO Ref IDs; no live integration) |
 |  - Multi-SOA Collection Allocations & Credit Ledger                   |
 +-----------------------------------------------------------------------+
 ```
@@ -33,9 +41,11 @@ The system is structured as a single-page Next.js App Router application optimiz
 
 ## 🔐 GitHub CLI (`gh`) Remote Synchronization Standard
 
-To ensure auditability and consistent remote synchronization, use only the
-official GitHub CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH
-remotes, passkeys, or SSH keys for remote work.
+Follow [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md) for the canonical
+protocol. `gh auth setup-git` configures the authenticated GitHub CLI credential
+helper; branch synchronization then uses the HTTPS remote. Never use SSH
+remotes, SSH keys, `gh ssh-key`, or passkeys for GitHub repository operations.
+VPS deployment transfer is separate and user-run.
 
 ---
 
@@ -60,13 +70,19 @@ matching remains a separate unimplemented acceptance step.
 If receiving quantities exceed the approved PO amount, the transaction is hard-blocked to prevent vendor over-billing.
 
 ### 3. QuickBooks Online (QBO) Handoff Engine
-Operational users never post directly to accounting ledgers. Completed transactions pass through internal validation into the `QBO Live Sync Queue`. Approved items receive a unique QBO reference ID upon synchronization.
+Operational users never post directly to accounting ledgers. Completed
+transactions pass through internal validation into the manual QBO export/queue
+boundary. This runtime does not provide a live QuickBooks Online integration.
 
 ---
 
 ## 🐳 Containerized Deployment Architecture (Demo Target)
 
-Until leadership approves the demo site, all builds are deployed exclusively to the Demo environment:
+Until leadership approves a production release, all builds are deployed
+exclusively to the Demo environment. The deployment is remote-only and builds
+the frontend in a disposable Podman container; it removes remote source build
+artifacts after publishing while retaining the backend image required by
+Quadlet:
 
 ```
 [ Internet Client ]
@@ -101,7 +117,9 @@ The interface follows modern web ergonomics with physics-based motion, spatial a
 
 ### 2. Micro-Animations & Spatial Alignment Rules
 - **Hover Elevation**: Card components enforce `hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out` with equal-height flex container wrapping (`h-full flex flex-col justify-between`).
-- **Sidebar Nav Translations**: Navigation links execute rightward micro-translation on hover (`hover:translate-x-1 transition-all duration-200`).
+- **Primary Nav States**: Horizontal navigation uses an active underline,
+  role-filtered destinations, and visible keyboard focus states. Mobile uses a
+  drawer/bottom-navigation variant.
 - **Pill Tab Switchers**: Tab bars use encapsulated background rails (`bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5`) with active state scaling (`bg-blue-900 text-white shadow-md`).
 - **Glassmorphism 2.0**: Navigation bar headers enforce `bg-white/90 backdrop-blur-xl border-b border-slate-200/80`.
 

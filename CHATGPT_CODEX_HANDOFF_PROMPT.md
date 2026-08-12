@@ -4,6 +4,12 @@
 > current runtime evidence companion. The confirmed handoff and acceptance
 > handoff outrank this historical execution prompt.
 
+> **Authority map:** Use `implementation_plan.md` for UI/UX scope, the
+> confirmed acceptance handoff for business rules,
+> `IMPLEMENTATION_STATUS.md` for runtime status, and
+> `README.md`/`ARCHITECTURE.md`/`CONTRIBUTING.md` for operations. This file is
+> historical prompt material and must not override those sources.
+
 > **Instructions for User:** Copy and paste the entire prompt block below directly into **ChatGPT Codex**. This prompt instructs Codex to implement the complete UI/UX revamp (desktop & mobile), brand design system based on the official logo (`public/photo_2026-08-01_23-55-07.jpg`), and align the entire codebase strictly with the project specifications.
 
 ---
@@ -46,9 +52,16 @@ Redesign and modernize the entire web application UI/UX for desktop power users 
     - `USER NAME`: User icon + Name + Access matrix modal trigger.
 
 ### 1.2 Desktop Ergonomics (1024px and up)
-- **Dual-Tier Collapsible Sidebar / Navigation Rail:** Expandable/collapsible sidebar (label mode when expanded, icon-only rail when collapsed) with role-filtered groups (Overview, Inventory, Sales & RFQ, Purchasing & 3-Way Match, Finance & SOA, Admin & Audit).
-- **Decision-First Role Action Dashboards:** Action-oriented role queues ("My Actions", "Returned to Me", "My Drafts", "Submitted / History") featuring KPI decision cards (gross margin per quote, stock availability by warehouse, near-expiry alerts, pending approvals aging).
-- **High-Density Virtualized Data Grids:** Responsive tables with sticky headers, column sorting, search-first command palette (`⌘K`), batch multi-select, and 1-click QBO/Excel exports.
+- **Responsive Navigation Shell:** Horizontal desktop navigation with
+  Dashboard, Inventory, Orders, Finance, and Reports; active destinations are
+  underlined and role-filtered. Mobile retains the drawer and bottom
+  navigation for the same permitted destinations.
+- **Decision-First Role Action Dashboards:** A "Needs Your Attention Today"
+  action center with three role-aware cards for approvals, RFQs, and
+  receiving/stock alerts, followed by a compact approval queue.
+- **Compact Operational Tables:** Responsive five-column queues with clear
+  status pills, inspect actions inside row content, and secondary exports or
+  QBO tools grouped under the header Operations & tools menu.
 - **Right Slide-Over Inspector Drawers (`max-w-4xl`):** Contextual slide-out drawers for quick inspection of documents, PO 3-way match, client SOA ledgers, and QBO live sync queues without leaving the main table context.
 
 ### 1.3 Mobile Ergonomics & PWA (Below 1024px)
@@ -67,10 +80,12 @@ Migrate the system from client-side `localStorage` state into an authoritative *
 
 ### 2.1 Backend Architecture & Tech Stack
 - Directory: `backend/`
-- Language/Framework: Go 1.22+ with `go-chi/chi/v5`, PostgreSQL driver (`pgx/v5` or `gorm`).
+- Language/Framework: Go from the moving official `golang:alpine` build image,
+  with `go-chi/chi/v5` and PostgreSQL driver (`pgx/v5` or `gorm`). Do not
+  replace the floating image with a version-pinned Go image.
 - REST API Base Path: `/accustandard/demo/api/v1/*`.
-- Database: PostgreSQL 16 (`accustandard_demo_db`).
-- Versioned Migrations: SQL migration scripts in `backend/migrations/` (001_initial_schema.sql, 002_seed_demo_data.sql).
+- Database: PostgreSQL 17 (`accustandard_demo_db`).
+- Runtime schema: GORM `AutoMigrate` plus idempotent `backend/migrations/002_seed_data.sql` demo seed.
 
 ### 2.2 PostgreSQL Schema & Endpoints Required
 1. `users` & `roles`: User accounts, RBAC permissions, role definitions.
@@ -129,17 +144,21 @@ Enforce the following non-negotiable business rules across both backend API and 
    - Quadlet files: `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
    - Data & web root: `/home/jk/bridge-ph/accustandard-demo/`
    - Automated build & deploy script: `./scripts/deploy-demo.sh` (`npm run deploy:demo`).
-2. **Git & Remote HTTPS Protocol:**
-    - Remote sync: Use only official GitHub CLI (`gh`) over authenticated
-      HTTPS (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Do
-      not use `git push`, SSH remotes, SSH keys, or passkeys.
-3. **Documentation Sync:** Update all documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) immediately whenever code or design changes.
+  2. **Git & Remote HTTPS Protocol:**
+      - Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official GitHub CLI (`gh`) to
+        authenticate/configure Git, then synchronize only through the
+        authenticated HTTPS remote
+        (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Never
+        use SSH remotes, SSH keys, `gh ssh-key`, or passkeys. Demo VPS transfer
+        is a separate user-run SSH/rsync operation.
+ 3. **Documentation Sync:** Update the applicable source-of-truth document and every affected operational guide whenever code or design changes. Keep historical prompts and transcripts explicitly non-authoritative rather than copying stale instructions into them.
 
 ---
 
 ## 🛠️ VERIFICATION & ACCEPTANCE CHECKLIST
 Before completing execution, verify:
-- [ ] `npm run lint` and `npm run build` pass with zero errors.
+- [ ] `npm run lint` and `npm run build` pass inside disposable Podman; no
+      macOS host build is required.
 - [ ] Go backend builds (`go build ./...`) and PostgreSQL migrations run cleanly.
 - [ ] UI is fully responsive across desktop (1440px), tablet (768px), and mobile (375px).
 - [ ] Real user role switching updates actionable queues correctly.

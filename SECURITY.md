@@ -1,5 +1,10 @@
 # Security Policy & Internal Controls
 
+**Source of truth:** The confirmed acceptance handoff governs business control
+requirements; `IMPLEMENTATION_STATUS.md` governs current runtime evidence;
+`implementation_plan.md` governs UI/UX scope. The demo is not a production
+security boundary.
+
 ## Current implementation boundary
 
 The demo API is not an authenticated production system. RBAC and approval
@@ -28,9 +33,12 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 - **Strict Hard-Blocking:** Over-receiving supplier shipments or generating POs for Class 3 short-expiry items without customer POs is hard-blocked at the application layer.
 
 ### 2. Commit Integrity & Remote Protocol Standards
-- **Remote synchronization for this repository:** Use only the official GitHub
-  CLI (`gh`) over authenticated HTTPS. Do not use `git push`, SSH remotes, SSH
-  keys, passkeys, or signing claims as a substitute for review.
+- **GitHub repository synchronization:** Follow
+  [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Use `gh` to
+  authenticate/configure Git, then synchronize only through the HTTPS remote.
+  Never use SSH remotes, SSH keys, `gh ssh-key`, or passkeys. HTTPS transport
+  does not replace code review or acceptance evidence. VPS deployment transfer
+  is a separate user-run SSH/rsync operation.
 - **Local working tree:** Preserve and review changes before any remote action.
   A local commit is not evidence that the application passed the acceptance
   matrix.

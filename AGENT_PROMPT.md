@@ -4,6 +4,11 @@
 > handoff and acceptance handoff outrank this historical execution prompt;
 > seeded or UI-only states are not acceptance evidence.
 
+> **Authority note:** `implementation_plan.md` governs UI/UX scope; the
+> confirmed acceptance handoff governs business rules; `IMPLEMENTATION_STATUS.md`
+> governs runtime status; `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`
+> govern operations. This prompt is historical guidance only.
+
 Copy and paste the prompt below into your next session or agent to execute the implementation plan.
 
 ---
@@ -14,11 +19,15 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
 ## Mandatory Repository Workflow Rules:
 
 0. **Documentation Synchronization Policy**:
-   - Every time code, components, dependencies, scripts, or design specs are changed, all project documentation (`README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `accustandard-developer-handoff.md`, `AGENT_PROMPT.md`, `GO_MIGRATION_PLAN.md`) MUST be updated immediately.
+   - When code, components, dependencies, scripts, or design specs change, update the applicable source-of-truth document and every affected operational guide. Keep historical prompts and transcripts explicitly non-authoritative instead of copying stale instructions into them.
 
 1. **GitHub Remote HTTPS Synchronization Policy**:
-   - Remote synchronization to GitHub (`https://github.com/ItsAdventureTime/bridge-accustandard.git`) MUST use only official GitHub CLI (`gh`) over authenticated HTTPS.
-   - Do not use `git push`, SSH remotes, SSH keys, or passkeys for remote operations.
+   - Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official GitHub CLI (`gh`) to
+     authenticate/configure Git, then push only through the HTTPS remote
+     `https://github.com/ItsAdventureTime/bridge-accustandard.git`.
+   - Never use SSH remotes, SSH keys, `gh ssh-key`, or passkeys for GitHub
+     repository operations. Demo VPS transfer is a separate user-run
+     SSH/rsync operation.
 
 ## Execution Rules:
 
@@ -40,9 +49,9 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
 4. **Deployment Scripts**:
    - Provide `./scripts/vps-migrate-to-go.sh` to initialize the Go backend container and database migration on the VPS.
    - Provide `./scripts/deploy-demo.sh` (or `npm run deploy:demo`) for 1-command deployment:
-     - Automatically start Podman machine locally via `podman machine start` if stopped.
-     - Runs local static build inside a disposable Podman container (`podman run --rm -v "$(pwd):/workspace:Z" node:24-alpine sh -c "npm ci && npm run build"`).
-     - Runs VPS deployment & Caddy repair non-interactively over SSH.
+     - Performs no local build, compilation, or application execution.
+     - Synchronizes source to the VPS, where the frontend is built in `podman run --rm`.
+     - Runs VPS deployment and service reload steps non-interactively over SSH.
      - Syncs static export files to `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
 ```
 
