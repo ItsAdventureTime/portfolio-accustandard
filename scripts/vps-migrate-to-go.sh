@@ -15,8 +15,51 @@ QUADLET_DIR="/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo"
 POSTGRES_DATA_DIR="$DEMO_ROOT/postgres-data"
 
 stop_demo_services() {
-  systemctl --user stop accustandard-demo-app.service accustandard-demo-db.service \
-    accustandard-demo-pod-pod.service 2>/dev/null || true
+  local service
+  for service in \
+    accustandard-demo-app.service \
+    accustandard-demo-db.service \
+    accustandard-demo-pod-pod.service; do
+    if systemctl --user is-active --quiet "${service}" 2>/dev/null; then
+      if ! systemctl --user stop "${service}"; then
+        echo "Failed to stop active demo service: ${service}" >&2
+        return 1
+      fi
+    fi
+  done
+}
+
+reset_demo_database_if_needed() {
+  local postgres_data_major=""
+  local first_entry=""
+
+  if [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
+    read -r postgres_data_major < "$POSTGRES_DATA_DIR/PG_VERSION" || true
+    if [ "$postgres_data_major" = "17" ]; then
+      return 0
+    fi
+    echo "Removing legacy PostgreSQL ${postgres_data_major:-unknown} demo data; initializing PostgreSQL 17..."
+  else
+    first_entry="$(find "$POSTGRES_DATA_DIR" -mindepth 1 -maxdepth 1 -print -quit)"
+    if [ -z "$first_entry" ]; then
+      return 0
+    fi
+    echo "Removing incomplete demo PostgreSQL data with no PG_VERSION; initializing PostgreSQL 17..."
+  fi
+
+  # This path is disposable demo state. Never apply this reset policy to a
+  # production database or a data directory whose contents must be preserved.
+  find "$POSTGRES_DATA_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+}
+
+assert_postgres_17() {
+  local server_version
+  server_version="$(podman exec accustandard-demo-db \
+    psql -U accustandard -d accustandard_demo_db -Atqc 'SHOW server_version_num')"
+  if [[ "$server_version" != 17* ]]; then
+    echo "Expected PostgreSQL 17, got server_version_num=$server_version" >&2
+    return 1
+  fi
 }
 
 echo "======================================================================"
@@ -30,14 +73,7 @@ mkdir -p "$SOURCE_ROOT"
 mkdir -p "$QUADLET_DIR"
 
 stop_demo_services
-
-if [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
-  read -r postgres_data_major < "$POSTGRES_DATA_DIR/PG_VERSION" || true
-  if [ "$postgres_data_major" != "17" ]; then
-    echo "Removing legacy PostgreSQL $postgres_data_major demo data; initializing PostgreSQL 17..."
-    find "$POSTGRES_DATA_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-  fi
-fi
+reset_demo_database_if_needed
 
 # 2. Build Go API Container Image on VPS if backend code is present
 if [ -d "$SOURCE_ROOT/backend" ] && [ -f "$SOURCE_ROOT/backend/Dockerfile" ]; then
@@ -66,6 +102,7 @@ for attempt in $(seq 1 30); do
   fi
   sleep 2
 done
+assert_postgres_17
 if ! systemctl --user restart accustandard-demo-app.service; then
   echo "AccuStandard API Quadlet failed. Full unit diagnostics:" >&2
   systemctl --user status accustandard-demo-app.service --no-pager -l >&2 || true

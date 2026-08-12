@@ -170,8 +170,12 @@ deployment therefore uses `systemctl --user`, `loginctl enable-linger`, and
 `~/.config/containers/systemd/`; the VPS resolves its own `/usr/bin/podman`.
 The database bind mount is labeled for Fedora SELinux, and the deployment
 stops the old demo pod before reloading the updated Quadlets. If the demo
-`PG_VERSION` is not `17`, the deployment removes that legacy demo data and
-initializes PostgreSQL 17; no backup is retained, per demo policy.
+`PG_VERSION` is not `17`, or the data directory is non-empty without a valid
+`PG_VERSION`, the deployment removes that disposable demo data and initializes
+PostgreSQL 17; no backup is retained, per demo policy. The PostgreSQL Quadlet
+uses a `pg_isready` healthcheck with `Notify=healthy`, so the API service starts
+after the database is accepting connections. API startup then applies the
+runtime schema and idempotent demo seed.
 
 ```bash
 podman run --rm --userns=keep-id \

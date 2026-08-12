@@ -119,10 +119,12 @@ source, builds the static export in a disposable container on the VPS,
 publishes `out/` to `web-dist/`, cleans remote source artifacts, and retains
 the backend image required by Quadlet. The target VPS is Fedora CoreOS with
 rootless Podman user Quadlets (`systemctl --user` and
-`~/.config/containers/systemd/`); PostgreSQL 17 data is persistent and is
-updated by GORM and the idempotent seed during deployment. A legacy
-PostgreSQL data directory with a different major is removed for this demo and
-reinitialized as PostgreSQL 17; no backup is retained.
+  `~/.config/containers/systemd/`); PostgreSQL 17 data is persistent and is
+  updated by GORM and the idempotent seed during deployment. A legacy or
+  incomplete PostgreSQL data directory (different `PG_VERSION`, or non-empty
+  without `PG_VERSION`) is removed for this demo and reinitialized as
+  PostgreSQL 17; no backup is retained. The API starts only after the
+  PostgreSQL Quadlet healthcheck reports readiness.
 
 ```bash
 bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh

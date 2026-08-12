@@ -95,10 +95,11 @@ server-backed record, authorization, audit event, and refresh-safe test.
   checks `/accustandard/demo/api/v1/readiness`. Frontend dependencies/build
   output remain disposable; the backend runtime image is retained by design.
 - The VPS target is Fedora CoreOS with rootless user Quadlets. Deployment stops
-  the old demo pod before reloading units, uses Podman pod replacement to avoid
-  stale-name failures, and removes a PostgreSQL data directory whose major
-  version is not 17 before initializing the approved PostgreSQL 17 demo data.
-  No legacy database backup is retained.
+  active demo services before reloading units, removes a PostgreSQL data
+  directory whose major version is not 17 (or an incomplete non-empty
+  directory with no `PG_VERSION`), and initializes the approved PostgreSQL 17
+  demo data. The database Quadlet reports healthy through `pg_isready` before
+  the API service starts. No legacy database backup is retained.
 
 ## Validation record
 

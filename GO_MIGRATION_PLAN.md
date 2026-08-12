@@ -114,10 +114,12 @@ database if needed, waits for `pg_isready`, restarts
 `accustandard-demo-app.service`, and verifies the API readiness endpoint.
 
 The database data directory persists across normal frontend and API updates.
-For this disposable demo only, a data directory whose `PG_VERSION` is not 17
-is removed and reinitialized as PostgreSQL 17; no recoverable backup is kept.
-The API also removes the obsolete prototype table family before GORM
-`AutoMigrate` on the first compatible startup.
+For this disposable demo only, a data directory whose `PG_VERSION` is not 17,
+or a non-empty directory with no `PG_VERSION`, is removed and reinitialized as
+PostgreSQL 17; no recoverable backup is kept. The PostgreSQL Quadlet healthcheck
+must report healthy before the API service starts. API startup then removes the
+obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
+idempotent demo seed.
 
 ## 2026 Repository Audit Status
 

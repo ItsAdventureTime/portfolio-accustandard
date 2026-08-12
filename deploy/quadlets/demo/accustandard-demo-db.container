@@ -10,6 +10,14 @@ Environment=POSTGRES_PASSWORD=accustandardpass
 Environment=POSTGRES_DB=accustandard_demo_db
 Environment=PGDATA=/var/lib/postgresql/data
 Volume=%h/bridge-ph/accustandard-demo/postgres-data:/var/lib/postgresql/data:Z
+HealthCmd=pg_isready -U accustandard -d accustandard_demo_db -h 127.0.0.1
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=12
+HealthStartPeriod=5s
+HealthOnFailure=kill
+Notify=healthy
+StartWithPod=false
 
 [Service]
 Restart=always
