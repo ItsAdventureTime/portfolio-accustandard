@@ -134,6 +134,10 @@ git push --set-upstream origin <branch-name>
 
 ## 🚀 Quick Start (Remote Demo Deployment)
 
+For the complete website/API release procedure, prerequisites, verification,
+diagnostics, Backblaze asset handling, and production boundary, see
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
+
 ### Prerequisites
 - GitHub CLI (`gh`) authenticated via HTTPS
 - SSH and `rsync` access to the demo VPS
