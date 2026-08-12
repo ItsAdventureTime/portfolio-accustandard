@@ -27,6 +27,10 @@ Where an older document conflicts with the first four, the first four control.
 - Database: PostgreSQL 17 through the legacy-cleanup migration,
   GORM `AutoMigrate`, and idempotent demo seed
   `backend/migrations/002_seed_data.sql`.
+- Database startup order is PostgreSQL health → legacy cleanup → GORM
+  `AutoMigrate` → seed SQL. Seed `INSERT` targets must use each model’s
+  default pluralized snake_case GORM table name; the focused backend test
+  checks this contract without requiring SSH or a live database.
 - The obsolete prototype server, Drizzle schema/configuration, and incompatible
   prototype SQL files were removed. They are not part of the deployed demo.
 - The browser seed is an offline rendering fallback. The reset timer uses

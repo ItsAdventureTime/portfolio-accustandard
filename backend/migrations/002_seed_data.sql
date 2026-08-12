@@ -18,7 +18,7 @@ VALUES
 ON CONFLICT (sku) DO NOTHING;
 
 -- Multi-location Stock Inventory
-INSERT INTO inventory_stock (id, location_id, item_id, batch_number, expiry_date, serial_number, qty_on_hand, qty_reserved)
+INSERT INTO inventory_stocks (id, location_id, item_id, batch_number, expiry_date, serial_number, qty_on_hand, qty_reserved)
 VALUES
   ('c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'LOT-2026-A9', '2027-11-30 00:00:00+00', NULL, 45, 5),
   ('c1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'LOT-2026-B2', '2026-09-15 00:00:00+00', NULL, 120, 20),
@@ -79,7 +79,7 @@ VALUES
 ON CONFLICT (rfp_number) DO NOTHING;
 
 -- QBO Sync Queue Seed
-INSERT INTO qbo_queue (id, doc_type, doc_number, entity_name, amount, qbo_ref_id, sync_status, last_attempt, error_message)
+INSERT INTO qbo_queue_items (id, doc_type, doc_number, entity_name, amount, qbo_ref_id, sync_status, last_attempt, error_message)
 VALUES
   ('k1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'Sales Invoice', 'SI-6087', 'Allied Care Experts (ACE) Medical Center', 16960.00, 'QBO-INV-88902', 'SYNCED', '2026-08-04 14:30:12+00', ''),
   ('k1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'Vendor Bill', 'PO-2026-0891 / SI-8812', 'BioMerieux Diagnostics Corp', 142000.00, 'QBO-BILL-44102', 'SYNCED', '2026-08-04 15:10:45+00', ''),

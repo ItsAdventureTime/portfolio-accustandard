@@ -15,6 +15,13 @@ The deployed demo service executes `003_cleanup_legacy_schema.sql`, uses GORM
 idempotent demo seed data. The cleanup migration removes the incompatible
 prototype table family when detected; it does not create a backup.
 
+Startup order is part of the demo contract: PostgreSQL 17 must be healthy,
+then cleanup runs, then GORM `AutoMigrate`, then the seed SQL. The seed targets
+the default GORM pluralized snake_case table names derived from
+`backend/internal/models/models.go` (for example, `inventory_stocks` and
+`qbo_queue_items`). Do not add singular table overrides or rename seed targets
+without updating the model-derived contract and its regression test.
+
 Before production cutover, replace this transitional boundary with one
 versioned PostgreSQL migration chain, a migration ledger, rollback policy, and
 integration tests against PostgreSQL 17.

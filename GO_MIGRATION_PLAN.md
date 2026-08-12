@@ -124,7 +124,11 @@ or a non-empty directory with no `PG_VERSION`, is removed and reinitialized as
 PostgreSQL 17; no recoverable backup is kept. The PostgreSQL Quadlet healthcheck
 must report healthy before the API service starts. API startup then removes the
 obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
-idempotent demo seed. The reset helper uses `podman unshare` to inspect and
+idempotent demo seed. The required order is PostgreSQL health, legacy cleanup,
+GORM `AutoMigrate`, then seed SQL. Seed `INSERT` targets follow GORM’s default
+pluralized snake_case names from the runtime models, including
+`inventory_stocks` and `qbo_queue_items`; singular overrides are not part of
+the demo contract. The reset helper uses `podman unshare` to inspect and
 remove rootless-container-owned files instead of recursively rewriting volume
 ownership with `:U`. `Notify=healthy` gates the database/container service but
 does not guarantee that the Go HTTP listener is accepting requests, so the

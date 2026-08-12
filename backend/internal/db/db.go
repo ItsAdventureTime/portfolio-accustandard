@@ -30,7 +30,20 @@ func InitDB(dsn string) (*gorm.DB, error) {
 	}
 
 	log.Println("==> Running GORM AutoMigrations...")
-	err = db.AutoMigrate(
+	err = db.AutoMigrate(runtimeModels()...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to apply runtime schema: %w", err)
+	}
+
+	if err := runRuntimeSeed(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func runtimeModels() []interface{} {
+	return []interface{}{
 		&models.Location{},
 		&models.Item{},
 		&models.InventoryStock{},
@@ -44,16 +57,7 @@ func InitDB(dsn string) (*gorm.DB, error) {
 		&models.PaymentRequest{},
 		&models.QBOQueueItem{},
 		&models.AuditLog{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to apply runtime schema: %w", err)
 	}
-
-	if err := runRuntimeSeed(db); err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func runRuntimeSeed(db *gorm.DB) error {
