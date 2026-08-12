@@ -124,7 +124,10 @@ rootless Podman user Quadlets (`systemctl --user` and
   incomplete PostgreSQL data directory (different `PG_VERSION`, or non-empty
   without `PG_VERSION`) is removed for this demo and reinitialized as
   PostgreSQL 17; no backup is retained. The API starts only after the
-  PostgreSQL Quadlet healthcheck reports readiness.
+  PostgreSQL Quadlet healthcheck reports readiness. The reset-state parser
+  consumes line-free tokens (`version:17`, `version:16`, `invalid`, or `empty`),
+  preventing command substitution from appending a literal `n` such as `emptyn`;
+  rootless `podman unshare` and the PostgreSQL 17 reset policy remain required.
 
 ```bash
 bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh

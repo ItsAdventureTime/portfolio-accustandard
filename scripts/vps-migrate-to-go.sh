@@ -36,11 +36,11 @@ reset_demo_database_if_needed() {
     data=$1
     if [ -f "$data/PG_VERSION" ]; then
       IFS= read -r major < "$data/PG_VERSION" || true
-      printf '%s\n' "version:$major"
+      printf '%s' "version:$major"
     elif [ -n "$(find "$data" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-      printf '%s\n' invalid
+      printf '%s' invalid
     else
-      printf '%s\n' empty
+      printf '%s' empty
     fi
   ' sh "$POSTGRES_DATA_DIR")"
 

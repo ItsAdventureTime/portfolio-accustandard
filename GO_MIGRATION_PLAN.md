@@ -122,7 +122,10 @@ must report healthy before the API service starts. API startup then removes the
 obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
 idempotent demo seed. The reset helper uses `podman unshare` to inspect and
 remove rootless-container-owned files instead of recursively rewriting volume
-ownership with `:U`.
+ownership with `:U`. The reset-state parser uses line-free tokens
+(`version:17`, `version:16`, `invalid`, or `empty`) so command substitution
+cannot append a literal `n` to the marker; the PostgreSQL 17 reset policy
+remains unchanged.
 
 ## 2026 Repository Audit Status
 

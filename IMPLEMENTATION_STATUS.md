@@ -101,7 +101,10 @@ server-backed record, authorization, audit event, and refresh-safe test.
 demo data. The database Quadlet reports healthy through `pg_isready` before
 the API service starts. Rootless data reset uses `podman unshare` so
 subordinate-UID-owned files remain manageable without recursive ownership
-rewrites. No legacy database backup is retained.
+rewrites. No legacy database backup is retained. The reset helper emits
+line-free state tokens (`version:17`, `version:16`, `invalid`, or `empty`),
+fixing the parser ambiguity that produced values such as `emptyn` while
+preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
 
 ## Validation record
 

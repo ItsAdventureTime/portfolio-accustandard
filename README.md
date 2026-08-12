@@ -178,7 +178,9 @@ after the database is accepting connections. API startup then applies the
 runtime schema and idempotent demo seed. Because rootless PostgreSQL files may
 be owned by subordinate UID mappings, the reset script inspects and removes
 the demo data directory through `podman unshare`; it does not use recursive
-`:U` ownership rewriting.
+`:U` ownership rewriting. The state probe emits line-free tokens such as
+`version:17`, `version:16`, `invalid`, and `empty`, preventing command
+substitution from turning a marker into a value such as `emptyn`.
 
 ```bash
 podman run --rm --userns=keep-id \
