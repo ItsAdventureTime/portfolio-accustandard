@@ -53,7 +53,7 @@ anonymous `/workspace` volume keeps dependencies and generated output out of
 the repository:
 
 ```bash
-/opt/homebrew/bin/podman run --rm --userns=keep-id \
+/opt/homebrew/bin/podman run --pull=always --rm --userns=keep-id \
   -v "$(pwd):/src:ro,Z" \
   -v /workspace \
   -w /workspace \
@@ -65,7 +65,7 @@ For backend validation, use the same moving official Go Alpine tag used by
 the remote Dockerfile. Do not replace it with a versioned Go tag:
 
 ```bash
-/opt/homebrew/bin/podman run --rm --userns=keep-id \
+/opt/homebrew/bin/podman run --pull=always --rm --userns=keep-id \
   -v "$(pwd)/backend:/src:ro,Z" \
   -v /workspace \
   -w /workspace \

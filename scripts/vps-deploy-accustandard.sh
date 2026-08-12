@@ -113,7 +113,7 @@ stop_demo_services
 reset_demo_database_if_needed
 
 echo '[2/6] Building the frontend in a disposable container...'
-podman run --rm --userns=keep-id \
+podman run --pull=always --rm --userns=keep-id \
   -v "${SOURCE_ROOT}:/workspace:Z" \
   -v /workspace/node_modules \
   -v /workspace/.next \

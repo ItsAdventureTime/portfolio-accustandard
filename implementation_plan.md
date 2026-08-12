@@ -112,7 +112,7 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
 ### Automated Verification
 Validation is remote-only for this repository. Do not require or report a
 macOS host Node/npm/Go build. When compilation is needed, run it in a
-disposable Podman container (`/opt/homebrew/bin/podman run --rm`) and remove
+  disposable Podman container (`/opt/homebrew/bin/podman run --pull=always --rm`) and remove
 generated `node_modules/`, `.next/`, and `out/` artifacts after publishing.
 `npm run deploy:demo` remains a bash-executable remote workflow; it syncs
 source, builds the static export in a disposable container on the VPS,

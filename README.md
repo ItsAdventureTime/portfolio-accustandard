@@ -190,7 +190,7 @@ connection reset, before failing. On an API readiness timeout they print the
 API unit status and the last 100 journal lines, then exit nonzero.
 
 ```bash
-podman run --rm --userns=keep-id \
+podman run --pull=always --rm --userns=keep-id \
   -v "/home/jk/bridge-ph/accustandard-demo/source:/workspace:Z" \
   -v /workspace/node_modules \
   -v /workspace/.next \
