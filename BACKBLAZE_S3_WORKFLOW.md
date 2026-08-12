@@ -61,6 +61,87 @@ uploads.
 - Do not use S3 object ACLs as the primary authorization boundary; enforce
   application authorization and key-prefix restrictions.
 
+## Manual VPS deployment commands
+
+Run these commands on the VPS after connecting through your normal SSH
+workflow. Do not run them from the macOS checkout, and do not put credentials
+in Git, Quadlet files committed to this repository, or frontend environment
+variables.
+
+### 1. Configure an AWS CLI profile
+
+Install/use AWS CLI v2 on the VPS, then create a profile using the Backblaze
+application key ID and application key. The region must match the bucket's
+Backblaze endpoint.
+
+```bash
+export B2_PROFILE=b2-bridge-ph
+export B2_REGION=<backblaze-region>
+export B2_ENDPOINT="https://s3.${B2_REGION}.backblazeb2.com"
+
+aws configure --profile "${B2_PROFILE}"
+# AWS Access Key ID: <Backblaze application key ID>
+# AWS Secret Access Key: <Backblaze application key>
+# Default region name: ${B2_REGION}
+# Default output format: json
+```
+
+Alternatively, store the credentials in the VPS user's protected AWS
+credential/config files or an approved secret manager. Never echo or commit
+the secret key.
+
+### 2. Validate the bucket and create optional prefix markers
+
+Backblaze folders are virtual prefixes. Uploading an object creates the prefix
+implicitly, so marker objects are optional. If an operator wants visible empty
+folders in a console, create zero-byte marker objects:
+
+```bash
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3api head-bucket --bucket bridge-ph
+
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3api put-object --bucket bridge-ph --key accustandard/demo/
+
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3api put-object --bucket bridge-ph --key accustandard/
+```
+
+The `put-object` commands do not create buckets. They create optional
+zero-byte prefix markers in the existing `bridge-ph` bucket.
+
+### 3. Upload environment-scoped files
+
+Use an explicit prefix in every destination. The default is intentionally
+non-destructive; do not add `--delete` unless the source is a complete,
+reviewed mirror of that one environment prefix.
+
+```bash
+# Demo
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3 sync ./release-assets/ \
+  s3://bridge-ph/accustandard/demo/ \
+  --only-show-errors
+
+# Production (run only with production credentials and reviewed assets)
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3 sync ./release-assets/ \
+  s3://bridge-ph/accustandard/ \
+  --only-show-errors
+```
+
+Verify the resulting prefix without listing the other environment:
+
+```bash
+aws --profile "${B2_PROFILE}" --endpoint-url "${B2_ENDPOINT}" \
+  s3api list-objects-v2 --bucket bridge-ph \
+  --prefix accustandard/demo/ --max-items 20
+```
+
+Use separate restricted app keys for the two prefixes when possible. Backblaze
+supports bucket and file-name-prefix restrictions; a key used for demo should
+not be able to write to `accustandard/` production objects.
+
 ## Current implementation boundary
 
 The current demo does not yet include a server-backed object-storage feature.
