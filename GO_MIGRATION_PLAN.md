@@ -119,7 +119,9 @@ or a non-empty directory with no `PG_VERSION`, is removed and reinitialized as
 PostgreSQL 17; no recoverable backup is kept. The PostgreSQL Quadlet healthcheck
 must report healthy before the API service starts. API startup then removes the
 obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
-idempotent demo seed.
+idempotent demo seed. The reset helper uses `podman unshare` to inspect and
+remove rootless-container-owned files instead of recursively rewriting volume
+ownership with `:U`.
 
 ## 2026 Repository Audit Status
 

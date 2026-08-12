@@ -98,8 +98,10 @@ server-backed record, authorization, audit event, and refresh-safe test.
   active demo services before reloading units, removes a PostgreSQL data
   directory whose major version is not 17 (or an incomplete non-empty
   directory with no `PG_VERSION`), and initializes the approved PostgreSQL 17
-  demo data. The database Quadlet reports healthy through `pg_isready` before
-  the API service starts. No legacy database backup is retained.
+demo data. The database Quadlet reports healthy through `pg_isready` before
+the API service starts. Rootless data reset uses `podman unshare` so
+subordinate-UID-owned files remain manageable without recursive ownership
+rewrites. No legacy database backup is retained.
 
 ## Validation record
 

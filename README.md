@@ -175,7 +175,10 @@ stops the old demo pod before reloading the updated Quadlets. If the demo
 PostgreSQL 17; no backup is retained, per demo policy. The PostgreSQL Quadlet
 uses a `pg_isready` healthcheck with `Notify=healthy`, so the API service starts
 after the database is accepting connections. API startup then applies the
-runtime schema and idempotent demo seed.
+runtime schema and idempotent demo seed. Because rootless PostgreSQL files may
+be owned by subordinate UID mappings, the reset script inspects and removes
+the demo data directory through `podman unshare`; it does not use recursive
+`:U` ownership rewriting.
 
 ```bash
 podman run --rm --userns=keep-id \

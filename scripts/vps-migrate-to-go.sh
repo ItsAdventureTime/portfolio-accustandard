@@ -30,26 +30,46 @@ stop_demo_services() {
 }
 
 reset_demo_database_if_needed() {
-  local postgres_data_major=""
-  local first_entry=""
+  local data_state
+  data_state="$(podman unshare sh -c '
+    set -eu
+    data=$1
+    if [ -f "$data/PG_VERSION" ]; then
+      IFS= read -r major < "$data/PG_VERSION" || true
+      printf '%s\n' "version:$major"
+    elif [ -n "$(find "$data" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
+      printf '%s\n' invalid
+    else
+      printf '%s\n' empty
+    fi
+  ' sh "$POSTGRES_DATA_DIR")"
 
-  if [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
-    read -r postgres_data_major < "$POSTGRES_DATA_DIR/PG_VERSION" || true
-    if [ "$postgres_data_major" = "17" ]; then
+  case "$data_state" in
+    version:17)
       return 0
-    fi
-    echo "Removing legacy PostgreSQL ${postgres_data_major:-unknown} demo data; initializing PostgreSQL 17..."
-  else
-    first_entry="$(find "$POSTGRES_DATA_DIR" -mindepth 1 -maxdepth 1 -print -quit)"
-    if [ -z "$first_entry" ]; then
+      ;;
+    version:*)
+      echo "Removing legacy PostgreSQL ${data_state#version:} demo data; initializing PostgreSQL 17..."
+      ;;
+    invalid)
+      echo "Removing incomplete demo PostgreSQL data with no PG_VERSION; initializing PostgreSQL 17..."
+      ;;
+    empty)
       return 0
-    fi
-    echo "Removing incomplete demo PostgreSQL data with no PG_VERSION; initializing PostgreSQL 17..."
-  fi
+      ;;
+    *)
+      echo "Could not inspect demo PostgreSQL data state: $data_state" >&2
+      return 1
+      ;;
+  esac
 
   # This path is disposable demo state. Never apply this reset policy to a
   # production database or a data directory whose contents must be preserved.
-  find "$POSTGRES_DATA_DIR" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+  podman unshare sh -c '
+    set -eu
+    data=$1
+    find "$data" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+  ' sh "$POSTGRES_DATA_DIR"
 }
 
 assert_postgres_17() {
