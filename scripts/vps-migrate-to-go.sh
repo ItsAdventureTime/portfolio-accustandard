@@ -82,6 +82,25 @@ assert_postgres_17() {
   fi
 }
 
+wait_for_api_readiness() {
+  local readiness_url='http://127.0.0.1:8080/accustandard/demo/api/v1/readiness'
+
+  echo "    Waiting for API readiness (up to 60 seconds)..."
+  # The Go process can reset this idempotent GET while binding its listener.
+  if curl --fail --silent --show-error \
+    --retry 30 --retry-delay 2 --retry-max-time 60 --retry-all-errors \
+    --connect-timeout 2 --max-time 5 \
+    "$readiness_url" >/dev/null; then
+    return 0
+  fi
+
+  echo "AccuStandard API did not become ready within 60 seconds." >&2
+  echo "Full API unit diagnostics:" >&2
+  systemctl --user status accustandard-demo-app.service --no-pager -l >&2 || true
+  journalctl --user -u accustandard-demo-app.service -n 100 --no-pager >&2 || true
+  return 1
+}
+
 echo "======================================================================"
 echo "==> Initializing VPS Go Backend & PostgreSQL Database Migration..."
 echo "======================================================================"
@@ -98,7 +117,7 @@ reset_demo_database_if_needed
 # 2. Build Go API Container Image on VPS if backend code is present
 if [ -d "$SOURCE_ROOT/backend" ] && [ -f "$SOURCE_ROOT/backend/Dockerfile" ]; then
   echo "[1/3] Building Go Backend image (localhost/accustandard-bridge-backend:demo)..."
-  podman build --pull=missing --layers=false --force-rm -t localhost/accustandard-bridge-backend:demo -f "$SOURCE_ROOT/backend/Dockerfile" "$SOURCE_ROOT/backend"
+  podman build --pull=always --layers=false --force-rm -t localhost/accustandard-bridge-backend:demo -f "$SOURCE_ROOT/backend/Dockerfile" "$SOURCE_ROOT/backend"
 fi
 
 # 3. Reload systemd daemon & start the database before the API Quadlet
@@ -131,7 +150,7 @@ if ! systemctl --user restart accustandard-demo-app.service; then
 fi
 systemctl --user is-active --quiet accustandard-demo-db.service
 systemctl --user is-active --quiet accustandard-demo-app.service
-curl --fail --silent --show-error http://127.0.0.1:8080/accustandard/demo/api/v1/readiness >/dev/null
+wait_for_api_readiness
 
 # 4. Verify DB & Go container execution status
 echo "[3/3] Checking container status..."

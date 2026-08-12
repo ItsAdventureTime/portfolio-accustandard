@@ -92,8 +92,12 @@ server-backed record, authorization, audit event, and refresh-safe test.
   `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
 - The remote demo deploy explicitly starts the PostgreSQL Quadlet, waits for
   `pg_isready`, restarts the API Quadlet, verifies both user services, and
-  checks `/accustandard/demo/api/v1/readiness`. Frontend dependencies/build
-  output remain disposable; the backend runtime image is retained by design.
+  waits up to 60 seconds for `/accustandard/demo/api/v1/readiness` with curl
+  retries for transient listener startup failures. `Notify=healthy` gates the
+  database/container service, not necessarily the Go HTTP listener. A timeout
+  prints API systemd status and the last 100 journal lines before the script
+  exits nonzero. Frontend dependencies/build output remain disposable; the
+  backend runtime image is retained by design.
 - The VPS target is Fedora CoreOS with rootless user Quadlets. Deployment stops
   active demo services before reloading units, removes a PostgreSQL data
   directory whose major version is not 17 (or an incomplete non-empty
@@ -117,7 +121,7 @@ production acceptance release from a lint/build result alone.
 ### 2026-08-12 UI/documentation pass
 
 - `git diff --check`: passed.
-- `bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh`: passed.
+- `bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh scripts/vps-migrate-to-go.sh`: passed.
 - Disposable `docker.io/library/node:lts-alpine` Podman: `npm run lint`: passed.
 - Disposable `docker.io/library/node:lts-alpine` Podman: `npm run build`: passed with Next.js 16 Webpack
   static export (`/` and `/_not-found` prerendered).

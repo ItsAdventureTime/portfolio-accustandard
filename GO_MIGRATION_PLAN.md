@@ -77,7 +77,8 @@ rsync -az --delete --exclude node_modules --exclude .next --exclude out/ \
   ./ jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/source/
 
 # 2. Build remotely in podman run --rm, build the persistent Go image,
-#    publish out/, start/wait for PostgreSQL, and restart the demo API Quadlet.
+#    publish out/, start/wait for PostgreSQL, restart the demo API Quadlet,
+#    and retry its HTTP readiness endpoint during listener startup.
 ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 ```
 
@@ -112,7 +113,10 @@ disposable frontend build, builds the persistent Go image, publishes `out/`
 to `web-dist/`, installs the demo Quadlets into
 `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`, starts the
 database if needed, waits for `pg_isready`, restarts
-`accustandard-demo-app.service`, and verifies the API readiness endpoint.
+`accustandard-demo-app.service`, and waits up to 60 seconds for the API
+readiness endpoint with curl retries. Backend image builds use
+`--pull=always` so the repository's floating `golang:alpine` and `alpine`
+base images are refreshed on each remote run.
 
 The database data directory persists across normal frontend and API updates.
 For this disposable demo only, a data directory whose `PG_VERSION` is not 17,
@@ -122,7 +126,11 @@ must report healthy before the API service starts. API startup then removes the
 obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
 idempotent demo seed. The reset helper uses `podman unshare` to inspect and
 remove rootless-container-owned files instead of recursively rewriting volume
-ownership with `:U`. The reset-state parser uses line-free tokens
+ownership with `:U`. `Notify=healthy` gates the database/container service but
+does not guarantee that the Go HTTP listener is accepting requests, so the
+deployment retries transient curl startup failures, including connection
+resets. On timeout it prints the API unit status and the last 100 journal lines
+before exiting nonzero. The reset-state parser uses line-free tokens
 (`version:17`, `version:16`, `invalid`, or `empty`) so command substitution
 cannot append a literal `n` to the marker; the PostgreSQL 17 reset policy
 remains unchanged.

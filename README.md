@@ -163,7 +163,8 @@ The deployment procedure performs no local build, compilation, or application
 execution. Source is synchronized to the VPS, where the frontend is built in a
 disposable container and the backend image is built for the existing Quadlet.
 The script then starts PostgreSQL, waits for `pg_isready`, restarts the API,
-verifies both user services, and checks the API readiness endpoint:
+verifies both user services, and waits up to 60 seconds for the API readiness
+endpoint with curl retries:
 
 The demo VPS is Fedora CoreOS with rootless Podman and user Quadlets. The
 deployment therefore uses `systemctl --user`, `loginctl enable-linger`, and
@@ -181,6 +182,12 @@ the demo data directory through `podman unshare`; it does not use recursive
 `:U` ownership rewriting. The state probe emits line-free tokens such as
 `version:17`, `version:16`, `invalid`, and `empty`, preventing command
 substitution from turning a marker into a value such as `emptyn`.
+
+The database Quadlet's `Notify=healthy` gate covers database/container health;
+it does not guarantee that the Go HTTP listener is already accepting requests.
+The VPS scripts therefore retry transient curl startup failures, including a
+connection reset, before failing. On an API readiness timeout they print the
+API unit status and the last 100 journal lines, then exit nonzero.
 
 ```bash
 podman run --rm --userns=keep-id \
@@ -200,7 +207,8 @@ fallback until the VPS build host has been sized and verified for Turbopack.
 The backend builder intentionally uses the moving official
 `docker.io/library/golang:alpine` tag in `backend/Dockerfile`. Validation and
 VPS builds must use that exact floating tag; do not substitute a versioned Go
-image.
+image. Remote image builds use `--pull=always` so cached floating tags are
+refreshed on each deployment.
 
 `--rm` removes the temporary frontend build container and its anonymous
 dependency volumes after it exits. The Go build uses `--layers=false` and
@@ -215,8 +223,8 @@ artifact.
 ## ⚡ 1-Command Automated Demo Deployment
 
 To synchronize source, build remotely, publish the static export, install the
-demo Quadlets, start PostgreSQL, verify readiness, and restart the demo API in
-**1 single command**:
+demo Quadlets, start PostgreSQL, wait for database and API readiness, and
+restart the demo API in **1 single command**:
 
 ```bash
 # Confirm SSH/rsync access before the first deployment

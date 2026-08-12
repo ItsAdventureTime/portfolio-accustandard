@@ -124,13 +124,23 @@ rootless Podman user Quadlets (`systemctl --user` and
   incomplete PostgreSQL data directory (different `PG_VERSION`, or non-empty
   without `PG_VERSION`) is removed for this demo and reinitialized as
   PostgreSQL 17; no backup is retained. The API starts only after the
-  PostgreSQL Quadlet healthcheck reports readiness. The reset-state parser
+  PostgreSQL Quadlet healthcheck reports readiness. `Notify=healthy` does not
+  guarantee that the Go HTTP listener is ready, so both VPS scripts use curl
+  retries for transient startup failures and wait up to 60 seconds for
+  `/accustandard/demo/api/v1/readiness`; timeout diagnostics include API
+  systemd status and the last 100 journal lines before a nonzero exit. The
+  reset-state parser
   consumes line-free tokens (`version:17`, `version:16`, `invalid`, or `empty`),
   preventing command substitution from appending a literal `n` such as `emptyn`;
   rootless `podman unshare` and the PostgreSQL 17 reset policy remain required.
 
+  Remote image builds use `--pull=always` to honor the floating
+  `golang:alpine` and `alpine` image preference rather than reusing a cached
+  tag.
+
 ```bash
-bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh
+bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh \
+  scripts/vps-migrate-to-go.sh
 # In disposable Podman only: npm run lint && npm run build
 ```
 
