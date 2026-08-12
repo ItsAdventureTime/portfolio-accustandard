@@ -302,6 +302,12 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 
 ## 2026 Repository Audit Status
 
+Object storage, when needed, uses the existing Backblaze bucket `bridge-ph`.
+Demo objects use the `accustandard/demo/` prefix and production objects use
+`accustandard/`; these are object-key prefixes, not additional buckets. See
+[`BACKBLAZE_S3_WORKFLOW.md`](BACKBLAZE_S3_WORKFLOW.md) for endpoint, key
+security, and naming rules.
+
 The repository is in an incremental migration, not yet a complete acceptance
 release. The deployed runtime is the Go API in `backend/cmd/server` plus the
 Next.js static export; obsolete prototype server/schema artifacts have been
