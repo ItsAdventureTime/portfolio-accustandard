@@ -194,7 +194,7 @@ Key current gaps:
 9. No full startup import/cutover process.
 10. No complete configurable permission matrix for sensitive actions.
 11. No explicit client Sales Quote acceptance evidence.
-12. No comprehensive open-PO anti-fraud control.
+12. No open-PO anti-fraud control.
 
 ---
 

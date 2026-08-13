@@ -88,11 +88,11 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
             })
             .catch(() => {
               setIsScanningActive(false);
-              setCameraError('Live camera stream unavailable. You can snap a barcode image or use 1-click test presets below.');
+              setCameraError('Camera stream unavailable. Upload a barcode image or use a test preset below.');
             });
         });
     } catch (e: any) {
-      setCameraError('Camera setup error. You can snap a barcode image or use 1-click test presets below.');
+      setCameraError('Camera setup failed. Upload a barcode image or use a test preset below.');
     }
   };
 
@@ -108,7 +108,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       const decodedText = await qrCode.scanFile(file, true);
       executeScanAction(decodedText);
     } catch (err) {
-      setCameraError('Could not decode barcode from uploaded image. Please ensure the barcode is clear and well-lit.');
+      setCameraError('Could not decode the barcode. Use a clear, well-lit image.');
     } finally {
       e.target.value = '';
     }
@@ -192,7 +192,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
               <h2 id="barcodeScannerTitle" className="text-sm font-black uppercase tracking-wider text-slate-900">
                 {title}
               </h2>
-              <p className="text-xs text-slate-500 font-medium">Real-time mobile camera scanner &amp; SKU lookup</p>
+              <p className="text-xs text-slate-500 font-medium">Mobile camera scanner and SKU lookup</p>
             </div>
           </div>
           <button
@@ -276,11 +276,11 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
           )}
         </div>
 
-        {/* 1-Click Mobile Test Barcode Presets */}
+        {/* Mobile test barcode presets */}
         <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
           <span className="text-[11px] text-blue-900 font-black uppercase tracking-wider block flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-blue-700" />
-            <span>Mobile 1-Click Test Barcodes (Instant Tap):</span>
+            <span>Mobile test barcodes:</span>
           </span>
           <div className="grid grid-cols-3 gap-2">
             <button
