@@ -506,12 +506,18 @@ export const DEFAULT_AUDIT_LOGS = [
 ];
 
 const RESET_INTERVAL_MS = 30 * 60 * 1000;
+const DEMO_RESET_TIME_KEY = 'accustandard_demo_reset_time';
+const LEGACY_DEMO_RESET_TIME_KEY = 'accustanda_demo_reset_time';
 
 export function useDemoStore() {
   const [lastResetTime, setLastResetTime] = useState<number>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('accustanda_demo_reset_time');
-      if (saved) return Number(saved);
+      const saved = localStorage.getItem(DEMO_RESET_TIME_KEY) ?? localStorage.getItem(LEGACY_DEMO_RESET_TIME_KEY);
+      if (saved) {
+        localStorage.setItem(DEMO_RESET_TIME_KEY, saved);
+        localStorage.removeItem(LEGACY_DEMO_RESET_TIME_KEY);
+        return Number(saved);
+      }
     }
     return Date.now();
   });
@@ -522,7 +528,8 @@ export function useDemoStore() {
     const now = Date.now();
     setLastResetTime(now);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('accustanda_demo_reset_time', String(now));
+      localStorage.setItem(DEMO_RESET_TIME_KEY, String(now));
+      localStorage.removeItem(LEGACY_DEMO_RESET_TIME_KEY);
       localStorage.removeItem('accustandard_demo_state');
     }
   }, []);

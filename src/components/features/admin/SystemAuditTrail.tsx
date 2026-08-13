@@ -131,7 +131,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
     };
 
     setUserList((prev) => [...prev, newUser]);
-    if (onShowNotification) onShowNotification(`Successfully registered user ${newUserName} as ${newUserRole}!`);
+    if (onShowNotification) onShowNotification(`Registered user ${newUserName} as ${newUserRole}.`);
     if (onAddAuditLog) onAddAuditLog(`Registered new system user ${newUserName} with role ${newUserRole}`);
     setNewUserName('');
   };
@@ -252,7 +252,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                 </p>
               </div>
               <span className={`text-xs font-extrabold px-3 py-1 rounded-full w-fit ${canEditUsers ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
-                {canEditUsers ? '✓ Access Admin Controls Unlocked' : '🔒 Read-Only Mode'}
+                {canEditUsers ? '✓ Admin controls available' : '🔒 Read-only mode'}
               </span>
             </div>
 
