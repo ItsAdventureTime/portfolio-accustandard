@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import {
   X,
   Layers,
@@ -40,9 +41,9 @@ const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['inventory', 'purchasing'],
+  Warehouse: ['overview', 'inventory', 'purchasing'],
   Marketing: ['overview', 'quotations'],
-  Sales: ['quotations', 'inventory'],
+  Sales: ['overview', 'quotations', 'inventory'],
 };
 
 export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
@@ -60,8 +61,6 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   soaCount,
   auditCount,
 }) => {
-  if (!isOpen) return null;
-
   const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
 
   const navItems = [
@@ -75,17 +74,12 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   ];
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Mobile Navigation Menu"
-      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex flex-col justify-end transition-opacity duration-200 animate-in fade-in"
-    >
-      {/* Clickable Backdrop overlay to dismiss sheet */}
-      <div className="flex-1 w-full" onClick={onClose} />
-
-      {/* App-Native Bottom Sheet Drawer */}
-      <div className="bg-white w-full max-w-lg mx-auto rounded-t-3xl shadow-2xl flex flex-col max-h-[85vh] text-slate-900 border-t border-slate-300 animate-in slide-in-from-bottom duration-300 ease-out overflow-hidden">
+    <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md" />
+        <Dialog.Content className="sheet-enter mobile-modal-container fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border-t border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none">
+          <Dialog.Title className="sr-only">Mobile navigation menu</Dialog.Title>
+          <Dialog.Description className="sr-only">Choose a workspace module or launch a mobile operation.</Dialog.Description>
         {/* Drag Handle Indicator */}
         <div className="pt-3 pb-1 flex justify-center bg-slate-50 border-b border-slate-100">
           <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
@@ -94,13 +88,16 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         {/* Sheet Title Bar */}
         <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
           <AccustandardLogo size="sm" />
-          <button
-            onClick={onClose}
-            aria-label="Close navigation drawer"
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <Dialog.Close asChild>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close navigation drawer"
+              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </Dialog.Close>
         </div>
 
         {/* Role Impersonation Banner inside Drawer */}
@@ -110,6 +107,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             <span>Active View Role:</span>
           </div>
           <select
+            aria-label="Active view role"
             value={viewAsRole}
             onChange={(e) => onChangeRole(e.target.value)}
             className="bg-white border border-blue-300 text-blue-950 font-extrabold text-sm rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer"
@@ -170,10 +168,13 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             return (
               <button
                 key={item.key}
+                type="button"
                 onClick={() => {
                   onSelectTab(item.key);
                   if (isPermitted) onClose();
                 }}
+                aria-current={isActive ? 'page' : undefined}
+                aria-disabled={!isPermitted}
                 className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between ${
                   isActive
                     ? 'bg-blue-900 text-white font-extrabold shadow-md'
@@ -205,7 +206,8 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             );
           })}
         </div>
-      </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

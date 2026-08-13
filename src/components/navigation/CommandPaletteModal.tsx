@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { Search, X, Layers, Package, FileText, FileCheck, Building2, CreditCard, UserCheck, ArrowRight } from 'lucide-react';
 
 interface CommandItem {
@@ -14,58 +15,81 @@ interface CommandItem {
 interface CommandPaletteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen: () => void;
   onSelectTab: (tabKey: any) => void;
 }
+
+const COMMANDS: CommandItem[] = [
+  { id: 'c1', title: 'Executive Overview & Approvals', category: 'Overview', tabKey: 'overview', icon: <Layers className="w-4 h-4 text-blue-600" /> },
+  { id: 'c2', title: 'Multi-Location Inventory (QC & Pampanga)', category: 'Inventory', tabKey: 'inventory', icon: <Package className="w-4 h-4 text-emerald-600" /> },
+  { id: 'c3', title: 'Sales Quotation Generator', category: 'Sales', tabKey: 'quotations', icon: <FileText className="w-4 h-4 text-amber-600" /> },
+  { id: 'c4', title: 'Statement of Account (SOA)', category: 'Sales', tabKey: 'soa', icon: <FileCheck className="w-4 h-4 text-purple-600" /> },
+  { id: 'c5', title: 'Purchasing & 3-Way Match', category: 'Purchasing', tabKey: 'purchasing', icon: <Building2 className="w-4 h-4 text-blue-600" /> },
+  { id: 'c6', title: 'Request for Payment (RFP)', category: 'Purchasing', tabKey: 'rfp', icon: <CreditCard className="w-4 h-4 text-rose-600" /> },
+  { id: 'c7', title: 'System Audit Log Stream', category: 'Admin', tabKey: 'admin', icon: <UserCheck className="w-4 h-4 text-slate-700" /> },
+];
 
 export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   isOpen,
   onClose,
+  onOpen,
   onSelectTab,
 }) => {
   const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  const commands: CommandItem[] = [
-    { id: 'c1', title: 'Executive Overview & Approvals', category: 'Overview', tabKey: 'overview', icon: <Layers className="w-4 h-4 text-blue-600" /> },
-    { id: 'c2', title: 'Multi-Location Inventory (QC & Pampanga)', category: 'Inventory', tabKey: 'inventory', icon: <Package className="w-4 h-4 text-emerald-600" /> },
-    { id: 'c3', title: 'Sales Quotation Generator', category: 'Sales', tabKey: 'quotations', icon: <FileText className="w-4 h-4 text-amber-600" /> },
-    { id: 'c4', title: 'Statement of Account (SOA)', category: 'Sales', tabKey: 'soa', icon: <FileCheck className="w-4 h-4 text-purple-600" /> },
-    { id: 'c5', title: 'Purchasing & 3-Way Match', category: 'Purchasing', tabKey: 'purchasing', icon: <Building2 className="w-4 h-4 text-blue-600" /> },
-    { id: 'c6', title: 'Request for Payment (RFP)', category: 'Purchasing', tabKey: 'rfp', icon: <CreditCard className="w-4 h-4 text-rose-600" /> },
-    { id: 'c7', title: 'System Audit Log Stream', category: 'Admin', tabKey: 'admin', icon: <UserCheck className="w-4 h-4 text-slate-700" /> },
-  ];
-
-  // Listen for Cmd+K / Ctrl+K and Escape keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) {
-          onClose();
-        }
-      }
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const filtered = commands.filter((cmd) =>
+  const filtered = COMMANDS.filter((cmd) =>
     cmd.title.toLowerCase().includes(query.toLowerCase()) ||
     cmd.category.toLowerCase().includes(query.toLowerCase())
   );
 
+  // Listen for Cmd/Ctrl+K, Escape, and the advertised command navigation keys.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (isOpen) onClose();
+        else onOpen();
+        return;
+      }
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+        return;
+      }
+      if (!isOpen || filtered.length === 0) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveIndex((current) => {
+          const delta = e.key === 'ArrowDown' ? 1 : -1;
+          return (current + delta + filtered.length) % filtered.length;
+        });
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const selected = filtered[activeIndex];
+        if (selected) {
+          onSelectTab(selected.tabKey);
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex, filtered, isOpen, onClose, onOpen, onSelectTab]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [query]);
+
+  if (!isOpen) return null;
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Command Palette Quick Search"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-start justify-center pt-20 p-4 animate-in fade-in duration-200"
-    >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-slate-300 overflow-hidden text-slate-900 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+    <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md" />
+        <Dialog.Content className="sheet-enter fixed inset-x-4 top-20 z-50 mx-auto w-auto max-w-xl overflow-hidden rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none sm:inset-x-auto sm:w-full">
+          <Dialog.Title className="sr-only">Command palette quick search</Dialog.Title>
+          <Dialog.Description className="sr-only">Search and jump to an AccuStandard workspace module.</Dialog.Description>
         {/* Search Header Bar */}
         <div className="p-3.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
@@ -81,13 +105,16 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <kbd className="hidden sm:inline-block bg-slate-200 text-slate-700 text-[10px] font-mono px-2 py-0.5 rounded border border-slate-300 font-bold">
             ESC
           </kbd>
-          <button
-            onClick={onClose}
-            aria-label="Close command palette"
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <Dialog.Close asChild>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close command palette"
+              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </Dialog.Close>
         </div>
 
         {/* Command Results */}
@@ -100,11 +127,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             filtered.map((cmd) => (
               <button
                 key={cmd.id}
+                type="button"
                 onClick={() => {
                   onSelectTab(cmd.tabKey);
                   onClose();
                 }}
-                className="w-full p-2.5 rounded-lg flex items-center justify-between hover:bg-slate-100 transition text-left group"
+                aria-current={filtered[activeIndex]?.id === cmd.id ? 'true' : undefined}
+                className={`w-full p-2.5 rounded-lg flex items-center justify-between transition text-left group ${filtered[activeIndex]?.id === cmd.id ? 'bg-blue-50 ring-1 ring-blue-200' : 'hover:bg-slate-100'}`}
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-slate-100 rounded-md border border-slate-200 group-hover:bg-white transition">
@@ -129,7 +158,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           <span>Navigate: <strong className="text-slate-800">↑ ↓</strong> to navigate</span>
           <span>Select: <strong className="text-slate-800">Enter</strong></span>
         </div>
-      </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

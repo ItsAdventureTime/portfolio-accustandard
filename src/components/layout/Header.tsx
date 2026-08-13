@@ -3,7 +3,6 @@
 import React from 'react';
 import {
   Barcode,
-  Bell,
   ChevronDown,
   Database,
   Download,
@@ -94,14 +93,14 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       role="banner"
-      className="sticky top-0 z-30 w-full border-b border-slate-200 bg-white/95 text-slate-950 shadow-[0_1px_8px_rgba(15,23,42,0.06)] backdrop-blur-xl pt-[env(safe-area-inset-top,0px)]"
+      className="wayfinding-header sticky top-0 z-30 w-full pt-[env(safe-area-inset-top,0px)] text-slate-950"
     >
-      <div className="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center gap-5 px-4 py-3 sm:px-6 lg:px-7">
+      <div className="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center gap-4 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8">
         <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <button
             type="button"
             onClick={onOpenMobileDrawer}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 lg:hidden"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 lg:hidden"
             aria-label="Open mobile menu"
           >
             <Menu className="h-5 w-5" />
@@ -109,7 +108,7 @@ export const Header: React.FC<HeaderProps> = ({
           <AccustandardLogo size="sm" className="max-w-[154px] sm:max-w-[190px]" />
         </div>
 
-        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-6 lg:flex">
+        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-7 lg:flex">
           {navigation.map((item) => {
             const active = isActive(item.key, item.target);
             return (
@@ -117,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={item.key}
                 type="button"
                 onClick={() => onSelectTab(item.target)}
-                className={`relative flex min-h-[44px] items-center px-1 text-[15px] font-medium transition-colors after:absolute after:bottom-[-13px] after:left-0 after:right-0 after:h-0.5 after:rounded-full ${active ? 'text-slate-950 after:bg-slate-900' : 'text-slate-700 after:bg-transparent hover:text-slate-950'}`}
+                className={`relative flex min-h-[44px] items-center px-1 text-[15px] font-medium after:absolute after:bottom-[-13px] after:left-0 after:right-0 after:h-0.5 after:rounded-full ${active ? 'text-slate-950 after:bg-blue-700' : 'text-slate-600 after:bg-transparent hover:text-slate-950'}`}
                 aria-current={active ? 'page' : undefined}
               >
                 {item.label}
@@ -130,14 +129,14 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenCommandPalette}
-            className="hidden h-10 w-[290px] items-center justify-between rounded-lg bg-slate-800 px-3.5 text-left text-sm text-slate-300 shadow-inner transition hover:bg-slate-700 xl:flex"
+            className="header-search hidden h-10 w-[290px] items-center justify-between rounded-lg px-3.5 text-left text-sm shadow-inner xl:flex"
             aria-label="Quick search"
           >
             <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Quick search</span>
             <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-300">⌘K</kbd>
           </button>
 
-          <div className="flex min-h-[44px] items-center gap-1 rounded-full bg-slate-800 px-3 text-white shadow-sm">
+          <div className="role-switcher flex min-h-[44px] items-center gap-1 rounded-lg px-3">
             <select
               aria-label="View as role"
               value={viewAsRole}
@@ -151,17 +150,17 @@ export const Header: React.FC<HeaderProps> = ({
             <ChevronDown aria-hidden="true" className="h-4 w-4 text-slate-300" />
           </div>
 
-          <span className="hidden h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-slate-700 sm:inline-flex" aria-label="Current user">
+          <span role="img" className="hidden h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-slate-700 sm:inline-flex" aria-label="Current user">
             <UserCircle2 className="h-8 w-8" />
           </span>
 
           <button
             type="button"
             onClick={onOpenQBOQueue}
-            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100"
-            aria-label={`Open notifications${qboQueueCount ? ` (${qboQueueCount})` : ''}`}
+            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+            aria-label={`Open QBO sync queue${qboQueueCount ? ` (${qboQueueCount} pending)` : ''}`}
           >
-            <Bell className="h-5 w-5" />
+            <Database className="h-5 w-5" />
             {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />}
           </button>
 
@@ -171,13 +170,14 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setIsToolsOpen((open) => !open)}
               aria-expanded={isToolsOpen}
               aria-haspopup="menu"
+              aria-controls="operations-menu"
               aria-label="Open operations and tools"
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
             >
               <MoreHorizontal className="h-5 w-5" />
             </button>
             {isToolsOpen && (
-              <div role="menu" className="absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+              <div id="operations-menu" role="menu" className="wayfinding-card absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 p-2 shadow-xl">
                 <p className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Operations &amp; tools</p>
                 <button type="button" role="menuitem" onClick={() => { onOpenCreateNew(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Plus className="h-4 w-4 text-blue-700" /> Create new</button>
                 <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Download className="h-4 w-4 text-blue-700" /> Export report</button>
@@ -190,8 +190,8 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          <button type="button" onClick={onOpenCommandPalette} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100 xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
-          <button type="button" onClick={onOpenPWAInstall} className="hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-700 transition hover:bg-slate-100 sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
+          <button type="button" onClick={onOpenCommandPalette} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
+          <button type="button" onClick={onOpenPWAInstall} className="hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
         </div>
       </div>
     </header>

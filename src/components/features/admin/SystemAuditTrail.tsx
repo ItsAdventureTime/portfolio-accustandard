@@ -137,13 +137,13 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="feature-module space-y-6 text-slate-900">
       {/* Module Title & Actions Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <UserCheck className="w-6 h-6 text-blue-900" />
-            Admin Administration &amp; System Audit Trail
+            User setup &amp; audit log
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             User Setup &amp; Module Access Matrix &bull; COSO Internal Control Supervision &bull; Active Role: [{viewAsRole}]
@@ -192,7 +192,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
         /* User & Allowed View Setup Matrix */
         <div className="space-y-4">
           {/* Add User Form */}
-          <form onSubmit={handleAddUser} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <form onSubmit={handleAddUser} className="wayfinding-card p-5 space-y-3">
             <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
               <Plus className="w-4 h-4 text-blue-800" />
               Register New System User &amp; Assign Role
@@ -241,7 +241,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
           </form>
 
           {/* User Access Matrix Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="wayfinding-card overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
@@ -306,8 +306,8 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
+            <div className="hidden sm:block table-responsive-wrapper">
+              <table className="wayfinding-grid w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
                     <th className="p-4">User Name</th>

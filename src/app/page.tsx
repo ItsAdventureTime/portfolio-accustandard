@@ -761,7 +761,7 @@ export default function Home() {
   const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white w-full">
+    <div className="flex min-h-[100dvh] w-full flex-col bg-[var(--surface-canvas)] font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
       {/* Top Application Header Bar */}
       <Header
         activeTab={activeTab}
@@ -785,7 +785,7 @@ export default function Home() {
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Feature Module Workspace Container */}
-      <main aria-label="Enterprise Operations Workspace" className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:pb-10">
+      <main id="main-content" aria-label="Enterprise Operations Workspace" className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10">
           <div role="status" className="sr-only">
             {apiOnline
               ? 'Go API connected. Server-backed mutations show committed results; unsupported workflows remain preview-only.'
@@ -992,6 +992,7 @@ export default function Home() {
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+        onOpen={() => setIsCommandPaletteOpen(true)}
         onSelectTab={handleSelectTab}
       />
 

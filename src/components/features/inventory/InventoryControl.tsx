@@ -69,11 +69,11 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-950">
             <Package className="w-6 h-6 text-emerald-700" />
-            Multi-Location Inventory Management (QC &amp; Pampanga)
+            Inventory control
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+          <p className="mt-1 text-sm font-medium text-slate-600">
             Live Stock Items: <span className="font-bold text-slate-900">{filteredInventory.length} SKUs maintained</span> &bull; Demand-Driven Replenishment &amp; FEFO Expiry
           </p>
         </div>
@@ -108,9 +108,12 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
       </div>
 
       {/* Main Tab Navigation */}
-      <div className="bg-slate-200/70 p-1.5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full sm:w-fit border border-slate-300/80 shadow-2xs">
+      <div role="tablist" aria-label="Inventory views" className="grid w-full grid-cols-1 gap-1.5 rounded-2xl border border-slate-300/70 bg-slate-100/80 p-1.5 shadow-2xs sm:w-fit sm:grid-cols-2">
         <button
+          type="button"
+          role="tab"
           onClick={() => setActiveTab('LIVE')}
+          aria-selected={activeTab === 'LIVE'}
           className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'LIVE'
               ? 'bg-blue-900 text-white shadow-md scale-100'
@@ -122,7 +125,10 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
         </button>
 
         <button
+          type="button"
+          role="tab"
           onClick={() => setActiveTab('REPLENISHMENT')}
+          aria-selected={activeTab === 'REPLENISHMENT'}
           className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
             activeTab === 'REPLENISHMENT'
               ? 'bg-blue-900 text-white shadow-md scale-100'
@@ -143,6 +149,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
+                aria-label="Filter inventory"
                 placeholder="Filter inventory by SKU, description, lot number, or warehouse location..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -187,7 +194,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
           )}
 
           {/* Inventory Table & Mobile Cards */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="wayfinding-card overflow-hidden">
             {/* Mobile Card View */}
             <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
               {filteredInventory.map((item) => (

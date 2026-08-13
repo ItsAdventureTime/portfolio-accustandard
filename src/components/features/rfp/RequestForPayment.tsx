@@ -41,13 +41,13 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="feature-module space-y-6 text-slate-900">
       {/* Module Title & Actions Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <CreditCard className="w-6 h-6 text-purple-800" />
-            Request for Payment (RFP) Non-PO Expense Vouchers
+            Requests for payment
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             GL Chart of Accounts Picklist &bull; Disbursement Approval Chain &bull; Bank Releasing
@@ -64,12 +64,12 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
       </div>
 
       {/* Live RFP Vouchers Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="wayfinding-card overflow-hidden">
         <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
           &larr; Swipe table horizontally for details &rarr;
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
+        <div className="table-responsive-wrapper">
+          <table className="wayfinding-grid w-full text-left text-sm border-collapse">
             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
                 <th className="p-4">RFP Voucher ID</th>

@@ -129,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navGroups = ['Control center', 'Daily work', 'Finance'];
 
   return (
-    <aside aria-label="Sidebar Navigation" className={`${isCollapsed ? 'w-[76px]' : 'w-80'} relative bg-white/90 backdrop-blur-xl border-r border-slate-200/80 text-slate-800 flex flex-col justify-between hidden lg:flex shrink-0 shadow-xs transition-[width] duration-200`}>
+    <aside aria-label="Primary sidebar navigation" className={`${isCollapsed ? 'w-[76px]' : 'w-80'} relative flex shrink-0 flex-col justify-between border-r border-slate-200/80 bg-white/90 text-slate-800 shadow-xs backdrop-blur-xl transition-[width] duration-200 hidden lg:flex`}>
       {/* Brand Header */}
       <div className={`${isCollapsed ? 'p-3' : 'p-5'} border-b border-slate-200 bg-white/90`}>
         {isCollapsed ? (
@@ -184,7 +184,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 return (
                   <button
                     key={item.key}
+                    type="button"
                     onClick={() => onSelectTab(item.key)}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`w-full ${isCollapsed ? 'p-2.5 justify-center' : 'text-left p-3.5 justify-between'} rounded-2xl transition-all duration-200 ease-out flex items-center group cursor-pointer ${
                       isActive
                         ? 'bg-blue-900 text-white font-black shadow-md border-l-4 border-blue-400 translate-x-1'
@@ -219,6 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && <>Auto-Reset: <span className="font-mono font-black text-blue-950 text-sm">{formattedTimer}</span></>}
           </span>
           <button
+            type="button"
             onClick={onResetDemo}
             className="text-slate-600 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-xl transition-all duration-200 flex items-center gap-1 font-extrabold text-xs active:scale-95 cursor-pointer"
             title="Reset demo data"

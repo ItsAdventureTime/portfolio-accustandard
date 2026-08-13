@@ -60,8 +60,8 @@ const getApprovalStatus = (item: any) => {
 };
 
 const statusStyles = (status: string) => status === 'Approved'
-  ? 'border-emerald-200 bg-emerald-600 text-white shadow-sm'
-  : 'border-amber-200 bg-amber-500 text-white shadow-sm';
+  ? 'badge-status-approved'
+  : 'badge-status-pending';
 
 const formatDate = (value: unknown) => {
   if (!value) return '—';
@@ -143,12 +143,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
         onOpenCreateQuotationModal={onOpenCreateQuotationModal}
       />
 
-      <section id="approval-activity-table" tabIndex={-1} aria-labelledby="approval-table-title" className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">
+      <section id="approval-activity-table" tabIndex={-1} aria-labelledby="approval-table-title" className="wayfinding-card overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700">
         <div className="sr-only">
           <h2 id="approval-table-title">Purchase order approval activity</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-left">
+        <div className="table-responsive-wrapper">
+          <table className="wayfinding-grid w-full min-w-[760px] border-collapse text-left">
             <caption className="sr-only">Recent purchase orders and approval status</caption>
             <thead className="border-b border-slate-200 bg-white text-base text-slate-950">
               <tr>

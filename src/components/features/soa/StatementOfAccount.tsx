@@ -377,14 +377,14 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   );
 
   return (
-    <div className="space-y-6 w-full text-slate-900">
+    <div className="feature-module space-y-6 w-full text-slate-900">
       <WorkflowStepper currentStep="SOA" compact />
       {/* Module Title Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="wayfinding-card flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6">
         <div>
-          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <FileCheck className="w-6 h-6 text-blue-900" />
-            Statement of Account (SOA) &amp; Client Collections
+            Statement of account &amp; collections
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             Client aging ledger, payment check allocation, and official statement generator
@@ -451,9 +451,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
         </div>
       </div>
 
-      <section aria-labelledby="soa-aging-overview" className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <section aria-labelledby="soa-aging-overview" className="wayfinding-card table-responsive-wrapper">
         <div className="border-b border-slate-200 px-4 py-3"><h3 id="soa-aging-overview" className="text-sm font-black text-slate-900">Aging overview</h3><p className="mt-0.5 text-xs font-medium text-slate-500">High-signal balances are shown here. The official printable statement below keeps its controlled format.</p></div>
-        <table className="w-full min-w-[720px] border-collapse text-sm">
+        <table className="wayfinding-grid w-full min-w-[720px] border-collapse text-sm">
           <thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wider text-slate-700"><tr><th className="p-4">Invoice</th><th className="p-4">Client</th><th className="p-4">Due date</th><th className="p-4 text-center">Status</th><th className="p-4 text-right">Balance</th><th className="p-4 text-center">Details</th></tr></thead>
           <tbody className="divide-y divide-slate-200">
             {computedRows.map((row, index) => {
