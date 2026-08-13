@@ -15,7 +15,8 @@ boundary and validation record.
 UI/UX scope; the confirmed acceptance handoff governs business rules;
 [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) governs actual runtime
 status; this README plus `ARCHITECTURE.md` and `CONTRIBUTING.md` govern
-operations.
+operations. The visual and accessibility rules are maintained in
+[`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md).
 
 ---
 
@@ -41,12 +42,16 @@ Medical supply chain operations handle high-value equipment, sensitive diagnosti
 
 ## 🎨 Design & User Experience
 
-The dashboard uses a **Light Corporate Medical System**:
-- **Canvas:** Crisp `#F8FAFC` slate background
-- **Cards:** Clean `#FFFFFF` container cards with `#E2E8F0` borders
-- **Primary Brand Color:** Deep Royal Navy (`#1E3A8A`)
-- **Accent Color:** Bright Medical Red (`#DC2626`)
-- **Ergonomics:** Responsive on mobile devices with touch-friendly barcode scanning and clear role lock indicators.
+The dashboard uses a **Light Corporate Medical System** anchored to the
+provided AccuStandard wordmark at
+`public/photo_2026-08-01_23-55-07.jpg`:
+- **Canvas:** Anti-glare `#F4F7FB` with white data surfaces
+- **Primary Brand Color:** AccuStandard navy (`#17356F`) and royal (`#2C4296`)
+- **Signature Accent:** Rx red (`#B4232F`) for attention states and brand cues
+- **Ergonomics:** Role-tailored action cards, 44px-class touch targets, visible
+  keyboard focus, reduced-motion support, and responsive mobile navigation.
+- **Status:** API connectivity is always explicit; offline demo behavior is
+  labeled and is never presented as persisted business data.
 
 ---
 

@@ -11,7 +11,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#1e3a8a',
+  themeColor: '#17356f',
 };
 
 export default function RootLayout({
@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-full bg-slate-50 text-slate-900 antialiased font-sans">
+      <body className="min-h-full text-slate-900 antialiased font-sans">
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>

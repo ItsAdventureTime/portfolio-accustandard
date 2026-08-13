@@ -2,7 +2,7 @@
 
 # AccuStandard Medical ERP — Comprehensive UI & UX Design Audit & Layout Reference
 
-> **Document Purpose:** Complete, detailed design system, layout, and UX audit of the current **AccuStandard Medical ERP Dashboard** web application. This document serves as the authoritative Phase 1 design baseline prepared for developer handoff to **ChatGPT Codex** for Phase 2 redesign and execution.
+> **Document Purpose:** Complete, detailed design system, layout, and UX audit of the current **AccuStandard Medical ERP Dashboard** web application. This document preserves the Phase 1 baseline and records the Phase 2 redesign/review addendum for implementation handoff.
 >
 > **Audit Date:** 2026-08-14
 > **Target Application:** AccuStandard Medical ERP & Supply Chain Dashboard
@@ -15,7 +15,7 @@
 
 The **AccuStandard Medical ERP Dashboard** is a enterprise medical supply chain and financial control platform designed around COSO internal control principles, strict segregation of duties (7 key roles), multi-warehouse FEFO inventory management (Quezon City & Pampanga), sales quotations, purchasing 3-way match controls, client SOA ledgers, non-PO expense vouchers, and QuickBooks Online (QBO) queue exports.
 
-This document records the exact **as-is UI/UX architecture**, design tokens, layout hierarchy, navigation systems, component patterns, responsive behaviors, and design weaknesses found across the existing project workspace.
+This document records the baseline **UI/UX architecture**, design tokens, layout hierarchy, navigation systems, component patterns, responsive behaviors, and design weaknesses found across the existing project workspace. The implementation outcome and current accessibility rules are recorded in the addendum and `UI_UX_ACCESSIBILITY_GUIDE.md`.
 
 ---
 
@@ -36,6 +36,7 @@ The workspace contains primary sources of truth, operational documentation, and 
 | [`GO_MIGRATION_PLAN.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/GO_MIGRATION_PLAN.md) | REST API migration plan from localStorage to Go + PostgreSQL 17 | **Active Architecture Reference** |
 | [`BACKBLAZE_S3_WORKFLOW.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/BACKBLAZE_S3_WORKFLOW.md) | S3 Object storage guidelines (`bridge-ph` bucket) | **Active Infrastructure Guide** |
 | [`DEPLOYMENT_GUIDE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/DEPLOYMENT_GUIDE.md) | Single-command deployment protocol (`npm run deploy:demo`) | **Active Deployment Guide** |
+| [`UI_UX_ACCESSIBILITY_GUIDE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/UI_UX_ACCESSIBILITY_GUIDE.md) | Current visual, interaction, keyboard, and accessibility rules | **Active UI/UX Guide** |
 | [`llm-interface-design-context-prompt.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/llm-interface-design-context-prompt.md) | Legacy LLM context prompt | *Historical / Secondary* |
 | [`llm_ui_context_prompt_framework.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/llm_ui_context_prompt_framework.md) | Legacy UI prompt framework | *Historical / Secondary* |
 
@@ -48,28 +49,31 @@ The current UI implements a **Light Corporate Medical Theme**:
 
 ```css
 :root {
-  --slate-bg-app: #f8fafc;        /* Anti-glare slate canvas */
-  --slate-bg-card: #ffffff;       /* Pure white card container surface */
-  --slate-bg-subtle: #f1f5f9;     /* Slate muted section background */
-  --slate-border-subtle: #e2e8f0; /* Default border stroke */
-  --slate-border-strong: #94a3b8; /* Hover / active border stroke */
+  --surface-canvas: #f4f7fb;      /* Anti-glare slate canvas */
+  --surface-card: #ffffff;        /* Data surface */
+  --surface-subtle: #eef3f8;      /* Muted section background */
+  --surface-hover: #edf5ff;       /* Interactive row hover */
+  --stroke-subtle: rgb(203 213 225 / 0.72);
+  --stroke-strong: #94a3b8;
 
-  --slate-text-primary: #1e293b;  /* Dark slate primary body text */
-  --slate-text-secondary: #475569;/* Slate secondary muted text */
-  --slate-text-muted: #64748b;    /* Light slate helper text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
 
-  --accustanda-navy: #1e3a8a;     /* Primary Brand Navy (Header / Accent) */
-  --accustanda-blue: #2563eb;     /* Electric Sapphire (Active states / Links) */
-  --accustanda-red: #dc2626;      /* Signature Medical Red (Rx Flourish / Badges) */
+  --brand-navy: #17356f;          /* High-contrast brand navy */
+  --brand-royal: #2c4296;         /* Primary navigation / action accent */
+  --brand-sapphire: #1d4ed8;      /* Links and focus ring */
+  --brand-red: #b4232f;           /* Signature Rx attention accent */
+  --focus-ring: #1d4ed8;
 
-  --slate-shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --slate-shadow-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 4px 12px -6px rgb(15 23 42 / 0.12);
+  --shadow-hover: 0 10px 24px -12px rgb(15 23 42 / 0.22);
 }
 ```
 
 ### 3.2 Typography & Font Hierarchy
-- **Font Family:** Default system fallback stack: `'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif`.
-- **Base Body Text:** `0.875rem` (14px), line-height `1.4`, color `#1E293B`.
+- **Font Family:** `Outfit`, with `Avenir Next`, `Segoe UI Variable`, and system fallbacks.
+- **Base Body Text:** `1rem` root sizing, line-height `1.5`, color `#0F172A`.
 - **Table Headers:** `0.8125rem` (13px), `font-weight: 700`, uppercase, `letter-spacing: 0.05em`, color `#334155`.
 - **Sub-Headlines & Labels:** `font-extrabold tracking-wider text-xs uppercase text-slate-600`.
 - **Headlines:** Clean bold slate titles (`text-xl font-bold text-slate-900`).
@@ -170,9 +174,10 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 
 ---
 
-## 7. Current Design Weaknesses & Audit Findings
+## 7. Baseline Design Weaknesses & Audit Findings
 
-Following the **Redesign Audit Framework** (`/redesign-existing-projects`), the current UI exhibits the following key weaknesses:
+Following the **Redesign Audit Framework** (`/redesign-existing-projects`), the
+pre-redesign baseline exhibited the following key weaknesses:
 
 ### 7.1 Typography Weaknesses
 - **Generic Font Stack:** System font fallback (`Segoe UI`, `sans-serif`) lacks visual authority for a premium enterprise ERP.
@@ -198,7 +203,34 @@ Following the **Redesign Audit Framework** (`/redesign-existing-projects`), the 
 
 ## 8. ChatGPT Codex Handoff Requirements
 
-When **ChatGPT Codex** receives this audit and the Phase 2 Design Plan (`ANTIGRAVITY_DESIGN_PLAN.md`), it must execute the UI/UX revamp under these conditions:
+The Phase 2 implementation must preserve these conditions:
 1. **Preserve Business Logic & API Contracts:** All Go backend endpoints (`/accustandard/demo/api/v1/*`), COSO approval rules, and role constraints must remain 100% intact.
 2. **Refactor In-Place:** Maintain Next.js App Router structure in `src/app` and reusable components in `src/components`.
-3. **Execute Design Upgrades:** Implement modern typography (`Outfit` / `Geist` / `Satoshi`), Base UI / Radix primitives, Tailwind v4 design tokens, smooth micro-interactions, responsive mobile bottom sheets, and WCAG 2.2 AA accessibility.
+3. **Execute Design Upgrades:** Implement modern typography (`Outfit` / `Geist` / `Satoshi`), the existing primitive layer, Tailwind v4 design tokens, smooth micro-interactions, responsive mobile bottom sheets, and WCAG 2.2 AA-aligned accessibility.
+
+---
+
+## 9. 2026-08-14 Phase 2 implementation and review addendum
+
+The redesign pass applied the high-value shell and overview improvements without
+changing backend contracts or the role permission model:
+
+- The provided logo asset is now the canonical shell mark.
+- `Header.tsx` uses branded navy/royal navigation, Rx red accents, active-state
+  semantics, and 44px-class touch targets.
+- `RoleActionCenter.tsx` presents role-specific, data-backed priorities in an
+  asymmetric decision layout. Approval actions remain gated by role and real
+  approval identity.
+- `ExecutiveOverview.tsx` formats PHP amounts safely, labels the activity table,
+  and provides a keyboard-managed document inspector with Escape close, focus
+  containment, and focus restoration.
+- `page.tsx` exposes connected/offline API state and uses a bounded hydration
+  fallback so the UI cannot remain indefinitely in a “Connecting” state.
+- `globals.css` centralizes the current brand tokens, visible focus rings,
+  reduced-motion handling, skeleton states, responsive navigation, and table
+  ergonomics.
+
+Review resolutions and the release checklist live in
+[`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md). This addendum is
+an implementation record, not a claim of full WCAG conformance or production
+acceptance.
