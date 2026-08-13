@@ -277,7 +277,7 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
             <div className="p-5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
               <div className="flex items-center gap-2 text-emerald-950 font-bold text-base">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                <span>Import Batch Posted &amp; Reconciled Successfully!</span>
+                <span>Import batch posted and reconciled.</span>
               </div>
               <p className="text-xs text-emerald-900 font-medium">
                 Import Batch ID: <strong className="font-semibold text-emerald-950">{mockValidationResults.batchId}</strong>

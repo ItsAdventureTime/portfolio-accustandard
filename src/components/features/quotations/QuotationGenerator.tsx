@@ -188,8 +188,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Salutation Block */}
       <div className="text-xs space-y-1.5 text-slate-900">
-        <p className="italic font-semibold">Greetings from Accustandard!</p>
-        <p className="font-medium">We are delighted to submit our price proposal for the supply and delivery of the following:</p>
+        <p className="italic font-semibold">Hello,</p>
+        <p className="font-medium">We are pleased to submit the following supply and delivery proposal:</p>
       </div>
 
       {/* Product Description Table */}
@@ -493,8 +493,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Marketing Manager ROI & Margin Financial Engine Popup Modal */}
       {isRoiModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900">
+          <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6">
             {/* Header Block */}
             <div className="flex justify-between items-start border-b border-slate-200 pb-5">
               <div className="flex items-center gap-3.5">
@@ -506,7 +506,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                     Marketing Manager ROI &amp; Margin Financial Engine
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-                    Real-time landed cost vs. proposed selling price, LIS overhead, contract margin %, and 30-day projected revenue
+                    Landed cost, proposed selling price, LIS overhead, contract margin, and 30-day projected revenue
                   </p>
                 </div>
               </div>
@@ -532,7 +532,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsRoiModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                  className="modal-control p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full cursor-pointer"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -549,7 +549,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setRoiCensus(80)}
-                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                  className={`modal-control px-3 py-1.5 rounded-xl font-extrabold cursor-pointer ${
                     roiCensus === 80
                       ? 'bg-blue-900 text-white shadow-xs'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
@@ -560,7 +560,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setRoiCensus(180)}
-                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                  className={`modal-control px-3 py-1.5 rounded-xl font-extrabold cursor-pointer ${
                     roiCensus === 180
                       ? 'bg-blue-900 text-white shadow-xs'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
@@ -571,7 +571,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setRoiCensus(350)}
-                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                  className={`modal-control px-3 py-1.5 rounded-xl font-extrabold cursor-pointer ${
                     roiCensus === 350
                       ? 'bg-blue-900 text-white shadow-xs'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
@@ -582,7 +582,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <button
                   type="button"
                   onClick={() => setRoiCensus(500)}
-                  className={`px-3 py-1.5 rounded-xl font-extrabold transition-all cursor-pointer ${
+                  className={`modal-control px-3 py-1.5 rounded-xl font-extrabold cursor-pointer ${
                     roiCensus === 500
                       ? 'bg-blue-900 text-white shadow-xs'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-200'
@@ -750,17 +750,17 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                       {marginPct >= 30 ? (
                         <span className="text-emerald-400 font-bold flex items-center gap-1.5">
                           <ShieldCheck className="w-4 h-4 shrink-0" />
-                          Qualified for Fast-Track GM &amp; Chairman Approval
+                          Ready for Marketing review, then GM approval
                         </span>
                       ) : marginPct >= 20 ? (
                         <span className="text-amber-400 font-bold flex items-center gap-1.5">
                           <AlertTriangle className="w-4 h-4 shrink-0" />
-                          Standard Review Margin — Requires General Manager Sign-off
+                          Standard Review Margin — Requires Marketing review and GM sign-off
                         </span>
                       ) : (
                         <span className="text-rose-400 font-bold flex items-center gap-1.5">
                           <ShieldAlert className="w-4 h-4 shrink-0" />
-                          Low Margin Warning — Triggers Required DCS Chairman Review
+                          Low Margin Alert — Requires Marketing review before GM sign-off
                         </span>
                       )}
                     </p>
@@ -774,7 +774,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <button
                 type="button"
                 onClick={handleApplyRoiToActiveQuote}
-                className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer border border-emerald-600"
+                className="modal-control px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-md active:scale-95 cursor-pointer border border-emerald-600"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-200" />
                 <span>Apply Calculation to Active Quote</span>
@@ -783,7 +783,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <button
                 type="button"
                 onClick={() => setIsRoiModalOpen(false)}
-                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
+                className="modal-control px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl cursor-pointer"
               >
                 Close Calculator
               </button>
@@ -794,8 +794,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Sales RFQ Document Inspector Modal */}
       {selectedRfqModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900">
+          <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
@@ -813,7 +813,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedRfqModal(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                className="modal-control p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -855,18 +855,18 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                   ) : (
                     <Clock className="w-5 h-5 text-amber-600 mx-auto" />
                   )}
-                  <p className="font-extrabold text-sm">2. Marketing</p>
+                  <p className="font-extrabold text-sm">2. Marketing Reviewer</p>
                   <p className="text-xs font-bold">{selectedRfqModal.marketingRoiStatus === 'ROI_COMPLETED' ? 'ROI Calculated' : 'Pending Review'}</p>
                 </div>
                 <div className="p-3.5 rounded-2xl border bg-slate-100 border-slate-200 text-slate-500 space-y-1">
                   <Clock className="w-5 h-5 text-slate-400 mx-auto" />
-                  <p className="font-extrabold text-sm">3. GM</p>
+                  <p className="font-extrabold text-sm">3. General Manager</p>
                   <p className="text-xs font-bold">Pending Approval</p>
                 </div>
                 <div className="p-3.5 rounded-2xl border bg-slate-100 border-slate-200 text-slate-500 space-y-1">
                   <Clock className="w-5 h-5 text-slate-400 mx-auto" />
-                  <p className="font-extrabold text-sm">4. DCS</p>
-                  <p className="text-xs font-bold">Pending Approval</p>
+                  <p className="font-extrabold text-sm">4. Client Acceptance</p>
+                  <p className="text-xs font-bold">Pending Client Acceptance</p>
                 </div>
               </div>
             </div>
@@ -879,7 +879,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                   setSelectedRfqModal(null);
                   setIsRoiModalOpen(true);
                 }}
-                className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
+                className="modal-control px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
               >
                 <Calculator className="w-4 h-4 text-emerald-400" />
                 <span>Calculate Marketing ROI</span>
@@ -888,7 +888,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedRfqModal(null)}
-                className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"
+                className="modal-control px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl cursor-pointer"
               >
                 Close Inspector
               </button>

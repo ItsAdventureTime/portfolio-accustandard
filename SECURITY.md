@@ -28,9 +28,9 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 ## 🔒 Security Principles
 
 ### 1. Fraud Control & Access Locks
-- **Role-Based Access Control (RBAC):** Navigation and document actions are strictly scoped to the user's role.
-- **Immutable Audit Logging:** Every approval step, system override, and record modification is permanently logged with timestamps and user identifiers.
-- **Strict Hard-Blocking:** Over-receiving supplier shipments or generating POs for Class 3 short-expiry items without customer POs is hard-blocked at the application layer.
+- **Role-Based Access Control (RBAC):** Navigation and document actions are role-scoped in the demo, but production identity enforcement still requires authentication middleware.
+- **Audit Logging:** Implemented server mutations create audit records, while end-to-end immutability and coverage are acceptance gaps rather than production guarantees.
+- **Strict Hard-Blocking:** The Go receiving endpoint rejects over-receipt atomically, and PO creation enforces the Class 3 linked-customer-PO control. Other controls remain subject to the documented demo boundary.
 
 ### 2. Commit Integrity & Remote Protocol Standards
 - **GitHub repository synchronization:** Follow

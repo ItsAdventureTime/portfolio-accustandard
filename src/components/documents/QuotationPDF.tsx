@@ -66,9 +66,9 @@ export const QuotationPDF: React.FC<{ data: QuotationData; onRemoveItem?: (id: s
 
       {/* Greeting */}
       <div className="mb-6">
-        <p className="italic text-gray-800">Greetings from Accustandard!</p>
+        <p className="italic text-gray-800">Hello,</p>
         <p className="text-gray-700 mt-1">
-          We are delighted to submit our price proposal for the supply and delivery of the following:
+          We are pleased to submit the following supply and delivery proposal:
         </p>
       </div>
 
