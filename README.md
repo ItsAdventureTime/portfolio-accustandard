@@ -185,8 +185,11 @@ stops the old demo pod before reloading the updated Quadlets. If the demo
 PostgreSQL 17; no backup is retained, per demo policy. The PostgreSQL Quadlet
 uses a `pg_isready` healthcheck with `Notify=healthy`, so the API service starts
 after the database is accepting connections. API startup then applies the
-runtime schema and idempotent demo seed in this order: legacy cleanup, GORM
-`AutoMigrate`, then seed SQL. Seed targets must match the default GORM
+runtime schema and idempotent demo seed in this order: legacy cleanup,
+compatibility reconciliation, GORM `AutoMigrate`, then seed SQL.
+Reconciliation preserves values from old `d_csstatus`/`s_idate` aliases in
+canonical `dcs_status`/`si_date` columns before removing the aliases. Seed
+targets must match the default GORM
 pluralized snake_case names derived from the Go models (including
 `inventory_stocks` and `qbo_queue_items`). Because rootless PostgreSQL files may
 be owned by subordinate UID mappings, the reset script inspects and removes
@@ -207,7 +210,7 @@ podman run --pull=always --rm --userns=keep-id \
   -v /workspace/node_modules \
   -v /workspace/.next \
   -w /workspace \
-docker.io/library/node:lts-alpine \
+docker.io/library/node:24.18-alpine3.24 \
   sh -lc "npm ci --no-audit --no-fund && npm run build"
 ```
 
@@ -216,11 +219,18 @@ Turbopack by default, but the demo builder is resource-constrained and the
 Turbopack build was killed by the available container memory. Keep this
 fallback until the VPS build host has been sized and verified for Turbopack.
 
-The backend builder intentionally uses the moving official
-`docker.io/library/golang:alpine` tag in `backend/Dockerfile`. Validation and
-VPS builds must use that exact floating tag; do not substitute a versioned Go
-image. Remote image builds use `--pull=always` so cached floating tags are
-refreshed on each deployment.
+The frontend builder uses the pinned official
+`docker.io/library/node:24.18-alpine3.24` image. The backend builder uses
+`docker.io/library/golang:1.26.5-alpine3.24`, with
+`docker.io/library/alpine:3.24.1` for the runtime image. The static web image
+uses `docker.io/library/nginx:1.30.4-alpine`, and the demo PostgreSQL Quadlet
+uses `docker.io/library/postgres:17.10-alpine3.24`. Remote builds still use
+`--pull=always` so the pinned manifests are fetched on each deployment; update
+these versions deliberately as part of a reviewed dependency refresh.
+
+npm 11 install-script policy is explicit in `package.json`: only the reviewed
+`unrs-resolver` install script is allowed. Do not replace this with
+`dangerously-allow-all-scripts`.
 
 `--rm` removes the temporary frontend build container and its anonymous
 dependency volumes after it exits. The Go build uses `--layers=false` and

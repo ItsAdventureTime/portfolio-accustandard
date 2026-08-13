@@ -21,6 +21,12 @@ OIDC before handling real company data.
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and the
 acceptance claims that remain unverified.
 
+The backend image intentionally does not contain a `DATABASE_URL` default.
+The demo Quadlet supplies a disposable demo-only connection string at runtime;
+those fixture credentials must never be reused for production. Production
+must inject rotated database secrets through an external secret source before
+the service is considered deployable.
+
 At **Accustandard Medical and Diagnostic Supplies Corporation**, system security, commit verification, and fraud control are core engineering requirements.
 
 ---

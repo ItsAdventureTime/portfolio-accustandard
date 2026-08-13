@@ -57,19 +57,19 @@ the repository:
   -v "$(pwd):/src:ro,Z" \
   -v /workspace \
   -w /workspace \
-docker.io/library/node:lts-alpine \
+docker.io/library/node:24.18-alpine3.24 \
   sh -lc 'cp -a /src/. /workspace/ && npm ci && npm run lint && npm run build'
 ```
 
-For backend validation, use the same moving official Go Alpine tag used by
-the remote Dockerfile. Do not replace it with a versioned Go tag:
+For backend validation, use the same pinned official Go Alpine image used by
+the remote Dockerfile:
 
 ```bash
 /opt/homebrew/bin/podman run --pull=always --rm --userns=keep-id \
   -v "$(pwd)/backend:/src:ro,Z" \
   -v /workspace \
   -w /workspace \
-  docker.io/library/golang:alpine \
+  docker.io/library/golang:1.26.5-alpine3.24 \
   sh -c 'cp -a /src/. /workspace/ && go version && go test ./... && go vet ./...'
 ```
 
