@@ -52,44 +52,44 @@ ON CONFLICT (id) DO NOTHING;
 -- Statement of Account (SOA) Seed
 INSERT INTO statement_of_accounts (id, soa_number, client_name, client_address, terms, salesperson, total_current_balance, amount_due, not_yet_due, prepared_by)
 VALUES
-  ('g1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SOA-2026-001', 'Allied Care Experts (ACE) Medical Center', 'McArthur Hwy, San Fernando, Pampanga', '30 Days Net', 'Sales Officer (Mark)', 32208.00, 18928.00, 13280.00, 'Aila (Bookkeeper)')
+  ('71eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SOA-2026-001', 'Allied Care Experts (ACE) Medical Center', 'McArthur Hwy, San Fernando, Pampanga', '30 Days Net', 'Sales Officer (Mark)', 32208.00, 18928.00, 13280.00, 'Aila (Bookkeeper)')
 ON CONFLICT (soa_number) DO NOTHING;
 
 INSERT INTO soa_items (id, soa_id, sales_invoice_no, dr_no, si_date, due_date, age_days, invoice_amount, amount_paid, invoice_balance, running_balance)
 VALUES
-  ('h1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'g1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6087', 'DR-6075', '2026-06-18 00:00:00+00', '2026-07-18 00:00:00+00', 47, 16960.00, 0.00, 16960.00, 16960.00),
-  ('h1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'g1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6107', 'DR-6097', '2026-06-26 00:00:00+00', '2026-07-26 00:00:00+00', 39, 1968.00, 0.00, 1968.00, 18928.00),
-  ('h1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'g1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6118', 'DR-6113', '2026-06-30 00:00:00+00', '2026-07-30 00:00:00+00', 35, 13280.00, 0.00, 13280.00, 32208.00)
+  ('81eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', '71eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6087', 'DR-6075', '2026-06-18 00:00:00+00', '2026-07-18 00:00:00+00', 47, 16960.00, 0.00, 16960.00, 16960.00),
+  ('81eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', '71eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6107', 'DR-6097', '2026-06-26 00:00:00+00', '2026-07-26 00:00:00+00', 39, 1968.00, 0.00, 1968.00, 18928.00),
+  ('81eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', '71eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'SI-6118', 'DR-6113', '2026-06-30 00:00:00+00', '2026-07-30 00:00:00+00', 35, 13280.00, 0.00, 13280.00, 32208.00)
 ON CONFLICT (id) DO NOTHING;
 
 -- Purchase Orders Seed
 INSERT INTO purchase_orders (id, po_number, vendor_name, item_description, po_qty, rr_qty_received, invoice_ref, total_amount, status)
 VALUES
-  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'PO-2026-0891', 'BioMerieux Diagnostics Corp', 'Calibration Sticks Bact Alert', 100, 100, 'SI #8812', 142000.00, 'AWAITING_VENDOR_INVOICE'),
-  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0914', 'Sysmex Philippines Inc.', 'Blood Chemistry Reagents Kit', 50, 0, 'Awaiting', 450000.00, 'PENDING_RECEIVING'),
-  ('i1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'PO-2026-0925', 'Mindray Medical Corp', 'Hematology Lyse Reagent 5L', 80, 80, 'SI #9901', 640000.00, 'AWAITING_VENDOR_INVOICE')
+  ('91eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'PO-2026-0891', 'BioMerieux Diagnostics Corp', 'Calibration Sticks Bact Alert', 100, 100, 'SI #8812', 142000.00, 'AWAITING_VENDOR_INVOICE'),
+  ('91eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'PO-2026-0914', 'Sysmex Philippines Inc.', 'Blood Chemistry Reagents Kit', 50, 0, 'Awaiting', 450000.00, 'PENDING_RECEIVING'),
+  ('91eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'PO-2026-0925', 'Mindray Medical Corp', 'Hematology Lyse Reagent 5L', 80, 80, 'SI #9901', 640000.00, 'AWAITING_VENDOR_INVOICE')
 ON CONFLICT (po_number) DO NOTHING;
 
 -- Payment Requests (RFP) Seed
 INSERT INTO payment_requests (id, rfp_number, payee, gl_account, description, amount, requested_by, status)
 VALUES
-  ('j1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'RFP-2026-0104', 'LBC Express Courier Services', '6100 - Freight & Delivery', 'Cold-chain express shipping for Pampanga hospital orders', 18500.00, 'Bookkeeper (Aila)', 'APPROVED_DCS'),
-  ('j1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'RFP-2026-0112', 'Meralco Electric Utilities', '6200 - Utilities Expense', 'San Fernando warehouse climate-control power bill', 34200.00, 'General Manager', 'PENDING_GM'),
-  ('j1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'RFP-2026-0120', 'Calibration Certifications Phils', '6300 - Professional & Calibration Fees', 'ISO 17025 annual calibration for Bact Alert analyzer units', 28000.00, 'Marketing', 'PENDING_MKTG')
+  ('a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'RFP-2026-0104', 'LBC Express Courier Services', '6100 - Freight & Delivery', 'Cold-chain express shipping for Pampanga hospital orders', 18500.00, 'Bookkeeper (Aila)', 'APPROVED_DCS'),
+  ('a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'RFP-2026-0112', 'Meralco Electric Utilities', '6200 - Utilities Expense', 'San Fernando warehouse climate-control power bill', 34200.00, 'General Manager', 'PENDING_GM'),
+  ('a1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'RFP-2026-0120', 'Calibration Certifications Phils', '6300 - Professional & Calibration Fees', 'ISO 17025 annual calibration for Bact Alert analyzer units', 28000.00, 'Marketing', 'PENDING_MKTG')
 ON CONFLICT (rfp_number) DO NOTHING;
 
 -- QBO Sync Queue Seed
 INSERT INTO qbo_queue_items (id, doc_type, doc_number, entity_name, amount, qbo_ref_id, sync_status, last_attempt, error_message)
 VALUES
-  ('k1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'Sales Invoice', 'SI-6087', 'Allied Care Experts (ACE) Medical Center', 16960.00, 'QBO-INV-88902', 'SYNCED', '2026-08-04 14:30:12+00', ''),
-  ('k1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'Vendor Bill', 'PO-2026-0891 / SI-8812', 'BioMerieux Diagnostics Corp', 142000.00, 'QBO-BILL-44102', 'SYNCED', '2026-08-04 15:10:45+00', ''),
-  ('k1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'Customer Payment Collection', 'CHK-BDO-99201', 'Allied Care Experts (ACE) Medical Center', 25000.00, 'Awaiting Sync', 'QUEUED', '2026-08-05 08:45:00+00', '')
+  ('b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', 'Sales Invoice', 'SI-6087', 'Allied Care Experts (ACE) Medical Center', 16960.00, 'QBO-INV-88902', 'SYNCED', '2026-08-04 14:30:12+00', ''),
+  ('b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', 'Vendor Bill', 'PO-2026-0891 / SI-8812', 'BioMerieux Diagnostics Corp', 142000.00, 'QBO-BILL-44102', 'SYNCED', '2026-08-04 15:10:45+00', ''),
+  ('b2eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', 'Customer Payment Collection', 'CHK-BDO-99201', 'Allied Care Experts (ACE) Medical Center', 25000.00, 'Awaiting Sync', 'QUEUED', '2026-08-05 08:45:00+00', '')
 ON CONFLICT (id) DO NOTHING;
 
 -- Audit Logs Seed
 INSERT INTO audit_logs (id, timestamp, user_email, action)
 VALUES
-  ('l1eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', '02:55 PM', 'mark@accustandard.com', 'Created Quotation QRN20240415037 for Allied Care Experts'),
-  ('l1eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', '03:10 PM', 'rmt@accustandard.com', 'Reviewed and Approved Quotation QRN20240415037'),
-  ('l1eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', '03:14 PM', 'karen@accustandard.com', 'Approved Quotation QRN20240415037')
+  ('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a01', '02:55 PM', 'mark@accustandard.com', 'Created Quotation QRN20240415037 for Allied Care Experts'),
+  ('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a02', '03:10 PM', 'rmt@accustandard.com', 'Reviewed and Approved Quotation QRN20240415037'),
+  ('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a03', '03:14 PM', 'karen@accustandard.com', 'Approved Quotation QRN20240415037')
 ON CONFLICT (id) DO NOTHING;

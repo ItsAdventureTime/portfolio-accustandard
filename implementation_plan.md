@@ -134,9 +134,9 @@ rootless Podman user Quadlets (`systemctl --user` and
   preventing command substitution from appending a literal `n` such as `emptyn`;
   rootless `podman unshare` and the PostgreSQL 17 reset policy remain required.
 
-  Remote image builds use `--pull=always` to honor the floating
-  `golang:alpine` and `alpine` image preference rather than reusing a cached
-  tag.
+  Remote image builds use `--pull=always` with the reviewed pinned images
+  `golang:1.26.5-alpine3.24` and `alpine:3.24.1`; version changes require a
+  dependency review rather than silently following a mutable tag.
 
 ```bash
 bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh \

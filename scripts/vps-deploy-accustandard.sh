@@ -118,7 +118,7 @@ podman run --pull=always --rm --userns=keep-id \
   -v /workspace/node_modules \
   -v /workspace/.next \
   -w /workspace \
-docker.io/library/node:lts-alpine \
+  docker.io/library/node:24.18-alpine3.24 \
   sh -lc 'npm ci --no-audit --no-fund && npm run build'
 test -f "${SOURCE_ROOT}/out/index.html"
 

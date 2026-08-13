@@ -41,10 +41,10 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 1. **Frontend**: Next.js App Router (React), Tailwind CSS, Lucide Icons, Radix UI.
    - Build Mode: Static Export (`output: 'export'` in `next.config.ts`).
    - Base Path: `/accustandard/demo`.
-2. **Backend**: Go from the moving official
-   `docker.io/library/golang:alpine` build image (`go-chi/chi/v5` router,
-   PostgreSQL driver `pgx/v5` or `gorm`). Do not replace the floating build
-   image with a version-pinned Go image.
+2. **Backend**: Go from the pinned official
+   `docker.io/library/golang:1.26.5-alpine3.24` build image
+   (`go-chi/chi/v5` router, PostgreSQL driver `pgx/v5` or `gorm`). The
+   runtime uses `docker.io/library/alpine:3.24.1`.
    - REST API Base Path: `/accustandard/demo/api/v1`.
 3. **Database**: PostgreSQL 17 (`accustandard_demo_db`).
 4. **Containerization**: Podman Quadlet (`~/.config/containers/systemd/bridge-ph/accustandard-demo/`).
@@ -115,17 +115,20 @@ to `web-dist/`, installs the demo Quadlets into
 database if needed, waits for `pg_isready`, restarts
 `accustandard-demo-app.service`, and waits up to 60 seconds for the API
 readiness endpoint with curl retries. Backend image builds use
-`--pull=always` so the repository's floating `golang:alpine` and `alpine`
-base images are refreshed on each remote run.
+`--pull=always` so the repository's pinned base image manifests are refreshed
+on each remote run. Version changes require a reviewed dependency update.
 
 The database data directory persists across normal frontend and API updates.
 For this disposable demo only, a data directory whose `PG_VERSION` is not 17,
 or a non-empty directory with no `PG_VERSION`, is removed and reinitialized as
 PostgreSQL 17; no recoverable backup is kept. The PostgreSQL Quadlet healthcheck
 must report healthy before the API service starts. API startup then removes the
-obsolete prototype table family, runs GORM `AutoMigrate`, and applies the
-idempotent demo seed. The required order is PostgreSQL health, legacy cleanup,
-GORM `AutoMigrate`, then seed SQL. Seed `INSERT` targets follow GORM’s default
+obsolete prototype table family, reconciles legacy acronym columns, runs GORM
+`AutoMigrate`, and applies the idempotent demo seed. The required order is
+PostgreSQL health, legacy cleanup, reconciliation, GORM `AutoMigrate`, then
+seed SQL. Reconciliation copies old `d_csstatus`/`s_idate` values to canonical
+`dcs_status`/`si_date` before dropping the aliases. Seed `INSERT` targets follow
+GORM’s default
 pluralized snake_case names from the runtime models, including
 `inventory_stocks` and `qbo_queue_items`; singular overrides are not part of
 the demo contract. The reset helper uses `podman unshare` to inspect and

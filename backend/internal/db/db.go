@@ -29,6 +29,10 @@ func InitDB(dsn string) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	if err := runRuntimeSQL(db, "migrations/004_reconcile_runtime_columns.sql"); err != nil {
+		return nil, err
+	}
+
 	log.Println("==> Running GORM AutoMigrations...")
 	err = db.AutoMigrate(runtimeModels()...)
 	if err != nil {
@@ -71,9 +75,11 @@ func runRuntimeSQL(db *gorm.DB, file string) error {
 		return fmt.Errorf("failed to read runtime SQL %s: %w", file, err)
 	}
 
-	log.Printf("==> Executing SQL script: %s", file)
-	if err := db.Exec(string(content)).Error; err != nil {
-		return fmt.Errorf("failed to execute runtime SQL %s: %w", file, err)
-	}
-	return nil
+	log.Printf("==> Executing SQL script in a transaction: %s", file)
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec(string(content)).Error; err != nil {
+			return fmt.Errorf("failed to execute runtime SQL %s: %w", file, err)
+		}
+		return nil
+	})
 }

@@ -2,6 +2,9 @@
   "name": "accustandard-bridge-dashboard",
   "version": "1.0.0",
   "private": true,
+  "allowScripts": {
+    "unrs-resolver": true
+  },
   "engines": {
     "node": ">=20.9"
   },

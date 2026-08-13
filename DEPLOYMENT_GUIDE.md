@@ -70,9 +70,11 @@ The script performs this sequence:
    directories.
 2. Transfers source with `rsync`, excluding Git metadata, dependencies, Next
    build output, and macOS metadata.
-3. Runs the frontend build in disposable `node:lts-alpine` Podman on the VPS.
-4. Builds the Go API image remotely using floating `golang:alpine` and
-   `alpine` images with `--pull=always`.
+3. Runs the frontend build in disposable
+   `docker.io/library/node:24.18-alpine3.24` Podman on the VPS.
+4. Builds the Go API image remotely using pinned
+   `docker.io/library/golang:1.26.5-alpine3.24` and
+   `docker.io/library/alpine:3.24.1` images with `--pull=always`.
 5. Installs only the demo Quadlets and publishes the static `out/` export to
    the remote `web-dist/` directory.
 6. Starts PostgreSQL 17, checks `pg_isready`, verifies the PostgreSQL major
@@ -84,7 +86,19 @@ The script performs this sequence:
 
 The PostgreSQL demo reset policy is intentionally disposable: legacy or
 incompatible demo data may be removed without a recoverable backup, then
-recreated and seeded through GORM AutoMigrate plus the idempotent demo seed.
+recreated and seeded through legacy cleanup, compatibility reconciliation,
+GORM AutoMigrate, and the idempotent demo seed. The reconciliation preserves
+legacy `d_csstatus`/`s_idate` values as canonical `dcs_status`/`si_date`
+values before removing the old aliases.
+
+The frontend install uses npm 11's project-level `allowScripts` policy. Only
+the reviewed `unrs-resolver` install script is approved in `package.json`; do
+not bypass the policy with `dangerously-allow-all-scripts`.
+
+The backend image does not embed `DATABASE_URL`; the demo Quadlet injects its
+demo-only connection string at runtime. Production still requires an external
+secret source, rotation, backups, authentication, and a separate approved
+release workflow.
 
 ## 4. Verify the deployed demo
 
@@ -117,6 +131,12 @@ For an API readiness timeout, inspect the API journal first. A service can be
 reported active before its HTTP listener is accepting requests; the deployment
 already retries this condition. A database or migration error causes the API
 container to exit, and the journal contains the root error.
+
+If the journal reports SQLSTATE `42703` for `dcs_status`, confirm the deployed
+image contains `004_reconcile_runtime_columns.sql` and that startup order is
+cleanup → reconciliation → AutoMigrate → seed. The repair handles databases
+created by the pre-fix model by copying `d_csstatus` to `dcs_status` and
+`s_idate` to `si_date`; do not manually edit the database on the VPS.
 
 ## 6. Backblaze B2 assets, when a feature needs them
 
@@ -162,5 +182,7 @@ it is treated as deployable.
 - [GitHub HTTPS workflow](GITHUB_HTTPS_WORKFLOW.md)
 - [Backblaze B2 workflow](BACKBLAZE_S3_WORKFLOW.md)
 - [Next.js deployment guidance](https://nextjs.org/docs/app/getting-started/deploying)
+- [npm install-script approval guidance](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/)
 - [Podman Quadlet documentation](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html)
+- [PostgreSQL `ALTER TABLE` documentation](https://www.postgresql.org/docs/current/sql-altertable.html)
 - [Backblaze B2 sync guidance](https://www.backblaze.com/docs/cloud-storage-use-the-b2-sync-command-with-the-cli)

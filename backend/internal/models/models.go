@@ -87,7 +87,7 @@ type ApprovalLog struct {
 	Maker          string    `gorm:"not null" json:"maker"`
 	ReviewerStatus string    `gorm:"not null" json:"reviewerStatus"`
 	GMStatus       string    `gorm:"not null" json:"gmStatus"`
-	DCSStatus      string    `gorm:"not null" json:"dcsStatus"`
+	DCSStatus      string    `gorm:"column:dcs_status;not null" json:"dcsStatus"`
 	TotalAmount    float64   `gorm:"type:numeric(12,2);not null" json:"totalAmount"`
 	CreatedAt      time.Time `gorm:"autoCreateTime" json:"createdAt"`
 }
@@ -111,7 +111,7 @@ type SOAItem struct {
 	SOAID          uuid.UUID `gorm:"type:uuid;not null" json:"soaId"`
 	SalesInvoiceNo string    `gorm:"not null" json:"salesInvoiceNo"`
 	DRNo           string    `gorm:"not null" json:"drNo"`
-	SIDate         time.Time `gorm:"not null" json:"date"`
+	SIDate         time.Time `gorm:"column:si_date;not null" json:"date"`
 	DueDate        time.Time `gorm:"not null" json:"dueDate"`
 	AgeDays        int       `gorm:"not null" json:"ageDays"`
 	InvoiceAmount  float64   `gorm:"type:numeric(12,2);not null" json:"invoiceAmount"`

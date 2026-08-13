@@ -24,13 +24,15 @@ Where an older document conflicts with the first four, the first four control.
   `/accustandard/demo`.
 - Backend: `backend/cmd/server` Go API below
   `/accustandard/demo/api/v1`.
-- Database: PostgreSQL 17 through the legacy-cleanup migration,
-  GORM `AutoMigrate`, and idempotent demo seed
-  `backend/migrations/002_seed_data.sql`.
-- Database startup order is PostgreSQL health → legacy cleanup → GORM
-  `AutoMigrate` → seed SQL. Seed `INSERT` targets must use each model’s
-  default pluralized snake_case GORM table name; the focused backend test
-  checks this contract without requiring SSH or a live database.
+- Database: PostgreSQL 17 through legacy cleanup,
+  `backend/migrations/004_reconcile_runtime_columns.sql`, GORM `AutoMigrate`,
+  and idempotent demo seed `backend/migrations/002_seed_data.sql`.
+- Database startup order is PostgreSQL health → legacy cleanup → legacy-column
+  reconciliation → GORM `AutoMigrate` → seed SQL. Reconciliation preserves
+  pre-fix `d_csstatus`/`s_idate` values as canonical `dcs_status`/`si_date`
+  columns. Seed `INSERT` targets must use each model’s default pluralized
+  snake_case GORM table name; focused backend tests check these contracts
+  without requiring SSH or a live database.
 - The obsolete prototype server, Drizzle schema/configuration, and incompatible
   prototype SQL files were removed. They are not part of the deployed demo.
 - The browser seed is an offline rendering fallback. The reset timer uses
@@ -119,6 +121,10 @@ rewrites. No legacy database backup is retained. The reset helper emits
 line-free state tokens (`version:17`, `version:16`, `invalid`, or `empty`),
 fixing the parser ambiguity that produced values such as `emptyn` while
 preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
+- Container base images are version-pinned for the current demo release:
+  Node `24.18-alpine3.24`, Go `1.26.5-alpine3.24`, Alpine `3.24.1`, Nginx
+  `1.30.4-alpine`, and PostgreSQL `17.10-alpine3.24`. Remote builds use
+  `--pull=always`; version changes require a reviewed dependency refresh.
 
 ## Validation record
 
@@ -127,6 +133,33 @@ local host builds are not required. Remote VPS deployment, PostgreSQL
 integration, authentication, and the full acceptance matrix remain unverified
 unless a dated run is recorded here. This status file must not claim a
 production acceptance release from a lint/build result alone.
+
+### 2026-08-14 deployment incident repair
+
+- The attached deployment transcript's SQLSTATE `42703` was reproduced:
+  GORM generated `d_csstatus` while seed SQL required `dcs_status`; the
+  latent `s_idate`/`si_date` mismatch was repaired in the same pass.
+- Canonical GORM column tags, the idempotent compatibility migration, and
+  transactional runtime SQL execution are implemented. The compatibility
+  migration copies legacy values before removing old aliases with incompatible
+  `NOT NULL` constraints.
+- Disposable PostgreSQL 17 Podman integration passed from an empty database:
+  API readiness returned `{"db":"connected","status":"ready"}` and seed
+  data loaded.
+- Legacy-schema integration passed with pre-fix `d_csstatus`/`s_idate` columns:
+  values were preserved in `dcs_status`/`si_date`, old aliases were removed,
+  and readiness succeeded.
+- Restarting the API against the reconciled database passed without changing
+  seeded row counts. Backend `go test ./...` and `go vet ./...` passed in
+  disposable Podman.
+- The invalid non-hex seed UUID literals found after the first repair were
+  corrected and are covered by the seed validation contract.
+- Pinned `node:24.18-alpine3.24` passed `npm ci`, `npm run lint`,
+  `npx tsc --noEmit`, and `npm run build`; pinned frontend and backend image
+  builds also completed in Podman. npm reported 3 dependency audit findings
+  and a newer npm notice; no automatic upgrade was applied.
+- The remote VPS deployment was not run in this audit; operator verification
+  remains required after publishing.
 
 ### 2026-08-12 UI/documentation pass
 
@@ -173,6 +206,14 @@ export guide](https://nextjs.org/docs/app/guides/static-exports),
 [WCAG 2.2](https://www.w3.org/TR/WCAG22/), and
 [Radix accessibility guidance](https://www.radix-ui.com/primitives/docs/overview/accessibility).
 Existing Radix components do not require a shadcn migration.
+
+The current container pins follow the official supported release lines: Node
+24.18 LTS, Go 1.26.5, PostgreSQL 17.10, Alpine 3.24.1, and Nginx 1.30.4.
+Refresh these pins deliberately and re-run the disposable build and database
+integration checks when upstream security or maintenance releases change.
+The release references are [Node's supported releases](https://nodejs.org/en/about/previous-releases),
+[Go's release history](https://go.dev/doc/devel/release), and
+[PostgreSQL 17.10 release notes](https://www.postgresql.org/docs/17/release-17-10.html).
 
 The security review uses OWASP Top 10:2025 and ASVS 5.0 as current references.
 This is guidance for the next hardening phase, not a claim of compliance.
