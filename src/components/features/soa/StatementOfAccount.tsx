@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 
 interface StatementOfAccountProps {
   soaRows: any[];
@@ -298,7 +299,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
         </div>
       </div>
 
-      {/* Table */}
+      {/* Official printable table: keep controlled document columns unchanged. */}
       <div className="mb-6">
         <table className="w-full border-collapse" style={{ border: '1px solid #1e293b', width: '100%' }}>
           <thead>
@@ -323,36 +324,14 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                 <td style={{ border: '1px solid #1e293b', padding: '6px' }}>{row.siDate}</td>
                 <td style={{ border: '1px solid #1e293b', padding: '6px' }}>{row.dueDate}</td>
                 <td style={{ border: '1px solid #1e293b', padding: '6px', fontWeight: 'bold' }}>{row.age || row.ageDays}</td>
-                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>
-                  ₱{Number(row.invoiceAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                </td>
-                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right' }}>
-                  {row.amountPaid ? `₱${Number(row.amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '-'}
-                </td>
-                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>
-                  ₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                </td>
-                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>
-                  ₱{Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                </td>
+                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>₱{Number(row.invoiceAmount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right' }}>{row.amountPaid ? `₱${Number(row.amountPaid).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '-'}</td>
+                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td style={{ border: '1px solid #1e293b', padding: '6px', textAlign: 'right', fontWeight: '600' }}>₱{Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
                 <td className="no-print" style={{ border: '1px solid #1e293b', padding: '4px', textAlign: 'center' }}>
                   <div className="flex items-center justify-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setEditingRow({ ...row })}
-                      className="p-1 rounded text-blue-700 hover:bg-blue-100 transition cursor-pointer"
-                      title="Edit Invoice Entry"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRow(row.id || row.salesInvoiceNo, row.salesInvoiceNo)}
-                      className="p-1 rounded text-red-600 hover:bg-red-100 transition cursor-pointer"
-                      title="Delete Invoice Row"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <button type="button" onClick={() => setEditingRow({ ...row })} className="p-1 rounded text-blue-700 hover:bg-blue-100 transition cursor-pointer" title="Edit Invoice Entry"><Edit className="w-3.5 h-3.5" /></button>
+                    <button type="button" onClick={() => handleDeleteRow(row.id || row.salesInvoiceNo, row.salesInvoiceNo)} className="p-1 rounded text-red-600 hover:bg-red-100 transition cursor-pointer" title="Delete Invoice Row"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </td>
               </tr>
@@ -398,13 +377,14 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   );
 
   return (
-    <div className="space-y-6 w-full text-slate-900">
+    <div className="feature-module space-y-6 w-full text-slate-900">
+      <WorkflowStepper currentStep="SOA" compact />
       {/* Module Title Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="wayfinding-card flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 p-6">
         <div>
-          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <FileCheck className="w-6 h-6 text-blue-900" />
-            Statement of Account (SOA) &amp; Client Collections
+            Statement of account &amp; collections
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             Client aging ledger, payment check allocation, and official statement generator
@@ -470,6 +450,20 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
           <span>Rep: <strong className="text-blue-950">{activeClient.salesperson}</strong></span>
         </div>
       </div>
+
+      <section aria-labelledby="soa-aging-overview" className="wayfinding-card table-responsive-wrapper">
+        <div className="border-b border-slate-200 px-4 py-3"><h3 id="soa-aging-overview" className="text-sm font-black text-slate-900">Aging overview</h3><p className="mt-0.5 text-xs font-medium text-slate-500">High-signal balances are shown here. The official printable statement below keeps its controlled format.</p></div>
+        <table className="wayfinding-grid w-full min-w-[720px] border-collapse text-sm">
+          <thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wider text-slate-700"><tr><th className="p-4">Invoice</th><th className="p-4">Client</th><th className="p-4">Due date</th><th className="p-4 text-center">Status</th><th className="p-4 text-right">Balance</th><th className="p-4 text-center">Details</th></tr></thead>
+          <tbody className="divide-y divide-slate-200">
+            {computedRows.map((row, index) => {
+              const age = Number(row.age || row.ageDays || 0);
+              const isPaid = Number(row.invoiceBalance) <= 0;
+              return <tr key={`overview-${row.id || index}`} className="transition hover:bg-blue-50/50"><td className="p-4 font-mono font-black text-blue-950">{row.salesInvoiceNo}</td><td className="p-4 font-bold text-slate-900">{activeClient.name}</td><td className="p-4 text-xs font-semibold text-slate-600">{row.dueDate}</td><td className="p-4 text-center">{isPaid ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Paid</span> : age > 30 ? <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Overdue</span> : <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Open</span>}</td><td className="p-4 text-right font-mono font-black">₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td><td className="p-4 text-center"><details className="relative inline-block"><summary className="min-h-[44px] cursor-pointer list-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-100">Inspect</summary><div className="absolute right-0 z-10 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 text-left text-xs shadow-xl"><p className="font-black text-slate-900">{row.drNo}</p><p className="mt-1 text-slate-600">Amount paid: ₱{Number(row.amountPaid || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p><p className="mt-1 text-slate-600">Running balance: ₱{Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p></div></details></td></tr>;
+            })}
+          </tbody>
+        </table>
+      </section>
 
       {/* Live Rendered SOA Document Preview Container */}
       <div className="bg-slate-100/90 p-2.5 sm:p-6 rounded-3xl border border-slate-300 shadow-2xs space-y-3">

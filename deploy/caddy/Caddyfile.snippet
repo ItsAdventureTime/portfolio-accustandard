@@ -2,27 +2,27 @@
 # Host: delegateops.business
 
 delegateops.business {
-    # Demo API: preserve /accustandard/demo/api/v1 for the Go router.
-    handle /accustandard/demo/api/* {
-        reverse_proxy 127.0.0.1:8080
-    }
+	# Demo API: preserve /accustandard/demo/api/v1 for the Go router.
+	handle /accustandard/demo/api/* {
+		reverse_proxy 127.0.0.1:8080
+	}
 
-    # Demo static export: https://delegateops.business/accustandard/demo/
-    handle_path /accustandard/demo/* {
-        root * /home/jk/bridge-ph/accustandard-demo/web-dist
-        try_files {path} /index.html
-        file_server
-    }
+	# Demo static export: https://delegateops.business/accustandard/demo/
+	handle_path /accustandard/demo/* {
+		root * /home/jk/bridge-ph/accustandard-demo/web-dist
+		try_files {path} /index.html
+		file_server
+	}
 
-    # Production Site: https://delegateops.business/accustandard
-    handle_path /accustandard/* {
-        reverse_proxy 127.0.0.1:3000
-    }
+	# Production Site: https://delegateops.business/accustandard
+	handle_path /accustandard/* {
+		reverse_proxy 127.0.0.1:3000
+	}
 
-    encode gzip zstd
-    header {
-        Strict-Transport-Security "max-age=31536000;"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "SAMEORIGIN"
-    }
+	encode gzip zstd
+	header {
+		Strict-Transport-Security "max-age=31536000;"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+	}
 }

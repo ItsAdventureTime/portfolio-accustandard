@@ -10,6 +10,11 @@
 > QBO API integration.
 > **Convention:** Requirements use RFC-style keywords — MUST (mandatory), SHOULD (strongly recommended), MAY (optional).
 
+> **Authority map:** `implementation_plan.md` governs UI/UX scope; this spec
+> and the confirmed acceptance handoff govern business rules;
+> `IMPLEMENTATION_STATUS.md` governs actual runtime status; operational
+> guidance belongs in `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
+
 ---
 
 ## 1. Business Context
@@ -200,7 +205,9 @@ The web application UI/UX is built on a **Light Corporate Medical System** enfor
 
 ### 6.3 Kinetic Micro-Interactions & Physics
 - **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
-- **Sidebar Translations:** Navigation links translate rightward on hover (`hover:translate-x-1 transition-all duration-200`).
+- **Primary Navigation:** Desktop uses a horizontal role-filtered navigation
+  bar with an active underline; mobile uses the drawer/bottom-navigation
+  variant. All destinations retain visible hover and keyboard focus states.
 - **Dialog Entrance Motion:** Popups use smooth backdrop fade-in (`animate-in fade-in duration-200`) and dialog container zoom (`animate-in zoom-in-95 duration-200`).
 
 ### 6.4 Standardized Interactive Pill Badge System

@@ -14,6 +14,12 @@ It is optimized around one governing idea:
 
 > Treat the LLM as a **policy-constrained interface architect and compiler**, not an unrestricted screen generator.
 
+> **Repository authority:** This generic prompt is non-authoritative.
+> `implementation_plan.md` governs UI/UX scope; the confirmed acceptance
+> handoff governs business rules; `IMPLEMENTATION_STATUS.md` governs runtime
+> status; `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md` govern
+> operations.
+
 For this repository, this prompt governs interface quality only. Business
 workflow, persistence, approval, and acceptance behavior are controlled by
 `IMPLEMENTATION_STATUS.md`, the confirmed developer handoff, and the

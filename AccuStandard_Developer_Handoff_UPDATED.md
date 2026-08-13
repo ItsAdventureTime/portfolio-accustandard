@@ -7,6 +7,11 @@ language: "English (US)"
 date: "2026-08-10"
 ---
 
+> **Authority:** `implementation_plan.md` governs UI/UX scope. This confirmed
+> handoff governs business rules; `IMPLEMENTATION_STATUS.md` governs actual
+> runtime status; `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md` govern
+> operations. Older prompts and transcripts are historical.
+
 # AccuStandard ERP Demo — Developer Handoff
 
 ## 1. Executive Summary

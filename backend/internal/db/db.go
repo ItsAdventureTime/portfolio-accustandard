@@ -25,8 +25,25 @@ func InitDB(dsn string) (*gorm.DB, error) {
 
 	DB = db
 
+	if err := runRuntimeSQL(db, "migrations/003_cleanup_legacy_schema.sql"); err != nil {
+		return nil, err
+	}
+
 	log.Println("==> Running GORM AutoMigrations...")
-	err = db.AutoMigrate(
+	err = db.AutoMigrate(runtimeModels()...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to apply runtime schema: %w", err)
+	}
+
+	if err := runRuntimeSeed(db); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func runtimeModels() []interface{} {
+	return []interface{}{
 		&models.Location{},
 		&models.Item{},
 		&models.InventoryStock{},
@@ -40,35 +57,23 @@ func InitDB(dsn string) (*gorm.DB, error) {
 		&models.PaymentRequest{},
 		&models.QBOQueueItem{},
 		&models.AuditLog{},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to apply runtime schema: %w", err)
 	}
-
-	if err := runRuntimeSeed(db); err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func runRuntimeSeed(db *gorm.DB) error {
-	// The demo runtime uses the GORM model schema above. The older 001 and
-	// 002_seed_demo_data SQL files describe a different prototype schema and
-	// are intentionally not executed by the deployed service.
-	migrationFiles := []string{"migrations/002_seed_data.sql"}
+	return runRuntimeSQL(db, "migrations/002_seed_data.sql")
+}
 
-	for _, file := range migrationFiles {
-		cleanPath := filepath.Clean(file)
-		content, err := os.ReadFile(cleanPath)
-		if err != nil {
-			return fmt.Errorf("failed to read runtime seed %s: %w", file, err)
-		}
+func runRuntimeSQL(db *gorm.DB, file string) error {
+	cleanPath := filepath.Clean(file)
+	content, err := os.ReadFile(cleanPath)
+	if err != nil {
+		return fmt.Errorf("failed to read runtime SQL %s: %w", file, err)
+	}
 
-		log.Printf("==> Executing SQL script: %s", file)
-		if err := db.Exec(string(content)).Error; err != nil {
-			return fmt.Errorf("failed to execute runtime seed %s: %w", file, err)
-		}
+	log.Printf("==> Executing SQL script: %s", file)
+	if err := db.Exec(string(content)).Error; err != nil {
+		return fmt.Errorf("failed to execute runtime SQL %s: %w", file, err)
 	}
 	return nil
 }

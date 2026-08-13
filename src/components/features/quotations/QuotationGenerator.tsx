@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 
 interface QuotationGeneratorProps {
   rfqList: any[];
@@ -270,13 +271,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   );
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="feature-module space-y-6 text-slate-900">
       {/* Header Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <FileText className="w-6 h-6 text-amber-600" />
-            Sales Quotation &amp; Demand Qualification Engine
+            Quotations &amp; RFQ
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             RFQ Creation &bull; Marketing ROI Calculator &bull; 3-Day FEFO Stock Reservation &bull; A4 PDF Printing
@@ -340,6 +341,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           </button>
         </div>
       </div>
+
+      <WorkflowStepper currentStep={activeSubTab === 'RFQ' ? 'RFQ' : 'Quote'} compact />
 
       {/* Sub-Tab Navigation Bar & ROI Popup Trigger */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -433,21 +436,20 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div className="wayfinding-card overflow-hidden">
             <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
               &larr; Swipe table horizontally for details &rarr;
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
+            <div className="table-responsive-wrapper">
+              <table className="wayfinding-grid w-full text-left text-sm border-collapse">
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
                   <tr>
                     <th className="p-4">RFQ Ref #</th>
-                    <th className="p-4">Customer Facility</th>
-                    <th className="p-4">Sales Agent</th>
-                    <th className="p-4 text-center">Daily Census</th>
-                    <th className="p-4 text-center">LIS Needed</th>
-                    <th className="p-4 text-right">Contract Term</th>
-                    <th className="p-4">Marketing ROI Status</th>
+                    <th className="p-4">Customer facility</th>
+                    <th className="p-4">Date</th>
+                    <th className="p-4 text-center">Status</th>
+                    <th className="p-4 text-right">Estimated total</th>
+                    <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -470,27 +472,16 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                         </button>
                       </td>
                       <td className="p-4 font-extrabold text-slate-900 text-sm sm:text-base">{rfq.customerName}</td>
-                      <td className="p-4 text-slate-700 text-xs sm:text-sm font-semibold">{rfq.requestedBy}</td>
-                      <td className="p-4 text-center font-mono font-black text-slate-900 text-sm sm:text-base">{rfq.censusPerDay} / day</td>
+                      <td className="p-4 text-xs font-semibold text-slate-700">{rfq.createdAt || rfq.requestedAt || '—'}</td>
                       <td className="p-4 text-center">
-                        {rfq.lisConnectivity ? (
-                          <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold rounded-xl inline-block shadow-2xs">Yes</span>
-                        ) : (
-                          <span className="px-3 py-1 bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl inline-block shadow-2xs">No</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-right font-mono font-black text-slate-900 text-sm sm:text-base">{rfq.expectedContractMonths} Months</td>
-                      <td className="p-4">
                         {rfq.marketingRoiStatus === 'ROI_COMPLETED' ? (
-                          <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold rounded-xl inline-block shadow-2xs">
-                            ROI Calculated ({rfq.expectedMarginPct}%)
-                          </span>
+                          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Ready for quote</span>
                         ) : (
-                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-extrabold rounded-xl inline-block shadow-2xs">
-                            Pending Marketing Review
-                          </span>
+                          <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Pending review</span>
                         )}
                       </td>
+                      <td className="p-4 text-right font-mono font-black text-slate-900">{rfq.proposedSellingPrice ? `₱${Number(rfq.proposedSellingPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}</td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedRfqModal(rfq)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -827,6 +818,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 <X className="w-6 h-6" />
               </button>
             </div>
+
+            <WorkflowStepper currentStep="RFQ" compact />
 
             {/* Document Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-200/90 text-sm font-semibold">

@@ -4,7 +4,7 @@ Description=Accustandard Dashboard Production PostgreSQL Database
 [Container]
 ContainerName=accustandard-db
 Pod=accustandard-pod.pod
-Image=postgres:alpine
+Image=docker.io/library/postgres:alpine
 Environment=POSTGRES_USER=accustandard
 Environment=POSTGRES_PASSWORD=accustandardpass
 Environment=POSTGRES_DB=accustandard_db

@@ -41,13 +41,13 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
   };
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="feature-module space-y-6 text-slate-900">
       {/* Module Title & Actions Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <CreditCard className="w-6 h-6 text-purple-800" />
-            Request for Payment (RFP) Non-PO Expense Vouchers
+            Requests for payment
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             GL Chart of Accounts Picklist &bull; Disbursement Approval Chain &bull; Bank Releasing
@@ -64,20 +64,20 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
       </div>
 
       {/* Live RFP Vouchers Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="wayfinding-card overflow-hidden">
         <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
           &larr; Swipe table horizontally for details &rarr;
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+        <div className="table-responsive-wrapper">
+          <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
                 <th className="p-4">RFP Voucher ID</th>
                 <th className="p-4">Payee / Vendor</th>
-                <th className="p-4">GL Account Description</th>
-                <th className="p-4">Requested By</th>
+                <th className="p-4">Date</th>
+                <th className="p-4 text-center">Status</th>
                 <th className="p-4 text-right">Amount</th>
-                <th className="p-4 text-center">Status / Action</th>
+                <th className="p-4 text-center">Primary action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -100,20 +100,21 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                     </button>
                   </td>
                   <td className="p-4 font-bold text-slate-900">{rfp.payee}</td>
-                  <td className="p-4 text-xs font-semibold text-slate-700">{rfp.glAccount}</td>
-                  <td className="p-4 text-xs font-semibold text-slate-700">{rfp.requestedBy}</td>
+                  <td className="p-4 text-xs font-semibold text-slate-700">{rfp.createdAt || rfp.requestedDate || '—'}</td>
+                  <td className="p-4 text-center">
+                    {rfp.status === 'DISBURSED_PAID' ? <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Paid</span> : rfp.status === 'REJECTED' || rfp.status === 'OVERDUE' ? <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Blocked</span> : <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Pending review</span>}
+                  </td>
                   <td className="p-4 text-right font-mono font-extrabold text-slate-900">
                     ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="p-4 text-center">
                     {rfp.status === 'DISBURSED_PAID' ? (
-                      <span className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-900 border border-purple-300 font-extrabold text-xs">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-purple-700" /> Disbursed ({rfp.releasedBank?.split(' ')[0] || 'Paid'})
-                      </span>
+                      <button type="button" onClick={() => setInspectingRfp(rfp)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => setReleasingRfp(rfp)}
-                        className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs rounded-xl transition inline-flex items-center gap-1 shadow-2xs"
+                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-extrabold text-white shadow-2xs transition hover:bg-emerald-800"
                       >
                         <Landmark className="w-3.5 h-3.5" />
                         <span>Release Fund</span>

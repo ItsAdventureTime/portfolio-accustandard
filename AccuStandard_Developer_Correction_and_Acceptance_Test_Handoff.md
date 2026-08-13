@@ -1,4 +1,10 @@
 ---
+
+> **Authority:** This confirmed handoff governs business rules and acceptance
+> behavior. `implementation_plan.md` governs UI/UX scope;
+> `IMPLEMENTATION_STATUS.md` governs actual runtime status; `README.md`,
+> `ARCHITECTURE.md`, and `CONTRIBUTING.md` govern operations. Older prompts
+> and transcripts are historical.
 title: "AccuStandard ERP — Developer Correction and Acceptance Test Handoff"
 document_type: "Implementation Correction Pack and Acceptance Test Specification"
 version: "1.0"

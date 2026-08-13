@@ -10,6 +10,12 @@
 > not override the repository's confirmed developer handoff, correction/
 > acceptance handoff, or `IMPLEMENTATION_STATUS.md`.
 
+> **Authority map:** `implementation_plan.md` governs repository UI/UX scope;
+> the confirmed acceptance handoff governs business rules;
+> `IMPLEMENTATION_STATUS.md` governs runtime status; operational guidance is
+> in `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`. This generic
+> reference is non-authoritative.
+
 ---
 
 ## 1. Mission

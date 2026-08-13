@@ -1,6 +1,7 @@
 [Unit]
 Description=Accustandard Go Backend REST API Demo Container
 After=accustandard-demo-db.service
+Requires=accustandard-demo-db.service
 
 [Container]
 ContainerName=accustandard-demo-app
@@ -8,9 +9,11 @@ Pod=accustandard-demo-pod.pod
 Image=localhost/accustandard-bridge-backend:demo
 Environment=PORT=8080
 Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db?sslmode=disable
+StartWithPod=false
 
 [Service]
 Restart=always
+TimeoutStartSec=900
 
 [Install]
 WantedBy=default.target

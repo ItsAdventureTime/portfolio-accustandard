@@ -14,6 +14,7 @@ import {
   X,
   FileCheck,
 } from 'lucide-react';
+import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 
 interface PurchasingReceivingProps {
   poList: any[];
@@ -30,16 +31,18 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
   onOpenVendorInvoiceModal,
   onOpenThreeWayMatchModal,
 }) => {
+  const [activeTab, setActiveTab] = useState<'PO' | 'RR'>('PO');
   const [selectedPoModal, setSelectedPoModal] = useState<any | null>(null);
+  const receivingReportCount = poList.filter((po) => Number(po.rrQtyReceived || 0) > 0).length;
 
   return (
-    <div className="space-y-6 text-slate-900">
+    <div className="feature-module space-y-6 text-slate-900">
       {/* Module Title & Actions Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-950 flex items-center gap-2">
             <Building2 className="w-6 h-6 text-blue-800" />
-            Purchasing &amp; Receiving Control (3-Way Match &amp; Fraud Prevention)
+            Purchasing &amp; receiving
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             Strict Over-Receiving Prevention &bull; Warehouse Receiving Report (RR) Entry Access
@@ -94,23 +97,40 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
         </div>
       </div>
 
+      <div className="inline-flex w-full flex-col gap-1 rounded-2xl border border-slate-200 bg-slate-100 p-1.5 sm:w-auto sm:flex-row" aria-label="Purchasing and receiving views">
+        <button
+          type="button"
+          onClick={() => setActiveTab('PO')}
+          aria-pressed={activeTab === 'PO'}
+          className={`min-h-[44px] rounded-xl px-4 py-2.5 text-left text-sm font-black transition sm:text-center ${activeTab === 'PO' ? 'bg-blue-900 text-white shadow-sm' : 'text-slate-700 hover:bg-white'}`}
+        >
+          Purchase orders ({poList.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('RR')}
+          aria-pressed={activeTab === 'RR'}
+          className={`min-h-[44px] rounded-xl px-4 py-2.5 text-left text-sm font-black transition sm:text-center ${activeTab === 'RR' ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-700 hover:bg-white'}`}
+        >
+          Receiving reports ({receivingReportCount})
+        </button>
+      </div>
+
       {/* Live PO & Receiving Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="wayfinding-card overflow-hidden">
         <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
           &larr; Swipe table horizontally for details &rarr;
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+        <div className="table-responsive-wrapper">
+          <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
-                <th className="p-4">PO Number</th>
-                <th className="p-4">Vendor Name</th>
-                <th className="p-4">Item Description</th>
-                <th className="p-4 text-right">PO Qty</th>
-                <th className="p-4 text-right">RR Received</th>
-                <th className="p-4">Invoice Ref</th>
-                <th className="p-4 text-right">Total Amount</th>
-                <th className="p-4 text-center">3-Way Status</th>
+                <th className="p-4">{activeTab === 'PO' ? 'PO Number' : 'RR / PO reference'}</th>
+                <th className="p-4">{activeTab === 'PO' ? 'Vendor Name' : 'Item / supplier'}</th>
+                <th className="p-4">{activeTab === 'PO' ? 'Date' : 'Approved quantity'}</th>
+                <th className="p-4 text-center">Status</th>
+                <th className="p-4 text-right">{activeTab === 'PO' ? 'Total Amount' : 'Received / remaining'}</th>
+                <th className="p-4 text-center">Primary action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
@@ -132,25 +152,29 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                       <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                     </button>
                   </td>
-                  <td className="p-4 font-bold text-slate-900">{po.vendorName}</td>
-                  <td className="p-4 text-xs font-semibold text-slate-700">{po.itemDescription}</td>
-                  <td className="p-4 text-right font-mono font-bold text-slate-900">{po.poQty}</td>
-                  <td className="p-4 text-right font-mono font-bold text-emerald-800">
-                    {po.rrQtyReceived}
+                  <td className="p-4 font-bold text-slate-900">{activeTab === 'PO' ? po.vendorName : `${po.itemDescription} · ${po.vendorName}`}</td>
+                  <td className="p-4 text-xs font-semibold text-slate-700">{activeTab === 'PO' ? (po.createdAt || po.orderDate || '—') : `${po.poQty} units`}</td>
+                  <td className="p-4 text-center">
+                    {activeTab === 'PO' ? po.rrQtyReceived >= po.poQty ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Complete</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900"><Clock className="h-4 w-4 text-amber-600" /> Pending receiving</span>
+                    ) : po.rrQtyReceived >= po.poQty ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900"><CheckCircle2 className="h-4 w-4 text-emerald-600" /> Complete</span>
+                    ) : po.rrQtyReceived > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900"><Clock className="h-4 w-4 text-amber-600" /> Partially received</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-extrabold text-slate-700"><Clock className="h-4 w-4 text-slate-500" /> Not received</span>
+                    )}
                   </td>
-                  <td className="p-4 font-mono text-xs text-slate-600">{po.invoiceRef}</td>
                   <td className="p-4 text-right font-mono font-extrabold text-slate-900">
-                    ₱{po.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {activeTab === 'PO' ? `₱${Number(po.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : `${po.rrQtyReceived || 0} / ${Math.max(0, po.poQty - (po.rrQtyReceived || 0))} units`}
                   </td>
                   <td className="p-4 text-center">
-                    {po.rrQtyReceived >= po.poQty ? (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 font-extrabold text-xs shadow-2xs">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> 3-Way Verified
-                      </span>
+                    {activeTab === 'PO' ? (
+                      <button type="button" onClick={() => setSelectedPoModal(po)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button>
                     ) : (
-                      <span className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-xs shadow-2xs">
-                        <Clock className="w-4 h-4 text-amber-600" /> Pending Receiving
-                      </span>
+                      <button type="button" onClick={(event) => { event.stopPropagation(); onOpenReceivingModal(); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-800"><PackageCheck className="h-4 w-4" /> Enter RR</button>
                     )}
                   </td>
                 </tr>
@@ -184,6 +208,8 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
                 <X className="w-6 h-6" />
               </button>
             </div>
+
+            <WorkflowStepper currentStep="PO" compact />
 
             {/* PO Info Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-2xl font-semibold text-sm">

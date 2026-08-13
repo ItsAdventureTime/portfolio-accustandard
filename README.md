@@ -11,13 +11,21 @@ QBO behavior is a queue/demo stub, not a live QuickBooks Online connection.
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the audited
 boundary and validation record.
 
+**Source of truth:** [`implementation_plan.md`](implementation_plan.md) governs
+UI/UX scope; the confirmed acceptance handoff governs business rules;
+[`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) governs actual runtime
+status; this README plus `ARCHITECTURE.md` and `CONTRIBUTING.md` govern
+operations. The visual and accessibility rules are maintained in
+[`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md).
+
 ---
 
 ## 🌐 Live Demo System URL
 
 - **Live Demo Site:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
 
-*(Note: Production builds are put on hold until the Demo site is fully reviewed and approved by leadership.)*
+This URL is a demo environment only. It is not a production release or proof
+that incomplete backend controls are complete.
 
 ---
 
@@ -34,12 +42,16 @@ Medical supply chain operations handle high-value equipment, sensitive diagnosti
 
 ## 🎨 Design & User Experience
 
-The dashboard uses a **Light Corporate Medical System**:
-- **Canvas:** Crisp `#F8FAFC` slate background
-- **Cards:** Clean `#FFFFFF` container cards with `#E2E8F0` borders
-- **Primary Brand Color:** Deep Royal Navy (`#1E3A8A`)
-- **Accent Color:** Bright Medical Red (`#DC2626`)
-- **Ergonomics:** Responsive on mobile devices with touch-friendly barcode scanning and clear role lock indicators.
+The dashboard uses a **Light Corporate Medical System** anchored to the
+provided AccuStandard wordmark at
+`public/photo_2026-08-01_23-55-07.jpg`:
+- **Canvas:** Anti-glare `#F4F7FB` with white data surfaces
+- **Primary Brand Color:** AccuStandard navy (`#17356F`) and royal (`#2C4296`)
+- **Signature Accent:** Rx red (`#B4232F`) for attention states and brand cues
+- **Ergonomics:** Role-tailored action cards, 44px-class touch targets, visible
+  keyboard focus, reduced-motion support, and responsive mobile navigation.
+- **Status:** API connectivity is always explicit; offline demo behavior is
+  labeled and is never presented as persisted business data.
 
 ---
 
@@ -71,7 +83,7 @@ In User & Audit Logs, user rows open an expanded **User Access Profile & Role Pe
 
 ### 8. QuickBooks Online (QBO) Export Queue & Go REST API
 Dedicated queue drawer (`max-w-4xl`) holding validated demo transactions
-backed by Go REST controllers and PostgreSQL 16. Direct QBO API integration
+backed by Go REST controllers and PostgreSQL 17. Direct QBO API integration
 remains future scope.
 
 ---
@@ -108,39 +120,49 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ## 🚀 GitHub CLI (`gh`) Remote Standard
 
-Remote synchronization uses only the official GitHub CLI (`gh`) over
-authenticated HTTPS. Do not use `git push`, SSH remotes, passkeys, or SSH
-keys for remote work.
-   ```bash
-   gh auth status
-   gh repo view ItsAdventureTime/bridge-accustandard
+Follow [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md), the canonical
+repository synchronization guide. `gh auth setup-git` configures GitHub CLI's
+credential helper; the subsequent `git push` uses the verified HTTPS remote.
+There is no separate `gh push` command. Never use SSH remotes, SSH keys,
+`gh ssh-key`, or passkeys for GitHub repository operations. VPS deployment
+transfer is a separate user-run SSH/rsync operation.
 
-   gh repo sync ItsAdventureTime/bridge-accustandard
-   gh pr create --fill
-   ```
+```bash
+gh auth status --active --hostname github.com
+gh config set git_protocol https --host github.com
+gh auth setup-git --hostname github.com
+git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
+git push --set-upstream origin <branch-name>
+```
 
 ---
 
-## 🚀 Quick Start (Local Development)
+## 🚀 Quick Start (Remote Demo Deployment)
+
+For the complete website/API release procedure, prerequisites, verification,
+diagnostics, Backblaze asset handling, and production boundary, see
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
 ### Prerequisites
-- Node.js 20.9+ (Node.js 24 is used by the remote build container)
-- npm 9+
 - GitHub CLI (`gh`) authenticated via HTTPS
+- SSH and `rsync` access to the demo VPS
 
-### Setup Commands
+### Deployment command
+
+This repository uses a remote-first workflow. On macOS, do not install
+dependencies or run a host Node/npm build for the demo. The deployment script
+only synchronizes source; the VPS performs the frontend build in disposable
+Podman and publishes the resulting static export.
+
 ```bash
-# 1. Clone the repository over HTTPS using GitHub CLI
 gh repo clone ItsAdventureTime/bridge-accustandard
 cd bridge-accustandard
-
-# 2. Install dependencies
-npm install
-
-# 3. Start local development server
-npm run dev
+npm run deploy:demo
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser to test the interactive dashboard.
+
+For disposable lint/export validation, use the Podman command in
+`CONTRIBUTING.md`; it copies the repository into an anonymous volume so
+dependencies and generated output do not remain in the checkout.
 
 ---
 
@@ -148,35 +170,105 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to test the 
 
 The deployment procedure performs no local build, compilation, or application
 execution. Source is synchronized to the VPS, where the frontend is built in a
-disposable container and the backend image is built for the existing Quadlet:
+disposable container and the backend image is built for the existing Quadlet.
+The script then starts PostgreSQL, waits for `pg_isready`, restarts the API,
+verifies both user services, and waits up to 60 seconds for the API readiness
+endpoint with curl retries:
+
+The demo VPS is Fedora CoreOS with rootless Podman and user Quadlets. The
+deployment therefore uses `systemctl --user`, `loginctl enable-linger`, and
+`~/.config/containers/systemd/`; the VPS resolves its own `/usr/bin/podman`.
+The database bind mount is labeled for Fedora SELinux, and the deployment
+stops the old demo pod before reloading the updated Quadlets. If the demo
+`PG_VERSION` is not `17`, or the data directory is non-empty without a valid
+`PG_VERSION`, the deployment removes that disposable demo data and initializes
+PostgreSQL 17; no backup is retained, per demo policy. The PostgreSQL Quadlet
+uses a `pg_isready` healthcheck with `Notify=healthy`, so the API service starts
+after the database is accepting connections. API startup then applies the
+runtime schema and idempotent demo seed in this order: legacy cleanup, GORM
+`AutoMigrate`, then seed SQL. Seed targets must match the default GORM
+pluralized snake_case names derived from the Go models (including
+`inventory_stocks` and `qbo_queue_items`). Because rootless PostgreSQL files may
+be owned by subordinate UID mappings, the reset script inspects and removes
+the demo data directory through `podman unshare`; it does not use recursive
+`:U` ownership rewriting. The state probe emits line-free tokens such as
+`version:17`, `version:16`, `invalid`, and `empty`, preventing command
+substitution from turning a marker into a value such as `emptyn`.
+
+The database Quadlet's `Notify=healthy` gate covers database/container health;
+it does not guarantee that the Go HTTP listener is already accepting requests.
+The VPS scripts therefore retry transient curl startup failures, including a
+connection reset, before failing. On an API readiness timeout they print the
+API unit status and the last 100 journal lines, then exit nonzero.
 
 ```bash
-podman run --rm --userns=keep-id \
+podman run --pull=always --rm --userns=keep-id \
   -v "/home/jk/bridge-ph/accustandard-demo/source:/workspace:Z" \
   -v /workspace/node_modules \
   -v /workspace/.next \
   -w /workspace \
-  node:24-alpine \
-  sh -lc "npm ci && npm run build"
+docker.io/library/node:lts-alpine \
+  sh -lc "npm ci --no-audit --no-fund && npm run build"
 ```
 
-`--rm` removes the temporary frontend build container after it exits. The Go
-runtime image is intentionally retained because the Quadlet references it as
-`localhost/accustandard-bridge-backend:demo`.
+The `build` script uses Next's official `--webpack` opt-out. Next.js 16 uses
+Turbopack by default, but the demo builder is resource-constrained and the
+Turbopack build was killed by the available container memory. Keep this
+fallback until the VPS build host has been sized and verified for Turbopack.
+
+The backend builder intentionally uses the moving official
+`docker.io/library/golang:alpine` tag in `backend/Dockerfile`. Validation and
+VPS builds must use that exact floating tag; do not substitute a versioned Go
+image. Remote image builds use `--pull=always` so cached floating tags are
+refreshed on each deployment.
+
+`--rm` removes the temporary frontend build container and its anonymous
+dependency volumes after it exits. The Go build uses `--layers=false` and
+`--force-rm`; its final runtime image is intentionally retained because the
+Quadlet references it as `localhost/accustandard-bridge-backend:demo`.
+After publishing, the remote deployment trap removes `out/`, `node_modules/`,
+and `.next/` from the synchronized source; `web-dist/` is the published static
+artifact.
 
 ---
 
 ## ⚡ 1-Command Automated Demo Deployment
 
 To synchronize source, build remotely, publish the static export, install the
-demo Quadlets, and restart only the demo API in **1 single command**:
+demo Quadlets, start PostgreSQL, wait for database and API readiness, and
+restart the demo API in **1 single command**:
 
 ```bash
-# Option A: Run via npm script
+# Confirm SSH/rsync access before the first deployment
+ssh -p 22 jk@216.75.75.136 'podman --version && systemctl --user --version'
+rsync --version | head -n 1
+
+# Option A: Run via npm script (recommended)
 npm run deploy:demo
 
 # Option B: Run shell script directly
 ./scripts/deploy-demo.sh
+```
+
+The script must be run from this repository checkout. It transfers source only;
+all frontend and backend compilation occurs on the VPS. After a successful run,
+verify the public site and API from the client machine:
+
+```bash
+curl --fail --silent --show-error --location \
+  https://delegateops.business/accustandard/demo/ >/dev/null
+curl --fail --silent --show-error --location \
+  https://delegateops.business/accustandard/demo/api/v1/readiness
+```
+
+If the Caddy configuration changed, validate and format it on the VPS before
+reloading Caddy:
+
+```bash
+ssh -p 22 jk@216.75.75.136 \
+  'podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile && \
+   podman exec caddy caddy validate --config /etc/caddy/Caddyfile && \
+   systemctl --user restart caddy.service'
 ```
 
 ### Infrastructure Path Configuration
@@ -197,8 +289,12 @@ npm run deploy:demo
    and every affected source-of-truth document when code, components,
    dependencies, scripts, or design specs change. Do not copy an acceptance
    PASS claim without current evidence.
-1. **Remote synchronization:** Use only `gh` over authenticated HTTPS. Do not
-   use `git push`, SSH remotes, passkeys, or SSH keys for remote work.
+1. **GitHub repository synchronization:** Follow
+   [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Authenticate and
+   configure Git through `gh`; only the resulting HTTPS remote may be used for
+   branch synchronization. Never use SSH remotes, SSH keys, `gh ssh-key`, or
+   passkeys. The demo deployment separately uses user-run SSH/rsync to transfer
+   source to the VPS.
 
 ---
 
@@ -215,10 +311,16 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 
 ## 2026 Repository Audit Status
 
+Object storage, when needed, uses the existing Backblaze bucket `bridge-ph`.
+Demo objects use the `accustandard/demo/` prefix and production objects use
+`accustandard/`; these are object-key prefixes, not additional buckets. See
+[`BACKBLAZE_S3_WORKFLOW.md`](BACKBLAZE_S3_WORKFLOW.md) for endpoint, key
+security, and naming rules.
+
 The repository is in an incremental migration, not yet a complete acceptance
 release. The deployed runtime is the Go API in `backend/cmd/server` plus the
-Next.js static export; the older `backend/main.go` server and Drizzle schema
-remain legacy artifacts and are not the demo runtime source of truth.
+Next.js static export; obsolete prototype server/schema artifacts have been
+removed and are not part of the demo runtime.
 
 The current API covers inventory reads/receiving, RFQs, approval records, SOA
 allocation, purchase orders, RFPs, QBO queue records, and audit-log reads. The

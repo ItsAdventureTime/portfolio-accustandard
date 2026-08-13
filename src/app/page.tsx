@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
 import { ExecutiveOverview } from '@/components/features/overview/ExecutiveOverview';
 import { InventoryControl } from '@/components/features/inventory/InventoryControl';
 import { QuotationGenerator } from '@/components/features/quotations/QuotationGenerator';
@@ -69,23 +68,20 @@ import {
   DEFAULT_AUDIT_LOGS,
 } from '@/lib/useDemoStore';
 
-import { Layers, Package, FileText, FileCheck, ShoppingCart, DollarSign, ShieldAlert, Menu } from 'lucide-react';
-
 const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   'Admin': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'Bookkeeper': ['overview', 'soa', 'purchasing', 'rfp'],
-  'Warehouse': ['inventory', 'purchasing'],
+  'Warehouse': ['overview', 'inventory', 'purchasing'],
   'Marketing': ['overview', 'quotations'],
-  'Sales': ['quotations', 'inventory'],
+  'Sales': ['overview', 'quotations', 'inventory'],
 };
 
 export default function Home() {
-  const { resetDemoData, formatTimer } = useDemoStore();
-  const [viewAsRole, setViewAsRole] = useState('Admin');
+  const { resetDemoData } = useDemoStore();
+  const [viewAsRole, setViewAsRole] = useState('General Manager');
   const [activeTab, setActiveTab] = useState('overview');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Core Data Arrays
@@ -101,6 +97,7 @@ export default function Home() {
   const [qboQueue, setQboQueue] = useState(DEFAULT_QBO_QUEUE);
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
   const [apiOnline, setApiOnline] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,29 +139,50 @@ export default function Home() {
 
   // Backend-first hydration. Seed data remains an in-memory offline fallback.
   const hydrateFromApi = useCallback(async () => {
-    const [readiness, ...responses] = await Promise.all([
-      getReadiness(),
-      getInventory(),
-      getReplenishment(),
-      getRFQs(),
-      getApprovals(),
-      getSOA(),
-      getPurchaseOrders(),
-      getRFPs(),
-      getQBOQueue(),
-      getAuditLogs(),
-    ]);
-    const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
-    setApiOnline(readiness?.status === 'ready');
-    if (Array.isArray(inventory)) setInventoryList(inventory);
-    if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
-    if (Array.isArray(rfqs)) setRfqList(rfqs);
-    if (Array.isArray(approvals)) setApprovalsList(approvals);
-    if (Array.isArray(soa)) setSoaData({ rows: soa });
-    if (Array.isArray(purchaseOrders)) setPoList(purchaseOrders);
-    if (Array.isArray(rfps)) setRfpList(rfps);
-    if (Array.isArray(qboQueueData)) setQboQueue(qboQueueData);
-    if (Array.isArray(logs)) setAuditLogs(logs);
+    setIsHydrating(true);
+    try {
+      const apiRequests = Promise.all([
+        getReadiness(),
+        getInventory(),
+        getReplenishment(),
+        getRFQs(),
+        getApprovals(),
+        getSOA(),
+        getPurchaseOrders(),
+        getRFPs(),
+        getQBOQueue(),
+        getAuditLogs(),
+      ]);
+      let hydrationTimeout: ReturnType<typeof setTimeout> | undefined;
+      const hydration = await Promise.race([
+        apiRequests,
+        new Promise<null>((resolve) => {
+          hydrationTimeout = setTimeout(() => resolve(null), 4000);
+        }),
+      ]);
+      if (hydrationTimeout) clearTimeout(hydrationTimeout);
+      if (!hydration) {
+        setApiOnline(false);
+        return;
+      }
+
+      const [readiness, ...responses] = hydration;
+      const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
+      setApiOnline(readiness?.status === 'ready');
+      if (Array.isArray(inventory)) setInventoryList(inventory);
+      if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
+      if (Array.isArray(rfqs)) setRfqList(rfqs);
+      if (Array.isArray(approvals)) setApprovalsList(approvals);
+      if (Array.isArray(soa)) setSoaData({ rows: soa });
+      if (Array.isArray(purchaseOrders)) setPoList(purchaseOrders);
+      if (Array.isArray(rfps)) setRfpList(rfps);
+      if (Array.isArray(qboQueueData)) setQboQueue(qboQueueData);
+      if (Array.isArray(logs)) setAuditLogs(logs);
+    } catch {
+      setApiOnline(false);
+    } finally {
+      setIsHydrating(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -746,53 +764,62 @@ export default function Home() {
     addAuditLog('Restored system demo state to default seed data');
   };
 
+  const handleOpenOperationsExport = () => {
+    handleOpenExportModal(
+      'Operations summary',
+      'accustandard_operations_summary',
+      [{
+        role: viewAsRole,
+        generatedAt: new Date().toISOString(),
+        pendingApprovals: approvalsList.length,
+        inventoryItems: inventoryList.length,
+        activeRFQs: rfqList.length,
+        purchaseOrders: poList.length,
+        qboQueueItems: qboQueue.length,
+      }],
+    );
+  };
+
   const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
 
   return (
-    <div className="min-h-screen bg-slate-100 font-sans text-slate-900 flex flex-col antialiased selection:bg-blue-600 selection:text-white w-full">
+    <div className="flex min-h-[100dvh] w-full flex-col bg-[var(--surface-canvas)] font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
       {/* Top Application Header Bar */}
       <Header
+        activeTab={activeTab}
         viewAsRole={viewAsRole}
+        onSelectTab={handleSelectTab}
         onChangeRole={handleChangeRole}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenCreateNew={() => setIsCommandPaletteOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+        onOpenExport={handleOpenOperationsExport}
+        onOpenStartupImport={() => setIsStartupImportOpen(true)}
+        onOpenQBOQueue={() => setIsQboQueueOpen(true)}
+        onOpenProductManager={() => setIsProductManagerOpen(true)}
+        qboQueueCount={qboQueue.filter((item) => item.syncStatus !== 'SYNCED').length}
+        allowedTabs={allowedTabs}
       />
 
       {/* High-Visibility Confirmation Notification Modal */}
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
-      {/* Main Workspace Layout */}
-      <div className="flex-1 flex overflow-hidden w-full">
-        {/* Desktop Navigation Sidebar */}
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed((collapsed) => !collapsed)}
-          activeTab={activeTab}
-          onSelectTab={handleSelectTab}
-          approvalsCount={approvalsList.length}
-          inventoryCount={inventoryList.length}
-          soaCount={soaData.rows.length}
-          auditCount={auditLogs.length}
-          formattedTimer={formatTimer()}
-          onResetDemo={handleResetData}
-          viewAsRole={viewAsRole}
-        />
-
-        {/* Feature Module Workspace Container */}
-        <main aria-label="Enterprise Operations Workspace" className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 pb-32 lg:pb-8 w-full">
-          <div
-            role="status"
-            className={`rounded-2xl border px-4 py-3 text-xs font-bold ${
-              apiOnline
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                : 'border-amber-200 bg-amber-50 text-amber-950'
-            }`}
-          >
-            {apiOnline
-              ? 'Go API connected. Server-backed mutations show committed results; unsupported workflows remain preview-only.'
-              : 'Offline demo preview. Mutations are local only and are not persisted.'}
+      {/* Feature Module Workspace Container */}
+      <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10">
+          <div role="status" aria-live="polite" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className={`h-2.5 w-2.5 rounded-full ${isHydrating ? 'animate-pulse bg-amber-500' : apiOnline ? 'bg-emerald-500' : 'bg-[var(--brand-red)]'}`} aria-hidden="true" />
+              <p className="text-sm font-semibold text-slate-800">
+                {isHydrating
+                  ? 'Connecting to the operations API…'
+                  : apiOnline
+                    ? 'Live operations data connected.'
+                    : 'Offline demo mode. Changes stay local and are not persisted.'}
+              </p>
+            </div>
+            <span className="text-xs font-medium text-slate-500">{apiOnline ? 'Server-backed workspace' : 'Local preview data'}</span>
           </div>
           {activeTab === 'overview' && (
             <ExecutiveOverview
@@ -801,11 +828,13 @@ export default function Home() {
               soaRows={soaData.rows}
               poList={poList}
               rfpList={rfpList}
+              rfqList={rfqList}
               qboQueue={qboQueue}
+              quotationsList={quotationsList}
+              collectionsList={collectionsList}
               viewAsRole={viewAsRole}
               onApproveItem={handleApproveItem}
               onSelectTab={handleSelectTab}
-              onOpenScanner={() => setIsScannerOpen(true)}
               onOpenQBOQueue={() => setIsQboQueueOpen(true)}
               onOpenCreateQuotationModal={() => setIsCreateQuotationOpen(true)}
             />
@@ -818,6 +847,7 @@ export default function Home() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onOpenAddStock={() => setIsAddStockOpen(true)}
+              onOpenCreatePO={() => setIsCreatePOOpen(true)}
               onOpenProductManager={() => setIsProductManagerOpen(true)}
               onOpenScanner={() => setIsScannerOpen(true)}
             />
@@ -912,8 +942,7 @@ export default function Home() {
               onOpenStartupImportModal={() => setIsStartupImportOpen(true)}
             />
           )}
-        </main>
-      </div>
+      </main>
 
       {/* Global Modals & Drawers */}
       <CreateQuotationModal
@@ -993,6 +1022,7 @@ export default function Home() {
       <CommandPaletteModal
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+        onOpen={() => setIsCommandPaletteOpen(true)}
         onSelectTab={handleSelectTab}
       />
 

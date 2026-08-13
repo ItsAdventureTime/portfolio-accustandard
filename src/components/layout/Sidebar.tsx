@@ -13,7 +13,6 @@ import {
   Clock,
   MapPin,
   ShieldCheck,
-  Lock,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
@@ -24,6 +23,7 @@ interface SidebarProps {
   activeTab: string;
   onSelectTab: (tabKey: string) => void;
   approvalsCount: number;
+  quotationsCount: number;
   inventoryCount: number;
   soaCount: number;
   auditCount: number;
@@ -39,15 +39,16 @@ const ROLE_ALLOWED_TABS: Record<string, string[]> = {
   'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
   Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['inventory', 'purchasing'],
+  Warehouse: ['overview', 'inventory', 'purchasing'],
   Marketing: ['overview', 'quotations'],
-  Sales: ['quotations', 'inventory'],
+  Sales: ['overview', 'quotations', 'inventory'],
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   approvalsCount,
+  quotationsCount,
   inventoryCount,
   soaCount,
   auditCount,
@@ -62,6 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     {
       key: 'overview',
+      group: 'Control center',
       label: 'Executive Overview',
       subtitle: 'Control & Approvals Pipeline',
       icon: Layers,
@@ -70,6 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       key: 'inventory',
+      group: 'Daily work',
       label: 'Inventory Control',
       subtitle: 'QC & Pampanga Warehouses',
       icon: Package,
@@ -78,14 +81,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       key: 'quotations',
+      group: 'Daily work',
       label: 'Quotation Generator',
       subtitle: 'Stock Reservation & Pricing',
       icon: FileText,
-      badge: 1,
+      badge: quotationsCount,
       badgeColor: 'bg-amber-600 text-white',
     },
     {
       key: 'soa',
+      group: 'Finance',
       label: 'Statement of Account',
       subtitle: 'Client Aging & Ledger',
       icon: FileCheck,
@@ -94,6 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       key: 'purchasing',
+      group: 'Daily work',
       label: 'Purchasing & Receiving',
       subtitle: '3-Way Match Verification',
       icon: Building2,
@@ -102,6 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       key: 'rfp',
+      group: 'Finance',
       label: 'Request for Payment',
       subtitle: 'Non-PO Expense Vouchers',
       icon: CreditCard,
@@ -110,16 +117,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       key: 'admin',
+      group: 'Control center',
       label: 'User Setup & Audit Log',
       subtitle: 'COSO Control Supervision',
       icon: UserCheck,
       badge: auditCount,
       badgeColor: 'bg-slate-700 text-slate-100',
     },
-  ];
+  ].filter((item) => allowed.includes(item.key));
+
+  const navGroups = ['Control center', 'Daily work', 'Finance'];
 
   return (
-    <aside aria-label="Sidebar Navigation" className={`${isCollapsed ? 'w-[76px]' : 'w-80'} relative bg-white/90 backdrop-blur-xl border-r border-slate-200/80 text-slate-800 flex flex-col justify-between hidden lg:flex shrink-0 shadow-xs transition-[width] duration-200`}>
+    <aside aria-label="Primary sidebar navigation" className={`${isCollapsed ? 'w-[76px]' : 'w-80'} relative flex shrink-0 flex-col justify-between border-r border-slate-200/80 bg-white/90 text-slate-800 shadow-xs backdrop-blur-xl transition-[width] duration-200 hidden lg:flex`}>
       {/* Brand Header */}
       <div className={`${isCollapsed ? 'p-3' : 'p-5'} border-b border-slate-200 bg-white/90`}>
         {isCollapsed ? (
@@ -162,57 +172,43 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </span>
         </div>
 
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.key;
-          const isPermitted = allowed.includes(item.key);
-
+        {navGroups.map((group) => {
+          const groupItems = navItems.filter((item) => item.group === group);
+          if (groupItems.length === 0) return null;
           return (
-            <button
-              key={item.key}
-              onClick={() => onSelectTab(item.key)}
-              title={isPermitted ? undefined : `Role [${viewAsRole}] cannot access this module`}
-              className={`w-full ${isCollapsed ? 'p-2.5 justify-center' : 'text-left p-3.5 justify-between'} rounded-2xl transition-all duration-200 ease-out flex items-center group cursor-pointer ${
-                isActive
-                  ? 'bg-blue-900 text-white font-black shadow-md border-l-4 border-blue-400 translate-x-1'
-                  : isPermitted
-                  ? 'hover:bg-slate-200/90 hover:translate-x-1 text-slate-800 hover:text-slate-950 font-bold'
-                  : 'opacity-50 text-slate-400 hover:bg-slate-100 font-medium cursor-not-allowed'
-              }`}
-            >
-              <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-                <div
-                  className={`p-2.5 rounded-xl transition-all duration-200 ${
-                    isActive ? 'bg-blue-800 text-white shadow-xs' : isPermitted ? 'bg-slate-200/80 text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-900' : 'bg-slate-200/50 text-slate-400'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className={isCollapsed ? 'hidden' : ''}>
-                  <span className="text-sm font-black flex items-center gap-1.5 leading-snug">
-                    <span>{item.label}</span>
-                    {!isPermitted && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
-                  </span>
-                  <span
-                    className={`text-xs block leading-tight font-medium ${
-                      isActive ? 'text-blue-200' : isPermitted ? 'text-slate-500 group-hover:text-slate-700' : 'text-slate-400'
+            <div key={group} className="space-y-1.5">
+              {!isCollapsed && <p className="px-2 pt-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{group}</p>}
+              {groupItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => onSelectTab(item.key)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`w-full ${isCollapsed ? 'p-2.5 justify-center' : 'text-left p-3.5 justify-between'} rounded-2xl transition-all duration-200 ease-out flex items-center group cursor-pointer ${
+                      isActive
+                        ? 'bg-blue-900 text-white font-black shadow-md border-l-4 border-blue-400 translate-x-1'
+                        : 'text-slate-800 font-bold hover:bg-slate-200/90 hover:translate-x-1 hover:text-slate-950'
                     }`}
                   >
-                    {item.subtitle}
-                  </span>
-                </div>
-              </div>
-
-              {item.badge !== null && isPermitted && !isCollapsed && (
-                <span
-                  className={`text-xs font-black px-2.5 py-0.5 rounded-full transition-transform duration-200 group-hover:scale-105 ${
-                    isActive ? 'bg-white text-blue-950 shadow-xs' : item.badgeColor
-                  }`}
-                >
-                  {item.badge}
-                </span>
-              )}
-            </button>
+                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+                      <div className={`p-2.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-blue-800 text-white shadow-xs' : 'bg-slate-200/80 text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-900'}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div className={isCollapsed ? 'hidden' : ''}>
+                        <span className="text-sm font-black flex items-center gap-1.5 leading-snug"><span>{item.label}</span></span>
+                        <span className={`text-xs block leading-tight font-medium ${isActive ? 'text-blue-200' : 'text-slate-500 group-hover:text-slate-700'}`}>{item.subtitle}</span>
+                      </div>
+                    </div>
+                    {item.badge !== null && !isCollapsed && (
+                      <span className={`text-xs font-black px-2.5 py-0.5 rounded-full transition-transform duration-200 group-hover:scale-105 ${isActive ? 'bg-white text-blue-950 shadow-xs' : item.badgeColor}`}>{item.badge}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           );
         })}
       </div>
@@ -225,6 +221,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!isCollapsed && <>Auto-Reset: <span className="font-mono font-black text-blue-950 text-sm">{formattedTimer}</span></>}
           </span>
           <button
+            type="button"
             onClick={onResetDemo}
             className="text-slate-600 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-xl transition-all duration-200 flex items-center gap-1 font-extrabold text-xs active:scale-95 cursor-pointer"
             title="Reset demo data"

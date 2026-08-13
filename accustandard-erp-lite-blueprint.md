@@ -11,6 +11,11 @@ Build a controlled operations layer that mirrors AccuStandard’s real workflow 
 
 Primary source: [Aug 4, 2026 ERP workflow review](https://fathom.video/calls/771570646). Supporting validation: [Jul 22 bug/workflow review](https://fathom.video/calls/756038036) and [Jul 24 operational dashboard review](https://fathom.video/calls/759278258).
 
+UI/UX scope is governed by `implementation_plan.md`; confirmed business rules
+by the acceptance handoff; current runtime status by
+`IMPLEMENTATION_STATUS.md`; operations by `README.md`, `ARCHITECTURE.md`, and
+`CONTRIBUTING.md`.
+
 ## Correct end-to-end workflow
 
 ### 1. Demand and sales qualification
