@@ -93,22 +93,22 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       role="banner"
-      className="wayfinding-header sticky top-0 z-30 w-full pt-[env(safe-area-inset-top,0px)] text-slate-950"
+      className="wayfinding-header sticky top-0 z-[var(--z-header)] w-full pt-[env(safe-area-inset-top,0px)] text-slate-950"
     >
       <div className="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center gap-4 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8">
         <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <button
             type="button"
             onClick={onOpenMobileDrawer}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 lg:hidden"
+            className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg lg:hidden"
             aria-label="Open mobile menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <AccustandardLogo size="sm" className="max-w-[154px] sm:max-w-[190px]" />
+          <AccustandardLogo size="sm" className="max-w-[154px] shrink-0 sm:max-w-[190px]" />
         </div>
 
-        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-7 lg:flex">
+        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-6 lg:flex">
           {navigation.map((item) => {
             const active = isActive(item.key, item.target);
             return (
@@ -116,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={item.key}
                 type="button"
                 onClick={() => onSelectTab(item.target)}
-                className={`relative flex min-h-[44px] items-center px-1 text-[15px] font-medium after:absolute after:bottom-[-13px] after:left-0 after:right-0 after:h-0.5 after:rounded-full ${active ? 'text-slate-950 after:bg-blue-700' : 'text-slate-600 after:bg-transparent hover:text-slate-950'}`}
+                className="header-nav-link px-1"
                 aria-current={active ? 'page' : undefined}
               >
                 {item.label}
@@ -129,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenCommandPalette}
-            className="header-search hidden h-10 w-[290px] items-center justify-between rounded-lg px-3.5 text-left text-sm shadow-inner xl:flex"
+             className="header-search hidden h-10 w-[290px] items-center justify-between rounded-md px-3.5 text-left text-sm shadow-none xl:flex"
             aria-label="Quick search"
           >
             <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Quick search</span>
@@ -157,11 +157,11 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenQBOQueue}
-            className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+             className="header-icon-button relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
             aria-label={`Open QBO sync queue${qboQueueCount ? ` (${qboQueueCount} pending)` : ''}`}
           >
             <Database className="h-5 w-5" />
-            {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />}
+             {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--brand-red)] ring-2 ring-white" />}
           </button>
 
           <div className="relative hidden lg:block">
@@ -172,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
               aria-haspopup="menu"
               aria-controls="operations-menu"
               aria-label="Open operations and tools"
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+               className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
             >
               <MoreHorizontal className="h-5 w-5" />
             </button>
@@ -190,8 +190,8 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
 
-          <button type="button" onClick={onOpenCommandPalette} className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
-          <button type="button" onClick={onOpenPWAInstall} className="hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100 sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
+           <button type="button" onClick={onOpenCommandPalette} className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
+           <button type="button" onClick={onOpenPWAInstall} className="header-icon-button hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
         </div>
       </div>
     </header>

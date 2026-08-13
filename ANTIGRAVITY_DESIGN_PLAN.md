@@ -8,6 +8,10 @@
 > **Skill Guidelines Applied:** `/redesign-existing-projects` + Modern Web Guidance (`Base UI` / `Radix UI`, Tailwind CSS v4, WCAG 2.2 AA)
 > **Date:** 2026-08-14
 > **Target Repository:** `ItsAdventureTime/bridge-accustandard`
+>
+> **Delivery note:** The shell and overview redesign baseline is implemented.
+> See `IMPLEMENTATION_STATUS.md` and `UI_UX_ACCESSIBILITY_GUIDE.md` for the
+> verified current state and the remaining feature-module roadmap.
 
 ---
 
@@ -34,15 +38,15 @@ Update `globals.css` with clean CSS custom properties and modern token definitio
 @layer base {
   :root {
     /* Canvas & Surface Tokens */
-    --surface-canvas: #f8fafc;        /* Anti-glare slate canvas */
+    --surface-canvas: #f4f7fb;        /* Anti-glare slate canvas */
     --surface-card: #ffffff;          /* Off-white container card */
-    --surface-subtle: #f1f5f9;        /* Light slate secondary container */
-    --surface-hover: #f0f7ff;         /* Interactive row hover background */
+    --surface-subtle: #eef3f8;        /* Light slate secondary container */
+    --surface-hover: #edf5ff;         /* Interactive row hover background */
 
     /* Border & Stroke Tokens */
-    --stroke-subtle: rgba(226, 232, 240, 0.8);
+    --stroke-subtle: rgb(203 213 225 / 0.72);
     --stroke-strong: #94a3b8;
-    --stroke-active: #2563eb;
+    --stroke-active: #1d4ed8;
 
     /* Text & Typography Tokens */
     --text-primary: #0f172a;          /* Slate 900 primary text */
@@ -50,9 +54,10 @@ Update `globals.css` with clean CSS custom properties and modern token definitio
     --text-muted: #64748b;            /* Slate 500 helper text */
 
     /* Brand & Accent Tokens */
-    --brand-navy: #1e3a8a;            /* Deep Royal Navy */
-    --brand-sapphire: #2563eb;        /* Electric Sapphire Accent */
-    --brand-red: #dc2626;             /* Signature Medical Rx Red */
+    --brand-navy: #17356f;            /* High-contrast brand navy */
+    --brand-royal: #2c4296;           /* Primary navigation / action accent */
+    --brand-sapphire: #1d4ed8;        /* Electric Sapphire / focus ring */
+    --brand-red: #b4232f;             /* Signature Medical Rx Red */
 
     /* Elevated Shadows & Refractions */
     --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
@@ -135,11 +140,11 @@ Replace high-saturation fills with quiet, muted status pills:
 }
 
 .rx-pill-badge:hover {
-  background-color: #1e3a8a;
+  background-color: #17356f;
   color: #ffffff;
-  border-color: #1e3a8a;
+  border-color: #17356f;
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(30, 58, 138, 0.15);
+  box-shadow: 0 2px 4px rgba(23, 53, 111, 0.15);
 }
 ```
 
@@ -218,16 +223,21 @@ Replace high-saturation fills with quiet, muted status pills:
 
 ## 6. Accessibility & Compliance (WCAG 2.2 AA)
 
-- **Keyboard Navigation:** Complete tab navigation and focus trapping in all modals and slide-overs (`Radix UI Dialog` / `Base UI FocusScope`).
+- **Keyboard Navigation:** Complete tab navigation and focus trapping in all modals and slide-overs, using the existing primitive layer or explicit native focus management.
 - **Focus Ring Indicator:** High-visibility focus ring (`focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2`).
 - **Contrast Ratios:** Primary body text `#0F172A` on `#FFFFFF` background achieves a 15.3:1 contrast ratio (exceeds AAA requirement).
-- **Screen Reader ARIA Attributes:** All interactive elements include proper `aria-label`, `aria-expanded`, and `aria-describedby` tags.
+- **Screen Reader Semantics:** Use landmarks, labels, table captions/scopes, status live regions, and `aria-describedby` only for concise dialog descriptions; do not add ARIA where native HTML already provides the correct semantics.
 
 ---
 
-## 7. Step-by-Step Implementation Guide for ChatGPT Codex
+## 7. Implementation Roadmap
 
-To execute this UI/UX redesign cleanly, **ChatGPT Codex** should follow this exact sequence:
+The following sequence records the completed baseline and the remaining
+feature-module roadmap:
+
+- **Completed baseline:** global tokens, branded header/navigation, role action
+  center, approval activity table, document inspector focus management, API
+  status treatment, responsive navigation, and reduced-motion support.
 
 1. **Phase 2.1: CSS & Tokens Setup (`src/app/globals.css`)**
    - Update CSS custom properties, font definitions (`Outfit`, `Geist Mono`), quiet badge utility classes, and custom scrollbar rules.

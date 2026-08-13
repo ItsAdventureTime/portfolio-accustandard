@@ -97,6 +97,7 @@ export default function Home() {
   const [qboQueue, setQboQueue] = useState(DEFAULT_QBO_QUEUE);
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
   const [apiOnline, setApiOnline] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -138,29 +139,50 @@ export default function Home() {
 
   // Backend-first hydration. Seed data remains an in-memory offline fallback.
   const hydrateFromApi = useCallback(async () => {
-    const [readiness, ...responses] = await Promise.all([
-      getReadiness(),
-      getInventory(),
-      getReplenishment(),
-      getRFQs(),
-      getApprovals(),
-      getSOA(),
-      getPurchaseOrders(),
-      getRFPs(),
-      getQBOQueue(),
-      getAuditLogs(),
-    ]);
-    const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
-    setApiOnline(readiness?.status === 'ready');
-    if (Array.isArray(inventory)) setInventoryList(inventory);
-    if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
-    if (Array.isArray(rfqs)) setRfqList(rfqs);
-    if (Array.isArray(approvals)) setApprovalsList(approvals);
-    if (Array.isArray(soa)) setSoaData({ rows: soa });
-    if (Array.isArray(purchaseOrders)) setPoList(purchaseOrders);
-    if (Array.isArray(rfps)) setRfpList(rfps);
-    if (Array.isArray(qboQueueData)) setQboQueue(qboQueueData);
-    if (Array.isArray(logs)) setAuditLogs(logs);
+    setIsHydrating(true);
+    try {
+      const apiRequests = Promise.all([
+        getReadiness(),
+        getInventory(),
+        getReplenishment(),
+        getRFQs(),
+        getApprovals(),
+        getSOA(),
+        getPurchaseOrders(),
+        getRFPs(),
+        getQBOQueue(),
+        getAuditLogs(),
+      ]);
+      let hydrationTimeout: ReturnType<typeof setTimeout> | undefined;
+      const hydration = await Promise.race([
+        apiRequests,
+        new Promise<null>((resolve) => {
+          hydrationTimeout = setTimeout(() => resolve(null), 4000);
+        }),
+      ]);
+      if (hydrationTimeout) clearTimeout(hydrationTimeout);
+      if (!hydration) {
+        setApiOnline(false);
+        return;
+      }
+
+      const [readiness, ...responses] = hydration;
+      const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
+      setApiOnline(readiness?.status === 'ready');
+      if (Array.isArray(inventory)) setInventoryList(inventory);
+      if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
+      if (Array.isArray(rfqs)) setRfqList(rfqs);
+      if (Array.isArray(approvals)) setApprovalsList(approvals);
+      if (Array.isArray(soa)) setSoaData({ rows: soa });
+      if (Array.isArray(purchaseOrders)) setPoList(purchaseOrders);
+      if (Array.isArray(rfps)) setRfpList(rfps);
+      if (Array.isArray(qboQueueData)) setQboQueue(qboQueueData);
+      if (Array.isArray(logs)) setAuditLogs(logs);
+    } catch {
+      setApiOnline(false);
+    } finally {
+      setIsHydrating(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -785,11 +807,19 @@ export default function Home() {
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Feature Module Workspace Container */}
-      <main id="main-content" aria-label="Enterprise Operations Workspace" className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10">
-          <div role="status" className="sr-only">
-            {apiOnline
-              ? 'Go API connected. Server-backed mutations show committed results; unsupported workflows remain preview-only.'
-              : 'Offline demo preview. Mutations are local only and are not persisted.'}
+      <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10">
+          <div role="status" aria-live="polite" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className={`h-2.5 w-2.5 rounded-full ${isHydrating ? 'animate-pulse bg-amber-500' : apiOnline ? 'bg-emerald-500' : 'bg-[var(--brand-red)]'}`} aria-hidden="true" />
+              <p className="text-sm font-semibold text-slate-800">
+                {isHydrating
+                  ? 'Connecting to the operations API…'
+                  : apiOnline
+                    ? 'Live operations data connected.'
+                    : 'Offline demo mode. Changes stay local and are not persisted.'}
+              </p>
+            </div>
+            <span className="text-xs font-medium text-slate-500">{apiOnline ? 'Server-backed workspace' : 'Local preview data'}</span>
           </div>
           {activeTab === 'overview' && (
             <ExecutiveOverview

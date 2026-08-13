@@ -1,6 +1,6 @@
 # AccuStandard implementation status
 
-**Audit date:** 2026-08-12  
+**Audit date:** 2026-08-14
 **Status:** Demo runtime; not a production acceptance release
 
 This file is the short operational companion to the confirmed developer
@@ -41,11 +41,17 @@ Where an older document conflicts with the first four, the first four control.
 ## UI delivery status
 
 - The dashboard now opens in the General Manager demo view with “Needs Your
-  Attention Today,” three equal action cards in the reference order, and a
-  compact PO table. Desktop navigation is horizontal and filtered to the
-  active role's allowed modules; mobile retains the drawer and bottom
-  navigation. Counts remain sourced from the seeded/API data rather than being
-  fabricated to match a design mockup.
+  Attention Today,” a role-tailored asymmetric action center, and a compact PO
+  table. Desktop navigation is horizontal and filtered to the active role's
+  allowed modules; mobile retains the drawer and bottom navigation. Counts
+  remain sourced from the seeded/API data rather than being fabricated to match
+  a design mockup.
+- The supplied AccuStandard logo is used in the shell. Brand tokens are
+  centralized in `src/app/globals.css`, with navy/royal navigation, Rx red
+  attention states, visible keyboard focus, and reduced-motion support.
+- The dashboard exposes an explicit live/offline status region. When the Go API
+  is unavailable, the UI labels itself as an offline demo and does not imply
+  persistence.
 - Header secondary operations are grouped under `Operations & tools`; the
   primary `Create new` trigger opens the existing command palette without
   changing workflow permissions.
@@ -135,6 +141,21 @@ production acceptance release from a lint/build result alone.
 - `npm ci` reported 8 audit findings (4 moderate, 3 high, 1 critical); no
   automatic audit fix was applied because it could change the lockfile or
   introduce breaking upgrades.
+
+### 2026-08-14 UI/UX redesign review pass
+
+- `git diff --check`: passed.
+- Disposable `node:20-alpine` Podman: `npm ci --ignore-scripts`,
+  `npm run lint`, `npx tsc --noEmit`, and `npm run build`: passed.
+- The Next.js 16 Webpack build compiled the static routes `/`, `/_not-found`,
+  `/icon.svg`, and `/manifest.json`; no host build artifacts were retained.
+- Visual browser review confirmed the supplied logo, navy/royal/red brand
+  system, role action center, approval activity table, responsive shell, and
+  visible offline status treatment.
+- The local browser harness did not provide a reliable full click/state smoke
+  test, so this pass is not an end-to-end acceptance result.
+- `npm ci` reported 3 audit findings (2 high, 1 critical); no automatic audit
+  fix was applied and no dependency changes were introduced.
 
 ## Current-framework notes
 
