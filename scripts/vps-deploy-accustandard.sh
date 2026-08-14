@@ -83,7 +83,9 @@ wait_for_api_readiness() {
 
   echo '    Waiting for API readiness (up to 60 seconds)...'
   # The Go process can reset this idempotent GET while binding its listener.
-  if curl --fail --silent --show-error \
+  # Keep expected retry noise out of the release log; the explicit timeout
+  # diagnostics below remain the failure signal when readiness is exhausted.
+  if curl --fail --silent \
     --retry 30 --retry-delay 2 --retry-max-time 60 --retry-all-errors \
     --connect-timeout 2 --max-time 5 \
     "${readiness_url}" >/dev/null; then

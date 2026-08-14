@@ -215,8 +215,9 @@ substitution from turning a marker into a value such as `emptyn`.
 The database Quadlet's `Notify=healthy` gate covers database/container health;
 it does not guarantee that the Go HTTP listener is already accepting requests.
 The VPS scripts therefore retry transient curl startup failures, including a
-connection reset, before failing. On an API readiness timeout they print the
-API unit status and the last 100 journal lines, then exit nonzero.
+connection reset, quietly before failing. On an API readiness timeout they
+print the API unit status and the last 100 journal lines, then exit nonzero;
+the transient retry message is not treated as a deployment failure by itself.
 
 ### Frontend font and network contract
 
