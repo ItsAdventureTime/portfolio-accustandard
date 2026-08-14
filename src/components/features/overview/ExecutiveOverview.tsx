@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   CheckCircle2,
   Clock,
@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { RoleActionCenter } from '@/components/features/overview/RoleActionCenter';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 import {
   canApproveApprovalStage,
   getNextApprovalStage,
@@ -76,49 +77,6 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   onOpenCreateQuotationModal,
 }) => {
   const [selectedDocModal, setSelectedDocModal] = useState<any | null>(null);
-  const inspectorCloseButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!selectedDocModal) return undefined;
-
-    const previouslyFocused = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-    const handleInspectorKeyDown = (event: KeyboardEvent) => {
-      const dialog = document.getElementById('document-inspector-dialog');
-      const focusable = dialog?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setSelectedDocModal(null);
-        return;
-      }
-
-      if (event.key !== 'Tab' || !focusable?.length) return;
-
-      const firstFocusable = focusable[0];
-      const lastFocusable = focusable[focusable.length - 1];
-      if (!dialog?.contains(document.activeElement)) {
-        event.preventDefault();
-        firstFocusable.focus();
-      } else if (event.shiftKey && document.activeElement === firstFocusable) {
-        event.preventDefault();
-        lastFocusable.focus();
-      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
-        event.preventDefault();
-        firstFocusable.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleInspectorKeyDown);
-    inspectorCloseButtonRef.current?.focus();
-    return () => {
-      document.removeEventListener('keydown', handleInspectorKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [selectedDocModal]);
 
   const recentQueue = reviewablePOItems;
   const selectedStage = selectedDocModal ? getNextApprovalStage(selectedDocModal) : null;
@@ -214,19 +172,24 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
         {recentQueue.length === 0 && <p className="p-6 text-sm text-slate-600">No approval activity is available yet.</p>}
       </section>
 
-      {selectedDocModal && (
-        <div id="document-inspector-dialog" className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/65 p-4 text-slate-900 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="document-inspector-title" aria-describedby="document-inspector-description">
-          <div className="w-full max-w-3xl space-y-6 rounded-[1.5rem] border border-slate-200 bg-white p-6 shadow-2xl sm:p-8">
+      <AccessibleModal
+        isOpen={Boolean(selectedDocModal)}
+        onClose={() => setSelectedDocModal(null)}
+        title={selectedDocModal ? `Document inspector: ${selectedDocModal.qrn}` : 'Document inspector'}
+        description={selectedDocModal ? `${selectedDocModal.type} · Originator: ${selectedDocModal.maker}` : undefined}
+        size="lg"
+        contentClassName="text-slate-900"
+      >
+          {selectedDocModal && <div className="modal-panel space-y-6 p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
-              <div className="flex items-center gap-3"><div className="rounded-xl bg-slate-900 p-3 text-white"><FileText className="h-5 w-5" /></div><div><h2 id="document-inspector-title" className="text-base font-semibold sm:text-lg">Document inspector: {selectedDocModal.qrn}</h2><p id="document-inspector-description" className="text-xs text-slate-600 sm:text-sm">{selectedDocModal.type} · Originator: {selectedDocModal.maker}</p></div></div>
-              <button ref={inspectorCloseButtonRef} type="button" onClick={() => setSelectedDocModal(null)} aria-label="Close document inspector" className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-700"><X className="h-5 w-5" /></button>
+              <div className="flex items-center gap-3"><div className="rounded-xl bg-blue-50 p-3 text-blue-900"><FileText className="h-5 w-5" /></div><div><h2 className="text-base font-semibold sm:text-lg">Document inspector: {selectedDocModal.qrn}</h2><p className="text-xs text-slate-600 sm:text-sm">{selectedDocModal.type} · Originator: {selectedDocModal.maker}</p></div></div>
+              <button type="button" onClick={() => setSelectedDocModal(null)} aria-label="Close document inspector" className="modal-close"><X className="h-5 w-5" /></button>
             </div>
             <div className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2"><div><span className="block text-xs font-medium uppercase tracking-wider text-slate-500">Document type</span><span className="font-medium text-slate-950">{selectedDocModal.type}</span></div><div><span className="block text-xs font-medium uppercase tracking-wider text-slate-500">Total transaction value</span><span className="font-mono text-lg font-semibold text-slate-950">{formatCurrency(selectedDocModal.totalAmount)}</span></div><div><span className="block text-xs font-medium uppercase tracking-wider text-slate-500">Maker / originator</span><span className="font-medium text-slate-900">{selectedDocModal.maker || '—'}</span></div><div><span className="block text-xs font-medium uppercase tracking-wider text-slate-500">Current status</span><span className="font-medium text-amber-900">{getApprovalStatus(selectedDocModal)}</span></div></div>
             <div className="space-y-3 border-t border-slate-200 pt-4"><span className="block text-xs font-medium uppercase tracking-wider text-slate-700">COSO approval timeline</span><div className="grid gap-3 sm:grid-cols-4">{(['Maker', 'Reviewer', 'GM', 'DCS'] as const).map((label, index) => { const status = index === 0 ? 'APPROVED' : index === 1 ? selectedDocModal.reviewerStatus : index === 2 ? selectedDocModal.gmStatus : selectedDocModal.type === 'Sales Quotation' ? 'NOT_REQUIRED' : selectedDocModal.dcsStatus; const complete = status === 'APPROVED' || status === 'NOT_REQUIRED'; return <div key={label} className={`rounded-xl border p-3 text-center ${complete ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : status === 'PENDING' ? 'border-amber-200 bg-amber-50 text-amber-950' : 'border-slate-200 bg-slate-100 text-slate-500'}`}><span className="mx-auto flex w-fit rounded-full bg-white/70 p-2">{complete ? <CheckCircle2 className="h-5 w-5 text-emerald-700" /> : status === 'PENDING' ? <Clock className="h-5 w-5 text-amber-700" /> : <Lock className="h-5 w-5 text-slate-400" />}</span><p className="mt-1 text-sm font-medium">{index + 1}. {label}</p><p className="text-xs font-medium">{status}</p></div>; })}</div></div>
             <div className="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex flex-wrap gap-2">{selectedStage && selectedStageCanApprove && <button type="button" onClick={() => { onApproveItem(selectedDocModal.approvalId, selectedStage); setSelectedDocModal(null); }} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[var(--brand-navy)] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[var(--brand-royal)] focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"><ShieldCheck className="h-4 w-4" /> Approve {stageLabel[selectedStage]}</button>}{selectedStage && !selectedStageCanApprove && <span className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600"><Lock className="h-4 w-4" /> {stageLabel[selectedStage]} action locked for {viewAsRole}</span>}<button type="button" onClick={() => { const targetTab = selectedDocModal.type.includes('Quotation') ? 'quotations' : selectedDocModal.type.includes('Purchase') ? 'purchasing' : 'rfp'; setSelectedDocModal(null); onSelectTab(targetTab); }} className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"><ExternalLink className="h-4 w-4" /> Open module</button></div><button type="button" onClick={() => setSelectedDocModal(null)} className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-slate-200 px-5 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-300 focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">Close inspector</button></div>
-          </div>
-        </div>
-      )}
+          </div>}
+      </AccessibleModal>
     </div>
   );
 };

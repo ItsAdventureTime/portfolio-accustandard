@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, Plus, Edit, Trash2, Package, Check, Barcode, MapPin, Tag } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 export interface ProductSKU {
   id: string;
@@ -110,8 +111,15 @@ export const BarcodeProductManagerModal: React.FC<BarcodeProductManagerModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out max-h-[90vh] flex flex-col text-sm">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Barcode and product SKU manager"
+      description="Add, revise, or delete barcode products used for scanner lookup."
+      size="xl"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel p-6 space-y-6 text-sm sm:p-8">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-200 pb-4 shrink-0">
           <div className="flex items-center gap-3">
@@ -125,7 +133,7 @@ export const BarcodeProductManagerModal: React.FC<BarcodeProductManagerModalProp
               <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">Add, revise, or delete barcode products for scanner lookup</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+          <button onClick={onClose} aria-label="Close barcode product manager" title="Close" className="modal-close cursor-pointer">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -303,6 +311,6 @@ export const BarcodeProductManagerModal: React.FC<BarcodeProductManagerModalProp
           </button>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

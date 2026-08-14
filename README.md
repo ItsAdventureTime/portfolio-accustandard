@@ -402,6 +402,19 @@ transition and reduced-motion contract. If Motion is introduced later, follow
 its [accessibility guidance](https://motion.dev/docs/react-accessibility) and
 [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
 
+### Modal behavior
+
+All blocking popups use the shared Radix-backed
+[`AccessibleModal`](src/components/common/AccessibleModal.tsx) shell. It
+supports centered dialogs, mobile bottom sheets, and full-screen document
+previews while providing focus containment/restoration, Escape handling,
+safe-area spacing, scroll-safe content, visible close targets, and
+reduced-motion-safe transitions. Feature modules keep their existing workflow
+logic inside the shell; new `fixed ... z-50` modal wrappers should not be added.
+Use the current [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+and [Radix Dialog guidance](https://www.radix-ui.com/primitives/docs/components/dialog)
+when extending a popup.
+
 ### Notification behavior
 
 Routine feedback uses a shared, dismissible Radix Toast center with explicit

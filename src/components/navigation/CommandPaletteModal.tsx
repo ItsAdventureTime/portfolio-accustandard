@@ -52,10 +52,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         else onOpen();
         return;
       }
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-        return;
-      }
       if (!isOpen || filtered.length === 0) return;
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
@@ -86,10 +82,11 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md" />
-        <Dialog.Content className="sheet-enter fixed inset-x-4 top-20 z-50 mx-auto w-auto max-w-xl overflow-hidden rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none sm:inset-x-auto sm:w-full">
+        <Dialog.Overlay className="modal-overlay" />
+        <Dialog.Content className="modal-viewport modal-viewport--center modal-viewport--sm px-4 pt-20 sm:px-6">
           <Dialog.Title className="sr-only">Command palette quick search</Dialog.Title>
           <Dialog.Description className="sr-only">Search and jump to an AccuStandard workspace module.</Dialog.Description>
+        <div className="modal-panel modal-command-palette">
         {/* Search Header Bar */}
         <div className="p-3.5 border-b border-slate-200 flex items-center gap-3 bg-slate-50">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
@@ -110,7 +107,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
               type="button"
               onClick={onClose}
               aria-label="Close command palette"
-              className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition cursor-pointer"
+              className="modal-close cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -157,6 +154,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div className="p-2.5 bg-slate-100 border-t border-slate-200 text-[11px] text-slate-500 flex justify-between items-center px-4">
           <span>Navigate: <strong className="text-slate-800">↑ ↓</strong> to navigate</span>
           <span>Select: <strong className="text-slate-800">Enter</strong></span>
+        </div>
         </div>
         </Dialog.Content>
       </Dialog.Portal>

@@ -160,8 +160,13 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 - **Local demo editor:** The user/module editor is local preview state. It does not create authenticated user sessions or secure API actions.
 
 ### 5.7 QuickBooks Online (QBO) Export Queue & System Modals
-- **QBO Sync Queue (`QBOSyncQueueModal.tsx`):** Slide-out drawer (`max-w-4xl`) holding validated staging transactions for QBO export.
-- **Document Print Modal (`DocumentPrintModal.tsx`):** Dedicated A4 print layout wrapper with `@media print` CSS overrides.
+- **Shared modal shell (`AccessibleModal.tsx`):** Radix-backed center, bottom-sheet,
+  and full-screen variants own modality, focus restoration, Escape handling,
+  safe-area spacing, internal scrolling, and the branded panel tokens.
+- **QBO Sync Queue (`QBOSyncQueueModal.tsx`):** Shared-shell queue panel holding
+  validated staging transactions for QBO export.
+- **Document Print Modal (`DocumentPrintModal.tsx`):** Full-screen shared-shell
+  A4 print layout wrapper with `@media print` CSS overrides.
 
 ### 5.8 Shared permission and authentication boundary
 - `src/lib/permissions.ts` is the typed client-side source for role tabs,

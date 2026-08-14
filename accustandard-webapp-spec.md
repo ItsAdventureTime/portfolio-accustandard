@@ -200,15 +200,23 @@ The web application UI/UX is built on a **Light Corporate Medical System** enfor
 
 ### 6.2 Purposeful Glassmorphism 2.0
 - **Navigation & Overlays:** Navigation bar headers enforce `bg-white/90 backdrop-blur-xl border-b border-slate-200/80`.
-- **Modal Backdrops:** All modal dialogs and alert windows use dark slate backdrop blur (`bg-slate-950/80 backdrop-blur-md`).
-- **Readability Assurance:** High-contrast text (`text-slate-900`, `font-extrabold`) ensures text is readable over frosted surfaces.
+- **Modal Backdrops:** All blocking dialogs use the shared `AccessibleModal`
+  Radix shell and `modal-overlay` token. The overlay is a restrained tinted
+  slate veil with blur; feature modules must not create their own fixed z-index
+  backdrop.
+- **Modal Surfaces:** `modal-panel`, `modal-header`, `modal-body`, and
+  `modal-footer` use the existing canvas/card tokens, navy-tinted elevation,
+  sentence-case hierarchy, and 44px close/action targets. Long content scrolls
+  inside the body region and respects mobile safe areas.
 
 ### 6.3 Kinetic Micro-Interactions & Physics
 - **Hover Elevation:** Cards and action items enforce physics-based hover translation (`hover:-translate-y-1 hover:shadow-lg transition-all duration-200 ease-out`).
 - **Primary Navigation:** Desktop uses a horizontal role-filtered navigation
   bar with an active underline; mobile uses the drawer/bottom-navigation
   variant. All destinations retain visible hover and keyboard focus states.
-- **Dialog Entrance Motion:** Popups use smooth backdrop fade-in (`animate-in fade-in duration-200`) and dialog container zoom (`animate-in zoom-in-95 duration-200`).
+- **Dialog Entrance Motion:** The shared shell uses short opacity/transform
+  transitions and disables them under `prefers-reduced-motion`. Center dialogs,
+  bottom sheets, and full-screen previews use the same motion language.
 
 ### 6.4 Standardized Interactive Pill Badge System
 Across all data tables, primary key badges use interactive pill containers (`bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-2xs group cursor-pointer`):

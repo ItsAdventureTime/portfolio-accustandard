@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { X, RefreshCw, CheckCircle2, AlertCircle, Clock, Database, ArrowRight } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 export interface QBOQueueItem {
   id: string;
@@ -31,8 +32,15 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 text-slate-900 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="QuickBooks Online export queue"
+      description="Control-validated transactions staged for manual export."
+      size="xl"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel">
         {/* Header */}
         <div className="px-6 py-5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -53,7 +61,9 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+            aria-label="Close QuickBooks export queue"
+            title="Close"
+            className="modal-close cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -136,6 +146,6 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };
