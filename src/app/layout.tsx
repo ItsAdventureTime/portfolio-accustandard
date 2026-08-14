@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from 'next';
+import { Outfit } from 'next/font/google';
 import './globals.css';
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -24,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-full text-slate-900 antialiased font-sans">
+      <body className={`${outfit.variable} min-h-full text-slate-900 antialiased font-sans`}>
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>

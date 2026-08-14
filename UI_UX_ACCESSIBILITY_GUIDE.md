@@ -47,6 +47,12 @@ that show a metric without a decision or next action.
   bold weight as a substitute for spacing or hierarchy.
 - Mobile bottom navigation keeps the scanner as the single elevated action and
   uses sentence-case labels with a minimum 44px touch target.
+- The header Operations & tools control follows the WAI-ARIA menu-button
+  pattern: it exposes stable IDs and `aria-haspopup="menu"`,
+  `aria-expanded`, and `aria-controls`; Enter/Space and Arrow Up/Down open it,
+  Arrow Up/Down/Home/End move among menuitems, and Escape or outside-pointer
+  input closes it. Keyboard close and menuitem activation return focus to the
+  trigger.
 
 ## Interaction contract
 
@@ -66,6 +72,16 @@ that show a metric without a decision or next action.
   semantic structures such as tables and timelines for assistive technology.
 - Respect `prefers-reduced-motion`. Motion may clarify state changes but must
   never be required to understand or complete an action.
+
+### Permission and authentication boundary
+
+- `src/lib/permissions.ts` is the shared typed client-side permission model.
+  It owns allowed tabs, operation helpers, approval selectors, reviewable PO
+  targets, and role/action-specific navigation counts.
+- The role selector is a demo simulation. UI filtering is not backend security;
+  the Go API remains unauthenticated in this demo. Real authentication,
+  session identity, and server-enforced authorization are unresolved before
+  production data can be handled.
 
 ## Implementation boundaries
 

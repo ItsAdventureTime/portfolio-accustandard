@@ -74,9 +74,9 @@ The current UI implements a **Light Corporate Medical Theme**:
 ### 3.2 Typography & Font Hierarchy
 - **Font Family:** `Outfit`, with `Avenir Next`, `Segoe UI Variable`, and system fallbacks.
 - **Base Body Text:** `1rem` root sizing, line-height `1.5`, color `#0F172A`.
-- **Table Headers:** `0.8125rem` (13px), `font-weight: 700`, uppercase, `letter-spacing: 0.05em`, color `#334155`.
-- **Sub-Headlines & Labels:** `font-extrabold tracking-wider text-xs uppercase text-slate-600`.
-- **Headlines:** Clean bold slate titles (`text-xl font-bold text-slate-900`).
+- **Table Headers:** `0.8125rem` (13px), `font-weight: 600`, sentence case where space allows, color `#334155`.
+- **Sub-Headlines & Labels:** Medium-weight kicker text (`font-medium text-xs`) with restrained tracking; avoid forced uppercase for long labels.
+- **Headlines:** Semibold slate titles (`text-xl font-semibold text-slate-900`) with weight reserved for hierarchy, not emphasis everywhere.
 
 ### 3.3 Semantic Status Badges
 Status indicators use rounded badge pills with colored text and subtle 1px borders:
@@ -105,12 +105,13 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 
 ### 4.1 Header Component (`src/components/layout/Header.tsx`)
 - **Structure:** Sticky top bar with glassmorphic backdrop filter (`bg-white/90 backdrop-blur-xl border-b border-slate-200/80`).
-- **Left Section:** AccuStandard Medical Logo (`AccustandardLogo.tsx`), company identity title ("ACCUSTANDARD MEDICAL & DIAGNOSTIC SUPPLIES CORP"), and branch badge ("Quezon City HQ / Pampanga Hub").
-- **Center Section:** Global Search input box (triggers Quick Command Palette modal `CommandPaletteModal.tsx` on click or `Cmd+K`).
-- **Right Section:** Role Selector Dropdown (simulates switching between Admin, GM, Marketing, Sales, Warehouse, Bookkeeper, Chairman), QBO Queue Drawer Trigger with badge counter, System Alert notification Bell icon, and User Profile menu.
+- **Left Section:** AccuStandard Medical Logo (`AccustandardLogo.tsx`) and the responsive menu trigger.
+- **Center Section:** Role-filtered horizontal navigation and a Quick Command Palette trigger (`CommandPaletteModal.tsx`).
+- **Right Section:** Clearly labeled **Demo role simulation**, permission-filtered QBO queue and operations controls, plus search and PWA triggers. No branch badge or authenticated profile menu is rendered in the current shell.
+- **Operations menu:** Uses the WAI-ARIA menu-button pattern with stable button/menu IDs, `aria-haspopup`, `aria-expanded`, and `aria-controls`. Enter, Space, Arrow Up/Down, Home, and End manage opening and menuitem focus; Escape and outside pointer input close the menu, and focus returns to the trigger after keyboard close or activation.
 
-### 4.2 Desktop Sidebar & Navigation Strip (`src/components/layout/Sidebar.tsx` & `page.tsx`)
-- **Desktop Navigation:** Collapsible vertical sidebar and horizontal navigation tabs:
+### 4.2 Desktop Navigation Strip (`page.tsx`)
+- **Desktop Navigation:** The current shell renders filtered horizontal navigation tabs; it does not render a persistent sidebar. `Sidebar.tsx` remains an unmounted legacy component and is not part of the active layout:
   1. **Overview:** System KPI summary, COSO approval pipeline, quick stats.
   2. **Inventory:** Multi-warehouse stock grid, FEFO expiry tracker, barcode scanner trigger, batch management.
   3. **Quotations & RFQ:** Sales RFQ logger, Quotation Generator, Client Census, Marketing ROI Engine.
@@ -119,8 +120,8 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
   6. **User Access & Admin:** RBAC matrix editor, system configuration, audit logs, startup cutover tools.
 
 ### 4.3 Mobile Navigation Shell (`src/components/navigation/BottomNav.tsx` & `MobileNavDrawer.tsx`)
-- **Bottom Navigation Rail (`BottomNav.tsx`):** Fixed bottom bar visible under 1024px width, providing 4 primary destinations (Overview, Inventory, Quotes, SOA) + central Quick Scan action button.
-- **Mobile Navigation Drawer (`MobileNavDrawer.tsx`):** Slide-out menu from left containing role selection, full module links, QBO queue summary, and help/documentation links.
+- **Bottom Navigation Rail (`BottomNav.tsx`):** Fixed bottom bar visible below the desktop breakpoint, providing role-permitted primary destinations plus the scanner only when the shared operation permission allows it.
+- **Mobile Navigation Drawer (`MobileNavDrawer.tsx`):** Bottom sheet containing the demo role simulation, role-permitted module links, role/action-specific badges, and permission-filtered scanner/PWA actions.
 
 ---
 
@@ -156,11 +157,21 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 
 ### 5.6 User Access Matrix & Admin Console (`src/components/features/admin`)
 - **Role Permissions Grid:** Interactive matrix displaying permissions across 7 user roles (Admin, Chairman, GM, Bookkeeper, Warehouse, Marketing, Sales).
-- **User Profile Modal:** Allows Admin and Chairman roles to dynamically edit module access and action privileges.
+- **Local demo editor:** The user/module editor is local preview state. It does not create authenticated user sessions or secure API actions.
 
 ### 5.7 QuickBooks Online (QBO) Export Queue & System Modals
 - **QBO Sync Queue (`QBOSyncQueueModal.tsx`):** Slide-out drawer (`max-w-4xl`) holding validated staging transactions for QBO export.
 - **Document Print Modal (`DocumentPrintModal.tsx`):** Dedicated A4 print layout wrapper with `@media print` CSS overrides.
+
+### 5.8 Shared permission and authentication boundary
+- `src/lib/permissions.ts` is the typed client-side source for role tabs,
+  operation helpers, approval selectors, reviewable PO targets, and mobile
+  action counts. Header, navigation, and overview surfaces consume that same
+  model.
+- The role selector is a demo simulation. Client-side visibility and action
+  checks improve the preview experience but do not secure Go API endpoints.
+  Backend authentication, session identity, and server-enforced authorization
+  remain unresolved before production use.
 
 ---
 

@@ -14,14 +14,22 @@ import {
   Smartphone,
   Upload,
   UserCircle2,
+  type LucideIcon,
 } from 'lucide-react';
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import {
+  canUseOperation,
+  getAllowedTabs,
+  normalizeRole,
+  ROLE_OPTIONS,
+  type Role,
+} from '@/lib/permissions';
 
 interface HeaderProps {
   activeTab: string;
-  viewAsRole: string;
+  viewAsRole: Role;
   onSelectTab: (tabKey: string) => void;
-  onChangeRole: (role: string) => void;
+  onChangeRole: (role: Role) => void;
   onOpenCommandPalette: () => void;
   onOpenCreateNew: () => void;
   onOpenScanner: () => void;
@@ -32,28 +40,7 @@ interface HeaderProps {
   onOpenQBOQueue: () => void;
   onOpenProductManager: () => void;
   qboQueueCount: number;
-  allowedTabs?: string[];
 }
-
-const ROLE_ALLOWED_TABS: Record<string, string[]> = {
-  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['overview', 'inventory', 'purchasing'],
-  Marketing: ['overview', 'quotations'],
-  Sales: ['overview', 'quotations', 'inventory'],
-};
-
-const roleOptions = [
-  ['Admin', 'Admin'],
-  ['Chairman (DCS)', 'Chairman (DCS)'],
-  ['General Manager', 'General Manager'],
-  ['Bookkeeper', 'Bookkeeper'],
-  ['Warehouse', 'Warehouse'],
-  ['Marketing', 'Marketing'],
-  ['Sales', 'Sales Officer'],
-];
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
@@ -70,10 +57,103 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenQBOQueue,
   onOpenProductManager,
   qboQueueCount,
-  allowedTabs,
 }) => {
   const [isToolsOpen, setIsToolsOpen] = React.useState(false);
-  const allowed = allowedTabs || ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS.Admin;
+  const toolsButtonRef = React.useRef<HTMLButtonElement>(null);
+  const toolsMenuRef = React.useRef<HTMLDivElement>(null);
+  const menuItemRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const allowed = getAllowedTabs(viewAsRole);
+  const canOpenAdmin = canUseOperation(viewAsRole, 'admin');
+  const operationsMenuId = 'operations-menu';
+  const operationsButtonId = 'operations-menu-button';
+  const operationItems: Array<{ id: string; label: string; visible: boolean; icon: LucideIcon; onSelect: () => void }> = [
+    { id: 'create-new', label: 'Create new', visible: canUseOperation(viewAsRole, 'create'), icon: Plus, onSelect: onOpenCreateNew },
+    { id: 'export-report', label: 'Export report', visible: canUseOperation(viewAsRole, 'export'), icon: Download, onSelect: onOpenExport },
+    { id: 'startup-import', label: 'Startup import', visible: canUseOperation(viewAsRole, 'import') && canOpenAdmin, icon: Upload, onSelect: onOpenStartupImport },
+    { id: 'qbo-sync', label: 'QBO sync queue', visible: canUseOperation(viewAsRole, 'qbo'), icon: Database, onSelect: onOpenQBOQueue },
+    { id: 'barcode-manager', label: 'Barcode manager', visible: canUseOperation(viewAsRole, 'barcode'), icon: Barcode, onSelect: onOpenProductManager },
+    { id: 'barcode-scanner', label: 'Barcode scanner', visible: canUseOperation(viewAsRole, 'scanner'), icon: ScanLine, onSelect: onOpenScanner },
+    { id: 'install-app', label: 'Install app', visible: canUseOperation(viewAsRole, 'pwa'), icon: Smartphone, onSelect: onOpenPWAInstall },
+  ].filter((item) => item.visible);
+
+  const closeToolsMenu = React.useCallback((restoreFocus = true) => {
+    setIsToolsOpen(false);
+    if (restoreFocus) window.requestAnimationFrame(() => toolsButtonRef.current?.focus());
+  }, []);
+
+  const focusMenuItem = (index: number) => {
+    const nextIndex = (index + operationItems.length) % operationItems.length;
+    menuItemRefs.current[nextIndex]?.focus();
+  };
+
+  const openToolsMenu = (index = 0) => {
+    if (!operationItems.length) return;
+    setIsToolsOpen(true);
+    window.requestAnimationFrame(() => menuItemRefs.current[index]?.focus());
+  };
+
+  React.useEffect(() => {
+    if (!isToolsOpen) return undefined;
+
+    const handleOutsidePointer = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!toolsMenuRef.current?.contains(target) && !toolsButtonRef.current?.contains(target)) {
+        closeToolsMenu(false);
+      }
+    };
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeToolsMenu();
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointer);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointer);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+    };
+  }, [closeToolsMenu, isToolsOpen]);
+
+  const handleMenuButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'Escape' && isToolsOpen) {
+      event.preventDefault();
+      closeToolsMenu();
+      return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (isToolsOpen) closeToolsMenu();
+      else openToolsMenu(0);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (isToolsOpen) closeToolsMenu();
+      else openToolsMenu(operationItems.length - 1);
+    }
+  };
+
+  const handleMenuItemKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusMenuItem(index + 1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusMenuItem(index - 1);
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      focusMenuItem(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      focusMenuItem(operationItems.length - 1);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeToolsMenu();
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.currentTarget.click();
+    }
+  };
   const ordersTarget = allowed.includes('quotations') ? 'quotations' : 'purchasing';
   const financeTarget = allowed.includes('soa') ? 'soa' : 'rfp';
   const navigation = [
@@ -81,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
     { label: 'Inventory', key: 'inventory', target: 'inventory', visible: allowed.includes('inventory') },
     { label: 'Orders', key: 'orders', target: ordersTarget, visible: allowed.includes('quotations') || allowed.includes('purchasing') },
     { label: 'Finance', key: 'finance', target: financeTarget, visible: allowed.includes('soa') || allowed.includes('rfp') },
-    { label: 'Reports', key: 'reports', target: 'admin', visible: allowed.includes('admin') },
+    { label: 'Reports', key: 'reports', target: 'admin', visible: allowed.includes('admin') && canOpenAdmin },
   ].filter((item) => item.visible);
 
   const isActive = (key: string, target: string) => {
@@ -138,12 +218,12 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="role-switcher hidden min-h-[44px] items-center gap-1 rounded-lg px-3 sm:flex">
             <select
-              aria-label="View as role"
+              aria-label="Demo role simulation"
               value={viewAsRole}
-              onChange={(event) => onChangeRole(event.target.value)}
+              onChange={(event) => onChangeRole(normalizeRole(event.target.value))}
               className="max-w-[132px] bg-transparent text-sm font-medium outline-none sm:max-w-[170px]"
             >
-              {roleOptions.map(([value, label]) => (
+              {ROLE_OPTIONS.map(({ value, label }) => (
                 <option key={value} value={value} className="bg-white text-slate-900">{label}</option>
               ))}
             </select>
@@ -154,44 +234,58 @@ export const Header: React.FC<HeaderProps> = ({
             <UserCircle2 className="h-8 w-8" />
           </span>
 
-          <button
-            type="button"
-            onClick={onOpenQBOQueue}
-             className="header-icon-button relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
-            aria-label={`Open QBO sync queue${qboQueueCount ? ` (${qboQueueCount} pending)` : ''}`}
-          >
-            <Database className="h-5 w-5" />
-             {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--brand-red)] ring-2 ring-white" />}
-          </button>
-
-          <div className="relative hidden min-[1280px]:block">
+          {canUseOperation(viewAsRole, 'qbo') && (
             <button
               type="button"
-              onClick={() => setIsToolsOpen((open) => !open)}
+              onClick={onOpenQBOQueue}
+              className="header-icon-button relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
+              aria-label={`Open QBO sync queue${qboQueueCount ? ` (${qboQueueCount} pending)` : ''}`}
+            >
+              <Database className="h-5 w-5" />
+              {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--brand-red)] ring-2 ring-white" />}
+            </button>
+          )}
+
+          {operationItems.length > 0 && <div className="relative hidden min-[1280px]:block">
+            <button
+              ref={toolsButtonRef}
+              type="button"
+              id={operationsButtonId}
+              onClick={() => { if (isToolsOpen) closeToolsMenu(); else openToolsMenu(); }}
+              onKeyDown={handleMenuButtonKeyDown}
               aria-expanded={isToolsOpen}
               aria-haspopup="menu"
-              aria-controls="operations-menu"
+              aria-controls={operationsMenuId}
               aria-label="Open operations and tools"
-               className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
+              className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
             >
               <MoreHorizontal className="h-5 w-5" />
             </button>
             {isToolsOpen && (
-              <div id="operations-menu" role="menu" className="wayfinding-card absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 p-2 shadow-xl">
-                <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">Operations &amp; tools</p>
-                <button type="button" role="menuitem" onClick={() => { onOpenCreateNew(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Plus className="h-4 w-4 text-blue-700" /> Create new</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Download className="h-4 w-4 text-blue-700" /> Export report</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenStartupImport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Upload className="h-4 w-4 text-blue-700" /> Startup import</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenQBOQueue(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><span className="flex items-center gap-3"><Database className="h-4 w-4 text-emerald-700" /> QBO sync queue</span>{qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenProductManager(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Barcode className="h-4 w-4 text-indigo-700" /> Barcode manager</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenScanner(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><ScanLine className="h-4 w-4 text-rose-700" /> Barcode scanner</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenPWAInstall(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Smartphone className="h-4 w-4 text-blue-700" /> Install app</button>
+              <div id={operationsMenuId} ref={toolsMenuRef} role="menu" aria-labelledby={operationsButtonId} className="wayfinding-card absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 p-2 shadow-xl">
+                <div role="presentation" className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">Operations &amp; tools</div>
+                {operationItems.map(({ id, label, icon: Icon, onSelect }, index) => (
+                  <button
+                    key={id}
+                    ref={(element) => { menuItemRefs.current[index] = element; }}
+                    type="button"
+                    role="menuitem"
+                    tabIndex={index === 0 ? 0 : -1}
+                    onClick={() => { onSelect(); closeToolsMenu(); }}
+                    onKeyDown={(event) => handleMenuItemKeyDown(event, index)}
+                    className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+                  >
+                    <Icon className="h-4 w-4 text-blue-700" />
+                    {label}
+                    {id === 'qbo-sync' && qboQueueCount > 0 && <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}
+                  </button>
+                ))}
               </div>
             )}
-          </div>
+          </div>}
 
-           <button type="button" onClick={onOpenCommandPalette} className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg min-[1536px]:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
-           <button type="button" onClick={onOpenPWAInstall} className="header-icon-button hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg sm:inline-flex min-[1280px]:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
+          <button type="button" onClick={onOpenCommandPalette} className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg min-[1536px]:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
+          {canUseOperation(viewAsRole, 'pwa') && <button type="button" onClick={onOpenPWAInstall} className="header-icon-button hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg sm:inline-flex min-[1280px]:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>}
         </div>
       </div>
     </header>

@@ -19,32 +19,27 @@ import {
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import {
+  canUseOperation,
+  getAllowedTabs,
+  normalizeRole,
+  ROLE_OPTIONS,
+  type Role,
+  type RoleScopedDashboardData,
+} from '@/lib/permissions';
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   activeTab: string;
   onSelectTab: (tabKey: string) => void;
-  viewAsRole: string;
-  onChangeRole: (role: string) => void;
+  viewAsRole: Role;
+  onChangeRole: (role: Role) => void;
   onOpenScanner: () => void;
   onOpenCommandPalette: () => void;
   onOpenPWAInstall: () => void;
-  approvalsCount: number;
-  inventoryCount: number;
-  soaCount: number;
-  auditCount: number;
+  roleScopedData: RoleScopedDashboardData;
 }
-
-const ROLE_ALLOWED_TABS: Record<string, string[]> = {
-  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['overview', 'inventory', 'purchasing'],
-  Marketing: ['overview', 'quotations'],
-  Sales: ['overview', 'quotations', 'inventory'],
-};
 
 export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   isOpen,
@@ -56,21 +51,29 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   onOpenScanner,
   onOpenCommandPalette,
   onOpenPWAInstall,
-  approvalsCount,
-  inventoryCount,
-  soaCount,
-  auditCount,
+  roleScopedData,
 }) => {
-  const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
+  const allowed = getAllowedTabs(viewAsRole);
+  const canOpenAdmin = canUseOperation(viewAsRole, 'admin');
+  const {
+    pendingApprovals,
+    pendingPOApprovals,
+    pendingRfpApprovals,
+    activeRfqs,
+    waitingQuotes,
+    incomingPOs,
+    criticalStock,
+    openReceivables,
+  } = roleScopedData;
 
   const navItems = [
-    { key: 'overview', label: 'Executive Overview', subtitle: 'COSO Approvals Pipeline', icon: Layers, badge: approvalsCount },
-    { key: 'inventory', label: 'Inventory Control', subtitle: 'QC & Pampanga SKUs', icon: Package, badge: inventoryCount },
-    { key: 'quotations', label: 'Quotation Generator', subtitle: 'Stock Reservation & Pricing', icon: FileText, badge: 1 },
-    { key: 'soa', label: 'Statement of Account', subtitle: 'Client Ledger & AR Aging', icon: FileCheck, badge: soaCount },
-    { key: 'purchasing', label: 'Purchasing & Receiving', subtitle: '3-Way Fraud Match', icon: Building2, badge: null },
-    { key: 'rfp', label: 'Request for Payment', subtitle: 'Non-PO Vouchers', icon: CreditCard, badge: null },
-    { key: 'admin', label: 'User Setup & Audit Logs', subtitle: 'COSO Supervision', icon: UserCheck, badge: auditCount },
+    { key: 'overview', label: 'Executive Overview', subtitle: 'COSO approvals pipeline', icon: Layers, badge: pendingApprovals.length },
+    { key: 'inventory', label: 'Inventory Control', subtitle: 'Critical stock exceptions', icon: Package, badge: criticalStock.length },
+    { key: 'quotations', label: 'Quotation Generator', subtitle: 'RFQs and customer approvals', icon: FileText, badge: activeRfqs.length + waitingQuotes.length },
+    { key: 'soa', label: 'Statement of Account', subtitle: 'Open receivables', icon: FileCheck, badge: openReceivables.length },
+    { key: 'purchasing', label: 'Purchasing & Receiving', subtitle: 'PO reviews and open receipts', icon: Building2, badge: pendingPOApprovals.length + incomingPOs.length },
+    { key: 'rfp', label: 'Request for Payment', subtitle: 'Non-PO vouchers', icon: CreditCard, badge: pendingRfpApprovals.length },
+    { key: 'admin', label: 'User Setup & Audit Logs', subtitle: 'COSO supervision', icon: UserCheck, badge: null },
   ];
 
   return (
@@ -104,27 +107,22 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         <div className="flex items-center justify-between gap-3 border-b border-blue-200 bg-blue-50 p-4 text-sm">
           <div className="flex items-center gap-2 font-medium text-blue-950">
             <Eye className="w-4 h-4 text-blue-700 shrink-0" />
-            <span>Active View Role:</span>
+            <span>Demo role simulation:</span>
           </div>
           <select
-            aria-label="Active view role"
+            aria-label="Demo role simulation"
             value={viewAsRole}
-            onChange={(e) => onChangeRole(e.target.value)}
+            onChange={(e) => onChangeRole(normalizeRole(e.target.value))}
             className="cursor-pointer rounded-lg border border-blue-300 bg-white px-2.5 py-1 text-sm font-medium text-blue-950 focus:outline-none"
           >
-            <option value="Admin">Admin (Bridge)</option>
-            <option value="Chairman (DCS)">Chairman (DCS)</option>
-            <option value="General Manager">General Manager</option>
-            <option value="Bookkeeper">Bookkeeper</option>
-            <option value="Warehouse">Warehouse (Marie)</option>
-            <option value="Marketing">Marketing (Reviewer)</option>
-            <option value="Sales">Sales Officer</option>
+            {ROLE_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </select>
         </div>
 
         {/* Action Buttons Bar */}
         <div className="grid grid-cols-3 gap-2 border-b border-slate-200 bg-slate-50 p-3 text-xs">
-          <button
+          {canUseOperation(viewAsRole, 'scanner') && <button
+            type="button"
             onClick={() => {
               onClose();
               onOpenScanner();
@@ -133,9 +131,10 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           >
             <Camera className="w-4 h-4" />
             <span>Scan Barcode</span>
-          </button>
+          </button>}
 
           <button
+            type="button"
             onClick={() => {
               onClose();
               onOpenCommandPalette();
@@ -146,7 +145,8 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             <span>Search (⌘K)</span>
           </button>
 
-          <button
+          {canUseOperation(viewAsRole, 'pwa') && <button
+            type="button"
             onClick={() => {
               onClose();
               onOpenPWAInstall();
@@ -155,7 +155,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           >
             <Smartphone className="w-4 h-4 text-amber-400" />
             <span>PWA Mode Guide</span>
-          </button>
+          </button>}
         </div>
 
         {/* Scrollable Navigation Options */}
@@ -163,7 +163,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.key;
-            const isPermitted = allowed.includes(item.key);
+            const isPermitted = allowed.includes(item.key) && (item.key !== 'admin' || canOpenAdmin);
 
             return (
               <button

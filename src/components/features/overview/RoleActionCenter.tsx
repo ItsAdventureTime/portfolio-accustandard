@@ -8,17 +8,11 @@ import {
   PackageCheck,
   type LucideIcon,
 } from 'lucide-react';
+import { canUseOperation, type Role, type RoleScopedDashboardData } from '@/lib/permissions';
 
 interface RoleActionCenterProps {
-  viewAsRole: string;
-  approvalsList: any[];
-  inventoryList: any[];
-  rfqList: any[];
-  quotationsList: any[];
-  poList: any[];
-  soaRows: any[];
-  collectionsList: any[];
-  qboQueue: any[];
+  viewAsRole: Role;
+  roleScopedData: RoleScopedDashboardData;
   onSelectTab: (tabKey: string) => void;
   onOpenApprovals?: () => void;
   onOpenQBOQueue?: () => void;
@@ -37,34 +31,22 @@ interface ActionCard {
 
 export const RoleActionCenter: React.FC<RoleActionCenterProps> = ({
   viewAsRole,
-  approvalsList,
-  inventoryList,
-  rfqList,
-  quotationsList,
-  poList,
-  soaRows,
-  collectionsList,
-  qboQueue,
+  roleScopedData,
   onSelectTab,
   onOpenApprovals,
   onOpenQBOQueue,
   onOpenCreateQuotationModal,
 }) => {
-  const pendingApprovals = approvalsList.filter((item) => {
-    if (viewAsRole === 'Chairman (DCS)') return item.gmStatus === 'APPROVED' && item.dcsStatus === 'PENDING' && item.type !== 'Sales Quotation';
-    if (viewAsRole === 'General Manager') return item.reviewerStatus === 'APPROVED' && item.gmStatus === 'PENDING';
-    if (viewAsRole === 'Marketing') return item.reviewerStatus === 'PENDING';
-    if (viewAsRole === 'Bookkeeper') return item.type === 'Purchase Order' && item.reviewerStatus === 'PENDING';
-    return item.reviewerStatus === 'PENDING' || item.gmStatus === 'PENDING' || (item.dcsStatus === 'PENDING' && item.type !== 'Sales Quotation');
-  });
-  const pendingPOApprovals = pendingApprovals.filter((item) => item.type === 'Purchase Order');
-  const activeRfqs = rfqList.filter((rfq) => !['CLOSED', 'CONVERTED'].includes(rfq.currentStage));
-  const waitingQuotes = quotationsList.filter((quote) => ['AWAITING_CLIENT_APPROVAL', 'PENDING_CLIENT_SIGNATURE', 'CLIENT_APPROVAL_PENDING'].includes(quote.status));
-  const incomingPOs = poList.filter((po) => Number(po.rrQtyReceived || 0) < Number(po.poQty || 0));
-  const criticalStock = inventoryList.filter((item) => Number(item.available ?? item.onHand ?? 0) < 50);
-  const openReceivables = soaRows.filter((row) => Number(row.invoiceBalance ?? row.balance ?? 0) > 0);
+  const {
+    pendingPOApprovals,
+    activeRfqs,
+    waitingQuotes,
+    incomingPOs,
+    criticalStock,
+    openReceivables,
+    queuedQboItems,
+  } = roleScopedData;
   const receivingAlertCount = incomingPOs.length + criticalStock.length;
-  const queuedQboItems = qboQueue.filter((item) => item.syncStatus !== 'SYNCED');
 
   const reviewApprovals = () => {
     if (onOpenApprovals) {
@@ -94,7 +76,7 @@ export const RoleActionCenter: React.FC<RoleActionCenterProps> = ({
     detail: `${incomingPOs.length} open receipts and ${criticalStock.length} low-stock exceptions.`,
     actionLabel: 'View Alerts',
     tone: 'attention',
-    onOpen: () => onSelectTab(incomingPOs.length ? 'purchasing' : 'inventory'),
+    onOpen: () => onSelectTab(incomingPOs.length ? 'purchasing' : criticalStock.length ? 'inventory' : 'overview'),
     icon: PackageCheck,
   };
 
@@ -137,9 +119,9 @@ export const RoleActionCenter: React.FC<RoleActionCenterProps> = ({
         })}
       </div>
 
-      {viewAsRole === 'Sales' && onOpenCreateQuotationModal && <button type="button" onClick={onOpenCreateQuotationModal} className="mt-4 text-sm font-medium text-blue-800 underline decoration-blue-300 underline-offset-4 hover:text-blue-700">Create a new quotation</button>}
+      {viewAsRole === 'Sales' && canUseOperation(viewAsRole, 'create') && onOpenCreateQuotationModal && <button type="button" onClick={onOpenCreateQuotationModal} className="mt-4 text-sm font-medium text-blue-800 underline decoration-blue-300 underline-offset-4 hover:text-blue-700">Create a new quotation</button>}
       {viewAsRole === 'Bookkeeper' && onOpenQBOQueue && queuedQboItems.length > 0 && <button type="button" onClick={onOpenQBOQueue} className="sr-only">Open QBO queue ({queuedQboItems.length})</button>}
-      <span className="sr-only">{soaRows.length} active SOA rows and {collectionsList.length} collections.</span>
+      <span className="sr-only">{openReceivables.length} open receivables.</span>
     </section>
   );
 };
