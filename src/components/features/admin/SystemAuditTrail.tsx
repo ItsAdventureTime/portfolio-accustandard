@@ -430,9 +430,10 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
           onClose={() => setEditingUserModal(null)}
           title={`User access matrix: ${editingUserModal.name}`}
           description="Review role-derived module access for this user."
+          size="lg"
           contentClassName="text-slate-900"
         >
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
+          <div className="modal-panel gap-6 p-6 text-slate-900 text-sm sm:p-8">
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">

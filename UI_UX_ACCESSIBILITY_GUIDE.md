@@ -88,9 +88,11 @@ that show a metric without a decision or next action.
   scrollable viewport. Every dialog has an accessible title, a concise
   description when useful, and a visible 44px close or cancel action.
 - Use the shared `modal-panel`, `modal-header`, `modal-body`, and `modal-footer`
-  tokens. Keep headings sentence case and medium/semibold; reserve heavier
-  emphasis for the primary action and critical status. Limit each dialog to
-  one visually dominant action and a quieter cancel/close action.
+  tokens for both the shell and the nested content root. Do not layer a second
+  rounded card, shadow, or entry animation inside a dialog. Keep headings
+  sentence case and medium/semibold; reserve heavier emphasis for the primary
+  action and critical status. Limit each dialog to one visually dominant
+  action and a quieter cancel/close action.
 - Long forms use an internal `modal-body` scroll region and preserve the
   footer action row on narrow screens. Document print preview may use the
   `fullscreen` variant, but its controls still use the same branded tokens.

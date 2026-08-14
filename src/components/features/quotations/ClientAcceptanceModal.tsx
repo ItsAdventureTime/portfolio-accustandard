@@ -55,9 +55,10 @@ export const ClientAcceptanceModal: React.FC<ClientAcceptanceModalProps> = ({
       onClose={onClose}
       title="Client acceptance evidence preview"
       description="Review client acceptance evidence without persisting a workflow transition."
+      size="sm"
       contentClassName="text-slate-900"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
+      <div className="modal-panel text-slate-900">
         {/* Header Block */}
         <div className="p-6 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
           <div className="flex items-center gap-3.5">
