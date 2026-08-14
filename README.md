@@ -401,3 +401,14 @@ semantics. No SmoothUI or Motion dependency was added; the app keeps its CSS
 transition and reduced-motion contract. If Motion is introduced later, follow
 its [accessibility guidance](https://motion.dev/docs/react-accessibility) and
 [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
+
+### Notification behavior
+
+Routine feedback uses a shared, dismissible Radix Toast center with explicit
+severity and restrained AccuStandard surfaces. User-action results use
+foreground announcements; low-urgency informational updates use background
+announcements. Validation errors stay beside the affected control, offline
+status stays persistent in the workspace banner, and interruptive dialogs are
+reserved for responses that require acknowledgment. See the
+[`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md) notification
+contract for the full behavior and accessibility references.

@@ -230,3 +230,19 @@ framework migration. The current app uses CSS transitions plus its existing
 `prefers-reduced-motion` contract. If Motion is added, follow the official
 [accessibility guidance](https://motion.dev/docs/react-accessibility) and
 [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
+
+## Notification consistency pass
+
+The generic action feedback path now uses a shared Radix Toast center rather
+than a blocking modal for every success, role change, preview, scan, access, or
+API result. Notifications carry explicit severity; routine user-action results
+use foreground announcements, low-urgency informational updates use
+background announcements, and offline state stays in the persistent page
+status region. Inline validation uses assertive alert semantics adjacent to the
+affected controls. `SystemAlertModal` is reserved for an intentional
+workflow-interrupting `alertdialog` and no longer dismisses from a global Enter
+handler.
+
+The implementation follows the [WAI-ARIA alert pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alert/),
+[alertdialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/),
+and [Radix Toast guidance](https://www.radix-ui.com/primitives/docs/components/toast).

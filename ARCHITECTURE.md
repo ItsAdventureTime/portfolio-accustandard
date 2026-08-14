@@ -138,9 +138,10 @@ Across all 6 core data tables, interactive primary keys are rendered inside high
 - **USER NAME**: `User` (left) + `User Name` + `Eye` (right badge) &rarr; opens User Access Matrix Editor Modal.
 - **RFQ REF #**: `FileText` (left) + `RFQ Code` + `Eye` (right badge) &rarr; opens Sales RFQ Inspector Modal.
 
-### 4. Smooth Physics Entrance Animations & High-Visibility Notification Dialogs
+### 4. Shared Feedback and Dialog Primitives
 - **Modal Popups & Drawers:** All modal popups enforce backdrop blur fade-in (`bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200`) and dialog container zoom-in (`animate-in fade-in zoom-in-95 duration-200`).
-- **High-Visibility Notification Popups (`SystemAlertModal.tsx`):** Replaces auto-dismissing toast notifications with centered popup window modals featuring explicit user confirmation buttons (`"Acknowledge & Close"`) so alerts and workflow updates cannot be overlooked.
+- **Notifications (`NotificationCenter.tsx`):** Routine workflow feedback uses the existing Radix Toast primitive with an explicit `info`, `success`, `warning`, or `error` severity. Toasts are dismissible, deduplicated, queued with a four-item visible limit, paused by Radix on hover/focus/window blur, and placed above mobile bottom navigation and the device safe area. Offline status remains in the persistent page status region rather than a popup.
+- **Interruptive alerts:** `SystemAlertModal.tsx` is reserved for a deliberate workflow interruption. When used, it is a Radix-backed `alertdialog` with a visible title, description, close/cancel action, focus trapping/restoration, and no global Enter dismissal.
 
 ---
 

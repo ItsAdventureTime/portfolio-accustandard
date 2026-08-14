@@ -77,6 +77,35 @@ that show a metric without a decision or next action.
 - Respect `prefers-reduced-motion`. Motion may clarify state changes but must
   never be required to understand or complete an action.
 
+### Notification contract
+
+- Use `NotificationCenter` for non-blocking feedback. Every call supplies an
+  explicit `severity` (`info`, `success`, `warning`, or `error`), a concise
+  message, and an optional title; severity is never inferred from message text.
+- Routine success, preview, role, scan, access, and unavailable messages remain
+  non-blocking toasts. User-action results use Radix foreground announcements;
+  low-urgency informational updates default to background announcements.
+  Blocking workflow validation stays inline beside the affected control.
+  Offline mode is communicated by the persistent page status region, not by a
+  repeated popup.
+- The shared queue deduplicates identical messages, keeps up to 20 pending
+  items, shows four at a time, supports Radix close and swipe dismissal, and
+  uses predictable severity durations. Radix pauses closing on hover, focus,
+  and window blur. The viewport clears the mobile bottom navigation and the
+  device safe area. Toast animation is reduced-motion safe.
+- Inline validation uses a pre-existing or injected `role="alert"`
+  / `aria-live="assertive"` region and points the affected input to it with
+  `aria-describedby`; set `aria-invalid="true"` while the error applies.
+- Use an `alertdialog` only when the user must address an interruption. It
+  needs a visible title, a concise `aria-describedby` message, modal focus
+  containment, focus restoration, and a visible close or cancel action. Do not
+  use a global Enter handler to dismiss it.
+
+References: [Radix Toast](https://www.radix-ui.com/primitives/docs/components/toast),
+[WAI-ARIA Alert pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alert/),
+[WAI-ARIA Alert and Message Dialogs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/),
+and [WAI-ARIA Dialog (Modal) pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+
 ### Motion and component references
 
 - [SmoothUI](https://github.com/educlopez/smoothui) is a selective reference

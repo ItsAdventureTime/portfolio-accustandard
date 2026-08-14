@@ -18,6 +18,7 @@ import {
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
+import type { NotificationInput } from '@/components/common/NotificationCenter';
 
 interface StatementOfAccountProps {
   soaRows: any[];
@@ -26,7 +27,7 @@ interface StatementOfAccountProps {
   collectionsList?: any[];
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
-  onShowNotification: (msg: string) => void;
+  onShowNotification: (notification: NotificationInput) => void;
   onAddAuditLog: (action: string) => void;
   onAllocateCollection?: (checkNo: string, bank: string, checkAmount: number, allocations: { invoiceNo: string; amount: number }[]) => void | Promise<boolean | void>;
 }
@@ -176,14 +177,21 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   const [newAgeDays, setNewAgeDays] = useState(31);
   const [newInvoiceAmount, setNewInvoiceAmount] = useState(15000);
   const [newAmountPaid, setNewAmountPaid] = useState(0);
+  const [invoiceValidationError, setInvoiceValidationError] = useState<string | null>(null);
 
   // Edit Invoice Modal State
   const [editingRow, setEditingRow] = useState<any | null>(null);
+  const [editingValidationError, setEditingValidationError] = useState<string | null>(null);
+  const [allocationValidationError, setAllocationValidationError] = useState<string | null>(null);
 
   // Add Invoice Handler
   const handleAddInvoiceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSiNo.trim() || !newDrNo.trim()) return;
+    if (!newSiNo.trim() || !newDrNo.trim() || newInvoiceAmount < 0 || newAmountPaid < 0) {
+      setInvoiceValidationError('Enter the sales invoice number, delivery receipt number, and non-negative amounts.');
+      return;
+    }
+    setInvoiceValidationError(null);
 
     const invAmount = Number(newInvoiceAmount) || 0;
     const amtPaid = Number(newAmountPaid) || 0;
@@ -206,7 +214,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Preview only: Invoice ${newSiNo} was added to the local ${activeClient.name} SOA view.`);
+    onShowNotification({ severity: 'info', title: 'Preview only', message: `Invoice ${newSiNo} was added to the local ${activeClient.name} SOA view.` });
     onAddAuditLog(`Demo-only preview of adding Invoice ${newSiNo} to SOA ledger (${activeClient.name})`);
 
     setNewSiNo('');
@@ -221,7 +229,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Preview only: Invoice ${siNo} was removed from the local SOA view.`);
+    onShowNotification({ severity: 'info', title: 'Preview only', message: `Invoice ${siNo} was removed from the local SOA view.` });
     onAddAuditLog(`Demo-only preview of removing Invoice ${siNo} from SOA ledger`);
   };
 
@@ -229,6 +237,11 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   const handleEditRowSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingRow) return;
+    if (!editingRow.salesInvoiceNo?.trim() || !editingRow.drNo?.trim() || Number(editingRow.invoiceAmount) < 0 || Number(editingRow.amountPaid) < 0) {
+      setEditingValidationError('Enter the invoice and delivery receipt numbers with non-negative amounts.');
+      return;
+    }
+    setEditingValidationError(null);
 
     const updatedRows = computedRows.map((r) => {
       if (r.id === editingRow.id || r.salesInvoiceNo === editingRow.salesInvoiceNo) {
@@ -241,7 +254,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Preview only: Invoice ${editingRow.salesInvoiceNo} changes were not persisted.`);
+    onShowNotification({ severity: 'info', title: 'Preview only', message: `Invoice ${editingRow.salesInvoiceNo} changes were not persisted.` });
     onAddAuditLog(`Demo-only preview of updating Invoice ${editingRow.salesInvoiceNo} in SOA ledger`);
     setEditingRow(null);
   };
@@ -252,21 +265,27 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   const handleAllocateCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!checkNo.trim() || !bank.trim() || checkAmount <= 0 || allocationTargets.length === 0) return;
+    if (!checkNo.trim() || !bank.trim() || checkAmount <= 0 || allocationTargets.length === 0) {
+      setAllocationValidationError('Enter the check number, issuing bank, and a positive amount. At least one open invoice is required.');
+      return;
+    }
     const allocations = [
       ...allocationTargets.map((row) => ({
         invoiceNo: row.salesInvoiceNo,
         amount: allocationAmounts[row.id || row.salesInvoiceNo] || 0,
       })),
     ].filter((allocation) => allocation.amount > 0);
+    if (totalAllocated > checkAmount) {
+      setAllocationValidationError('Allocated amounts cannot exceed the check amount.');
+      return;
+    }
+    setAllocationValidationError(null);
 
     if (onAllocateCollection) {
       const committed = await onAllocateCollection(checkNo, bank, checkAmount, allocations);
       if (committed === false) return;
     } else {
-      onShowNotification(
-        `Offline demo preview only: Check #${checkNo} was not persisted or queued for ${allocations.map((allocation) => allocation.invoiceNo).join(', ')}.`
-      );
+      onShowNotification({ severity: 'info', title: 'Preview only', message: `Check #${checkNo} was not persisted or queued for ${allocations.map((allocation) => allocation.invoiceNo).join(', ')}.` });
       onAddAuditLog(
         `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
       );
@@ -544,7 +563,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleAddInvoiceSubmit} className="space-y-4 text-sm font-semibold">
+            <form onSubmit={handleAddInvoiceSubmit} className="space-y-4 text-sm font-semibold" noValidate>
+              {invoiceValidationError && <p id="soa-invoice-error" role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-900">{invoiceValidationError}</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Sales Invoice (SI) No. *</label>
@@ -552,7 +572,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                     type="text"
                     placeholder="e.g. SI-6125"
                     value={newSiNo}
-                    onChange={(e) => setNewSiNo(e.target.value)}
+                    onChange={(e) => { setNewSiNo(e.target.value); setInvoiceValidationError(null); }}
+                    aria-describedby={invoiceValidationError ? 'soa-invoice-error' : undefined}
+                    aria-invalid={invoiceValidationError && !newSiNo.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -564,7 +586,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                     type="text"
                     placeholder="e.g. DR-6119"
                     value={newDrNo}
-                    onChange={(e) => setNewDrNo(e.target.value)}
+                    onChange={(e) => { setNewDrNo(e.target.value); setInvoiceValidationError(null); }}
+                    aria-describedby={invoiceValidationError ? 'soa-invoice-error' : undefined}
+                    aria-invalid={invoiceValidationError && !newDrNo.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -609,7 +633,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="number"
                     value={newInvoiceAmount}
-                    onChange={(e) => setNewInvoiceAmount(Number(e.target.value))}
+                    onChange={(e) => { setNewInvoiceAmount(Number(e.target.value)); setInvoiceValidationError(null); }}
+                    aria-describedby={invoiceValidationError ? 'soa-invoice-error' : undefined}
+                    aria-invalid={invoiceValidationError && newInvoiceAmount < 0 ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -620,7 +646,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="number"
                     value={newAmountPaid}
-                    onChange={(e) => setNewAmountPaid(Number(e.target.value))}
+                    onChange={(e) => { setNewAmountPaid(Number(e.target.value)); setInvoiceValidationError(null); }}
+                    aria-describedby={invoiceValidationError ? 'soa-invoice-error' : undefined}
+                    aria-invalid={invoiceValidationError && newAmountPaid < 0 ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -670,14 +698,17 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleEditRowSubmit} className="space-y-4 text-sm font-semibold">
+            <form onSubmit={handleEditRowSubmit} className="space-y-4 text-sm font-semibold" noValidate>
+              {editingValidationError && <p id="soa-edit-error" role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-900">{editingValidationError}</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">Sales Invoice (SI) No.</label>
                   <input
                     type="text"
                     value={editingRow.salesInvoiceNo}
-                    onChange={(e) => setEditingRow({ ...editingRow, salesInvoiceNo: e.target.value })}
+                    onChange={(e) => { setEditingRow({ ...editingRow, salesInvoiceNo: e.target.value }); setEditingValidationError(null); }}
+                    aria-describedby={editingValidationError ? 'soa-edit-error' : undefined}
+                    aria-invalid={editingValidationError && !editingRow.salesInvoiceNo?.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -688,7 +719,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="text"
                     value={editingRow.drNo}
-                    onChange={(e) => setEditingRow({ ...editingRow, drNo: e.target.value })}
+                    onChange={(e) => { setEditingRow({ ...editingRow, drNo: e.target.value }); setEditingValidationError(null); }}
+                    aria-describedby={editingValidationError ? 'soa-edit-error' : undefined}
+                    aria-invalid={editingValidationError && !editingRow.drNo?.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -733,15 +766,18 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="number"
                     value={editingRow.invoiceAmount}
-                    onChange={(e) => {
-                      const newAmt = Number(e.target.value) || 0;
+                      onChange={(e) => {
+                        const newAmt = Number(e.target.value) || 0;
                       const paid = Number(editingRow.amountPaid) || 0;
                       setEditingRow({
                         ...editingRow,
                         invoiceAmount: newAmt,
                         invoiceBalance: Math.max(0, newAmt - paid),
-                      });
-                    }}
+                        });
+                        setEditingValidationError(null);
+                      }}
+                    aria-describedby={editingValidationError ? 'soa-edit-error' : undefined}
+                    aria-invalid={editingValidationError && Number(editingRow.invoiceAmount) < 0 ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -752,15 +788,18 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="number"
                     value={editingRow.amountPaid || 0}
-                    onChange={(e) => {
-                      const paid = Number(e.target.value) || 0;
+                      onChange={(e) => {
+                        const paid = Number(e.target.value) || 0;
                       const invAmt = Number(editingRow.invoiceAmount) || 0;
                       setEditingRow({
                         ...editingRow,
                         amountPaid: paid,
                         invoiceBalance: Math.max(0, invAmt - paid),
-                      });
-                    }}
+                        });
+                        setEditingValidationError(null);
+                      }}
+                    aria-describedby={editingValidationError ? 'soa-edit-error' : undefined}
+                    aria-invalid={editingValidationError && Number(editingRow.amountPaid) < 0 ? true : undefined}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -809,7 +848,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleAllocateCheck} className="space-y-5 text-sm font-semibold">
+            <form onSubmit={handleAllocateCheck} className="space-y-5 text-sm font-semibold" noValidate>
+              {allocationValidationError && <p id="soa-allocation-error" role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-900">{allocationValidationError}</p>}
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-xs sm:text-sm text-blue-950 font-bold flex items-center gap-3">
                 <CreditCard className="w-5 h-5 text-blue-700 shrink-0" />
                 <span>Multi-SOA Check Allocation: Apply one payment to selected invoice balances and calculate any unapplied customer credit.</span>
@@ -821,7 +861,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="text"
                     value={checkNo}
-                    onChange={(e) => setCheckNo(e.target.value)}
+                    onChange={(e) => { setCheckNo(e.target.value); setAllocationValidationError(null); }}
+                    aria-describedby={allocationValidationError ? 'soa-allocation-error' : undefined}
+                    aria-invalid={allocationValidationError && !checkNo.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -831,7 +873,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="text"
                     value={bank}
-                    onChange={(e) => setBank(e.target.value)}
+                    onChange={(e) => { setBank(e.target.value); setAllocationValidationError(null); }}
+                    aria-describedby={allocationValidationError ? 'soa-allocation-error' : undefined}
+                    aria-invalid={allocationValidationError && !bank.trim() ? true : undefined}
                     className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
                     required
                   />
@@ -841,7 +885,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <input
                     type="number"
                     value={checkAmount}
-                    onChange={(e) => setCheckAmount(Number(e.target.value))}
+                    onChange={(e) => { setCheckAmount(Number(e.target.value)); setAllocationValidationError(null); }}
+                    aria-describedby={allocationValidationError ? 'soa-allocation-error' : undefined}
+                    aria-invalid={allocationValidationError && checkAmount <= 0 ? true : undefined}
                     className="w-full px-4 py-3 bg-white border border-blue-300 rounded-xl font-mono font-black text-base sm:text-lg text-blue-950 focus:outline-none focus:border-blue-600"
                     required
                   />
