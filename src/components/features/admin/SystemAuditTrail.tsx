@@ -18,24 +18,27 @@ import {
   Eye,
   ChevronDown,
 } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
+import {
+  canUseOperation,
+  canManageUsers,
+  DEFAULT_ROLE,
+  getAllowedModuleViews,
+  normalizeRole,
+  ROLE_OPTIONS,
+  TAB_LABELS,
+  type Role,
+} from '@/lib/permissions';
 
 interface SystemAuditTrailProps {
   auditLogs: any[];
-  viewAsRole?: string;
+  viewAsRole?: Role;
   onShowNotification?: (msg: string) => void;
-  onAddAuditLog?: (action: string) => void;
+  onAddAuditLog?: (action: string, actorRole?: Role) => void;
   onOpenStartupImportModal?: () => void;
 }
 
-const ALL_AVAILABLE_MODULE_VIEWS = [
-  'Executive Overview',
-  'Inventory',
-  'Sales',
-  'SOA',
-  'Purchasing',
-  'RFP',
-  'User & Audit Logs',
-];
+const ALL_AVAILABLE_MODULE_VIEWS = Object.values(TAB_LABELS);
 
 export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   auditLogs,
@@ -47,38 +50,30 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'AUDIT' | 'USERS'>('USERS');
   const [filterQuery, setFilterQuery] = useState('');
 
-  const canEditUsers = ['Admin', 'Chairman (DCS)'].includes(viewAsRole);
+  const canEditUsers = canManageUsers(viewAsRole);
 
   // Initial Registered System Users & RBAC Permissions Matrix
   const [userList, setUserList] = useState([
-    { id: 'usr-1', name: 'Chairman (DCS)', role: 'Chairman (DCS)', allowedViews: ['Executive Overview', 'Inventory', 'Sales', 'SOA', 'Purchasing', 'RFP', 'User & Audit Logs'], status: 'ACTIVE' },
-    { id: 'usr-2', name: 'Karen (General Manager)', role: 'General Manager', allowedViews: ['Executive Overview', 'Inventory', 'Sales', 'SOA', 'Purchasing', 'RFP', 'User & Audit Logs'], status: 'ACTIVE' },
-    { id: 'usr-3', name: 'Aila (Bookkeeper)', role: 'Bookkeeper', allowedViews: ['Executive Overview', 'SOA', 'Purchasing', 'RFP'], status: 'ACTIVE' },
-    { id: 'usr-4', name: 'Marie (Warehouse)', role: 'Warehouse', allowedViews: ['Inventory Control', 'Purchasing & Receiving (RR Input)'], status: 'ACTIVE' },
-    { id: 'usr-5', name: 'RMT Katherine (Marketing)', role: 'Marketing', allowedViews: ['Executive Overview', 'Sales Quotation Generator'], status: 'ACTIVE' },
-    { id: 'usr-6', name: 'Mark (Sales Officer)', role: 'Sales', allowedViews: ['Sales Quotation Generator'], status: 'ACTIVE' },
+    { id: 'usr-1', name: 'Chairman (DCS)', role: 'Chairman (DCS)', allowedViews: getAllowedModuleViews('Chairman (DCS)'), status: 'ACTIVE' },
+    { id: 'usr-2', name: 'Karen (General Manager)', role: 'General Manager', allowedViews: getAllowedModuleViews('General Manager'), status: 'ACTIVE' },
+    { id: 'usr-3', name: 'Aila (Bookkeeper)', role: 'Bookkeeper', allowedViews: getAllowedModuleViews('Bookkeeper'), status: 'ACTIVE' },
+    { id: 'usr-4', name: 'Marie (Warehouse)', role: 'Warehouse', allowedViews: getAllowedModuleViews('Warehouse'), status: 'ACTIVE' },
+    { id: 'usr-5', name: 'RMT Katherine (Marketing)', role: 'Marketing', allowedViews: getAllowedModuleViews('Marketing'), status: 'ACTIVE' },
+    { id: 'usr-6', name: 'Mark (Sales Officer)', role: 'Sales', allowedViews: getAllowedModuleViews('Sales'), status: 'ACTIVE' },
   ]);
 
   const [newUserName, setNewUserName] = useState('');
-  const [newUserRole, setNewUserRole] = useState('Sales');
+  const [newUserRole, setNewUserRole] = useState<Role>('Sales');
 
   // Modal Editing State
   const [editingUserModal, setEditingUserModal] = useState<any | null>(null);
   const [editName, setEditName] = useState('');
-  const [editRole, setEditRole] = useState('');
-  const [editViews, setEditViews] = useState<string[]>([]);
+  const [editRole, setEditRole] = useState<Role>(DEFAULT_ROLE);
 
   const handleOpenEditUser = (usr: any) => {
     setEditingUserModal(usr);
     setEditName(usr.name);
-    setEditRole(usr.role);
-    setEditViews(usr.allowedViews || []);
-  };
-
-  const handleToggleModuleView = (viewName: string) => {
-    setEditViews((prev) =>
-      prev.includes(viewName) ? prev.filter((v) => v !== viewName) : [...prev, viewName]
-    );
+    setEditRole(normalizeRole(usr.role));
   };
 
   const handleSaveUserPermissions = (e: React.FormEvent) => {
@@ -88,22 +83,25 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
       return;
     }
 
+    if (!editingUserModal) return;
+    const canonicalViews = getAllowedModuleViews(editRole);
+    const intendedName = editName.trim() || editingUserModal.name;
     setUserList((prev) =>
       prev.map((usr) => {
         if (usr.id === editingUserModal.id) {
           return {
             ...usr,
-            name: editName.trim() || usr.name,
+            name: intendedName,
             role: editRole,
-            allowedViews: editViews,
+            allowedViews: canonicalViews,
           };
         }
         return usr;
       })
     );
 
-    if (onShowNotification) onShowNotification(`Updated system user profile & permissions for ${editName}!`);
-    if (onAddAuditLog) onAddAuditLog(`Updated user permissions matrix for ${editName} (Role: ${editRole})`);
+    if (onShowNotification) onShowNotification(`Updated system user profile & permissions for ${intendedName}.`);
+    if (onAddAuditLog) onAddAuditLog(`Updated user permissions matrix for ${intendedName} (Role: ${editRole})`, viewAsRole);
     setEditingUserModal(null);
   };
 
@@ -118,6 +116,10 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEditUsers) {
+      if (onShowNotification) onShowNotification(`Permission denied: role [${viewAsRole}] cannot create users.`);
+      return;
+    }
     if (!newUserName.trim()) {
       if (onShowNotification) onShowNotification('Please enter a full name for the new system user.');
       return;
@@ -127,13 +129,13 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
       id: `usr-${Date.now()}`,
       name: newUserName.trim(),
       role: newUserRole,
-      allowedViews: newUserRole === 'Warehouse' ? ['Inventory Control', 'Purchasing & Receiving (RR Input)'] : ['Executive Overview', 'Sales Quotation Generator'],
+      allowedViews: getAllowedModuleViews(newUserRole),
       status: 'ACTIVE',
     };
 
     setUserList((prev) => [...prev, newUser]);
     if (onShowNotification) onShowNotification(`Registered user ${newUserName} as ${newUserRole}.`);
-    if (onAddAuditLog) onAddAuditLog(`Registered new system user ${newUserName} with role ${newUserRole}`);
+    if (onAddAuditLog) onAddAuditLog(`Registered new system user ${newUserName} with role ${newUserRole}`, viewAsRole);
     setNewUserName('');
   };
 
@@ -153,7 +155,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
 
         {/* Tab Switcher & Startup Import Action */}
         <div className="flex items-center gap-3 flex-wrap">
-          {onOpenStartupImportModal && (
+          {onOpenStartupImportModal && canUseOperation(viewAsRole, 'import') && canEditUsers && (
             <details className="action-disclosure relative">
               <summary>
                 <span>More actions</span>
@@ -215,6 +217,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                   placeholder="e.g. Alex Santos"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
+                  disabled={!canEditUsers}
                   className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-normal text-slate-900 focus:border-blue-600 focus:outline-none"
                   required
                 />
@@ -224,22 +227,18 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                 <label className="mb-1 block font-medium text-slate-700">Assigned system role</label>
                 <select
                   value={newUserRole}
-                  onChange={(e) => setNewUserRole(e.target.value)}
+                  onChange={(e) => setNewUserRole(normalizeRole(e.target.value))}
+                  disabled={!canEditUsers}
                   className="w-full cursor-pointer rounded-lg border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-normal text-slate-900 focus:border-blue-600 focus:outline-none"
                 >
-                  <option value="Admin">Admin (Bridge)</option>
-                  <option value="Chairman (DCS)">Chairman (DCS)</option>
-                  <option value="General Manager">General Manager</option>
-                  <option value="Bookkeeper">Bookkeeper</option>
-                  <option value="Warehouse">Warehouse (Receiving Access)</option>
-                  <option value="Marketing">Marketing (Reviewer)</option>
-                  <option value="Sales">Sales Officer</option>
+                  {ROLE_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                 </select>
               </div>
 
               <div className="flex items-end">
                 <button
                   type="submit"
+                  disabled={!canEditUsers}
                   className="action-primary w-full rounded-lg text-xs sm:text-sm"
                 >
                   <Plus className="w-4 h-4" />
@@ -270,8 +269,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
               {userList.map((usr) => (
                 <div
                   key={usr.id}
-                  onClick={() => handleOpenEditUser(usr)}
-                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3"
                 >
                   <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
                     <div className="flex items-center gap-2">
@@ -317,20 +315,20 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block table-responsive-wrapper">
               <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+                <caption className="sr-only">System users and role-derived module access</caption>
                 <thead className="border-b border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700">
                   <tr>
-                    <th className="p-4">User Name</th>
-                    <th className="p-4">Role</th>
-                    <th className="p-4">Allowed Module Views</th>
-                    <th className="p-4 text-center">Account Security</th>
+                    <th scope="col" className="p-4">User Name</th>
+                    <th scope="col" className="p-4">Role</th>
+                    <th scope="col" className="p-4">Allowed Module Views</th>
+                    <th scope="col" className="p-4 text-center">Account Security</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {userList.map((usr) => (
                     <tr
                       key={usr.id}
-                      onClick={() => handleOpenEditUser(usr)}
-                      className="hover:bg-blue-50/50 transition cursor-pointer group"
+                      className="hover:bg-blue-50/50 transition group"
                     >
                       <td className="p-4">
                         <button
@@ -426,7 +424,13 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
 
       {/* Edit User Permissions Modal Overlay */}
       {editingUserModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+        <AccessibleModal
+          isOpen={Boolean(editingUserModal)}
+          onClose={() => setEditingUserModal(null)}
+          title={`User access matrix: ${editingUserModal.name}`}
+          description="Review role-derived module access for this user."
+          contentClassName="text-slate-900"
+        >
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
@@ -481,17 +485,11 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                   <label className="font-bold text-slate-700 block mb-1 text-xs uppercase tracking-wider">Assigned System Role *</label>
                   <select
                     value={editRole}
-                    onChange={(e) => setEditRole(e.target.value)}
+                    onChange={(e) => setEditRole(normalizeRole(e.target.value))}
                     disabled={!canEditUsers}
                     className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-black rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-blue-600 disabled:opacity-75 disabled:bg-slate-100 cursor-pointer"
                   >
-                    <option value="Admin">Admin (Bridge)</option>
-                    <option value="Chairman (DCS)">Chairman (DCS)</option>
-                    <option value="General Manager">General Manager</option>
-                    <option value="Bookkeeper">Bookkeeper</option>
-                    <option value="Warehouse">Warehouse (Receiving Access)</option>
-                    <option value="Marketing">Marketing (Reviewer)</option>
-                    <option value="Sales">Sales Officer</option>
+                    {ROLE_OPTIONS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                   </select>
                 </div>
               </div>
@@ -499,11 +497,11 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
               {/* Module View Permissions Checkboxes */}
               <div>
                 <label className="font-bold text-slate-700 block mb-2 text-xs uppercase tracking-wider">
-                  Allowed Module View Permissions
+                   Role-derived module view permissions
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
                   {ALL_AVAILABLE_MODULE_VIEWS.map((viewName) => {
-                    const isChecked = editViews.includes(viewName);
+                     const isChecked = getAllowedModuleViews(editRole).includes(viewName);
                     return (
                       <label
                         key={viewName}
@@ -516,8 +514,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                         <input
                           type="checkbox"
                           checked={isChecked}
-                          onChange={() => handleToggleModuleView(viewName)}
-                          disabled={!canEditUsers}
+                          disabled
                           className="w-4 h-4 rounded text-blue-900 focus:ring-blue-500"
                         />
                         <span>{viewName}</span>
@@ -549,7 +546,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
               </div>
             </form>
           </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

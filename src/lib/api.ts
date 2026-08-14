@@ -1,6 +1,13 @@
 // REST API Client for Accustandard Go Backend
 
+import { DEFAULT_ROLE, isRole, type Role } from '@/lib/permissions';
+
 const API_BASE_URL = '/accustandard/demo/api/v1';
+let activeDemoRole: Role = DEFAULT_ROLE;
+
+export function setDemoRole(role: Role) {
+  if (isRole(role)) activeDemoRole = role;
+}
 
 export class ApiRequestError extends Error {
   constructor(
@@ -20,11 +27,12 @@ export async function fetchApi<T>(
   try {
     const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
     const response = await fetch(url, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
+        'X-Demo-Role': activeDemoRole,
       },
-      ...options,
     });
 
     if (!response.ok) {
@@ -71,10 +79,10 @@ export async function getApprovals() {
   return fetchApi<any[]>('/approvals');
 }
 
-export async function updateApproval(id: string, action: 'approve' | 'reject', role: string, remarks?: string) {
+export async function updateApproval(id: string, action: 'approve' | 'reject', remarks?: string) {
   return fetchApi<any>(`/approvals/${id}/${action}`, {
     method: 'POST',
-    body: JSON.stringify({ role, remarks }),
+    body: JSON.stringify({ remarks }),
   }, { strict: true });
 }
 

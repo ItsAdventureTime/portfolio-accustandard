@@ -7,11 +7,15 @@ security boundary.
 
 ## Current implementation boundary
 
-The demo API is not an authenticated production system. RBAC and approval
-identity are not yet enforced by authentication middleware, and attachment
-authorization, idempotency, and immutable audit guarantees remain incomplete.
-Do not expose the demo database or treat a role field in a request payload as
-proof of identity.
+The demo API is not an authenticated production system. Its protected routes
+now require `APP_ENV=demo` plus a valid `X-Demo-Role` header, and approval
+handlers derive the simulated actor from that request context rather than a
+JSON role field. This is an explicit demo boundary, not authentication: the
+header can be forged by a demo caller. Outside demo mode, protected routes
+fail closed with service-unavailable until a trusted identity provider is
+configured. Attachment authorization, idempotency, and immutable audit
+guarantees remain incomplete. Do not expose the demo database or handle real
+company data.
 
 The Go service defaults to an explicit origin allowlist and disables credential
 sharing. Production deployment must set `CORS_ALLOWED_ORIGINS` deliberately,
@@ -34,7 +38,7 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 ## 🔒 Security Principles
 
 ### 1. Fraud Control & Access Locks
-- **Role-Based Access Control (RBAC):** Navigation and document actions are role-scoped in the demo, but production identity enforcement still requires authentication middleware.
+- **Role-Based Access Control (RBAC):** Navigation and document actions are role-scoped in the demo, and protected API routes require the explicit demo boundary; production identity enforcement still requires authentication middleware.
 - **Audit Logging:** Implemented server mutations create audit records, while end-to-end immutability and coverage are acceptance gaps rather than production guarantees.
 - **Strict Hard-Blocking:** The Go receiving endpoint rejects over-receipt atomically, and PO creation enforces the Class 3 linked-customer-PO control. Other controls remain subject to the documented demo boundary.
 

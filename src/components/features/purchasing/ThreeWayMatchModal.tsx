@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { X, CheckCircle2, ShieldCheck, FileText, Package, FileCheck, ArrowRight } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface ThreeWayMatchModalProps {
   isOpen: boolean;
@@ -14,23 +15,34 @@ interface ThreeWayMatchModalProps {
 export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
   isOpen,
   onClose,
-  poData = {},
+  poData,
   vendorInvoice,
   onConfirmVerification,
 }) => {
-  const [hasVendorInvoice] = useState(!!vendorInvoice || true);
-
   if (!isOpen) return null;
 
-  const poNo = poData.qrn || 'PO-2026-0891';
-  const supplier = poData.supplier || 'BioMerieux Corp Philippines';
-  const poAmount = poData.totalAmount || 142000.0;
-  const grNo = 'GR-2026-1049';
-  const grQty = 60;
-  const invNo = vendorInvoice?.invoiceNo || 'INV-SYS-99201';
-  const invAmount = vendorInvoice?.amount || 142000.0;
+  const poNo = poData?.poNumber || poData?.qrn || '';
+  const supplier = poData?.supplier || poData?.vendorName || '';
+  const poAmount = Number(poData?.totalAmount);
+  const poQty = Number(poData?.poQty);
+  const grQty = Number(poData?.rrQtyReceived);
+  const grNo = poData?.receivingReportNo || poData?.goodsReceiptNo || '';
+  const invNo = vendorInvoice?.invoiceNo || '';
+  const invAmount = Number(vendorInvoice?.amount);
+  const hasPurchaseOrder = Boolean(poNo);
+  const hasGoodsReceipt = Number.isFinite(grQty) && grQty > 0;
+  const hasVendorInvoice = Boolean(vendorInvoice?.invoiceNo && Number.isFinite(invAmount) && invAmount > 0);
+  const hasCompleteEvidence = hasPurchaseOrder && hasGoodsReceipt && hasVendorInvoice;
+  const quantityVariance = Number.isFinite(poQty) && poQty > 0 ? poQty - grQty : null;
+  const amountVariance = Number.isFinite(poAmount) && Number.isFinite(invAmount) ? poAmount - invAmount : null;
+  const evidenceMissing = [
+    !hasPurchaseOrder && 'approved purchase order',
+    !hasGoodsReceipt && 'posted goods receipt',
+    !hasVendorInvoice && 'vendor invoice',
+  ].filter(Boolean).join(', ');
 
   const handleVerify = () => {
+    if (!hasCompleteEvidence || (quantityVariance !== null && quantityVariance !== 0) || (amountVariance !== null && amountVariance !== 0)) return;
     if (onConfirmVerification) {
       onConfirmVerification({
         poNo,
@@ -44,11 +56,12 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="3-Way Match Verification Modal"
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="3-Way Match Reconciliation Engine"
+      description="Review purchase order, goods receipt, and vendor invoice evidence before verification."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
         {/* Header Block */}
@@ -59,7 +72,7 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                <h2 id="three-way-match-title" className="text-lg font-bold text-slate-900 tracking-tight">
                   3-Way Match Reconciliation Engine
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
@@ -67,7 +80,7 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                PO Reference: <strong className="text-slate-900">{poNo}</strong> &bull; Vendor: <strong className="text-slate-900">{supplier}</strong>
+                PO Reference: <strong className="text-slate-900">{poNo || 'No purchase order selected'}</strong> {supplier && <>&bull; Vendor: <strong className="text-slate-900">{supplier}</strong></>}
               </p>
             </div>
           </div>
@@ -90,13 +103,13 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
                 <FileText className="w-4 h-4 text-blue-600" />
                 <span>1. Approved PO</span>
               </div>
-              <p className="font-bold text-slate-900 text-sm">{poNo}</p>
+              <p className="font-bold text-slate-900 text-sm">{poNo || 'No approved PO selected'}</p>
               <div className="text-xs text-slate-600 space-y-1 font-medium">
-                <p>Qty Ordered: <strong className="text-slate-900">60 Kits</strong></p>
-                <p>PO Amount: <strong className="text-slate-900">₱{poAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></p>
+                <p>Qty Ordered: <strong className="text-slate-900">{Number.isFinite(poQty) ? `${poQty} units` : 'Unavailable'}</strong></p>
+                <p>PO Amount: <strong className="text-slate-900">{Number.isFinite(poAmount) ? `₱${poAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'Unavailable'}</strong></p>
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> GM Approved
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${hasPurchaseOrder ? 'bg-emerald-100/80 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
+                {hasPurchaseOrder ? <><CheckCircle2 className="w-3 h-3 text-emerald-600" /> Selected PO record</> : 'Missing PO evidence'}
               </span>
             </div>
 
@@ -106,13 +119,13 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
                 <Package className="w-4 h-4 text-emerald-600" />
                 <span>2. Goods Receipt</span>
               </div>
-              <p className="font-bold text-slate-900 text-sm">{grNo}</p>
+              <p className="font-bold text-slate-900 text-sm">{grNo || (hasGoodsReceipt ? 'Receiving report linked to PO' : 'No goods receipt selected')}</p>
               <div className="text-xs text-slate-600 space-y-1 font-medium">
-                <p>Qty Received: <strong className="text-slate-900">{grQty} Kits</strong></p>
-                <p>Warehouse: <strong className="text-slate-900">Pampanga</strong></p>
+                <p>Qty Received: <strong className="text-slate-900">{hasGoodsReceipt ? `${grQty} units` : 'Unavailable'}</strong></p>
+                <p>Warehouse: <strong className="text-slate-900">{poData?.warehouse || 'Unavailable'}</strong></p>
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Stock Posted
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${hasGoodsReceipt ? 'bg-emerald-100/80 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
+                {hasGoodsReceipt ? <><CheckCircle2 className="w-3 h-3 text-emerald-600" /> Receipt available</> : 'Missing goods receipt'}
               </span>
             </div>
 
@@ -122,28 +135,28 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
                 <FileCheck className="w-4 h-4 text-indigo-600" />
                 <span>3. Vendor Invoice</span>
               </div>
-              <p className="font-bold text-slate-900 text-sm">{invNo}</p>
+              <p className="font-bold text-slate-900 text-sm">{invNo || 'No vendor invoice selected'}</p>
               <div className="text-xs text-slate-600 space-y-1 font-medium">
-                <p>Invoice Amount: <strong className="text-slate-900">₱{invAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong></p>
-                <p>Attachment: <strong className="text-blue-600">Billed_Inv.pdf</strong></p>
+                <p>Invoice Amount: <strong className="text-slate-900">{hasVendorInvoice ? `₱${invAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'Unavailable'}</strong></p>
+                <p>Attachment: <strong className="text-blue-600">{vendorInvoice?.fileName || 'Unavailable'}</strong></p>
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 border border-emerald-200">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Invoice Attached
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md ${hasVendorInvoice ? 'bg-emerald-100/80 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'}`}>
+                {hasVendorInvoice ? <><CheckCircle2 className="w-3 h-3 text-emerald-600" /> Invoice preview available</> : 'Missing invoice evidence'}
               </span>
             </div>
           </div>
 
           {/* Variance Analysis Box */}
-          <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
-            <div className="flex items-center gap-2 font-bold text-sm text-emerald-950">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span>3-Way Match Audit Result: Zero Variance Detected</span>
+          <div className={`p-4 rounded-xl space-y-2 ${hasCompleteEvidence ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-amber-50/70 border border-amber-200'}`}>
+            <div className={`flex items-center gap-2 font-bold text-sm ${hasCompleteEvidence ? 'text-emerald-950' : 'text-amber-950'}`}>
+              {hasCompleteEvidence ? <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" /> : <FileCheck className="w-5 h-5 text-amber-700 shrink-0" />}
+              <span>{hasCompleteEvidence ? 'Evidence complete — variance can be reviewed.' : `Preview only — missing ${evidenceMissing}.`}</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-medium text-slate-700 pt-1">
-              <div>Quantity Variance: <strong className="text-emerald-800">0 Kits (100% Match)</strong></div>
-              <div>Unit Price Variance: <strong className="text-emerald-800">₱0.00 (0% Diff)</strong></div>
-              <div>Amount Variance: <strong className="text-emerald-800">₱0.00 (Perfect Match)</strong></div>
-            </div>
+            {hasCompleteEvidence && <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-medium text-slate-700 pt-1">
+              <div>Quantity variance: <strong className={quantityVariance === 0 ? 'text-emerald-800' : 'text-rose-800'}>{quantityVariance === null ? 'Unavailable' : `${quantityVariance} units`}</strong></div>
+              <div>Unit price variance: <strong className="text-slate-700">Not calculated</strong></div>
+              <div>Amount variance: <strong className={amountVariance === 0 ? 'text-emerald-800' : 'text-rose-800'}>{amountVariance === null ? 'Unavailable' : `₱${amountVariance.toLocaleString('en-US', { minimumFractionDigits: 2 })}`}</strong></div>
+            </div>}
           </div>
 
           {/* Footer Actions */}
@@ -162,15 +175,16 @@ export const ThreeWayMatchModal: React.FC<ThreeWayMatchModalProps> = ({
               <button
                 type="button"
                 onClick={handleVerify}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
+                disabled={!hasCompleteEvidence || quantityVariance !== 0 || amountVariance !== 0}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 cursor-pointer active:scale-95 flex-1 sm:flex-initial disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Mark 3-Way Match Verified &amp; Unlock Payment</span>
+                <span>Verify match</span>
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

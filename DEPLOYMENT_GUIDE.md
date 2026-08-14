@@ -218,3 +218,19 @@ barcode manager, scanner, and PWA installation through one `Operations & tools`
 disclosure. These are client-side role checks in the demo and do not replace
 backend authorization. Validate this UI contract with the standard Podman lint,
 TypeScript, and build commands before release.
+
+## Demo authorization boundary and preview semantics
+
+The demo Quadlet sets `APP_ENV=demo`. Protected API routes require the frontend
+to send a valid `X-Demo-Role` value, and approval handlers resolve that
+simulated actor from request context instead of accepting a JSON role field.
+This prevents an approval payload from changing its own actor, but it is not
+production authentication: a caller who can reach the demo can still forge the
+demo header. Non-demo API deployments fail closed until a trusted session/JWT
+or OIDC identity provider is configured.
+
+Use the UI's `Preview` wording for local-only financial evidence, imports,
+acceptance records, and other flows that do not commit through the Go API.
+Do not treat a preview as a posted invoice, verified 3-way match, released RFP,
+or persisted approval. Verify `APP_ENV`, `/readiness`, and the API service
+journal when diagnosing a deployment.

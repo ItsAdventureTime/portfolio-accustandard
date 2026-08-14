@@ -21,6 +21,7 @@ import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 
 interface StatementOfAccountProps {
   soaRows: any[];
+  dataState?: 'loading' | 'live' | 'offline';
   onUpdateSoaRows?: (newRows: any[]) => void;
   collectionsList?: any[];
   onOpenPrintModal: (title: string, elementId: string, content: React.ReactNode) => void;
@@ -32,6 +33,7 @@ interface StatementOfAccountProps {
 
 export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
   soaRows = [],
+  dataState = 'loading',
   onUpdateSoaRows,
   collectionsList = [],
   onOpenPrintModal,
@@ -80,7 +82,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   const [statementDate, setStatementDate] = useState('10-Jul-26');
 
-  // Fallback default rows
+  // Offline fallback rows are only shown when the page explicitly reports
+  // that its read request could not be served.
   const safeFallbackRows = [
     {
       id: 'soa-row-1',
@@ -120,7 +123,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     },
   ];
 
-  const activeRows = soaRows && soaRows.length > 0 ? soaRows : safeFallbackRows;
+  const activeRows = dataState === 'offline' ? (soaRows.length > 0 ? soaRows : safeFallbackRows) : soaRows;
 
   // Recalculate running balances dynamically
   const recomputeRunningBalances = (rows: any[]) => {
@@ -153,13 +156,15 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   // Multi-SOA Collection Modal state
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
-  const [checkNo, setCheckNo] = useState('CHK-BDO-99201');
-  const [bank, setBank] = useState('BDO Unibank');
-  const [checkAmount, setCheckAmount] = useState(25000);
-  const [allocatedSi6087, setAllocatedSi6087] = useState(16960);
-  const [allocatedSi6107, setAllocatedSi6107] = useState(1968);
-
-  const totalAllocated = Number(allocatedSi6087) + Number(allocatedSi6107);
+  const [checkNo, setCheckNo] = useState('');
+  const [bank, setBank] = useState('');
+  const [checkAmount, setCheckAmount] = useState(0);
+  const [allocationAmounts, setAllocationAmounts] = useState<Record<string, number>>({});
+  const allocationTargets = computedRows.filter((row) => Number(row.invoiceBalance) > 0);
+  const totalAllocated = allocationTargets.reduce(
+    (sum, row) => sum + (allocationAmounts[row.id || row.salesInvoiceNo] || 0),
+    0,
+  );
   const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
 
   // Add Invoice Modal State
@@ -201,8 +206,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Added Invoice ${newSiNo} (₱${invAmount.toLocaleString()}) to ${activeClient.name} SOA Ledger!`);
-    onAddAuditLog(`Added Invoice ${newSiNo} to SOA ledger (${activeClient.name})`);
+    onShowNotification(`Preview only: Invoice ${newSiNo} was added to the local ${activeClient.name} SOA view.`);
+    onAddAuditLog(`Demo-only preview of adding Invoice ${newSiNo} to SOA ledger (${activeClient.name})`);
 
     setNewSiNo('');
     setNewDrNo('');
@@ -216,8 +221,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Removed Invoice ${siNo} from Statement of Account ledger!`);
-    onAddAuditLog(`Deleted Invoice ${siNo} from SOA ledger`);
+    onShowNotification(`Preview only: Invoice ${siNo} was removed from the local SOA view.`);
+    onAddAuditLog(`Demo-only preview of removing Invoice ${siNo} from SOA ledger`);
   };
 
   // Edit Invoice Handler
@@ -236,8 +241,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
     if (onUpdateSoaRows) {
       onUpdateSoaRows(updated);
     }
-    onShowNotification(`Updated Invoice ${editingRow.salesInvoiceNo} details in SOA ledger!`);
-    onAddAuditLog(`Updated Invoice ${editingRow.salesInvoiceNo} in SOA ledger`);
+    onShowNotification(`Preview only: Invoice ${editingRow.salesInvoiceNo} changes were not persisted.`);
+    onAddAuditLog(`Demo-only preview of updating Invoice ${editingRow.salesInvoiceNo} in SOA ledger`);
     setEditingRow(null);
   };
 
@@ -247,17 +252,20 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
   const handleAllocateCheck = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!checkNo.trim() || !bank.trim() || checkAmount <= 0 || allocationTargets.length === 0) return;
     const allocations = [
-      { invoiceNo: 'SI-6087', amount: Number(allocatedSi6087) },
-      { invoiceNo: 'SI-6107', amount: Number(allocatedSi6107) },
-    ];
+      ...allocationTargets.map((row) => ({
+        invoiceNo: row.salesInvoiceNo,
+        amount: allocationAmounts[row.id || row.salesInvoiceNo] || 0,
+      })),
+    ].filter((allocation) => allocation.amount > 0);
 
     if (onAllocateCollection) {
       const committed = await onAllocateCollection(checkNo, bank, checkAmount, allocations);
       if (committed === false) return;
     } else {
       onShowNotification(
-        `Allocated Check #${checkNo} (₱${checkAmount.toLocaleString()}) across Invoices SI-6087 and SI-6107!`
+        `Offline demo preview only: Check #${checkNo} was not persisted or queued for ${allocations.map((allocation) => allocation.invoiceNo).join(', ')}.`
       );
       onAddAuditLog(
         `Allocated Multi-SOA Check #${checkNo} amount ₱${checkAmount.toLocaleString()} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`
@@ -390,6 +398,16 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             Client aging ledger, payment check allocation, and official statement generator
           </p>
+          {dataState === 'offline' && (
+            <p className="mt-2 inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900">
+              Offline demo preview — seeded rows are not live ledger data.
+            </p>
+          )}
+          {dataState === 'live' && soaRows.length === 0 && (
+            <p className="mt-2 inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              Live ledger is empty. No invoices were returned.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
@@ -399,13 +417,14 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
             className="action-primary text-xs sm:text-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Invoice to SOA</span>
+             <span>Preview invoice entry</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsCollectionModalOpen(true)}
-            className="action-supporting text-xs sm:text-sm"
+           <button
+             type="button"
+             onClick={() => setIsCollectionModalOpen(true)}
+             disabled={allocationTargets.length === 0}
+             className="action-supporting text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CreditCard className="w-4 h-4" />
             <span>Allocate Multi-SOA Check</span>
@@ -464,10 +483,21 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
         </div>
       </div>
 
+      {dataState === 'loading' && (
+        <div className="wayfinding-card px-4 py-8 text-sm font-medium text-slate-600" role="status">
+          Loading the live statement ledger…
+        </div>
+      )}
+      {dataState !== 'loading' && computedRows.length === 0 && (
+        <div className="wayfinding-card px-4 py-8 text-sm font-medium text-slate-600" role="status">
+          No statement rows to display. Add an invoice only when you have a verified ledger entry.
+        </div>
+      )}
       <section aria-labelledby="soa-aging-overview" className="wayfinding-card table-responsive-wrapper">
          <div className="border-b border-slate-200 px-4 py-3"><h3 id="soa-aging-overview" className="text-sm font-semibold text-slate-900">Aging overview</h3><p className="mt-0.5 text-xs font-medium text-slate-500">High-signal balances are shown here. The official printable statement below keeps its controlled format.</p></div>
-        <table className="wayfinding-grid w-full min-w-[720px] border-collapse text-sm">
-           <thead className="bg-slate-50 text-left text-xs font-medium text-slate-700"><tr><th className="p-4">Invoice</th><th className="p-4">Client</th><th className="p-4">Due date</th><th className="p-4 text-center">Status</th><th className="p-4 text-right">Balance</th><th className="p-4 text-center">Details</th></tr></thead>
+         <table className="wayfinding-grid w-full min-w-[720px] border-collapse text-sm">
+            <caption className="sr-only">Statement of account aging overview</caption>
+            <thead className="bg-slate-50 text-left text-xs font-medium text-slate-700"><tr><th scope="col" className="p-4">Invoice</th><th scope="col" className="p-4">Client</th><th scope="col" className="p-4">Due date</th><th scope="col" className="p-4 text-center">Status</th><th scope="col" className="p-4 text-right">Balance</th><th scope="col" className="p-4 text-center">Details</th></tr></thead>
           <tbody className="divide-y divide-slate-200">
             {computedRows.map((row, index) => {
               const age = Number(row.age || row.ageDays || 0);
@@ -501,7 +531,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   <Plus className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wider">Add New Invoice to SOA Ledger</h3>
+                   <h3 className="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wider">Preview invoice entry</h3>
                   <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">Target Client: {activeClient.name}</p>
                 </div>
               </div>
@@ -609,7 +639,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer border border-emerald-600"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                  <span>Add Invoice to Ledger</span>
+                   <span>Apply local preview</span>
                 </button>
               </div>
             </form>
@@ -820,37 +850,33 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
               <div className="space-y-3">
                 <h4 className="font-black text-slate-900 text-xs uppercase tracking-wider">Invoice Allocation Breakdown</h4>
-                <div className="p-4 bg-white border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                  <div>
-                    <p className="font-black text-slate-900 text-sm sm:text-base">SI-6087 (Gatchalian Medical Lab)</p>
-                    <p className="text-slate-600 text-xs font-bold mt-0.5">Invoice Balance: <span className="font-mono text-slate-900 font-extrabold">₱16,960.00</span></p>
-                  </div>
-                  <div className="w-full sm:w-44">
-                    <label className="block text-xs text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Allocated (₱)</label>
-                    <input
-                      type="number"
-                      value={allocatedSi6087}
-                      onChange={(e) => setAllocatedSi6087(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-right font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                  <div>
-                    <p className="font-black text-slate-900 text-sm sm:text-base">SI-6107 (Gatchalian Medical Lab)</p>
-                    <p className="text-slate-600 text-xs font-bold mt-0.5">Invoice Balance: <span className="font-mono text-slate-900 font-extrabold">₱1,968.00</span></p>
-                  </div>
-                  <div className="w-full sm:w-44">
-                    <label className="block text-xs text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Allocated (₱)</label>
-                    <input
-                      type="number"
-                      value={allocatedSi6107}
-                      onChange={(e) => setAllocatedSi6107(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-right font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
+                {allocationTargets.length === 0 ? (
+                  <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-600">
+                    No open invoice balances are available for allocation.
+                  </p>
+                ) : allocationTargets.map((row) => {
+                  const allocationKey = row.id || row.salesInvoiceNo;
+                  return (
+                    <div key={allocationKey} className="p-4 bg-white border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div>
+                        <p className="font-black text-slate-900 text-sm sm:text-base">{row.salesInvoiceNo}</p>
+                        <p className="text-slate-600 text-xs font-bold mt-0.5">Invoice balance: <span className="font-mono text-slate-900 font-extrabold">₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span></p>
+                      </div>
+                      <div className="w-full sm:w-44">
+                        <label htmlFor={`allocation-${allocationKey}`} className="block text-xs text-slate-500 font-extrabold mb-1 uppercase tracking-wider">Allocated (₱)</label>
+                        <input
+                          id={`allocation-${allocationKey}`}
+                          type="number"
+                          min="0"
+                          max={Number(row.invoiceBalance)}
+                          value={allocationAmounts[allocationKey] || 0}
+                          onChange={(e) => setAllocationAmounts((current) => ({ ...current, [allocationKey]: Number(e.target.value) }))}
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-right font-mono font-black text-sm sm:text-base text-slate-900 focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Dark Summary Value Card */}
@@ -877,7 +903,7 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                   className="px-6 py-3 bg-blue-900 hover:bg-blue-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Confirm &amp; Apply Check</span>
+                   <span>{dataState === 'live' ? 'Apply check allocation' : 'Preview check allocation'}</span>
                 </button>
               </div>
             </form>

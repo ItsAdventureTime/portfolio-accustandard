@@ -8,11 +8,13 @@ This application is a control-first medical supply chain and internal financial 
 not an accepted production ERP. The Go API currently provides a limited
 server-backed surface; several workflow screens remain local preview paths.
 QBO behavior is a queue/demo stub, not a live QuickBooks Online connection.
-There is no real login or server-side user session in this demo. The role
-selector is a clearly labeled UI-only simulation; shared client-side
-permissions filter navigation, operations, queues, and badges, but they do not
-secure backend APIs. Backend authentication and server-enforced authorization
-remain unresolved production requirements.
+There is no real login or server-side user session in this demo. Protected
+API routes accept a valid `X-Demo-Role` only while `APP_ENV=demo`; this is a
+forgeable demo boundary, not user identity. The role selector is a clearly
+labeled UI-only simulation; shared client-side permissions filter navigation,
+operations, queues, and badges, but they do not secure backend APIs. Trusted
+production authentication and server-enforced authorization remain unresolved
+requirements, and non-demo protected routes fail closed.
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the audited
 boundary and validation record.
 
@@ -383,3 +385,19 @@ the mobile drawer exposes one role-filtered `Operations & tools` disclosure
 for export, startup import, QBO queue, barcode manager, scanner, and PWA
 installation, while search remains directly reachable. These client-side
 checks preserve role-safe demo navigation but are not backend authorization.
+
+### Demo API boundary and interaction references
+
+Protected demo API routes require `APP_ENV=demo` and a valid `X-Demo-Role`
+header; approval handlers no longer accept a client-supplied JSON role. This is
+only a simulated actor boundary. Non-demo deployments fail closed until a
+trusted authentication provider supplies the server-side identity. Financial
+evidence, imports, and approval transitions that remain local are labeled
+`Preview` and must not be treated as persisted records.
+
+The latest UX pass used [SmoothUI](https://github.com/educlopez/smoothui) as a
+selective React/Tailwind pattern reference while retaining Radix for modal
+semantics. No SmoothUI or Motion dependency was added; the app keeps its CSS
+transition and reduced-motion contract. If Motion is introduced later, follow
+its [accessibility guidance](https://motion.dev/docs/react-accessibility) and
+[`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).

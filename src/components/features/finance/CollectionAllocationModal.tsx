@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 import { X, CreditCard, CheckCircle2, ShieldCheck, DollarSign, Layers } from 'lucide-react';
 
 interface CollectionAllocationModalProps {
@@ -16,20 +17,16 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
   collectionData = {},
   onConfirmAllocation,
 }) => {
-  const paymentAmount = collectionData.amount || 25000.0;
-  const checkNo = collectionData.checkNo || 'CHK-BDO-99201';
-  const clientName = collectionData.clientName || 'Allied Care Experts (ACE) Medical Center';
+  const paymentAmount = Number(collectionData?.amount) || 0;
+  const checkNo = collectionData?.checkNo || '';
+  const clientName = collectionData?.clientName || '';
 
   // Invoices eligible for allocation
-  const [allocations, setAllocations] = useState([
-    { id: 'soa-1', salesInvoiceNo: 'SI-6087', invoiceAmount: 16960.0, allocatedAmount: 16960.0, remainingBalance: 0.0 },
-    { id: 'soa-2', salesInvoiceNo: 'SI-6107', invoiceAmount: 1968.0, allocatedAmount: 1968.0, remainingBalance: 0.0 },
-    { id: 'soa-3', salesInvoiceNo: 'SI-6118', invoiceAmount: 13280.0, allocatedAmount: 6072.0, remainingBalance: 7208.0 },
-  ]);
+  const [allocations, setAllocations] = useState<any[]>(() => Array.isArray(collectionData?.allocations) ? collectionData.allocations : []);
 
   if (!isOpen) return null;
 
-  const totalAllocated = allocations.reduce((sum, item) => sum + item.allocatedAmount, 0);
+  const totalAllocated = allocations.reduce((sum: number, item: any) => sum + Number(item.allocatedAmount || 0), 0);
   const unallocatedAmount = paymentAmount - totalAllocated;
 
   const handleAmountChange = (index: number, newAllocated: number) => {
@@ -41,6 +38,7 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
   };
 
   const handleSave = async () => {
+    if (!collectionData || !checkNo || paymentAmount <= 0 || allocations.length === 0) return;
     if (onConfirmAllocation) {
       const committed = await onConfirmAllocation({
         checkNo,
@@ -55,11 +53,12 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Collection Payment Allocation Modal"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={Boolean(isOpen)}
+      onClose={onClose}
+      title="Collection payment allocation"
+      description="Allocate a selected collection across actual open invoice rows."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col">
         {/* Header Block Matching Screenshot 2 Design System */}
@@ -107,22 +106,23 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
           </div>
 
           {/* Invoice Allocation Table */}
-          <div className="space-y-2">
+            <div className="space-y-2">
             <h3 className="font-extrabold text-xs uppercase text-slate-700 tracking-wider">
               Allocate Payment Across Open Client Invoices:
             </h3>
             <div className="overflow-x-auto border border-slate-200 rounded-2xl overflow-hidden">
               <table className="w-full text-left text-xs border-collapse font-semibold">
+                <caption className="sr-only">Open invoices available for collection allocation</caption>
                 <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-[10px]">
                   <tr>
-                    <th className="p-3">Sales Invoice No</th>
-                    <th className="p-3 text-right">Invoice Total</th>
-                    <th className="p-3 text-right">Allocated Payment (PHP)</th>
-                    <th className="p-3 text-right">Remaining Balance</th>
+                    <th scope="col" className="p-3">Sales Invoice No</th>
+                    <th scope="col" className="p-3 text-right">Invoice Total</th>
+                    <th scope="col" className="p-3 text-right">Allocated Payment (PHP)</th>
+                    <th scope="col" className="p-3 text-right">Remaining Balance</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {allocations.map((item, idx) => (
+                  {allocations.length === 0 ? <tr><td colSpan={4} className="p-5 text-center font-medium text-slate-600">No open invoice rows are available for this collection.</td></tr> : allocations.map((item: any, idx: number) => (
                     <tr key={item.id} className="hover:bg-blue-50/40">
                       <td className="p-3 font-mono font-bold text-slate-900">{item.salesInvoiceNo}</td>
                       <td className="p-3 text-right font-mono text-slate-700">₱{item.invoiceAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
@@ -164,15 +164,16 @@ export const CollectionAllocationModal: React.FC<CollectionAllocationModalProps>
               <button
                 type="button"
                 onClick={handleSave}
+                disabled={!collectionData || !checkNo || paymentAmount <= 0 || allocations.length === 0}
                 className="px-6 py-2.5 bg-blue-900 hover:bg-blue-950 text-white font-extrabold rounded-2xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Post Payment Allocations &amp; Update Client SOA</span>
+                <span>Apply payment allocation</span>
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

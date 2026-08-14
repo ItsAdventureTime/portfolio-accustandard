@@ -306,24 +306,27 @@ func RegisterRoutes(r chi.Router) {
 	r.Get("/health", HealthCheck)
 	r.Get("/readiness", ReadinessCheck)
 
-	r.Get("/inventory", GetInventory)
-	r.Post("/inventory/receive", ReceiveInventory)
-	r.Get("/replenishment", GetReplenishment)
-	r.Get("/rfqs", GetRFQs)
-	r.Post("/rfqs", CreateRFQ)
-	r.Get("/approvals", GetApprovals)
-	r.Post("/approvals/{id}/approve", ApproveDocument)
-	r.Post("/approvals/{id}/reject", RejectDocument)
-	r.Get("/soa", GetSOA)
-	r.Post("/soa/allocate-collection", AllocateCollection)
-	r.Get("/purchase-orders", GetPurchaseOrders)
-	r.Post("/purchase-orders", CreatePurchaseOrder)
-	r.Get("/rfps", GetRFPs)
-	r.Post("/rfps", CreateRFP)
-	r.Post("/rfps/{id}/release", ReleaseRFP)
-	r.Get("/qbo-queue", GetQBOQueue)
-	r.Post("/qbo-queue/{id}/sync", SyncQBOItem)
-	r.Get("/audit-logs", GetAuditLogs)
+	r.Group(func(protected chi.Router) {
+		protected.Use(RequireAuthenticatedActor)
+		protected.Get("/inventory", GetInventory)
+		protected.Post("/inventory/receive", ReceiveInventory)
+		protected.Get("/replenishment", GetReplenishment)
+		protected.Get("/rfqs", GetRFQs)
+		protected.Post("/rfqs", CreateRFQ)
+		protected.Get("/approvals", GetApprovals)
+		protected.Post("/approvals/{id}/approve", ApproveDocument)
+		protected.Post("/approvals/{id}/reject", RejectDocument)
+		protected.Get("/soa", GetSOA)
+		protected.Post("/soa/allocate-collection", AllocateCollection)
+		protected.Get("/purchase-orders", GetPurchaseOrders)
+		protected.Post("/purchase-orders", CreatePurchaseOrder)
+		protected.Get("/rfps", GetRFPs)
+		protected.Post("/rfps", CreateRFP)
+		protected.Post("/rfps/{id}/release", ReleaseRFP)
+		protected.Get("/qbo-queue", GetQBOQueue)
+		protected.Post("/qbo-queue/{id}/sync", SyncQBOItem)
+		protected.Get("/audit-logs", GetAuditLogs)
+	})
 }
 
 func HealthCheck(w http.ResponseWriter, r *http.Request) {
@@ -589,11 +592,9 @@ func GetApprovals(w http.ResponseWriter, r *http.Request) {
 
 func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
-	var req struct {
-		Role string `json:"role"`
-	}
-	if err := decodeJSON(r, &req); err != nil {
-		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Role is required"})
+	actor, ok := actorFromRequest(r)
+	if !ok {
+		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "Authenticated actor is required"})
 		return
 	}
 
@@ -602,7 +603,7 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
 			return err
 		}
-		if err := applyApproval(&log, req.Role); err != nil {
+		if err := applyApproval(&log, actor.Role); err != nil {
 			return err
 		}
 		if err := tx.Save(&log).Error; err != nil {
@@ -644,7 +645,7 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		return recordApprovalAudit(tx, req.Role, "Approved", log)
+		return recordApprovalAudit(tx, actor.Role, "Approved", log)
 	})
 	if txErr != nil {
 		var stateErr workflowError
@@ -664,11 +665,15 @@ func ApproveDocument(w http.ResponseWriter, r *http.Request) {
 func RejectDocument(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	var req struct {
-		Role    string `json:"role"`
 		Remarks string `json:"remarks"`
 	}
 	if err := decodeJSON(r, &req); err != nil {
 		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
+		return
+	}
+	actor, ok := actorFromRequest(r)
+	if !ok {
+		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "Authenticated actor is required"})
 		return
 	}
 
@@ -677,7 +682,7 @@ func RejectDocument(w http.ResponseWriter, r *http.Request) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ? OR qrn = ?", idStr, idStr).First(&log).Error; err != nil {
 			return err
 		}
-		if err := applyRejection(&log, req.Role); err != nil {
+		if err := applyRejection(&log, actor.Role); err != nil {
 			return err
 		}
 		if err := tx.Save(&log).Error; err != nil {
@@ -693,7 +698,7 @@ func RejectDocument(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		return recordApprovalAudit(tx, req.Role, "Rejected", log)
+		return recordApprovalAudit(tx, actor.Role, "Rejected", log)
 	})
 	if txErr != nil {
 		var stateErr workflowError

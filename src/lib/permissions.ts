@@ -31,6 +31,16 @@ export const ROLE_ALLOWED_TABS: Readonly<Record<Role, readonly string[]>> = {
   Sales: ['overview', 'quotations', 'inventory'],
 };
 
+export const TAB_LABELS: Readonly<Record<string, string>> = {
+  overview: 'Executive Overview',
+  inventory: 'Inventory',
+  quotations: 'Sales',
+  soa: 'SOA',
+  purchasing: 'Purchasing',
+  rfp: 'RFP',
+  admin: 'User & Audit Logs',
+};
+
 export type Operation = 'create' | 'export' | 'import' | 'qbo' | 'barcode' | 'scanner' | 'pwa' | 'admin';
 
 const ROLE_OPERATION_PERMISSIONS: Readonly<Record<Role, readonly Operation[]>> = {
@@ -49,8 +59,15 @@ export const normalizeRole = (value: string): Role => (isRole(value) ? value : D
 
 export const getAllowedTabs = (role: string): readonly string[] => ROLE_ALLOWED_TABS[normalizeRole(role)];
 
+export const getAllowedModuleViews = (role: string): string[] =>
+  getAllowedTabs(role).map((tab) => TAB_LABELS[tab]).filter((label): label is string => Boolean(label));
+
 export const canUseOperation = (role: string, operation: Operation): boolean =>
   ROLE_OPERATION_PERMISSIONS[normalizeRole(role)].includes(operation);
+
+/** Only Admin and the DCS Chairman may change user access assignments. */
+export const canManageUsers = (role: string): boolean =>
+  ['Admin', 'Chairman (DCS)'].includes(normalizeRole(role));
 
 export type ApprovalStage = 'reviewer' | 'gm' | 'dcs';
 

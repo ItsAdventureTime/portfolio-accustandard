@@ -18,6 +18,7 @@ import {
   Eye,
   X,
 } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface InventoryControlProps {
   inventoryList: any[];
@@ -51,12 +52,12 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
     return 'Unclassified';
   };
 
-  const filteredInventory = inventoryList.filter(
-    (item) =>
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase())
-  ).filter((item) => activeStockClass === 'ALL' || getStockClass(item) === activeStockClass);
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const filteredInventory = inventoryList.filter((item) => {
+    const searchableText = [item?.sku, item?.description, item?.lotNumber, item?.location]
+      .map((value) => String(value ?? '').toLowerCase());
+    return searchableText.some((value) => value.includes(normalizedSearchQuery));
+  }).filter((item) => activeStockClass === 'ALL' || getStockClass(item) === activeStockClass);
   const criticalItems = inventoryList.filter((item) => Number(item.available ?? item.onHand ?? 0) < 50);
   const stockClassCards = [
     { key: 'Class 1' as const, label: 'Class 1 · Core', detail: 'Fast-moving stock', tone: 'emerald' },
@@ -74,7 +75,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             Inventory control
           </h2>
           <p className="mt-1 text-sm font-medium text-slate-600">
-            Live stock items: <span className="font-semibold text-slate-900">{filteredInventory.length} SKUs maintained</span> &bull; Demand-driven replenishment &amp; FEFO expiry
+            Live stock items: <span className="font-semibold text-slate-900">{inventoryList.length} SKUs maintained</span> &bull; Demand-driven replenishment &amp; FEFO expiry
           </p>
         </div>
 
@@ -190,13 +191,17 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
           {/* Inventory Table & Mobile Cards */}
           <div className="wayfinding-card overflow-hidden">
+            {filteredInventory.length === 0 && (
+              <div className="px-4 py-8 text-sm font-medium text-slate-600" role="status">
+                {inventoryList.length === 0 ? 'No inventory records returned.' : 'No inventory records match the current filters.'}
+              </div>
+            )}
             {/* Mobile Card View */}
             <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
               {filteredInventory.map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => setSelectedSkuModal(item)}
-                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3"
                 >
                   <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
                     <button
@@ -251,22 +256,22 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
+                <caption className="sr-only">Inventory stock records</caption>
                 <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200 text-xs">
                   <tr>
-                    <th className="p-4">SKU / Barcode</th>
-                    <th className="p-4">Item Description</th>
-                    <th className="p-4">Location</th>
-                    <th className="p-4 text-right">Available</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-center">Primary action</th>
+                    <th scope="col" className="p-4">SKU / Barcode</th>
+                    <th scope="col" className="p-4">Item Description</th>
+                    <th scope="col" className="p-4">Location</th>
+                    <th scope="col" className="p-4 text-right">Available</th>
+                    <th scope="col" className="p-4 text-center">Status</th>
+                    <th scope="col" className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {filteredInventory.map((item) => (
                     <tr
                       key={item.id}
-                      onClick={() => setSelectedSkuModal(item)}
-                      className="hover:bg-blue-50/50 transition cursor-pointer group"
+                      className="hover:bg-blue-50/50 transition group"
                     >
                       <td className="p-4">
                         <button
@@ -320,48 +325,23 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
           {/* Replenishment Planner Table & Mobile Cards */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            {replenishmentPlannerList.length === 0 && (
+              <div className="px-4 py-8 text-sm font-medium text-slate-600" role="status">No replenishment recommendations returned.</div>
+            )}
             {/* Mobile Card View for Replenishment */}
             <div className="block sm:hidden p-3.5 space-y-3 bg-slate-50/50">
               {replenishmentPlannerList.map((item) => (
                 <div
                   key={item.id}
-                  onClick={() => {
-                    const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
-                      id: item.id,
-                      sku: item.sku,
-                      description: item.description,
-                      location: 'Quezon City',
-                      lotNumber: 'LOT-2026-X1',
-                      expiryDate: '2027-12-31',
-                      onHand: item.availableStock,
-                      reserved: 0,
-                      available: item.availableStock,
-                      criticalLevel: item.criticalLevel,
-                      unit: 'Kits',
-                    };
-                    setSelectedSkuModal(matched);
-                  }}
-                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+                  className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3"
                 >
                   <div className="flex justify-between items-center gap-2 border-b border-slate-100 pb-2.5">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
-                          id: item.id,
-                          sku: item.sku,
-                          description: item.description,
-                          location: 'Quezon City',
-                          lotNumber: 'LOT-2026-X1',
-                          expiryDate: '2027-12-31',
-                          onHand: item.availableStock,
-                          reserved: 0,
-                          available: item.availableStock,
-                          criticalLevel: item.criticalLevel,
-                          unit: 'Kits',
-                        };
-                        setSelectedSkuModal(matched);
+                        const matched = inventoryList.find((i: any) => i.sku === item.sku);
+                        if (matched) setSelectedSkuModal(matched);
                       }}
                       className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                     >
@@ -401,56 +381,29 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
+                <caption className="sr-only">Demand replenishment recommendations</caption>
                 <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200 text-xs">
                   <tr>
-                    <th className="p-4">SKU / Class</th>
-                    <th className="p-4">Description / Supplier</th>
-                    <th className="p-4 text-right">Proposed Order Qty</th>
-                    <th className="p-4 text-center">Stock signal</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-center">Primary action</th>
+                    <th scope="col" className="p-4">SKU / Class</th>
+                    <th scope="col" className="p-4">Description / Supplier</th>
+                    <th scope="col" className="p-4 text-right">Proposed Order Qty</th>
+                    <th scope="col" className="p-4 text-center">Stock signal</th>
+                    <th scope="col" className="p-4 text-center">Status</th>
+                    <th scope="col" className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {replenishmentPlannerList.map((item) => (
                     <tr
                       key={item.id}
-                      onClick={() => {
-                        const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
-                          id: item.id,
-                          sku: item.sku,
-                          description: item.description,
-                          location: 'Quezon City',
-                          lotNumber: 'LOT-2026-X1',
-                          expiryDate: '2027-12-31',
-                          onHand: item.availableStock,
-                          reserved: 0,
-                          available: item.availableStock,
-                          criticalLevel: item.criticalLevel,
-                          unit: 'Kits',
-                        };
-                        setSelectedSkuModal(matched);
-                      }}
-                      className="hover:bg-blue-50/70 hover:shadow-xs transition-all duration-150 cursor-pointer group"
+                      className="hover:bg-blue-50/70 hover:shadow-xs transition-all duration-150 group"
                     >
                       <td className="p-4">
                         <button
                           type="button"
                           onClick={() => {
-                            const matched = inventoryList.find((i: any) => i.sku === item.sku) || {
-                              id: item.id,
-                              sku: item.sku,
-                              description: item.description,
-                              location: 'Quezon City',
-                              lotNumber: 'LOT-2026-X1',
-                              expiryDate: '2027-12-31',
-                              onHand: item.availableStock,
-                              reserved: 0,
-                              available: item.availableStock,
-                              criticalLevel: item.criticalLevel,
-                              unit: 'Kits',
-                            };
-                            setSelectedSkuModal(matched);
+                            const matched = inventoryList.find((i: any) => i.sku === item.sku);
+                            if (matched) setSelectedSkuModal(matched);
                           }}
                           className="font-medium font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                           title="Click to inspect SKU barcode details & batch FEFO"
@@ -496,7 +449,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                           </span>
                         )}
                       </td>
-                      <td className="p-4 text-center"><button type="button" onClick={() => { const matched = inventoryList.find((i: any) => i.sku === item.sku) || { id: item.id, sku: item.sku, description: item.description, location: 'Quezon City', lotNumber: 'LOT-2026-X1', expiryDate: '2027-12-31', onHand: item.availableStock, reserved: 0, available: item.availableStock, criticalLevel: item.criticalLevel, unit: 'Kits' }; setSelectedSkuModal(matched); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => { const matched = inventoryList.find((i: any) => i.sku === item.sku); if (matched) setSelectedSkuModal(matched); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -508,7 +461,13 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
       {/* SKU Barcode & Stock Detail Modal Overlay */}
       {selectedSkuModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+        <AccessibleModal
+          isOpen={Boolean(selectedSkuModal)}
+          onClose={() => setSelectedSkuModal(null)}
+          title={`SKU details: ${selectedSkuModal.sku}`}
+          description="Inventory record details and stock actions."
+          contentClassName="text-slate-900"
+        >
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
@@ -599,7 +558,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

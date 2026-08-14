@@ -18,10 +18,12 @@
 > and the supplied logo. `Sidebar.tsx` is retained only as an unmounted legacy
 > component. `src/lib/permissions.ts` is the shared client-side model for
 > role-filtered tabs, operations, approval selectors, and navigation counts.
-> The role selector is an explicitly labeled demo simulation; the Go API still
-> requires authentication, session identity, and server-enforced authorization
-> before production use. This blueprint's future-state requirements must not be
-> read as evidence that those controls already exist.
+> The role selector is an explicitly labeled demo simulation. Protected demo API
+> routes require `APP_ENV=demo` plus a valid `X-Demo-Role` request-context value;
+> this is forgeable routing context, not authentication or session identity.
+> Trusted identity and server-enforced authorization remain required before
+> production use. This blueprint's future-state requirements must not be read as
+> evidence that those controls already exist.
 
 ---
 

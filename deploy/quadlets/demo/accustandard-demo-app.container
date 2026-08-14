@@ -8,6 +8,7 @@ ContainerName=accustandard-demo-app
 Pod=accustandard-demo-pod.pod
 Image=localhost/accustandard-bridge-backend:demo
 Environment=PORT=8080
+Environment=APP_ENV=demo
 Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db?sslmode=disable
 StartWithPod=false
 

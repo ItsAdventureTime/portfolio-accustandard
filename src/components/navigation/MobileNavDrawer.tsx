@@ -20,7 +20,7 @@ import {
   QrCode,
   ChevronDown,
   Eye,
-  Lock,
+  Plus,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -47,6 +47,7 @@ interface MobileNavDrawerProps {
   onOpenStartupImport: () => void;
   onOpenQBOQueue: () => void;
   onOpenProductManager: () => void;
+  onOpenCreateNew: () => void;
   roleScopedData: RoleScopedDashboardData;
 }
 
@@ -64,6 +65,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   onOpenStartupImport,
   onOpenQBOQueue,
   onOpenProductManager,
+  onOpenCreateNew,
   roleScopedData,
 }) => {
   const allowed = getAllowedTabs(viewAsRole);
@@ -81,6 +83,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   } = roleScopedData;
 
   const operationItems: Array<{ id: string; label: string; icon: React.ElementType; visible: boolean; onSelect: () => void; count?: number }> = [
+    { id: 'create-new', label: 'Create new', icon: Plus, visible: canUseOperation(viewAsRole, 'create'), onSelect: onOpenCreateNew },
     { id: 'export', label: 'Export report', icon: Download, visible: canUseOperation(viewAsRole, 'export'), onSelect: onOpenExport },
     { id: 'startup-import', label: 'Startup import', icon: Upload, visible: canUseOperation(viewAsRole, 'import') && canOpenAdmin, onSelect: onOpenStartupImport },
     { id: 'qbo-queue', label: 'QBO sync queue', icon: Database, visible: canUseOperation(viewAsRole, 'qbo'), onSelect: onOpenQBOQueue, count: queuedQboItems.length },
@@ -97,7 +100,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
     { key: 'purchasing', label: 'Purchasing & Receiving', subtitle: 'PO reviews and open receipts', icon: Building2, badge: pendingPOApprovals.length + incomingPOs.length },
     { key: 'rfp', label: 'Request for Payment', subtitle: 'Non-PO vouchers', icon: CreditCard, badge: pendingRfpApprovals.length },
     { key: 'admin', label: 'User Setup & Audit Logs', subtitle: 'COSO supervision', icon: UserCheck, badge: null },
-  ];
+  ].filter((item) => allowed.includes(item.key) && (item.key !== 'admin' || canOpenAdmin));
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -191,41 +194,32 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.key;
-            const isPermitted = allowed.includes(item.key) && (item.key !== 'admin' || canOpenAdmin);
-
             return (
               <button
                 key={item.key}
                 type="button"
-                onClick={() => {
-                  onSelectTab(item.key);
-                  if (isPermitted) onClose();
-                }}
-                aria-current={isActive ? 'page' : undefined}
-                aria-disabled={!isPermitted}
-                className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between ${
-                  isActive
-                    ? 'bg-blue-900 text-white font-semibold shadow-md'
-                    : isPermitted
-                    ? 'border border-slate-200 text-slate-800 hover:bg-slate-100'
-                    : 'opacity-50 text-slate-400 border border-slate-200 bg-slate-50'
-                }`}
+                 onClick={() => { onSelectTab(item.key); onClose(); }}
+                 aria-current={isActive ? 'page' : undefined}
+                 className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between ${
+                   isActive
+                     ? 'bg-blue-900 text-white font-semibold shadow-md'
+                     : 'border border-slate-200 text-slate-800 hover:bg-slate-100'
+                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-800 text-white' : isPermitted ? 'bg-slate-200 text-slate-700' : 'bg-slate-200/50 text-slate-400'}`}>
+                   <div className={`p-2 rounded-lg ${isActive ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
                     <span className="flex items-center gap-1.5 text-sm font-semibold leading-snug">
                       <span>{item.label}</span>
-                      {!isPermitted && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
                     </span>
-                    <span className={`text-xs block font-medium ${isActive ? 'text-blue-200' : isPermitted ? 'text-slate-500' : 'text-slate-400'}`}>
+                     <span className={`text-xs block font-medium ${isActive ? 'text-blue-200' : 'text-slate-500'}`}>
                       {item.subtitle}
                     </span>
                   </div>
                 </div>
-                {item.badge !== null && isPermitted && (
+                {item.badge !== null && (
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${isActive ? 'bg-white text-blue-950' : 'bg-blue-100 text-blue-900'}`}>
                     {item.badge}
                   </span>

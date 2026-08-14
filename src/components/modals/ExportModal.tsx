@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, FileSpreadsheet, FileText, Download, CheckCircle2 } from 'lucide-react';
 import { exportToCSV, exportToExcel, printDocumentElement } from '@/lib/exportUtils';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -48,7 +49,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Export ${title}`}
+      description="Choose an export format for the selected records."
+      contentClassName="text-slate-900"
+    >
       <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-sm font-semibold">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-slate-200 pb-3">
@@ -59,7 +66,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </h3>
             <p className="text-xs text-slate-500 font-medium mt-0.5">Select your target output format</p>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
+          <button type="button" onClick={onClose} aria-label="Close export dialog" className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -129,6 +136,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

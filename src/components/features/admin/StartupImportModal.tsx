@@ -2,21 +2,20 @@
 
 import React, { useState } from 'react';
 import { X, Upload, CheckCircle2, FileSpreadsheet, Database, Landmark, Receipt, ArrowRight, ShieldCheck } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface StartupImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImportComplete?: (importSummary: any) => void;
 }
 
 export const StartupImportModal: React.FC<StartupImportModalProps> = ({
   isOpen,
   onClose,
-  onImportComplete,
 }) => {
   const [importType, setImportType] = useState<'MASTER' | 'INVENTORY' | 'FINANCIAL' | 'TRANSACTIONS'>('INVENTORY');
-  const [currentStep, setCurrentStep] = useState<'UPLOAD' | 'VALIDATE' | 'PREVIEW' | 'RECONCILE'>('UPLOAD');
-  const [fileName] = useState('AccuStandard_Cutover_Beginning_Inventory_2026.csv');
+  const [currentStep, setCurrentStep] = useState<'UPLOAD' | 'VALIDATE' | 'PREVIEW'>('UPLOAD');
+  const [fileName, setFileName] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   if (!isOpen) return null;
@@ -25,16 +24,10 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
     totalRecords: 148,
     validRecords: 146,
     errorRecords: 2,
-    batchId: `IMP-2026-${Math.floor(1000 + Math.random() * 9000)}`,
     errors: [
       { row: 42, sku: 'ACC-INVALID-99', issue: 'Unknown SKU in Item Master — Line skipped' },
       { row: 115, sku: 'ACC-REAG-04', issue: 'Negative Beginning Unit Cost — Requires override approval' },
     ],
-    reconciliation: {
-      totalQuantity: '4,850 Units',
-      totalValuation: '₱1,420,850.00',
-      cutoverDate: 'August 01, 2026',
-    },
   };
 
   const handleNextStep = () => {
@@ -43,12 +36,7 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
       setIsProcessing(false);
       if (currentStep === 'UPLOAD') setCurrentStep('VALIDATE');
       else if (currentStep === 'VALIDATE') setCurrentStep('PREVIEW');
-      else if (currentStep === 'PREVIEW') {
-        setCurrentStep('RECONCILE');
-        if (onImportComplete) {
-          onImportComplete(mockValidationResults);
-        }
-      }
+      else if (currentStep === 'PREVIEW') onClose();
     }, 450);
   };
 
@@ -56,15 +44,16 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
     { id: 'UPLOAD', label: 'Upload File' },
     { id: 'VALIDATE', label: 'Validate Staging' },
     { id: 'PREVIEW', label: 'Preview & Resolve' },
-    { id: 'RECONCILE', label: 'Post & Reconcile' },
   ];
+  const canAdvance = currentStep !== 'UPLOAD' || Boolean(fileName);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Startup Cutover Data Import Modal"
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Cutover Data Import Engine"
+      description="Preview the staged import flow without posting or changing live records."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         {/* Header */}
@@ -83,7 +72,7 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Controlled 5-Stage Staging: Upload &rarr; Validate &rarr; Preview &rarr; Post &rarr; Reconcile
+                Demo preview only: Upload &rarr; Validate &rarr; Review
               </p>
             </div>
           </div>
@@ -224,7 +213,9 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
               </div>
 
               <div className="border-2 border-dashed border-blue-200 hover:border-blue-400 rounded-xl p-6 bg-blue-50/20 text-center space-y-2.5 transition cursor-pointer">
+                <label className="block cursor-pointer">
                 <FileSpreadsheet className="w-8 h-8 text-blue-600 mx-auto" />
+                <input type="file" accept=".xlsx,.csv" className="sr-only" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
                 <div>
                   {fileName ? (
                     <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100/80 text-blue-900 font-semibold text-xs rounded-lg border border-blue-200">
@@ -238,13 +229,15 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
                   )}
                 </div>
                 <p className="text-xs text-slate-500 font-medium">Supports .xlsx, .csv formatted cutover files up to 50MB</p>
+                </label>
               </div>
             </div>
           )}
 
           {(currentStep === 'VALIDATE' || currentStep === 'PREVIEW') && (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                <p className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-xs font-semibold text-blue-950">Demo validation sample only. This screen does not parse, post, reconcile, or alter records.</p>
+                <div className="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
                 <div>
                   <span className="text-xs font-medium text-slate-500 uppercase block">Total Staged Records</span>
                   <span className="font-bold text-slate-900 text-lg">{mockValidationResults.totalRecords}</span>
@@ -273,25 +266,9 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
             </div>
           )}
 
-          {currentStep === 'RECONCILE' && (
-            <div className="p-5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-3">
-              <div className="flex items-center gap-2 text-emerald-950 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                <span>Import batch posted and reconciled.</span>
-              </div>
-              <p className="text-xs text-emerald-900 font-medium">
-                Import Batch ID: <strong className="font-semibold text-emerald-950">{mockValidationResults.batchId}</strong>
-              </p>
-              <div className="grid grid-cols-2 gap-3 text-xs font-medium text-slate-800 pt-3 border-t border-emerald-200">
-                <div>Total Inventory Units Posted: <strong className="text-slate-950">{mockValidationResults.reconciliation.totalQuantity}</strong></div>
-                <div>Total Inventory Valuation: <strong className="text-slate-950">{mockValidationResults.reconciliation.totalValuation}</strong></div>
-              </div>
-            </div>
-          )}
-
           <div className="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-900 font-medium flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>Rule FR-031: Staged imports prevent silent overwrites and record reconciliation totals.</span>
+            <span>Rule FR-031 preview: staged imports should prevent silent overwrites before a configured posting service is available.</span>
           </div>
         </div>
 
@@ -302,21 +279,21 @@ export const StartupImportModal: React.FC<StartupImportModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl transition text-xs sm:text-sm cursor-pointer shadow-xs"
           >
-            {currentStep === 'RECONCILE' ? 'Close' : 'Cancel'}
+            {currentStep === 'PREVIEW' ? 'Close preview' : 'Cancel'}
           </button>
-          {currentStep !== 'RECONCILE' && (
+          {currentStep !== 'PREVIEW' && (
             <button
               type="button"
               onClick={handleNextStep}
-              disabled={isProcessing}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer active:scale-95"
+              disabled={isProcessing || !canAdvance}
+              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span>{isProcessing ? 'Processing Staging...' : currentStep === 'PREVIEW' ? 'Approve & Post Import Batch' : 'Next Step'}</span>
+              <span>{isProcessing ? 'Reviewing sample...' : currentStep === 'UPLOAD' && !fileName ? 'Select a file' : 'Next step'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

@@ -111,10 +111,14 @@ server-backed record, authorization, audit event, and refresh-safe test.
 - RFP DCS routing is conditional on the optional `DCS_RFP_THRESHOLD` runtime
   setting; Admin-managed rule persistence and conditional PO DCS routing remain
   pre-acceptance gaps.
-- The demo API is unauthenticated and must not handle real company data.
-- Backend authentication, session identity, and server-enforced authorization
-  remain unresolved requirements. Client-side role simulation and shared UI
-  permissions are not a substitute for those controls.
+- Protected demo API routes require `APP_ENV=demo` and a valid `X-Demo-Role`
+  request-context value; this is a forgeable demo boundary and must not handle
+  real company data.
+- Approval handlers derive the simulated actor from request context instead of
+  accepting a caller-controlled JSON role. Non-demo protected routes fail
+  closed. Trusted production authentication, session identity, and
+  server-enforced authorization remain unresolved requirements; client-side
+  role simulation and the demo header are not substitutes for those controls.
 - QBO behavior in this runtime is a queue/demo stub, not a live QuickBooks
   Online integration.
 - Caddy and the remote deployment script now agree on the static export root:
@@ -309,3 +313,26 @@ This is guidance for the next hardening phase, not a claim of compliance.
 - The screenshot follow-up adds visible navigation hover surfaces and keeps most
   feature copy at regular/medium weight; stronger emphasis is reserved for
   headings, selected controls, and critical statuses.
+
+### 2026-08-14 Luna audit hardening pass
+
+- Reviewed the follow-up against the `redesign-existing-projects` audit
+  checklist and SmoothUI's selective interaction patterns. No framework or
+  animation dependency was added; the existing Radix primitives, CSS
+  transitions, and reduced-motion contract remain the integration boundary.
+- Added the explicit `APP_ENV=demo`/`X-Demo-Role` API boundary, request-context
+  approval actor, fail-closed non-demo behavior, and a focused backend test.
+- Removed forced 3-way-match evidence, separated live empty data from offline
+  seed rows, gated RFP release UI to backend-eligible statuses, and labeled
+  non-persisted financial/import/acceptance actions as previews.
+- Added a shared Radix modal shell for focus containment, Escape handling,
+  accessible naming, and focus restoration across high-impact dialogs. Table
+  headers/captions, keyboard actions, inventory filtering, and mobile operation
+  visibility now follow the same interaction contract.
+- Podman validation passed after the final edits: `npm run lint`,
+  `npx tsc --noEmit --incremental false`, `npm run build` with Next.js Webpack,
+  `gofmt -d`, and `go test -p=1 ./...` in the pinned containers. The build
+  prerendered `/`, `/_not-found`, `/icon.svg`, and `/manifest.json`.
+- Browser visual QA and remote VPS deployment were not run in this pass. The
+  production identity provider, persistent preview workflows, and full
+  assistive-technology acceptance matrix remain release prerequisites.

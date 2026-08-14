@@ -21,6 +21,7 @@ import {
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface QuotationGeneratorProps {
   rfqList: any[];
@@ -60,23 +61,14 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const activeQuote = quotationsList.length > 0 ? quotationsList[safeIndex] || quotationsList[0] : null;
 
   // Active Quotation State (Dynamic with fallback)
-  const qrn = activeQuote?.qrn || 'QRN20240415037';
-  const quotationDate = activeQuote?.quotationDate || 'April 15, 2026';
-  const clientName = activeQuote?.clientName || 'Ms. Katherine Porciuncula';
-  const clientFacility = activeQuote?.clientFacility || activeQuote?.facilityName || 'Allied Care Experts Medical Center';
-  const clientAddress = activeQuote?.clientAddress || activeQuote?.address || 'Lot 2975, C-1 Doña Remedios Trinidad Hwy, Baliuag, Bulacan';
+  const qrn = activeQuote?.qrn || '';
+  const quotationDate = activeQuote?.quotationDate || '';
+  const clientName = activeQuote?.clientName || '';
+  const clientFacility = activeQuote?.clientFacility || activeQuote?.facilityName || '';
+  const clientAddress = activeQuote?.clientAddress || activeQuote?.address || '';
 
   // Dynamic Quote Items List
-  const quoteItems: any[] = activeQuote?.items && activeQuote.items.length > 0
-    ? activeQuote.items
-    : [
-        {
-          id: 'default-item-1',
-          description: activeQuote?.itemDescription || 'Calibration Sticks Bact Alert',
-          packaging: activeQuote?.packaging || '1 Box of 40',
-          unitPrice: activeQuote?.unitPrice || 31500,
-        },
-      ];
+  const quoteItems: any[] = activeQuote?.items && activeQuote.items.length > 0 ? activeQuote.items : [];
 
   // Total Quotation Calculation
   const totalQuotationAmount = quoteItems.reduce((sum, item) => sum + (Number(item.unitPrice) || 0), 0);
@@ -85,7 +77,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const [roiCensus, setRoiCensus] = useState(180);
   const [roiLandedCost, setRoiLandedCost] = useState(18000);
   const [roiLisedFee, setRoiLisedFee] = useState(3800);
-  const [roiProposedPrice, setRoiProposedPrice] = useState(activeQuote?.unitPrice || 31500);
+  const [roiProposedPrice, setRoiProposedPrice] = useState(Number(activeQuote?.unitPrice) || 0);
 
   const totalCost = roiLandedCost + roiLisedFee;
   const profit = roiProposedPrice - totalCost;
@@ -117,7 +109,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   // Handle Applying ROI calculation directly to active quotation
   const handleApplyRoiToActiveQuote = () => {
     if (!activeQuote || !onUpdateQuotationsList) {
-      onShowNotification(`Applied ROI Proposed Unit Price ₱${roiProposedPrice.toLocaleString()} to Quotation!`);
+      onShowNotification('ROI preview unavailable: select a quotation record first.');
       setIsRoiModalOpen(false);
       return;
     }
@@ -129,7 +121,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         const updatedTotal = qty * updatedUnitPrice;
         const updatedItems = (q.items && q.items.length > 0)
           ? q.items.map((it: any) => ({ ...it, unitPrice: updatedUnitPrice }))
-          : [{ id: `item-roi-${Date.now()}`, description: q.itemDescription || 'Medical Reagent Kit', packaging: q.packaging || '1 Box of 40', unitPrice: updatedUnitPrice }];
+          : [];
 
         return {
           ...q,
@@ -299,7 +291,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           <button
             type="button"
             onClick={() => onSubmitForApproval(qrn)}
-            className="action-supporting text-xs sm:text-sm"
+            disabled={!activeQuote}
+            className="action-supporting text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>Submit for Approval</span>
@@ -311,10 +304,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </summary>
             <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 flex min-w-[17rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-          {onOpenClientRoiModal && (
+          {onOpenClientRoiModal && selectedRfqModal && (
             <button
               type="button"
-              onClick={() => onOpenClientRoiModal(rfqList[0])}
+               onClick={() => onOpenClientRoiModal(selectedRfqModal)}
               className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
               <Calculator className="w-4 h-4 text-blue-700" />
@@ -322,10 +315,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             </button>
           )}
 
-          {onOpenRfqPreviewModal && (
+          {onOpenRfqPreviewModal && selectedRfqModal && (
             <button
               type="button"
-              onClick={() => onOpenRfqPreviewModal(rfqList[0])}
+               onClick={() => onOpenRfqPreviewModal(selectedRfqModal)}
               className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
               <Eye className="w-4 h-4 text-blue-700" />
@@ -333,10 +326,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             </button>
           )}
 
-          {onOpenClientAcceptanceModal && (
+          {onOpenClientAcceptanceModal && activeQuote && (
             <button
               type="button"
-              onClick={() => onOpenClientAcceptanceModal()}
+               onClick={() => onOpenClientAcceptanceModal(activeQuote)}
               className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-700" />
@@ -346,8 +339,9 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
           <button
             type="button"
-            onClick={() => onOpenPrintModal(`Official Sales Quotation - ${qrn}`, 'printableQuotationDoc', quotationDocumentContent)}
-            className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
+            onClick={() => activeQuote && onOpenPrintModal(`Official Sales Quotation - ${qrn}`, 'printableQuotationDoc', quotationDocumentContent)}
+            disabled={!activeQuote}
+            className="action-quiet w-full justify-start text-left text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Printer className="w-4 h-4" />
             <span>Print Quote</span>
@@ -386,14 +380,16 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
         <button
           type="button"
           onClick={() => {
-            setRoiProposedPrice(activeQuote?.unitPrice || 31500);
+            if (!activeQuote) return;
+            setRoiProposedPrice(Number(activeQuote.unitPrice) || 0);
             setIsRoiModalOpen(true);
           }}
-          className="action-quiet text-xs sm:text-sm"
+          disabled={!activeQuote}
+          className="action-quiet text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
           title="Click to launch interactive Marketing Manager ROI & Contract Margin Calculator Popup"
         >
            <Calculator className="w-4 h-4 text-emerald-700" />
-          <span>Launch Marketing ROI Calculator</span>
+           <span>{activeQuote ? 'Launch Marketing ROI Calculator' : 'Select a quote for ROI'}</span>
         </button>
       </div>
 
@@ -427,9 +423,15 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                 &larr; Pinch to zoom / Swipe document &rarr;
               </span>
             </div>
-            <div className="overflow-x-auto rounded-2xl border border-slate-300 bg-white p-2 sm:p-4 shadow-sm flex justify-start sm:justify-center">
-              {quotationDocumentContent}
-            </div>
+             {activeQuote ? (
+               <div className="overflow-x-auto rounded-2xl border border-slate-300 bg-white p-2 sm:p-4 shadow-sm flex justify-start sm:justify-center">
+                 {quotationDocumentContent}
+               </div>
+             ) : (
+               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-10 text-sm font-medium text-slate-600" role="status">
+                 No quotation records returned. Create a quote only after its RFQ and source data are available.
+               </div>
+             )}
           </div>
         </div>
       )}
@@ -452,23 +454,23 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               &larr; Swipe table horizontally for details &rarr;
             </div>
             <div className="table-responsive-wrapper">
-              <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+               <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+                 <caption className="sr-only">Sales request for quotation records</caption>
                  <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 text-xs">
-                  <tr>
-                    <th className="p-4">RFQ Ref #</th>
-                    <th className="p-4">Customer facility</th>
-                    <th className="p-4">Date</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-right">Estimated total</th>
-                    <th className="p-4 text-center">Primary action</th>
+                   <tr>
+                     <th scope="col" className="p-4">RFQ Ref #</th>
+                     <th scope="col" className="p-4">Customer facility</th>
+                     <th scope="col" className="p-4">Date</th>
+                     <th scope="col" className="p-4 text-center">Status</th>
+                     <th scope="col" className="p-4 text-right">Estimated total</th>
+                     <th scope="col" className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
                  <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {rfqList.map((rfq) => (
                     <tr
                       key={rfq.id}
-                      onClick={() => setSelectedRfqModal(rfq)}
-                      className="hover:bg-blue-50/50 transition cursor-pointer group"
+                      className="hover:bg-blue-50/50 transition group"
                     >
                       <td className="p-4">
                         <button
@@ -496,7 +498,8 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+               </table>
+               {rfqList.length === 0 && <p className="px-4 py-8 text-sm font-medium text-slate-600" role="status">No RFQ records returned.</p>}
             </div>
           </div>
         </div>
@@ -504,7 +507,13 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {/* Marketing Manager ROI & Margin Financial Engine Popup Modal */}
       {isRoiModalOpen && (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900">
+        <AccessibleModal
+          isOpen={isRoiModalOpen}
+          onClose={() => setIsRoiModalOpen(false)}
+          title="Marketing ROI and margin calculator"
+          description="Review quotation-specific cost, price, and margin calculations."
+          contentClassName="text-slate-900"
+        >
           <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6">
             {/* Header Block */}
             <div className="flex justify-between items-start border-b border-slate-200 pb-5">
@@ -800,12 +809,18 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleModal>
       )}
 
       {/* Sales RFQ Document Inspector Modal */}
       {selectedRfqModal && (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 overflow-y-auto text-slate-900">
+        <AccessibleModal
+          isOpen={Boolean(selectedRfqModal)}
+          onClose={() => setSelectedRfqModal(null)}
+          title={`Sales RFQ document inspector: ${selectedRfqModal.rfqNo}`}
+          description="Review the selected request for quotation and approval chain."
+          contentClassName="text-slate-900"
+        >
           <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
@@ -905,7 +920,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

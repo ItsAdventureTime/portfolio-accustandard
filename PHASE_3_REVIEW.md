@@ -202,3 +202,31 @@ copy: sentence case is preferred, regular/medium text carries most information,
 and heavier weights are reserved for headings, active controls, and critical
 status values. This keeps the branded navy/royal/red hierarchy legible without
 turning every label into an alarm.
+
+## Luna audit hardening pass
+
+The follow-up review found that several visual affordances were attached to
+synthetic or non-persisted financial states. The implementation now:
+
+- makes the API's demo boundary explicit with `APP_ENV=demo` and a
+  request-context `X-Demo-Role`; non-demo protected routes fail closed;
+- removes the forced 3-way-match evidence path and labels local invoice,
+  acceptance, import, and approval flows as previews until a backend commit
+  exists;
+- separates live empty SOA data from offline seed rows and keeps collection
+  allocation targets inside the active rows;
+- exposes RFP release only for backend-eligible statuses and shows a blocking
+  reason for pending or rejected vouchers;
+- derives admin user permissions from the canonical role matrix and limits
+  edits to Admin and Chairman (DCS), while keeping read-only visibility clear;
+- filters mobile operations to permitted actions, adds Create new parity, and
+  uses real keyboard-reachable table actions and semantic headers;
+- adds null-safe inventory search, lot-number matching, no-result states, and
+  a shared Radix-based modal shell for focus containment, Escape handling, and
+  focus restoration across the high-impact dialogs.
+
+SmoothUI remains a selective reference rather than a wholesale component or
+framework migration. The current app uses CSS transitions plus its existing
+`prefers-reduced-motion` contract. If Motion is added, follow the official
+[accessibility guidance](https://motion.dev/docs/react-accessibility) and
+[`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).

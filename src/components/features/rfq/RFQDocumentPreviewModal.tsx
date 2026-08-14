@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { X, Printer, CheckCircle2, ShieldCheck, FileCheck, Plus, Trash2 } from 'lucide-react';
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface RFQDocumentPreviewModalProps {
   isOpen: boolean;
@@ -95,11 +96,12 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Official RFQ Document Template Modal"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Official RFQ Document Template"
+      description="Review the selected request for quotation document preview."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
         {/* Header Block Matching Screenshot Design System */}
@@ -363,6 +365,6 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
           </div>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };
