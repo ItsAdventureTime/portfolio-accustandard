@@ -255,7 +255,8 @@ feature-module roadmap:
 
 1. **Phase 2.1: CSS & Tokens Setup (`src/app/globals.css`) — complete**
    - CSS custom properties, quiet badge utilities, focus styles, responsive
-     shell tokens, and `Outfit` via `next/font/google` are implemented.
+     shell tokens, and the licensed local Outfit variable font are implemented
+     through `next/font/local`.
 
 2. **Phase 2.2: Shell & Navigation Refactor — complete**
    - `Header.tsx`, `BottomNav.tsx`, and `MobileNavDrawer.tsx` use the branded
@@ -269,7 +270,13 @@ feature-module roadmap:
    - Upgrade Overview (`src/components/features/overview`), Inventory (`src/components/features/inventory`), Quotations (`src/components/features/quotations`), Purchasing (`src/components/features/purchasing`), Finance/SOA (`src/components/features/soa`), and Admin (`src/components/features/admin`).
 
 5. **Phase 2.5: Verification & Quality Assurance — current pass**
-   - `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass in the pinned
-     `node:24.18-alpine3.24` Podman environment. Backend authorization,
-     authenticated deployment, and full accessibility assistive-technology
-     testing remain release prerequisites.
+   - `npm run lint`, `npx tsc --noEmit`, and `npm run build` run in the pinned
+     `node:24.18-alpine3.24` Podman environment. The release font contract also
+     requires a network-disabled frontend build after dependencies and the
+     image have been obtained; it must not request Google Fonts. npm registry,
+     container-image, and other module/image downloads still require deployment
+     network access. Backend authorization, authenticated deployment, and full
+     accessibility assistive-technology testing remain release prerequisites.
+   - The 2026-08-14 repair verified that contract with `--network=none`:
+     lint, TypeScript, and the Webpack static export passed using the vendored
+     Outfit asset. `npm run deploy:demo` remains an operator-run remote step.

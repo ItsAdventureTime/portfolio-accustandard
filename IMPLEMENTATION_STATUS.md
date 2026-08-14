@@ -62,8 +62,15 @@ Where an older document conflicts with the first four, the first four control.
   menu uses stable WAI-ARIA menu-button semantics, keyboard open/navigation
   (Enter, Space, Arrow Up/Down, Home, End), Escape/outside-pointer close, and
   focus return. The role selector is labeled as a demo simulation.
-- Outfit is loaded through `next/font/google` and exposed to the existing
-  `font-sans` token without adding a dependency.
+- Outfit is vendored at `src/app/fonts/Outfit-Variable.woff2` under the SIL Open
+  Font License 1.1, with the license and retrieval record beside the asset. It
+  is loaded through `next/font/local` and remains exposed to the existing
+  `--font-outfit`/`font-sans` token without adding a runtime dependency.
+- The frontend build no longer needs Google Fonts CSS or font data. npm registry,
+  container-image, and other application/module downloads still require
+  deployment network access. The offline-build contract installs dependencies
+  and pulls the pinned image first, then runs the frontend build with network
+  access disabled and verifies that no `next/font/google` import remains.
 - Purchasing separates Purchase Orders from Receiving Reports, and Inventory
   exposes Class 1/2/3 stock filters plus a critical-stock reorder entry point.
 - Quotation, PO, RFP, and Receiving Report entry use three-step progressive
@@ -165,9 +172,9 @@ production acceptance release from a lint/build result alone.
 - The invalid non-hex seed UUID literals found after the first repair were
   corrected and are covered by the seed validation contract.
 - Pinned `node:24.18-alpine3.24` passed `npm ci`, `npm run lint`,
-  `npx tsc --noEmit`, and `npm run build`; pinned frontend and backend image
-  builds also completed in Podman. npm reported 3 dependency audit findings
-  and a newer npm notice; no automatic upgrade was applied.
+  `npx tsc --noEmit`, and `npm run build` before the local-font remediation;
+  that pass did not cover a network-disabled build. The remediation and its
+  focused offline-build result are recorded in the dated entry below.
 - The remote VPS deployment was not run in this audit; operator verification
   remains required after publishing.
 
@@ -220,8 +227,13 @@ production acceptance release from a lint/build result alone.
 - Implemented WAI-ARIA menu-button behavior for the desktop operations menu,
   including keyboard opening/navigation, Escape and outside-pointer close, and
   focus return.
-- Loaded Outfit with `next/font/google` and aligned the active design and
-  deployment guides with the current shell and GitHub HTTPS-only workflow.
+- Replaced the Google-hosted Outfit loader with the licensed local variable
+  WOFF2, preserved the `--font-outfit` class/variable contract, and aligned the
+  active design and deployment guides with the offline-build requirement.
+- `eslint-config-next@16.3.0` is available and peer-compatible, but the lock-only
+  resolution would upgrade unrelated transitive packages. The existing
+  `eslint-config-next` 15.5.22 resolution is preserved; align it in a separate
+  reviewed dependency refresh.
 - Podman validation passed after follow-up fixes: `npm ci
   --ignore-scripts --no-audit --no-fund`, `npm run lint`, `npx tsc --noEmit`,
   and `npm run build` using `node:24.18-alpine3.24`.
@@ -230,6 +242,25 @@ production acceptance release from a lint/build result alone.
   production dependency audit is clean after updating transitive `nanoid` to
   3.3.18; development-only Capacitor CLI `tar` findings remain and require a
   breaking major upgrade, so no force upgrade was applied.
+
+### 2026-08-14 release-blocking font build remediation
+
+- The production font path now uses `next/font/local` and the vendored Outfit
+  variable WOFF2; it does not request Google Fonts during `next build`.
+- The asset is tracked with its SIL OFL 1.1 license, upstream URLs, retrieval
+  date, size, and SHA-256 in `src/app/fonts/`.
+- Focused validation must run dependency installation and image pulls with
+  network access, then run lint/type-check/build with network access disabled.
+  npm registry, container-image, and other module/image downloads remain
+  deployment-network prerequisites.
+- On 2026-08-14, a disposable `node:24.18-alpine3.24` container with
+  `--network=none` passed `npm run lint`, `npx tsc --noEmit --incremental
+  false`, and `npm run build`; the static export prerendered `/`,
+  `/_not-found`, `/icon.svg`, and `/manifest.json`.
+- `bash -n` for the deployment scripts, `git diff --check`, and the source
+  audit for runtime `next/font/google`/Google Fonts references also passed.
+- `npm run deploy:demo` was not run during this repair; remote VPS deployment
+  and post-deploy site/API verification remain operator steps.
 
 ## Current-framework notes
 

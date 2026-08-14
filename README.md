@@ -216,6 +216,19 @@ The VPS scripts therefore retry transient curl startup failures, including a
 connection reset, before failing. On an API readiness timeout they print the
 API unit status and the last 100 journal lines, then exit nonzero.
 
+### Frontend font and network contract
+
+Outfit is vendored at `src/app/fonts/Outfit-Variable.woff2` under the SIL Open
+Font License 1.1, with its license and provenance record beside the asset.
+`next/font/local` preserves the existing `--font-outfit` variable, so the
+frontend build no longer needs Google Fonts CSS or font data.
+
+Remote deployment still requires network access for `npm ci`, pinned container
+image pulls, and other npm/module/image downloads. To validate the release
+boundary, obtain dependencies and the Node image while networked, then run the
+frontend lint, type-check, and build with network access disabled. The offline
+build must not request Google Fonts or rely on a `next/font/google` import.
+
 ```bash
 podman run --pull=always --rm --userns=keep-id \
   -v "/home/jk/bridge-ph/accustandard-demo/source:/workspace:Z" \
