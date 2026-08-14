@@ -783,7 +783,7 @@ export default function Home() {
   const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
 
   return (
-    <div className="flex min-h-[100dvh] w-full flex-col bg-[var(--surface-canvas)] font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
+    <div className="workspace-shell flex min-h-[100dvh] w-full flex-col font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
       {/* Top Application Header Bar */}
       <Header
         activeTab={activeTab}
@@ -807,8 +807,8 @@ export default function Home() {
       <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
 
       {/* Feature Module Workspace Container */}
-      <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="mx-auto flex min-h-0 w-full max-w-[1440px] flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10">
-          <div role="status" aria-live="polite" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="workspace-main flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10 xl:px-10">
+          <div role="status" aria-live="polite" className="workspace-status mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
             <div className="flex items-center gap-3">
               <span className={`h-2.5 w-2.5 rounded-full ${isHydrating ? 'animate-pulse bg-amber-500' : apiOnline ? 'bg-emerald-500' : 'bg-[var(--brand-red)]'}`} aria-hidden="true" />
               <p className="text-sm font-semibold text-slate-800">

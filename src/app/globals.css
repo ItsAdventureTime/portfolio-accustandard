@@ -16,6 +16,7 @@
   --color-surface-card: #ffffff;
   --color-surface-subtle: #eef3f8;
   --color-surface-hover: #edf5ff;
+  --color-surface-rail: #e8eef7;
 
   --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
   --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04),
@@ -32,6 +33,8 @@
   --surface-card: #ffffff;
   --surface-subtle: #eef3f8;
   --surface-hover: #edf5ff;
+  --surface-rail: #e8eef7;
+  --surface-glass: rgb(255 255 255 / 0.82);
   --stroke-subtle: rgb(203 213 225 / 0.72);
   --stroke-strong: #94a3b8;
   --stroke-active: #1d4ed8;
@@ -48,6 +51,7 @@
   --shadow-drawer-value: -8px 0 28px -12px rgb(15 23 42 / 0.3);
   --focus-ring: #1d4ed8;
   --focus-ring-offset: 3px;
+  --content-max-width: 1680px;
   --z-header: 30;
   --z-bottom-nav: 40;
   --z-drawer: 50;
@@ -85,7 +89,9 @@ body {
   padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
-  background: var(--surface-canvas);
+  background:
+    radial-gradient(circle at 88% -8%, rgb(219 234 254 / 0.62), transparent 28rem),
+    linear-gradient(180deg, #f8fafc 0%, var(--surface-canvas) 24rem);
   color: var(--text-primary);
   font-family: var(--font-sans);
   line-height: 1.5;
@@ -171,10 +177,10 @@ textarea:focus-visible {
 
 /* Navigation chrome. */
 .wayfinding-header {
-  background: rgb(255 255 255 / 0.9);
+  background: var(--surface-glass);
   border-bottom: 1px solid var(--stroke-subtle);
   border-top: 2px solid var(--brand-red);
-  box-shadow: 0 1px 8px rgb(15 23 42 / 0.06);
+  box-shadow: 0 1px 10px rgb(15 23 42 / 0.06);
   backdrop-filter: blur(20px);
 }
 
@@ -185,7 +191,7 @@ textarea:focus-visible {
   align-items: center;
   color: var(--text-secondary);
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
   transition: color 180ms var(--ease-snappy), transform 180ms var(--ease-snappy);
 }
@@ -249,16 +255,62 @@ textarea:focus-visible {
 
 .role-switcher {
   border: 1px solid rgb(29 78 216 / 0.18);
-  background: rgb(23 53 111 / 0.96);
-  color: white;
-  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+  background: var(--surface-subtle);
+  color: var(--brand-navy);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.06);
+}
+
+.role-switcher:hover {
+  border-color: rgb(29 78 216 / 0.42);
+  background: var(--surface-hover);
+}
+
+/* Full-width application rhythm. Content stays readable without leaving
+   large empty rails on wide desktop displays. */
+.workspace-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(219 234 254 / 0.42), transparent 34rem),
+    linear-gradient(180deg, rgb(248 250 252 / 0.74), var(--surface-canvas));
+}
+
+.workspace-main {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+}
+
+.workspace-status {
+  border: 1px solid rgb(148 163 184 / 0.34);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.78);
+  box-shadow: 0 4px 14px -12px rgb(15 23 42 / 0.25);
+  backdrop-filter: blur(14px);
+}
+
+.section-kicker {
+  color: var(--brand-red);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.workspace-shell .font-black,
+.workspace-shell .font-extrabold {
+  font-weight: 650;
+}
+
+.workspace-shell .font-bold {
+  font-weight: 600;
 }
 
 /* Surfaces. Elevation communicates hierarchy; borders stay quiet. */
 .wayfinding-card {
   background: var(--surface-card);
   border: 1px solid var(--stroke-subtle);
-  border-radius: 0.875rem;
+  border-radius: 1.125rem;
   box-shadow: var(--shadow-card-value);
   transition: border-color 180ms var(--ease-snappy),
     box-shadow 180ms var(--ease-snappy), transform 180ms var(--ease-snappy);
@@ -283,7 +335,7 @@ textarea:focus-visible {
 .action-center-card::before {
   position: absolute;
   inset: 0 auto 0 0;
-  width: 3px;
+  width: 4px;
   background: var(--brand-royal);
   content: "";
 }
@@ -302,6 +354,19 @@ textarea:focus-visible {
   border-color: var(--brand-royal);
   background: rgb(228 234 255 / 0.96);
   box-shadow: 0 5px 12px -9px rgb(23 53 111 / 0.55);
+}
+
+.action-center-action[data-tone="primary"] {
+  border-color: transparent;
+  background: var(--brand-navy);
+  color: white;
+  box-shadow: 0 8px 16px -12px rgb(23 53 111 / 0.75);
+}
+
+.action-center-action[data-tone="primary"]:hover {
+  border-color: transparent;
+  background: var(--brand-royal);
+  box-shadow: 0 10px 18px -11px rgb(23 53 111 / 0.78);
 }
 
 .action-center-action[data-tone="attention"] {
@@ -352,10 +417,9 @@ textarea:focus-visible {
   background: var(--surface-subtle);
   color: var(--text-secondary);
   font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.015em;
   text-align: left;
-  text-transform: uppercase;
 }
 
 .wayfinding-grid td {
@@ -389,7 +453,7 @@ textarea:focus-visible {
   border-radius: 999px;
   padding: 0.25rem 0.625rem;
   font-size: 0.75rem;
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1.1;
 }
 
@@ -432,7 +496,7 @@ textarea:focus-visible {
   color: #1e40af;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   transition: color 180ms var(--ease-snappy),
     background-color 180ms var(--ease-snappy),
     border-color 180ms var(--ease-snappy),
@@ -461,7 +525,7 @@ textarea:focus-visible {
   padding: 0.5rem 1rem;
   color: white;
   font-size: 0.875rem;
-  font-weight: 650;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -507,9 +571,37 @@ textarea:focus-visible {
 .bottom-nav {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--stroke-subtle);
-  background: rgb(255 255 255 / 0.92);
+  background: rgb(255 255 255 / 0.88);
   box-shadow: 0 -8px 24px -16px rgb(15 23 42 / 0.35);
   backdrop-filter: blur(18px);
+}
+
+.mobile-nav-item {
+  min-width: 3.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.875rem;
+  color: var(--text-muted);
+}
+
+.mobile-nav-item:hover {
+  background: var(--surface-hover);
+  color: var(--brand-navy);
+}
+
+.mobile-nav-item[data-active="true"] {
+  border-color: rgb(44 66 150 / 0.16);
+  background: rgb(239 243 255 / 0.86);
+  color: var(--brand-navy);
+}
+
+.mobile-nav-action {
+  border: 4px solid white;
+  background: var(--brand-navy);
+  box-shadow: 0 10px 20px -12px rgb(23 53 111 / 0.68);
+}
+
+.mobile-nav-action:hover {
+  background: var(--brand-royal);
 }
 
 .sheet-enter {
@@ -557,6 +649,14 @@ textarea:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .workspace-main {
+    padding-inline: 0.875rem;
+  }
+
+  .wayfinding-card {
+    border-radius: 1rem;
+  }
+
   .mobile-modal-container {
     width: 100%;
     margin-top: auto;

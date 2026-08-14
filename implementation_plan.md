@@ -30,8 +30,12 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
    - Workflow Step Indicators (Breadcrumb Steppers) are added to track document lifecycles (RFQ &rarr; Quote &rarr; PO &rarr; RR &rarr; Invoice &rarr; SOA).
 
 4. **Modern & Professional UI Aesthetics**
-   - Standardized sleek color palette: Deep Slate (#0F172A), Navy Blue (#1E3A8A), Muted Slate (#64748B), with subtle status colors (Emerald, Amber, Rose).
-   - Clean card containers, generous white space, soft shadows, clear visual hierarchy, and polished micro-interactions.
+   - Use the supplied AccuStandard wordmark as the visual anchor with the
+     canonical navy (`#17356F`), royal blue (`#2C4296`), sapphire (`#1D4ED8`),
+     Rx red (`#B4232F`), and calm canvas/card surfaces.
+   - Use a full-width workspace rail, restrained borders, soft shadows, clear
+     visual hierarchy, and polished micro-interactions without relying on
+     heavy bold text for emphasis.
 
 ---
 
@@ -62,10 +66,11 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
 - Action center positioned at the top of the main dashboard:
   - Displays the **"Needs Your Attention Today"** heading and the
     **"Role Action Center"** subtitle.
-  - Provides three equal cards in the reference order for the default General
-    Manager view: **Pending PO Approvals**, **Active RFQs**, and **Receiving
-    Alerts**. Role variants may change counts, labels, and destinations while
-    preserving the three-card composition.
+  - Provides three role-specific cards in an asymmetric hierarchy for the
+    default General Manager view: a primary **Pending PO Approvals** card with
+    stacked **Active RFQs** and **Receiving Alerts** cards. Role variants may
+    change counts, labels, and destinations while preserving the three-card
+    composition.
 
 ---
 
@@ -73,7 +78,7 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
 
 #### [MODIFY] [`ExecutiveOverview.tsx`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/src/components/features/overview/ExecutiveOverview.tsx)
 - Embed `RoleActionCenter` with the “Needs Your Attention Today” heading and
-  three equal action cards in the reference order.
+  the asymmetric three-card action hierarchy in the reference order.
 - Follow it with a compact five-column PO table: PO Number, Vendor, Amount,
   Date, and Status. The table is sourced from purchase orders, not a mixed
   approval-record feed. Keep inspection and approval actions accessible inside
@@ -203,7 +208,8 @@ PHASE 1: LANDING PAGE & ROLE ACTION CENTER
    - Position this component at the top of `ExecutiveOverview.tsx`.
    - Display the reference layout: "Needs Your Attention Today" with the
      "Role Action Center" subtitle.
-   - Surface three equal role-specific action cards based on `viewAsRole`:
+   - Surface three role-specific action cards in an asymmetric hierarchy based
+     on `viewAsRole`:
      * GM / Chairman: Pending PO approvals, active RFQs, and receiving alerts.
      * Sales: Active RFQs, customer approvals, and receiving alerts.
      * Warehouse: Pending PO receipts, active RFQs, and receiving alerts.
