@@ -13,8 +13,10 @@ import {
   Eye,
   X,
   FileCheck,
+  ChevronDown,
 } from 'lucide-react';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface PurchasingReceivingProps {
   poList: any[];
@@ -49,42 +51,54 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 self-stretch sm:self-auto flex-wrap">
-          {onOpenVendorInvoiceModal && (
-            <button
-              onClick={() => onOpenVendorInvoiceModal(poList[0])}
-              className="flex-1 sm:flex-initial px-4 py-3 bg-blue-900 hover:bg-blue-950 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-95"
-            >
-              <FileText className="w-4 h-4 text-blue-300" />
-              <span>Record Vendor Invoice</span>
-            </button>
-          )}
-
-          {onOpenThreeWayMatchModal && (
-            <button
-              onClick={() => onOpenThreeWayMatchModal(poList[0])}
-              className="flex-1 sm:flex-initial px-4 py-3 bg-indigo-900 hover:bg-indigo-950 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-95"
-            >
-              <FileCheck className="w-4 h-4 text-indigo-300" />
-              <span>Run 3-Way Match</span>
-            </button>
-          )}
-
+        <div className="flex items-center gap-2 self-stretch sm:self-auto">
           <button
-            onClick={onOpenReceivingModal}
-            className="flex-1 sm:flex-initial px-5 py-3 bg-emerald-700 hover:bg-emerald-800 hover:shadow-md text-white font-extrabold text-xs sm:text-sm rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"
-          >
-            <PackageCheck className="w-4 h-4" />
-            <span>Enter Receiving Report (RR)</span>
-          </button>
-
-          <button
+            type="button"
             onClick={onOpenAddPO}
-            className="flex-1 sm:flex-initial px-5 py-3 bg-blue-900 hover:bg-blue-800 hover:shadow-md text-white font-extrabold text-xs sm:text-sm rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"
+            className="action-primary flex-1 sm:flex-initial text-xs sm:text-sm"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Purchase Order (PO)</span>
+            <span>Create purchase order</span>
           </button>
+
+          <details className="action-disclosure relative">
+            <summary>
+              <span>More actions</span>
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            </summary>
+            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 flex min-w-[16rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+              <button
+                type="button"
+                onClick={onOpenReceivingModal}
+                className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
+              >
+                <PackageCheck className="w-4 h-4 text-emerald-700" />
+                <span>Enter receiving report</span>
+              </button>
+              {onOpenVendorInvoiceModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenVendorInvoiceModal(selectedPoModal || undefined)}
+                  disabled={!selectedPoModal}
+                  className="action-quiet w-full justify-start text-left text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FileText className="w-4 h-4 text-blue-700" />
+                  <span>Record vendor invoice</span>
+                </button>
+              )}
+              {onOpenThreeWayMatchModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenThreeWayMatchModal(selectedPoModal || undefined)}
+                  disabled={!selectedPoModal}
+                  className="action-quiet w-full justify-start text-left text-xs sm:text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FileCheck className="w-4 h-4 text-indigo-700" />
+                  <span>Run 3-way match</span>
+                </button>
+              )}
+            </div>
+          </details>
         </div>
       </div>
 
@@ -123,22 +137,22 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
         </div>
         <div className="table-responsive-wrapper">
           <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+            <caption className="sr-only">Purchase orders and receiving reports</caption>
             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
-                <th className="p-4">{activeTab === 'PO' ? 'PO Number' : 'RR / PO reference'}</th>
-                <th className="p-4">{activeTab === 'PO' ? 'Vendor Name' : 'Item / supplier'}</th>
-                <th className="p-4">{activeTab === 'PO' ? 'Date' : 'Approved quantity'}</th>
-                <th className="p-4 text-center">Status</th>
-                <th className="p-4 text-right">{activeTab === 'PO' ? 'Total Amount' : 'Received / remaining'}</th>
-                <th className="p-4 text-center">Primary action</th>
+                <th scope="col" className="p-4">{activeTab === 'PO' ? 'PO Number' : 'RR / PO reference'}</th>
+                <th scope="col" className="p-4">{activeTab === 'PO' ? 'Vendor Name' : 'Item / supplier'}</th>
+                <th scope="col" className="p-4">{activeTab === 'PO' ? 'Date' : 'Approved quantity'}</th>
+                <th scope="col" className="p-4 text-center">Status</th>
+                <th scope="col" className="p-4 text-right">{activeTab === 'PO' ? 'Total Amount' : 'Received / remaining'}</th>
+                <th scope="col" className="p-4 text-center">Primary action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
               {poList.map((po) => (
                 <tr
                   key={po.id}
-                  onClick={() => setSelectedPoModal(po)}
-                  className="hover:bg-blue-50/50 transition cursor-pointer group"
+                  className="hover:bg-blue-50/50 transition group"
                 >
                   <td className="p-4">
                     <button
@@ -181,12 +195,19 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
               ))}
             </tbody>
           </table>
+          {poList.length === 0 && <p className="px-4 py-8 text-sm font-medium text-slate-600" role="status">No purchase order or receiving records returned.</p>}
         </div>
       </div>
 
       {/* PO Detail Inspector Modal */}
       {selectedPoModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+        <AccessibleModal
+          isOpen={Boolean(selectedPoModal)}
+          onClose={() => setSelectedPoModal(null)}
+          title={`Purchase order details: ${selectedPoModal.poNumber}`}
+          description="Purchase order and receiving record details."
+          contentClassName="text-slate-900"
+        >
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
@@ -219,11 +240,11 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
               </div>
               <div>
                 <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">SKU Code</span>
-                <span className="font-mono font-black text-blue-950 text-base">{selectedPoModal.sku || 'ACC-REAG-01'}</span>
+                <span className="font-mono font-black text-blue-950 text-base">{selectedPoModal.sku || 'Not recorded'}</span>
               </div>
               <div>
                 <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Vendor Invoice Reference</span>
-                <span className="font-mono font-bold text-slate-700 text-sm sm:text-base">{selectedPoModal.invoiceRef || 'INV-PENDING'}</span>
+                <span className="font-mono font-bold text-slate-700 text-sm sm:text-base">{selectedPoModal.invoiceRef || 'Not recorded'}</span>
               </div>
               <div>
                 <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Total PO Amount</span>
@@ -251,7 +272,7 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
               </div>
               <p className="text-xs sm:text-sm text-slate-700 font-semibold leading-relaxed">
                 {selectedPoModal.rrQtyReceived >= selectedPoModal.poQty
-                  ? '✓ Hard-Block Check Passed: Approved PO quantity matches actual Goods Received and Vendor Invoice.'
+                  ? 'Goods Receipt quantity matches the approved PO quantity. Vendor invoice evidence still requires separate verification.'
                   : '⚠️ Pending Goods Receipt (RR): Receiving report entry required at warehouse prior to payment disbursement.'}
               </p>
             </div>
@@ -279,7 +300,7 @@ export const PurchasingReceiving: React.FC<PurchasingReceivingProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

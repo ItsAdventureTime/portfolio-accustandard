@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, X, CheckCircle2, RefreshCw, AlertCircle, Barcode, Play, Scan, Sparkles } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface BarcodeScannerModalProps {
   isOpen: boolean;
@@ -24,7 +25,6 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isScanningActive, setIsScanningActive] = useState(false);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-  const modalBackdropRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const playBeepSound = () => {
@@ -156,20 +156,13 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === modalBackdropRef.current) {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      ref={modalBackdropRef}
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="barcodeScannerTitle"
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      description="Scan a barcode with the camera or enter a SKU manually."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white text-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-300 flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out space-y-6 text-sm">
         {/* Hidden File Input */}
@@ -324,6 +317,6 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
           </button>
         </form>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

@@ -77,15 +77,30 @@ that show a metric without a decision or next action.
 - Respect `prefers-reduced-motion`. Motion may clarify state changes but must
   never be required to understand or complete an action.
 
+### Motion and component references
+
+- [SmoothUI](https://github.com/educlopez/smoothui) is a selective reference
+  for restrained React/Tailwind interaction patterns, not a replacement for
+  the existing Radix primitives or a reason to add decorative components.
+- If Motion is introduced later, follow its [accessibility guidance](https://motion.dev/docs/react-accessibility)
+  and wrap the smallest useful surface with
+  [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
+  Prefer opacity/background feedback; do not animate tables, totals, approval
+  controls, or other audit-sensitive values.
+- The current pass uses CSS transitions and the existing reduced-motion media
+  query, so it adds no animation dependency or runtime network requirement.
+
 ### Permission and authentication boundary
 
 - `src/lib/permissions.ts` is the shared typed client-side permission model.
   It owns allowed tabs, operation helpers, approval selectors, reviewable PO
   targets, and role/action-specific navigation counts.
 - The role selector is a demo simulation. UI filtering is not backend security;
-  the Go API remains unauthenticated in this demo. Real authentication,
-  session identity, and server-enforced authorization are unresolved before
-  production data can be handled.
+  the Go API accepts a valid `X-Demo-Role` only while `APP_ENV=demo`; requests
+  outside demo mode fail closed until a real identity provider is configured.
+  The demo header is routing context, not proof of identity. Real
+  authentication, session identity, and server-enforced production
+  authorization remain release prerequisites.
 
 ## Implementation boundaries
 

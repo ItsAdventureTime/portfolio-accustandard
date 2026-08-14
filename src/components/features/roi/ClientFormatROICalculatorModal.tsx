@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { X, Save, ShieldCheck, FileSpreadsheet, CheckCircle2, TrendingUp, Clock, DollarSign } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface ClientFormatROICalculatorModalProps {
   isOpen: boolean;
@@ -169,11 +170,12 @@ export const ClientFormatROICalculatorModal: React.FC<ClientFormatROICalculatorM
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Client-Format ROI Calculator Modal"
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Client-Format ROI Calculator"
+      description="Review the linked RFQ assumptions and preview the ROI calculation."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
         {/* Header Block */}
@@ -574,6 +576,6 @@ export const ClientFormatROICalculatorModal: React.FC<ClientFormatROICalculatorM
           </div>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

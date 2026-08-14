@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -121,6 +122,38 @@ func TestDecodeJSONRejectsMalformedPayload(t *testing.T) {
 	}
 	if err := decodeJSON(req, &payload); !errors.Is(err, errInvalidPayload) {
 		t.Fatalf("decodeJSON() error = %v, want invalid payload", err)
+	}
+}
+
+func TestRequireAuthenticatedActorEnforcesDemoBoundary(t *testing.T) {
+	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		actor, ok := actorFromRequest(r)
+		if !ok || actor.Role != "General Manager" {
+			t.Fatalf("actor = (%+v, %v), want General Manager", actor, ok)
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	t.Setenv("APP_ENV", "production")
+	productionResponse := httptest.NewRecorder()
+	RequireAuthenticatedActor(next).ServeHTTP(productionResponse, httptest.NewRequest("GET", "/", nil))
+	if productionResponse.Code != http.StatusServiceUnavailable {
+		t.Fatalf("non-demo status = %d, want %d", productionResponse.Code, http.StatusServiceUnavailable)
+	}
+
+	t.Setenv("APP_ENV", "demo")
+	missingRoleResponse := httptest.NewRecorder()
+	RequireAuthenticatedActor(next).ServeHTTP(missingRoleResponse, httptest.NewRequest("GET", "/", nil))
+	if missingRoleResponse.Code != http.StatusUnauthorized {
+		t.Fatalf("missing demo role status = %d, want %d", missingRoleResponse.Code, http.StatusUnauthorized)
+	}
+
+	demoRequest := httptest.NewRequest("GET", "/", nil)
+	demoRequest.Header.Set(demoRoleHeader, "General Manager")
+	demoResponse := httptest.NewRecorder()
+	RequireAuthenticatedActor(next).ServeHTTP(demoResponse, demoRequest)
+	if demoResponse.Code != http.StatusNoContent {
+		t.Fatalf("valid demo role status = %d, want %d", demoResponse.Code, http.StatusNoContent)
 	}
 }
 

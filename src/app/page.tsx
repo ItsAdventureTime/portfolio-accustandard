@@ -36,8 +36,8 @@ import {
   canApproveApprovalStage,
   DEFAULT_ROLE,
   getAllowedTabs,
-  type ApprovalStage,
   type Role,
+  type ApprovalStage,
   selectRoleScopedDashboardData,
 } from '@/lib/permissions';
 import {
@@ -58,6 +58,7 @@ import {
   receiveGoods,
   releaseRFP,
   syncQBOItem,
+  setDemoRole,
   updateApproval,
 } from '@/lib/api';
 
@@ -88,7 +89,7 @@ export default function Home() {
   const [rfqList, setRfqList] = useState(DEFAULT_RFQS);
   const [quotationsList, setQuotationsList] = useState(DEFAULT_QUOTATIONS);
   const [approvalsList, setApprovalsList] = useState(DEFAULT_APPROVALS);
-  const [soaData, setSoaData] = useState({ rows: DEFAULT_SOA_ROWS });
+  const [soaData, setSoaData] = useState({ rows: [] as any[] });
   const [collectionsList, setCollectionsList] = useState(DEFAULT_COLLECTIONS);
   const [poList, setPoList] = useState(DEFAULT_PO_LIST);
   const [rfpList, setRfpList] = useState(DEFAULT_RFP_LIST);
@@ -96,6 +97,7 @@ export default function Home() {
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
   const [apiOnline, setApiOnline] = useState(false);
   const [isHydrating, setIsHydrating] = useState(false);
+  const [dataState, setDataState] = useState<'loading' | 'live' | 'offline'>('loading');
 
   const roleScopedData = useMemo(() => selectRoleScopedDashboardData({
     role: viewAsRole,
@@ -149,6 +151,7 @@ export default function Home() {
   // Backend-first hydration. Seed data remains an in-memory offline fallback.
   const hydrateFromApi = useCallback(async () => {
     setIsHydrating(true);
+    setDataState('loading');
     try {
       const apiRequests = Promise.all([
         getReadiness(),
@@ -172,12 +175,16 @@ export default function Home() {
       if (hydrationTimeout) clearTimeout(hydrationTimeout);
       if (!hydration) {
         setApiOnline(false);
+        setDataState('offline');
+        setSoaData({ rows: DEFAULT_SOA_ROWS });
         return;
       }
 
       const [readiness, ...responses] = hydration;
       const [inventory, replenishment, rfqs, approvals, soa, purchaseOrders, rfps, qboQueueData, logs] = responses;
       setApiOnline(readiness?.status === 'ready');
+      setDataState(readiness?.status === 'ready' ? 'live' : 'offline');
+      if (readiness?.status !== 'ready') setSoaData({ rows: DEFAULT_SOA_ROWS });
       if (Array.isArray(inventory)) setInventoryList(inventory);
       if (Array.isArray(replenishment)) setReplenishmentList(replenishment);
       if (Array.isArray(rfqs)) setRfqList(rfqs);
@@ -189,6 +196,8 @@ export default function Home() {
       if (Array.isArray(logs)) setAuditLogs(logs);
     } catch {
       setApiOnline(false);
+      setDataState('offline');
+      setSoaData({ rows: DEFAULT_SOA_ROWS });
     } finally {
       setIsHydrating(false);
     }
@@ -204,11 +213,11 @@ export default function Home() {
   };
 
   // Audit Log Helper
-  const addAuditLog = (action: string) => {
+  const addAuditLog = (action: string, actorRole: Role = viewAsRole) => {
     const newLog = {
       id: `log-${Date.now()}`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      user: viewAsRole,
+      user: actorRole,
       action,
     };
     setAuditLogs((prev) => [newLog, ...prev]);
@@ -226,13 +235,14 @@ export default function Home() {
 
   // Handle Role Change & Auto-Navigate to Allowed Tab
   const handleChangeRole = (role: Role) => {
+    setDemoRole(role);
     setViewAsRole(role);
     const allowed = getAllowedTabs(role);
     if (!allowed.includes(activeTab)) {
       setActiveTab(allowed[0]);
     }
     showNotification(`Switched role simulation view to: ${role}`);
-    addAuditLog(`Role switched to [${role}]`);
+    addAuditLog(`Role switched to [${role}]`, role);
   };
 
   // Handle Quotation Submit (Dynamic Update & Soft Stock Reservation)
@@ -342,68 +352,10 @@ export default function Home() {
       }
     }
 
-    let totalAllocated = 0;
-    const updatedRows = soaData.rows.map((row) => {
-      const match = allocations.find(
-        (a) => a.invoiceNo === row.salesInvoiceNo
-      );
-      if (match && match.amount > 0) {
-        totalAllocated += match.amount;
-        const newAmountPaid = (Number(row.amountPaid) || 0) + match.amount;
-        const newInvoiceBalance = Math.max(0, (Number(row.invoiceAmount) || 0) - newAmountPaid);
-        return {
-          ...row,
-          amountPaid: newAmountPaid,
-          invoiceBalance: newInvoiceBalance,
-        };
-      }
-      return row;
-    });
-
-    // Recalculate running balances across all rows
-    let cumBalance = 0;
-    const recomputedRows = updatedRows.map((row) => {
-      cumBalance += Number(row.invoiceBalance) || 0;
-      return {
-        ...row,
-        runningBalance: cumBalance,
-      };
-    });
-
+    const totalAllocated = allocations.reduce((sum, allocation) => sum + allocation.amount, 0);
     const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
 
-    setSoaData({ rows: recomputedRows });
-    setCollectionsList((prev: any[]) => [
-      {
-        id: `col-${Date.now()}`,
-        checkNo,
-        bank,
-        date: new Date().toISOString().split('T')[0],
-        amount: checkAmount,
-        customer: 'GATCHALIAN MEDICAL LABORATORY',
-        allocatedInvoices: allocations.map((a) => ({ invoiceNo: a.invoiceNo, allocatedAmount: a.amount })),
-        unappliedCredit,
-        status: 'POSTED_TO_QBO',
-      },
-      ...prev,
-    ]);
-
-    setQboQueue((prev) => [
-      {
-        id: `qbo-col-${Date.now()}`,
-        docType: 'Customer Payment Collection',
-        docNumber: checkNo,
-        entityName: 'GATCHALIAN MEDICAL LABORATORY',
-        amount: checkAmount,
-        qboRefId: 'Awaiting Sync',
-        syncStatus: 'QUEUED',
-        lastAttempt: new Date().toLocaleString(),
-        errorMessage: '',
-      },
-      ...prev,
-    ]);
-
-    showNotification(`Offline demo preview only: Multi-SOA Check #${checkNo} was not persisted.`);
+    showNotification(`Offline demo preview only: Multi-SOA Check #${checkNo} was not persisted or queued for sync.`);
     addAuditLog(`Demo-only preview of Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
     return true;
   };
@@ -519,20 +471,7 @@ export default function Home() {
       }
     }
 
-    setRfpList((prev) =>
-      prev.map((rfp) => {
-        if (rfp.id === id) {
-          return {
-            ...rfp,
-            status: 'DISBURSED_PAID',
-            releasedBank: bank,
-            releasedRefNo: refNo,
-          };
-        }
-        return rfp;
-      })
-    );
-    showNotification(`Offline demo preview only: RFP #${id} release was not persisted.`);
+    showNotification(`Offline demo preview only: RFP #${id} release was not persisted or marked paid.`);
     addAuditLog(`Demo-only preview of RFP #${id} disbursement from ${bank}`);
     return true;
   };
@@ -646,7 +585,6 @@ export default function Home() {
       showNotification('Sales Quotes do not have a DCS approval stage.');
       return false;
     }
-    const isPOAccountingReview = stage === 'reviewer' && target.type === 'Purchase Order';
     if (!canApproveApprovalStage(viewAsRole, stage, target)) {
       showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute ${stage.toUpperCase()} Approval.`);
       return false;
@@ -654,12 +592,7 @@ export default function Home() {
 
     if (apiOnline) {
       try {
-        const role = stage === 'reviewer'
-          ? (isPOAccountingReview ? 'Accounting' : 'Marketing')
-          : stage === 'gm'
-            ? 'General Manager'
-            : 'Chairman (DCS)';
-        const saved = await updateApproval(id, 'approve', viewAsRole === 'Admin' ? 'Admin' : role);
+        const saved = await updateApproval(id, 'approve');
         if (!saved) throw new Error('The API did not commit the approval.');
         setApprovalsList((prev) => prev.map((item) => (
           item.id === saved.id || item.qrn === saved.qrn ? saved : item
@@ -875,14 +808,28 @@ export default function Home() {
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
               onOpenClientRoiModal={(rfq) => {
-                setSelectedRfqData(rfq || rfqList[0]);
+                if (!rfq) {
+                  showNotification('ROI preview unavailable: select an RFQ record first.');
+                  return;
+                }
+                setSelectedRfqData(rfq);
                 setIsClientRoiOpen(true);
               }}
               onOpenRfqPreviewModal={(rfq) => {
-                setSelectedRfqData(rfq || rfqList[0]);
+                if (!rfq) {
+                  showNotification('RFQ preview unavailable: select an RFQ record first.');
+                  return;
+                }
+                setSelectedRfqData(rfq);
                 setIsRfqPreviewOpen(true);
               }}
-              onOpenClientAcceptanceModal={() => {
+              onOpenClientAcceptanceModal={(quote) => {
+                if (!quote) {
+                  showNotification('Client acceptance preview unavailable: select a quotation record first.');
+                  return;
+                }
+                setSelectedPoData(null);
+                setSelectedRfqData(quote);
                 setIsClientAcceptanceOpen(true);
               }}
             />
@@ -891,6 +838,7 @@ export default function Home() {
           {activeTab === 'soa' && (
             <StatementOfAccount
               soaRows={soaData.rows}
+              dataState={dataState}
               onUpdateSoaRows={(newRows) => setSoaData({ rows: newRows })}
               collectionsList={collectionsList}
               onOpenPrintModal={handleOpenPrintModal}
@@ -906,12 +854,20 @@ export default function Home() {
               poList={poList}
               onOpenAddPO={() => setIsCreatePOOpen(true)}
               onOpenReceivingModal={() => setIsPOReceivingModalOpen(true)}
-              onOpenVendorInvoiceModal={(po) => {
+               onOpenVendorInvoiceModal={(po) => {
+                 if (!po) {
+                   showNotification('Vendor invoice preview unavailable: select a purchase order first.');
+                   return;
+                 }
                 setSelectedPoData(po);
                 setIsVendorInvoiceOpen(true);
               }}
-              onOpenThreeWayMatchModal={(po) => {
-                setSelectedPoData(po);
+               onOpenThreeWayMatchModal={(po) => {
+                 if (!po) {
+                   showNotification('3-Way Match preview unavailable: select a purchase order first.');
+                   return;
+                 }
+                 setSelectedPoData(po);
                 setIsThreeWayMatchOpen(true);
               }}
             />
@@ -922,6 +878,7 @@ export default function Home() {
               rfpList={rfpList}
               onOpenAddRFP={() => setIsAddRFPOpen(true)}
               onReleaseRFP={handleReleaseRFP}
+              dataState={dataState}
             />
           )}
 
@@ -930,8 +887,8 @@ export default function Home() {
               auditLogs={auditLogs}
               viewAsRole={viewAsRole}
               onShowNotification={showNotification}
-              onAddAuditLog={addAuditLog}
-              onOpenStartupImportModal={() => setIsStartupImportOpen(true)}
+        onAddAuditLog={addAuditLog}
+        onOpenStartupImportModal={() => setIsStartupImportOpen(true)}
             />
           )}
       </main>
@@ -1032,6 +989,7 @@ export default function Home() {
         onOpenStartupImport={() => setIsStartupImportOpen(true)}
         onOpenQBOQueue={() => setIsQboQueueOpen(true)}
         onOpenProductManager={() => setIsProductManagerOpen(true)}
+        onOpenCreateNew={() => setIsCommandPaletteOpen(true)}
         roleScopedData={roleScopedData}
       />
 
@@ -1086,7 +1044,7 @@ export default function Home() {
       <ClientAcceptanceModal
         isOpen={isClientAcceptanceOpen}
         onClose={() => setIsClientAcceptanceOpen(false)}
-        quotationData={{ qrn: 'QRN20240415037' }}
+        quotationData={selectedRfqData}
         onConfirmAcceptance={(evidence) => {
           setQuotationsList((prev) =>
             prev.map((q) => (q.qrn === evidence.quotationId || q.id === evidence.quotationId ? { ...q, status: 'CLIENT_APPROVED' } : q))
@@ -1099,7 +1057,7 @@ export default function Home() {
       <VendorInvoiceModal
         isOpen={isVendorInvoiceOpen}
         onClose={() => setIsVendorInvoiceOpen(false)}
-        poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
+        poData={selectedPoData}
         onSaveInvoice={(inv) => {
           showNotification(`Preview only: Vendor Invoice ${inv.invoiceNo} was not persisted.`);
           addAuditLog(`Demo-only preview of Vendor Invoice ${inv.invoiceNo} for PO ${inv.poNo}`);
@@ -1109,7 +1067,7 @@ export default function Home() {
       <ThreeWayMatchModal
         isOpen={isThreeWayMatchOpen}
         onClose={() => setIsThreeWayMatchOpen(false)}
-        poData={selectedPoData || { qrn: 'PO-2026-0891', totalAmount: 142000.0 }}
+        poData={selectedPoData}
         onConfirmVerification={(match) => {
           showNotification('Preview only: 3-Way Match evidence was not persisted or used to unlock payment.');
           addAuditLog(`Demo-only preview of 3-Way Match verification for PO ${match.poNo}`);
@@ -1119,7 +1077,7 @@ export default function Home() {
       <CollectionAllocationModal
         isOpen={isCollectionAllocationOpen}
         onClose={() => setIsCollectionAllocationOpen(false)}
-        collectionData={collectionsList[0] || { amount: 25000.0 }}
+        collectionData={collectionsList[0]}
         onConfirmAllocation={(alloc) => handleAllocateCollection(
           alloc.checkNo,
           'BDO Unibank',
@@ -1134,10 +1092,6 @@ export default function Home() {
       <StartupImportModal
         isOpen={isStartupImportOpen}
         onClose={() => setIsStartupImportOpen(false)}
-        onImportComplete={(summary) => {
-          showNotification(`Preview only: startup data batch ${summary.batchId} was not persisted or reconciled.`);
-          addAuditLog(`Demo-only preview of startup data import batch ${summary.batchId} (${summary.validRecords} records)`);
-        }}
       />
     </div>
   );

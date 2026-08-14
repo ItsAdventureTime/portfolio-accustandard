@@ -13,22 +13,37 @@ import {
   ShieldCheck,
   Check,
 } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface RequestForPaymentProps {
   rfpList: any[];
+  dataState?: 'loading' | 'live' | 'offline';
   onOpenAddRFP: () => void;
   onReleaseRFP?: (id: string, bank: string, refNo: string) => void | Promise<boolean | void>;
 }
 
 export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
   rfpList,
+  dataState = 'loading',
   onOpenAddRFP,
   onReleaseRFP,
 }) => {
+  const releaseEligibleStatuses = new Set(['APPROVED', 'APPROVED_DCS', 'PENDING_BANK_RELEASING']);
+  const canRelease = (rfp: any) => releaseEligibleStatuses.has(String(rfp?.status || '').toUpperCase());
+  const releaseBlockReason = (rfp: any) => {
+    const status = String(rfp?.status || '').toUpperCase();
+    if (!rfp?.id || !rfp?.rfpNo || !rfp?.payee || Number(rfp?.amount) <= 0) return 'Incomplete voucher data';
+    if (status === 'REJECTED') return 'Rejected voucher';
+    if (status === 'OVERDUE') return 'Overdue voucher';
+    if (status === 'DISBURSED_PAID') return 'Already disbursed';
+    if (status === 'PENDING' || status === 'PENDING_APPROVAL') return 'Awaiting approval';
+    if (!canRelease(rfp)) return 'Not eligible for bank release';
+    return '';
+  };
   const [releasingRfp, setReleasingRfp] = useState<any | null>(null);
   const [inspectingRfp, setInspectingRfp] = useState<any | null>(null);
-  const [bankSource, setBankSource] = useState('BDO Unibank — Corporate Acct #0012-9981-00');
-  const [refNo, setRefNo] = useState('TXN-BDO-2026-9012');
+  const [bankSource, setBankSource] = useState('');
+  const [refNo, setRefNo] = useState('');
 
   const handleConfirmRelease = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +67,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
             GL Chart of Accounts Picklist &bull; Disbursement Approval Chain &bull; Bank Releasing
           </p>
+          {dataState === 'offline' && <p className="mt-2 text-xs font-semibold text-amber-900">Offline demo preview — release actions remain unavailable unless the record is backend-eligible.</p>}
         </div>
 
         <button
@@ -70,22 +86,22 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
         </div>
         <div className="table-responsive-wrapper">
           <table className="wayfinding-grid w-full text-left text-sm border-collapse">
+            <caption className="sr-only">Requests for payment and bank release eligibility</caption>
             <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
               <tr>
-                <th className="p-4">RFP Voucher ID</th>
-                <th className="p-4">Payee / Vendor</th>
-                <th className="p-4">Date</th>
-                <th className="p-4 text-center">Status</th>
-                <th className="p-4 text-right">Amount</th>
-                <th className="p-4 text-center">Primary action</th>
+                <th scope="col" className="p-4">RFP Voucher ID</th>
+                <th scope="col" className="p-4">Payee / Vendor</th>
+                <th scope="col" className="p-4">Date</th>
+                <th scope="col" className="p-4 text-center">Status</th>
+                <th scope="col" className="p-4 text-right">Amount</th>
+                <th scope="col" className="p-4 text-center">Primary action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
               {rfpList.map((rfp) => (
                 <tr
                   key={rfp.id}
-                  onClick={() => setInspectingRfp(rfp)}
-                  className="hover:bg-blue-50/50 transition cursor-pointer group"
+                  className="hover:bg-blue-50/50 transition group"
                 >
                   <td className="p-4">
                     <button
@@ -102,23 +118,19 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                   <td className="p-4 font-bold text-slate-900">{rfp.payee}</td>
                   <td className="p-4 text-xs font-semibold text-slate-700">{rfp.createdAt || rfp.requestedDate || '—'}</td>
                   <td className="p-4 text-center">
-                    {rfp.status === 'DISBURSED_PAID' ? <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Paid</span> : rfp.status === 'REJECTED' || rfp.status === 'OVERDUE' ? <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Blocked</span> : <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Pending review</span>}
+                    {rfp.status === 'DISBURSED_PAID' ? <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Paid</span> : canRelease(rfp) ? <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-extrabold text-blue-950">Ready for release</span> : <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Blocked</span>}
                   </td>
                   <td className="p-4 text-right font-mono font-extrabold text-slate-900">
-                    ₱{rfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ₱{Number(rfp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </td>
                   <td className="p-4 text-center">
-                    {rfp.status === 'DISBURSED_PAID' ? (
-                      <button type="button" onClick={() => setInspectingRfp(rfp)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button>
+                    {canRelease(rfp) ? (
+                      <button type="button" onClick={() => setReleasingRfp(rfp)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-extrabold text-white shadow-2xs transition hover:bg-emerald-800"><Landmark className="w-3.5 h-3.5" /> {dataState === 'live' ? 'Release fund' : 'Preview release'}</button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => setReleasingRfp(rfp)}
-                        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl bg-emerald-700 px-3 py-2 text-xs font-extrabold text-white shadow-2xs transition hover:bg-emerald-800"
-                      >
-                        <Landmark className="w-3.5 h-3.5" />
-                        <span>Release Fund</span>
-                      </button>
+                      <div className="flex flex-col items-center gap-1">
+                        <button type="button" onClick={() => setInspectingRfp(rfp)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"><Eye className="h-4 w-4" /> Inspect</button>
+                        <span className="text-[11px] font-medium text-slate-500">{releaseBlockReason(rfp)}</span>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -126,11 +138,19 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
             </tbody>
           </table>
         </div>
+        {dataState === 'loading' && <p className="px-4 py-8 text-sm font-medium text-slate-600" role="status">Loading payment requests…</p>}
+        {dataState !== 'loading' && rfpList.length === 0 && <p className="px-4 py-8 text-sm font-medium text-slate-600" role="status">No payment requests returned. Create a voucher only when its source documents are available.</p>}
       </div>
 
       {/* Fund Release Modal */}
       {releasingRfp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+        <AccessibleModal
+          isOpen={Boolean(releasingRfp)}
+          onClose={() => setReleasingRfp(null)}
+          title={`Fund release: ${releasingRfp.rfpNo}`}
+          description="Confirm bank release details for an eligible payment request."
+          contentClassName="text-slate-900"
+        >
           <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-5 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-xs sm:text-sm">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
@@ -150,21 +170,20 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
             <form onSubmit={handleConfirmRelease} className="space-y-3">
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                 <p><span className="font-bold">Payee:</span> {releasingRfp.payee}</p>
-                <p><span className="font-bold">Amount:</span> ₱{releasingRfp.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                <p><span className="font-bold">Amount:</span> ₱{Number(releasingRfp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                 <p><span className="font-bold">GL:</span> {releasingRfp.glAccount}</p>
               </div>
 
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Admin Bank Fund Source *</label>
-                <select
+                <input
+                  type="text"
+                  required
                   value={bankSource}
                   onChange={(e) => setBankSource(e.target.value)}
+                  placeholder="Enter configured bank account"
                   className="w-full bg-slate-50 border border-slate-300 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none"
-                >
-                  <option value="BDO Unibank — Corporate Acct #0012-9981-00">BDO Unibank — Corporate Acct #0012-9981-00</option>
-                  <option value="Metrobank — Operating Acct #0293-1102-44">Metrobank — Operating Acct #0293-1102-44</option>
-                  <option value="BPI — Treasury Acct #0091-2283-11">BPI — Treasury Acct #0091-2283-11</option>
-                </select>
+                />
               </div>
 
               <div>
@@ -191,17 +210,23 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                   className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-xl flex items-center gap-1.5 shadow-sm"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Confirm Fund Release</span>
+                  <span>{dataState === 'live' ? 'Confirm fund release' : 'Preview fund release'}</span>
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </AccessibleModal>
       )}
 
       {/* RFP Detail Inspector Modal Overlay */}
       {inspectingRfp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
+        <AccessibleModal
+          isOpen={Boolean(inspectingRfp)}
+          onClose={() => setInspectingRfp(null)}
+          title={`RFP details: ${inspectingRfp.rfpNo}`}
+          description="Inspect payment request status and release eligibility."
+          contentClassName="text-slate-900"
+        >
           <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
@@ -243,7 +268,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
               <div>
                 <span className="text-slate-500 font-bold block text-xs uppercase tracking-wider">Disbursement Status</span>
                 <span className={`font-black text-sm sm:text-base ${inspectingRfp.status === 'DISBURSED_PAID' ? 'text-purple-800' : 'text-amber-900'}`}>
-                  {inspectingRfp.status === 'DISBURSED_PAID' ? '✓ DISBURSED & PAID' : 'PENDING BANK RELEASING'}
+                  {inspectingRfp.status === 'DISBURSED_PAID' ? '✓ DISBURSED & PAID' : canRelease(inspectingRfp) ? 'ELIGIBLE FOR BANK RELEASE' : releaseBlockReason(inspectingRfp).toUpperCase()}
                 </span>
               </div>
               {inspectingRfp.releasedBank && (
@@ -258,7 +283,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
 
             {/* Quick Actions */}
             <div className="pt-4 flex justify-between items-center border-t border-slate-200 gap-3">
-              {inspectingRfp.status !== 'DISBURSED_PAID' ? (
+              {canRelease(inspectingRfp) ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -269,12 +294,12 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                   className="px-5 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
                 >
                   <Landmark className="w-4 h-4" />
-                  <span>Release Fund Now</span>
+                  <span>{dataState === 'live' ? 'Release fund now' : 'Preview release'}</span>
                 </button>
               ) : (
-                <span className="text-xs sm:text-sm text-purple-900 font-extrabold flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm text-slate-700 font-extrabold flex items-center gap-1.5">
                   <CheckCircle2 className="w-5 h-5 text-purple-700" />
-                  Fund Disbursed
+                  {releaseBlockReason(inspectingRfp)}
                 </span>
               )}
 
@@ -287,7 +312,7 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

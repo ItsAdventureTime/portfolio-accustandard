@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, FileText, Upload, CheckCircle2, FileCheck } from 'lucide-react';
 
 import { CurrencyInputField } from '@/components/common/CurrencyInputField';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface VendorInvoiceModalProps {
   isOpen: boolean;
@@ -18,41 +19,56 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
   poData = {},
   onSaveInvoice,
 }) => {
-  const [invoiceNo, setInvoiceNo] = useState(`INV-SYS-${Math.floor(10000 + Math.random() * 90000)}`);
-  const [invoiceDate, setInvoiceDate] = useState('2026-08-10');
-  const [vendorName, setVendorName] = useState(poData.supplier || 'BioMerieux Corp Philippines');
-  const [invoiceAmount, setInvoiceAmount] = useState(poData.totalAmount || 142000.0);
-  const [taxAmount, setTaxAmount] = useState((poData.totalAmount || 142000.0) * 0.12);
-  const [fileName] = useState('Vendor_Official_Invoice_BioMerieux.pdf');
-  const [remarks, setRemarks] = useState('Official BIR tax invoice received matching PO delivery.');
+  const [invoiceNo, setInvoiceNo] = useState('');
+  const [invoiceDate, setInvoiceDate] = useState('');
+  const [vendorName, setVendorName] = useState('');
+  const [invoiceAmount, setInvoiceAmount] = useState(0);
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [fileName, setFileName] = useState('');
+  const [remarks, setRemarks] = useState('');
+
+  useEffect(() => {
+    const amount = Number(poData?.totalAmount) || 0;
+    setInvoiceNo('');
+    setInvoiceDate('');
+    setVendorName(poData?.supplier || poData?.vendorName || '');
+    setInvoiceAmount(amount);
+    setTaxAmount(amount * 0.12);
+    setFileName('');
+    setRemarks('');
+  }, [poData]);
 
   if (!isOpen) return null;
 
+  const poNo = poData?.poNumber || poData?.qrn || '';
+  const hasPurchaseOrder = Boolean(poNo);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPurchaseOrder || !fileName || !invoiceNo.trim() || !invoiceDate || invoiceAmount <= 0) return;
     if (onSaveInvoice) {
       onSaveInvoice({
-        id: `vinv-${Math.floor(100 + Math.random() * 900)}`,
         invoiceNo,
         invoiceDate,
         vendorName,
-        poNo: poData.qrn || 'PO-2026-0891',
+        poNo,
         amount: invoiceAmount,
         taxAmount,
         fileName,
         remarks,
-        status: 'POSTED',
+        status: 'PREVIEW_ONLY',
       });
     }
     onClose();
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="Vendor Invoice Entry Modal"
-      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Record Vendor Invoice"
+      description="Enter and preview invoice evidence linked to a selected purchase order."
+      contentClassName="text-slate-900"
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-100 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
         {/* Header Block */}
@@ -71,7 +87,7 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Linked Purchase Order: <strong className="text-slate-900">{poData.qrn || 'PO-2026-0891'}</strong>
+                Linked Purchase Order: <strong className="text-slate-900">{poNo || 'No purchase order selected'}</strong>
               </p>
             </div>
           </div>
@@ -84,8 +100,14 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-sm flex-1 bg-white">
+        {!hasPurchaseOrder ? (
+          <div className="p-6 space-y-4 text-sm">
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 font-medium text-amber-900">
+              Preview only: select a purchase order with a real record before entering invoice evidence.
+            </p>
+            <button type="button" onClick={onClose} className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white">Close preview</button>
+          </div>
+        ) : <form onSubmit={handleSubmit} className="p-6 space-y-4 text-sm flex-1 bg-white">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -154,10 +176,11 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Mandatory Vendor Invoice Attachment (.pdf / .jpg)
+              Vendor Invoice Attachment (.pdf / .jpg) <span className="text-rose-500">*</span>
             </label>
-            <div className="border-2 border-dashed border-blue-200 hover:border-blue-400 rounded-xl p-4 bg-blue-50/20 text-center space-y-2 transition cursor-pointer">
+            <label className="border-2 border-dashed border-blue-200 hover:border-blue-400 rounded-xl p-4 bg-blue-50/20 text-center space-y-2 transition cursor-pointer block">
               <Upload className="w-6 h-6 text-blue-600 mx-auto" />
+              <input type="file" accept=".pdf,.jpg,.jpeg" className="sr-only" onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} />
               <div>
                 {fileName ? (
                   <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100/80 text-blue-900 font-semibold text-xs rounded-lg border border-blue-200">
@@ -170,7 +193,7 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
                   </span>
                 )}
               </div>
-            </div>
+            </label>
           </div>
 
           <div>
@@ -199,11 +222,11 @@ export const VendorInvoiceModal: React.FC<VendorInvoiceModalProps> = ({
               className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-blue-600/20 cursor-pointer active:scale-95"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Record Vendor Invoice &amp; Trigger 3-Way Match</span>
+              <span>Preview invoice entry</span>
             </button>
           </div>
-        </form>
+        </form>}
       </div>
-    </div>
+    </AccessibleModal>
   );
 };
