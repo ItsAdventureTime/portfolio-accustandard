@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, CreditCard, Send, X } from 'lucide-react';
 import { CurrencyInputField } from '@/components/common/CurrencyInputField';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface CreateRFPModalProps {
   isOpen: boolean;
@@ -59,8 +60,15 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 text-slate-900 backdrop-blur-md sm:p-6">
-      <div className="modal-surface mobile-modal-container w-full max-w-3xl space-y-5 rounded-3xl border border-slate-300 bg-white p-5 text-sm shadow-2xl sm:p-8">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create request for payment"
+      description="Create a non-PO expense voucher routed through the approval chain."
+      size="lg"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel space-y-5 p-5 text-sm sm:p-8">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4"><div className="flex items-center gap-3"><div className="rounded-2xl bg-purple-900 p-3 text-white"><CreditCard className="h-6 w-6" /></div><div><h2 className="text-base font-black tracking-tight sm:text-lg">Create request for payment</h2><p className="text-xs font-medium text-slate-600">Non-PO expense voucher routed through the approval chain.</p></div></div><button type="button" onClick={onClose} aria-label="Close request for payment wizard" className="min-h-[44px] min-w-[44px] rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-6 w-6" /></button></div>
         <div className="flex items-center gap-2" aria-label={`Request for payment wizard step ${step} of 3`}>{[1, 2, 3].map((item) => <span key={item} className={`h-2 flex-1 rounded-full ${item <= step ? 'bg-purple-900' : 'bg-slate-200'}`} />)}</div><div className="flex items-center justify-between text-xs font-black text-slate-500"><span className={step === 1 ? 'text-purple-900' : ''}>1. Document basics</span><span className={step === 2 ? 'text-purple-900' : ''}>2. Expense details</span><span className={step === 3 ? 'text-purple-900' : ''}>3. Review &amp; submit</span></div>
 
@@ -71,6 +79,6 @@ export const CreateRFPModal: React.FC<CreateRFPModalProps> = ({ isOpen, onClose,
           <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4"><button type="button" onClick={step === 1 ? onClose : () => setStep((current) => current - 1)} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-800 hover:bg-slate-200">{step === 1 ? 'Cancel' : <><ChevronLeft className="h-4 w-4" /> Back</>}</button>{step < 3 ? <button type="button" onClick={handleNext} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-purple-900 px-5 py-2.5 text-sm font-black text-white hover:bg-purple-800">Continue <ChevronRight className="h-4 w-4" /></button> : <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-purple-900 px-5 py-2.5 text-sm font-black text-white disabled:opacity-60"><Send className="h-4 w-4 text-purple-200" /> {isSubmitting ? 'Submitting…' : 'Submit RFP voucher'}</button>}</div>
         </form>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { X, Smartphone, Share, PlusSquare, Download, CheckCircle2, Monitor, Camera, ShieldCheck } from 'lucide-react';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface PWAInstallModalProps {
   isOpen: boolean;
@@ -55,8 +56,15 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto text-slate-900 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-sm font-semibold">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Install AccuStandard mobile app"
+      description="Use full-screen app mode and instant camera barcode scanning."
+      size="lg"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel space-y-6 p-6 text-sm font-semibold sm:p-8">
         {/* Modal Header */}
         <div className="flex justify-between items-center border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3.5">
@@ -70,7 +78,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
               <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">Use full-screen app mode &amp; instant camera barcode scanning</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer">
+          <button onClick={onClose} aria-label="Close app installation guide" title="Close" className="modal-close cursor-pointer">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -169,6 +177,6 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({ isOpen, onClos
           </button>
         </div>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Printer, CheckCircle2 } from 'lucide-react';
 import { printDocumentElement } from '@/lib/exportUtils';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface DocumentPrintModalProps {
   isOpen: boolean;
@@ -26,32 +27,42 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col justify-between overflow-hidden">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Document print preview — ${title}`}
+      description="Review the A4 document layout before printing."
+      variant="fullscreen"
+      size="full"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel modal-document-preview">
       {/* Top Floating Control Bar */}
-      <div className="bg-slate-900 text-white px-4 md:px-8 py-3.5 flex justify-between items-center shadow-xl border-b border-slate-800 shrink-0">
+      <div className="modal-header bg-white px-4 py-3.5 md:px-8">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-lg text-white">
-            <Printer className="w-5 h-5" />
+          <div className="rounded-xl bg-blue-50 p-2 text-blue-900">
+            <Printer className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xs md:text-sm font-black uppercase tracking-wider text-white">
+            <h3 className="text-xs font-semibold text-slate-900 md:text-sm">
               Document Print Preview — {title}
             </h3>
-            <p className="text-[11px] text-slate-400 font-medium">A4 Standard Printable Layout Preview</p>
+            <p className="text-[11px] font-medium text-slate-500">A4 standard printable layout preview</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={handlePrint}
-            className="btn-primary-blue text-xs md:text-sm font-bold px-4 py-2 flex items-center gap-2 shadow-lg active:scale-95 transition"
+            className="btn-primary-blue flex min-h-[44px] items-center gap-2 px-4 py-2 text-xs font-semibold transition active:scale-95 md:text-sm"
           >
             <Printer className="w-4 h-4" />
             <span>Print Document</span>
           </button>
           <button
             onClick={onClose}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition"
+            className="modal-close"
+            aria-label="Close print preview"
             title="Close Preview"
           >
             <X className="w-5 h-5" />
@@ -60,25 +71,26 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
       </div>
 
       {/* Interactive Printable Document Container */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-400/50 flex justify-center items-start">
-        <div id={elementId} className="bg-white shadow-2xl rounded-sm my-2">
+      <div className="modal-document-preview__body flex flex-1 items-start justify-center overflow-y-auto p-4 md:p-8">
+        <div id={elementId} className="my-2 rounded-sm bg-white shadow-xl">
           {children}
         </div>
       </div>
 
       {/* Bottom Sticky Action Bar */}
-      <div className="bg-slate-900 text-slate-300 px-6 py-3 border-t border-slate-800 flex justify-between items-center text-xs shrink-0">
-        <span className="font-mono">Exact A4 Output (760px Width)</span>
+      <div className="modal-footer justify-between px-6 py-3 text-xs">
+        <span className="font-mono text-slate-500">Exact A4 output (760px width)</span>
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition">
+          <button onClick={onClose} className="modal-secondary-action px-4 py-1.5 text-xs font-semibold">
             Close
           </button>
-          <button onClick={handlePrint} className="btn-primary-blue text-xs py-1.5 px-4 font-bold flex items-center gap-1.5">
+          <button onClick={handlePrint} className="btn-primary-blue flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold">
             <Printer className="w-3.5 h-3.5" />
             <span>Print Now</span>
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </AccessibleModal>
   );
 };

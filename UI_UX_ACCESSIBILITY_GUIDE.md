@@ -77,6 +77,27 @@ that show a metric without a decision or next action.
 - Respect `prefers-reduced-motion`. Motion may clarify state changes but must
   never be required to understand or complete an action.
 
+### Modal and popup contract
+
+- Use `AccessibleModal` for every blocking dialog, bottom sheet, document
+  preview, and inspector. Do not add a new hand-built `fixed ... z-50`
+  overlay. Choose `center`, `sheet`, or `fullscreen` based on the task and
+  keep module-specific workflow content inside the shared shell.
+- The shared shell provides Radix modal behavior: inert background content,
+  focus containment and restoration, Escape close, safe-area padding, and a
+  scrollable viewport. Every dialog has an accessible title, a concise
+  description when useful, and a visible 44px close or cancel action.
+- Use the shared `modal-panel`, `modal-header`, `modal-body`, and `modal-footer`
+  tokens. Keep headings sentence case and medium/semibold; reserve heavier
+  emphasis for the primary action and critical status. Limit each dialog to
+  one visually dominant action and a quieter cancel/close action.
+- Long forms use an internal `modal-body` scroll region and preserve the
+  footer action row on narrow screens. Document print preview may use the
+  `fullscreen` variant, but its controls still use the same branded tokens.
+- SmoothUI is a visual and motion reference only. Reuse its responsive,
+  deliberate, accessible interaction principles with the existing Radix and
+  CSS stack; do not add a second component framework for a modal.
+
 ### Notification contract
 
 - Use `NotificationCenter` for non-blocking feedback. Every call supplies an

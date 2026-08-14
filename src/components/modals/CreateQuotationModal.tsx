@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, FileText, Lock, Send, X } from 'lucide-react';
 import { CurrencyInputField } from '@/components/common/CurrencyInputField';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 
 interface CreateQuotationModalProps {
   isOpen: boolean;
@@ -87,8 +88,15 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/80 p-4 text-slate-900 backdrop-blur-md sm:p-6">
-      <div className="modal-surface mobile-modal-container w-full max-w-3xl space-y-5 rounded-3xl border border-slate-300 bg-white p-5 text-sm shadow-2xl sm:p-8">
+    <AccessibleModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create sales quotation"
+      description="Route a quotation through Marketing review, General Manager approval, and customer acceptance."
+      size="lg"
+      contentClassName="text-slate-900"
+    >
+      <div className="modal-panel space-y-5 p-5 text-sm sm:p-8">
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-amber-600 p-3 text-white"><FileText className="h-6 w-6" /></div>
@@ -140,6 +148,6 @@ export const CreateQuotationModal: React.FC<CreateQuotationModalProps> = ({
           <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4"><button type="button" onClick={step === 1 ? onClose : () => setStep((current) => current - 1)} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-black text-slate-800 transition hover:bg-slate-200">{step === 1 ? 'Cancel' : <><ChevronLeft className="h-4 w-4" /> Back</>}</button>{step < 3 ? <button type="button" onClick={handleNext} className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-blue-900 px-5 py-2.5 text-sm font-black text-white transition hover:bg-blue-800">Continue <ChevronRight className="h-4 w-4" /></button> : <button type="submit" className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-blue-900 px-5 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-blue-800"><Send className="h-4 w-4 text-blue-200" /> Submit for approval</button>}</div>
         </form>
       </div>
-    </div>
+    </AccessibleModal>
   );
 };

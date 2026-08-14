@@ -354,3 +354,23 @@ This is guidance for the next hardening phase, not a claim of compliance.
 - Final notification validation is recorded after the Podman lint, TypeScript,
   and static build checks below; browser/device visual QA remains an operator
   follow-up.
+
+### 2026-08-14 modal consistency pass
+
+- Migrated legacy hand-built fixed overlays to the shared Radix
+  `AccessibleModal` shell across inventory, purchasing, receiving, quotations,
+  SOA, executive inspection, print preview, PWA installation, QBO export, the
+  command palette, and mobile navigation.
+- Added typed `center`, `sheet`, and `fullscreen` variants with shared size
+  tokens, branded overlay/panel surfaces, safe-area padding, scroll containment,
+  focus restoration, Escape handling, visible close targets, and reduced-motion
+  safe transitions.
+- Normalized modal headers, secondary actions, document preview controls, and
+  mobile navigation surfaces so dialogs use the same sentence-case hierarchy,
+  calm navy/royal palette, restrained borders, and touch-target contract.
+- Removed the last bespoke `fixed ... z-50` modal wrappers from feature code;
+  `SystemAlertModal` remains a dedicated Radix `alertdialog` for intentional
+  workflow interruptions only.
+- Podman validation passed after this pass: `npm run lint`,
+  `npx tsc --noEmit --incremental false`, `npm run build`, and
+  `go test -p=1 ./...`. Browser/device visual QA remains an operator follow-up.

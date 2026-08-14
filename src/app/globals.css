@@ -56,6 +56,7 @@
   --z-bottom-nav: 40;
   --z-drawer: 50;
   --z-toast: 60;
+  --z-modal: 70;
   --z-print: 1000;
 
   /* Backward-compatible aliases used by existing feature modules. */
@@ -692,6 +693,220 @@ textarea:focus-visible {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Shared modal primitives. Radix owns dialog behavior; these tokens own the
+   visual shell, responsive sizing, and safe-area treatment. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: rgb(15 23 42 / 0.64);
+  backdrop-filter: blur(14px);
+  animation: modal-overlay-enter 180ms ease-out both;
+}
+
+.modal-viewport {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding: max(1rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(1rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  outline: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-viewport--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-viewport--sheet {
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-viewport--fullscreen {
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+}
+
+.modal-viewport--sm { --modal-width: 28rem; }
+.modal-viewport--md { --modal-width: 36rem; }
+.modal-viewport--lg { --modal-width: 48rem; }
+.modal-viewport--xl { --modal-width: 64rem; }
+.modal-viewport--full { --modal-width: 100%; }
+
+.modal-panel,
+.modal-surface {
+  position: relative;
+  display: flex;
+  width: min(100%, var(--modal-width, 48rem));
+  max-height: min(100%, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.48);
+  border-radius: 1.25rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: 0 24px 56px -28px rgb(23 53 111 / 0.48), 0 8px 18px -12px rgb(15 23 42 / 0.24);
+  animation: modal-panel-enter 220ms var(--ease-snappy) both;
+}
+
+.modal-viewport--fullscreen > .modal-panel,
+.modal-viewport--fullscreen > .modal-surface {
+  width: 100%;
+  max-height: 100dvh;
+  border-radius: 0;
+}
+
+.modal-viewport--sheet > .modal-panel,
+.modal-viewport--sheet > .modal-surface {
+  border-bottom-right-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+.modal-panel > :where(.modal-header, .modal-body, .modal-footer),
+.modal-surface > :where(.modal-header, .modal-body, .modal-footer) {
+  flex: 0 0 auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--stroke-subtle);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-header h1,
+.modal-header h2,
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.modal-header p {
+  max-width: 65ch;
+  margin: 0.25rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid var(--stroke-subtle);
+  padding: 1rem 1.5rem max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.modal-secondary-action {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--stroke-subtle);
+  border-radius: 0.75rem;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  transition: background-color 180ms ease, border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.modal-secondary-action:hover {
+  border-color: rgb(44 66 150 / 0.2);
+  background: var(--surface-hover);
+}
+
+.modal-secondary-action:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.modal-document-preview {
+  background: var(--surface-canvas);
+}
+
+.modal-document-preview__body {
+  background: linear-gradient(135deg, #e9eef8 0%, #f5f7fb 48%, #e5ebf6 100%);
+}
+
+.modal-command-palette {
+  width: min(100%, 36rem);
+}
+
+.modal-panel > .modal-body {
+  flex: 1 1 auto;
+}
+
+.modal-close {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  border-color: rgb(44 66 150 / 0.16);
+  background: var(--surface-hover);
+  color: var(--brand-navy);
+}
+
+.modal-close--viewport {
+  position: absolute;
+  top: max(1rem, env(safe-area-inset-top, 0px));
+  right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+/* Legacy child panels can opt into the same shell without having to move
+   their workflow markup into a new component. */
+.modal-panel .font-black,
+.modal-panel .font-extrabold,
+.modal-surface .font-black,
+.modal-surface .font-extrabold {
+  font-weight: 600;
+}
+
+.modal-panel .uppercase,
+.modal-surface .uppercase {
+  text-transform: none;
+}
+
+.modal-panel .rounded-3xl,
+.modal-surface .rounded-3xl {
+  border-radius: 1.25rem;
+}
+
+@keyframes modal-overlay-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-panel-enter {
+  from { opacity: 0; transform: translateY(0.75rem) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Sheet and feedback primitives. */

@@ -52,20 +52,21 @@ export const SystemAlertModal: React.FC<SystemAlertModalProps> = ({
   return (
     <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md" />
+        <Dialog.Overlay className="modal-overlay" />
         <Dialog.Content
           role="alertdialog"
+          aria-labelledby="system-alert-title"
           aria-describedby="system-alert-description"
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 focus:outline-none"
+          className="modal-viewport modal-viewport--center modal-viewport--sm"
         >
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-2xl">
+          <div className="modal-panel text-slate-900">
             <div className={`flex items-start justify-between gap-4 border-b p-5 ${tone.border} ${tone.header}`}>
               <div className="flex items-start gap-3">
                 <span className={`rounded-xl p-2 ${tone.icon}`} aria-hidden="true">
                   {isError ? <ShieldAlert className="h-5 w-5" /> : isWarning ? <TriangleAlert className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
                 </span>
                 <div>
-                  <Dialog.Title className="text-base font-bold">{title}</Dialog.Title>
+                  <Dialog.Title id="system-alert-title" className="text-base font-semibold">{title}</Dialog.Title>
                   <p className="mt-1 text-xs font-medium text-slate-600">Active demo role: {viewAsRole}</p>
                 </div>
               </div>
@@ -73,8 +74,8 @@ export const SystemAlertModal: React.FC<SystemAlertModalProps> = ({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div id="system-alert-description" className="space-y-4 p-5">
-              <Dialog.Description className="text-sm font-medium leading-relaxed text-slate-800">{message}</Dialog.Description>
+            <div className="modal-body space-y-4 p-5">
+              <Dialog.Description id="system-alert-description" className="text-sm font-medium leading-relaxed text-slate-800">{message}</Dialog.Description>
               <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
                 <button type="button" onClick={onClose} className="min-h-[44px] rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200">
                   Cancel

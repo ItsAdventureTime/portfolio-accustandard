@@ -105,10 +105,11 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm" />
-        <Dialog.Content className="sheet-enter mobile-modal-container fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-xl flex-col overflow-hidden rounded-t-[2rem] border-t border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none">
+        <Dialog.Overlay className="modal-overlay" />
+        <Dialog.Content className="modal-viewport modal-viewport--sheet modal-viewport--md p-0">
           <Dialog.Title className="sr-only">Mobile navigation menu</Dialog.Title>
           <Dialog.Description className="sr-only">Choose a workspace module or launch a mobile operation.</Dialog.Description>
+        <div className="modal-panel">
         {/* Drag Handle Indicator */}
         <div className="flex justify-center border-b border-slate-100 bg-slate-50 pb-2 pt-3">
           <div className="h-1.5 w-12 rounded-full bg-slate-300" />
@@ -122,7 +123,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               type="button"
               onClick={onClose}
               aria-label="Close navigation drawer"
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200 rounded-full transition min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+              className="modal-close cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -227,6 +228,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               </button>
             );
           })}
+        </div>
         </div>
         </Dialog.Content>
       </Dialog.Portal>

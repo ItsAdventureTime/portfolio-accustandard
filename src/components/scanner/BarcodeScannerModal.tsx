@@ -128,20 +128,12 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
     const timer = setTimeout(() => {
       startCameraStream();
     }, 200);
 
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('keydown', handleKeyDown);
       stopCameraStream();
     };
   }, [isOpen]);

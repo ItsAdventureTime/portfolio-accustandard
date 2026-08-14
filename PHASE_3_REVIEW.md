@@ -183,10 +183,11 @@ The active desktop shell intentionally remains the horizontal Header navigation:
 updates but should not be mounted without a product decision because doing so
 would create two desktop navigation sources of truth.
 
-The application still contains legacy hand-rolled dialogs in feature modules.
-The mobile navigation sheet is now on the Radix modal pattern; migrating the
-remaining dialogs is a separate, higher-risk accessibility pass because each
-one has different close and submission behavior.
+The modal consistency pass migrated the remaining hand-rolled feature dialogs
+to the shared Radix `AccessibleModal` shell. Module content and workflow
+callbacks remain local, while the shell now owns modality, focus containment
+and restoration, Escape handling, safe-area spacing, scroll containment, and
+the branded visual surface.
 
 ## Focused action and mobile operations contract
 
@@ -230,6 +231,22 @@ framework migration. The current app uses CSS transitions plus its existing
 `prefers-reduced-motion` contract. If Motion is added, follow the official
 [accessibility guidance](https://motion.dev/docs/react-accessibility) and
 [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
+
+## Modal consistency pass
+
+The 2026-08-14 modal audit found mixed hand-built and Radix-backed overlays.
+The implementation now uses one shared shell for center dialogs, bottom sheets,
+full-screen print previews, inspectors, form wizards, scanners, QBO queue,
+PWA installation, command search, and mobile navigation. Shared modal tokens
+provide a single overlay, panel elevation, close target, mobile safe-area
+behavior, and reduced-motion transition contract. Feature-specific panels keep
+their existing data and approval behavior but no longer own fixed z-index
+wrappers.
+
+The migration follows the [WAI-ARIA Dialog (Modal) pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/),
+[WAI-ARIA Alert and Message Dialogs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/),
+[Radix Dialog](https://www.radix-ui.com/primitives/docs/components/dialog),
+and SmoothUI's [responsive and accessible component reference](https://github.com/educlopez/smoothui).
 
 ## Notification consistency pass
 

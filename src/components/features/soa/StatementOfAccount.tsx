@@ -18,6 +18,7 @@ import {
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
+import { AccessibleModal } from '@/components/common/AccessibleModal';
 import type { NotificationInput } from '@/components/common/NotificationCenter';
 
 interface StatementOfAccountProps {
@@ -541,9 +542,15 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
       </div>
 
       {/* Add Invoice to SOA Modal */}
-      {isAddInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-2xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+      <AccessibleModal
+        isOpen={isAddInvoiceModalOpen}
+        onClose={() => setIsAddInvoiceModalOpen(false)}
+        title="Preview invoice entry"
+        description={`Add a local invoice preview for ${activeClient.name}.`}
+        size="md"
+        contentClassName="text-slate-900"
+      >
+          {isAddInvoiceModalOpen && <div className="modal-panel space-y-6 p-6 sm:p-8">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-emerald-700 text-white rounded-2xl shadow-sm">
@@ -557,7 +564,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAddInvoiceModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                aria-label="Close invoice preview"
+                className="modal-close cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -671,14 +679,19 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </div>}
+      </AccessibleModal>
 
       {/* Edit Invoice Entry Modal */}
-      {editingRow && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 text-slate-900 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-2xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+      <AccessibleModal
+        isOpen={Boolean(editingRow)}
+        onClose={() => setEditingRow(null)}
+        title={editingRow ? `Edit invoice entry — ${editingRow.salesInvoiceNo}` : 'Edit invoice entry'}
+        description="Modify invoice amounts and due dates in the local preview."
+        size="md"
+        contentClassName="text-slate-900"
+      >
+          {editingRow && <div className="modal-panel space-y-6 p-6 sm:p-8">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
@@ -692,7 +705,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               <button
                 type="button"
                 onClick={() => setEditingRow(null)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                aria-label="Close invoice editor"
+                className="modal-close cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -822,14 +836,19 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </div>}
+      </AccessibleModal>
 
       {/* Multi-SOA Check Allocation Modal */}
-      {isCollectionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200 text-slate-900">
-          <div className="bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out">
+      <AccessibleModal
+        isOpen={isCollectionModalOpen}
+        onClose={() => setIsCollectionModalOpen(false)}
+        title="Multi-SOA collection payment allocation"
+        description="Allocate a single check payment across multiple open client invoices."
+        size="lg"
+        contentClassName="text-slate-900"
+      >
+          {isCollectionModalOpen && <div className="modal-panel space-y-6 p-6 sm:p-8">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
@@ -842,7 +861,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
               </div>
               <button
                 onClick={() => setIsCollectionModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition cursor-pointer"
+                type="button"
+                aria-label="Close collection allocation"
+                className="modal-close cursor-pointer"
               >
                 ✕
               </button>
@@ -953,9 +974,8 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+          </div>}
+      </AccessibleModal>
     </div>
   );
 };
