@@ -342,7 +342,8 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 - The browser hydrates operational lists from `/accustandard/demo/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
 - Sales Quotes route Sales Officer → Marketing Reviewer → General Manager; DCS is not a Sales Quote approval stage.
 - Goods Receipt over-receiving is hard-blocked, and a fully received PO remains `AWAITING_VENDOR_INVOICE` until the vendor invoice is matched.
-- Desktop navigation supports a collapsed icon rail; mobile navigation remains thumb-zone oriented below 1024px.
+- Desktop navigation uses filtered horizontal links through the full-width shell;
+  mobile navigation remains thumb-zone oriented below 1280px.
 
 ## 2026 Repository Audit Status
 
@@ -372,3 +373,13 @@ The acceptance matrix in
 `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` is retained
 as a historical contract and explicitly marked **UNVERIFIED** pending a
 deployed Go/PostgreSQL test run.
+
+### Action hierarchy and mobile operations
+
+Feature modules use one filled primary action, restrained supporting/attention
+actions, quiet secondary controls, and visible native `More actions`
+disclosures for infrequent work. Desktop operations are labeled `More tools`;
+the mobile drawer exposes one role-filtered `Operations & tools` disclosure
+for export, startup import, QBO queue, barcode manager, scanner, and PWA
+installation, while search remains directly reachable. These client-side
+checks preserve role-safe demo navigation but are not backend authorization.

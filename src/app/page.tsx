@@ -1028,6 +1028,10 @@ export default function Home() {
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
+        onOpenExport={handleOpenOperationsExport}
+        onOpenStartupImport={() => setIsStartupImportOpen(true)}
+        onOpenQBOQueue={() => setIsQboQueueOpen(true)}
+        onOpenProductManager={() => setIsProductManagerOpen(true)}
         roleScopedData={roleScopedData}
       />
 

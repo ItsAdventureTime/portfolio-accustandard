@@ -208,3 +208,13 @@ it is treated as deployable.
 - [Podman Quadlet documentation](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html)
 - [PostgreSQL `ALTER TABLE` documentation](https://www.postgresql.org/docs/current/sql-altertable.html)
 - [Backblaze B2 sync guidance](https://www.backblaze.com/docs/cloud-storage-use-the-b2-sync-command-with-the-cli)
+
+## UI action and mobile operations contract
+
+The frontend build includes the shared action hierarchy and role-filtered
+operations disclosures. Desktop keeps the labeled `More tools` menu button;
+mobile keeps search direct and exposes export, startup import, QBO queue,
+barcode manager, scanner, and PWA installation through one `Operations & tools`
+disclosure. These are client-side role checks in the demo and do not replace
+backend authorization. Validate this UI contract with the standard Podman lint,
+TypeScript, and build commands before release.

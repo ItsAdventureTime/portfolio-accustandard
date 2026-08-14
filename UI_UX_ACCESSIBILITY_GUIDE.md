@@ -58,6 +58,10 @@ that show a metric without a decision or next action.
 
 - Action-center cards are role-specific and data-backed. Never expose an
   approval action to a role that cannot perform it.
+- Feature headers use one filled primary action, restrained supporting or
+  attention treatment, and quiet controls for secondary work. Group infrequent
+  actions under a visible `More actions` disclosure so capability stays
+  discoverable without making every control compete for attention.
 - Status is communicated with text and structure as well as color. The API
   status region must distinguish connecting, live, and offline demo states.
 - Interactive controls use at least a 44px class target where practical, and
@@ -123,6 +127,11 @@ Before merging a visual or interaction change:
 - [Next.js accessibility guidance](https://nextjs.org/docs/architecture/accessibility)
 - [Tailwind responsive design](https://tailwindcss.com/docs/responsive-design)
 - [Tailwind hover and focus states](https://tailwindcss.com/docs/hover-focus-and-other-states)
+- [WAI-ARIA Authoring Practices: Menu Button Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/)
+- [WAI-ARIA Authoring Practices: Disclosure Navigation](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)
+- [WCAG 2.2: Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html)
+- [WCAG 2.2: Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum)
+- [WCAG 2.2: Focus Appearance](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance)
 
 WCAG 2.2 is the conformance target for new UI work. Automated checks are only
 one part of review; keyboard, responsive, visual, and assistive-technology

@@ -300,3 +300,12 @@ The release references are [Node's supported releases](https://nodejs.org/en/abo
 
 The security review uses OWASP Top 10:2025 and ASVS 5.0 as current references.
 This is guidance for the next hardening phase, not a claim of compliance.
+
+### 2026-08-14 focused action hierarchy pass
+
+- Shared action styles now distinguish one filled primary action from restrained supporting, quiet, attention, and native disclosure controls. Enabled controls retain pointer, focus-visible, and pressed feedback while disabled semantics remain unchanged.
+- Desktop `More tools` keeps the existing menu-button keyboard behavior and exposes the operations label. Mobile navigation exposes one role-filtered `Operations & tools` disclosure wired to the existing export, import, QBO, barcode, scanner, and PWA callbacks.
+- Inventory, quotation/RFQ, SOA, and admin screens reduce competing filled actions and loud uppercase emphasis. Rare actions remain reachable through visible `More actions` disclosures.
+- The screenshot follow-up adds visible navigation hover surfaces and keeps most
+  feature copy at regular/medium weight; stronger emphasis is reserved for
+  headings, selected controls, and critical statuses.
