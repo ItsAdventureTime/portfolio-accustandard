@@ -225,7 +225,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
         </div>
 
         {/* Viewfinder Camera Frame */}
-        <div className="relative bg-slate-950 rounded-2xl overflow-hidden min-h-[240px] flex items-center justify-center border-2 border-slate-300 shadow-inner">
+        <div className="relative bg-slate-950 rounded-2xl overflow-hidden min-h-[240px] flex items-center justify-center border-2 border-slate-300 shadow-inner" aria-describedby={cameraError ? 'barcode-scanner-error' : undefined}>
           <div id="reader" className="w-full h-full min-h-[240px]"></div>
 
           {/* Laser Line Overlay */}
@@ -238,7 +238,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
           )}
 
           {cameraError && (
-            <div className="absolute inset-0 bg-slate-900/95 p-4 flex flex-col items-center justify-center text-center space-y-3 text-white">
+            <div id="barcode-scanner-error" role="alert" aria-live="assertive" aria-atomic="true" className="absolute inset-0 bg-slate-900/95 p-4 flex flex-col items-center justify-center text-center space-y-3 text-white">
               <AlertCircle className="w-8 h-8 text-amber-400" />
               <p className="text-xs text-amber-200 font-medium px-2">{cameraError}</p>
               <button
@@ -307,6 +307,7 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
             placeholder="Type SKU or Barcode..."
             value={manualSku}
             onChange={(e) => setManualSku(e.target.value)}
+            aria-describedby={cameraError ? 'barcode-scanner-error' : undefined}
             className="flex-1 bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-500/20"
           />
           <button

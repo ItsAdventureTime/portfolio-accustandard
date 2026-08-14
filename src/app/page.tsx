@@ -31,7 +31,7 @@ import { VendorInvoiceModal } from '@/components/features/purchasing/VendorInvoi
 import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMatchModal';
 import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
 import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
-import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
+import { NotificationCenter, useNotificationQueue } from '@/components/common/NotificationCenter';
 import {
   canApproveApprovalStage,
   DEFAULT_ROLE,
@@ -81,7 +81,7 @@ export default function Home() {
   const { resetDemoData } = useDemoStore();
   const [viewAsRole, setViewAsRole] = useState<Role>(DEFAULT_ROLE);
   const [activeTab, setActiveTab] = useState('overview');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const { notifications, notify: showNotification, dismiss: dismissNotification } = useNotificationQueue();
 
   // Core Data Arrays
   const [inventoryList, setInventoryList] = useState(DEFAULT_INVENTORY);
@@ -207,11 +207,6 @@ export default function Home() {
     void hydrateFromApi();
   }, [hydrateFromApi]);
 
-  // Noticeable Confirmation Notification Helper (Popup Window Modal)
-  const showNotification = (msg: string) => {
-    setToastMessage(msg);
-  };
-
   // Audit Log Helper
   const addAuditLog = (action: string, actorRole: Role = viewAsRole) => {
     const newLog = {
@@ -227,7 +222,7 @@ export default function Home() {
   const handleSelectTab = (tab: string) => {
     const allowed = getAllowedTabs(viewAsRole);
     if (!allowed.includes(tab)) {
-      showNotification(`Access Restricted: Role [${viewAsRole}] cannot access the ${tab.toUpperCase()} module.`);
+      showNotification({ severity: 'warning', title: 'Access restricted', message: `Role [${viewAsRole}] cannot access the ${tab.toUpperCase()} module.` });
       return;
     }
     setActiveTab(tab);
@@ -241,7 +236,7 @@ export default function Home() {
     if (!allowed.includes(activeTab)) {
       setActiveTab(allowed[0]);
     }
-    showNotification(`Switched role simulation view to: ${role}`);
+    showNotification({ severity: 'info', title: 'Demo role changed', message: `Switched role simulation view to ${role}.` });
     addAuditLog(`Role switched to [${role}]`, role);
   };
 
@@ -274,7 +269,7 @@ export default function Home() {
         if (!created) throw new Error('The API did not commit the RFQ.');
         savedRfq = created;
       } catch (error) {
-        showNotification(`RFQ was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'RFQ was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -311,11 +306,13 @@ export default function Home() {
       ...prev,
     ]);
 
-    showNotification(
-      apiOnline
+    showNotification({
+      severity: apiOnline ? 'success' : 'info',
+      title: apiOnline ? 'RFQ committed' : 'Preview only',
+      message: apiOnline
         ? `RFQ ${savedRfq.rfqNo} committed. Quote approval and stock reservation remain UI preview-only.`
-        : `Offline demo preview only: Sales Quote ${newQuote.qrn} was not persisted.`
-    );
+        : `Sales Quote ${newQuote.qrn} was not persisted.`,
+    });
     addAuditLog(
       apiOnline
         ? `Committed RFQ ${savedRfq.rfqNo}; Sales Quote ${newQuote.qrn} remains demo-only`
@@ -343,11 +340,11 @@ export default function Home() {
         if (!result) throw new Error('The API did not commit the collection allocation.');
         const refreshedSoa = await getSOA();
         if (Array.isArray(refreshedSoa)) setSoaData({ rows: refreshedSoa });
-        showNotification(`Collection ${checkNo} committed to the Go API. SOA refreshed.`);
+        showNotification({ severity: 'success', title: 'Collection committed', message: `Collection ${checkNo} committed to the Go API. SOA refreshed.` });
         addAuditLog(`Committed Multi-SOA Check #${checkNo} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`Collection was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'Collection was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -355,7 +352,7 @@ export default function Home() {
     const totalAllocated = allocations.reduce((sum, allocation) => sum + allocation.amount, 0);
     const unappliedCredit = Math.max(0, checkAmount - totalAllocated);
 
-    showNotification(`Offline demo preview only: Multi-SOA Check #${checkNo} was not persisted or queued for sync.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Multi-SOA Check #${checkNo} was not persisted or queued for sync.` });
     addAuditLog(`Demo-only preview of Multi-SOA Check #${checkNo} (Unapplied Credit: ₱${unappliedCredit.toLocaleString()})`);
     return true;
   };
@@ -364,11 +361,11 @@ export default function Home() {
   const handleReceivePO = async (poId: string, receivedQty: number, details?: { batchNumber?: string; serialNumber?: string }): Promise<boolean> => {
     const targetPo = poList.find((po) => po.id === poId);
     if (!targetPo || receivedQty <= 0) {
-      showNotification('Receiving blocked: select a valid PO and enter a positive quantity.');
+      showNotification({ severity: 'error', title: 'Receiving blocked', message: 'Select a valid PO and enter a positive quantity.' });
       return false;
     }
     if (targetPo.rrQtyReceived + receivedQty > targetPo.poQty) {
-      showNotification(`HARD BLOCK: receipt exceeds ${targetPo.poNumber} approved quantity.`);
+      showNotification({ severity: 'error', title: 'Receiving blocked', message: `Receipt exceeds ${targetPo.poNumber} approved quantity.` });
       addAuditLog(`Blocked over-receipt attempt for PO ${targetPo.poNumber}`);
       return false;
     }
@@ -388,11 +385,11 @@ export default function Home() {
         )));
         const refreshedInventory = await getInventory();
         if (Array.isArray(refreshedInventory)) setInventoryList(refreshedInventory);
-        showNotification(`Goods Receipt for ${targetPo.poNumber} committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'Goods receipt committed', message: `Goods receipt for ${targetPo.poNumber} committed to the Go API.` });
         addAuditLog(`Committed ${receivedQty} units for PO ${targetPo.poNumber} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`Goods Receipt was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'Goods receipt was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -448,7 +445,7 @@ export default function Home() {
       });
     }
 
-    showNotification(`Offline demo preview only: Goods Receipt for PO ${targetPo.poNumber} was not persisted.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Goods receipt for PO ${targetPo.poNumber} was not persisted.` });
     addAuditLog(`Demo-only preview of ${receivedQty} units for PO ${targetPo.poNumber}`);
     return true;
   };
@@ -462,16 +459,16 @@ export default function Home() {
         setRfpList((prev) => prev.map((rfp) => (
           rfp.id === saved.id || rfp.rfpNo === saved.rfpNo ? saved : rfp
         )));
-        showNotification(`RFP ${saved.rfpNo || id} release committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'RFP release committed', message: `RFP ${saved.rfpNo || id} release committed to the Go API.` });
         addAuditLog(`Committed RFP release ${saved.rfpNo || id} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`RFP release was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'RFP release was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
 
-    showNotification(`Offline demo preview only: RFP #${id} release was not persisted or marked paid.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `RFP #${id} release was not persisted or marked paid.` });
     addAuditLog(`Demo-only preview of RFP #${id} disbursement from ${bank}`);
     return true;
   };
@@ -495,7 +492,7 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Preview only: stock batch ${newStock.lotNumber} (${newStock.sku}) was not persisted.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Stock batch ${newStock.lotNumber} (${newStock.sku}) was not persisted.` });
     addAuditLog(`Demo-only preview of stock batch ${newStock.lotNumber} (${newStock.sku})`);
   };
 
@@ -508,11 +505,11 @@ export default function Home() {
         setPoList((prev) => [saved, ...prev]);
         const refreshedApprovals = await getApprovals();
         if (Array.isArray(refreshedApprovals)) setApprovalsList(refreshedApprovals);
-        showNotification(`Purchase Order ${saved.poNumber} committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'Purchase order committed', message: `Purchase order ${saved.poNumber} committed to the Go API.` });
         addAuditLog(`Committed Purchase Order ${saved.poNumber} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`Purchase Order was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'Purchase order was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -533,7 +530,7 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Offline demo preview only: Purchase Order ${newPO.poNumber} was not persisted.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Purchase order ${newPO.poNumber} was not persisted.` });
     addAuditLog(`Demo-only preview of Purchase Order ${newPO.poNumber}`);
     return true;
   };
@@ -547,11 +544,11 @@ export default function Home() {
         setRfpList((prev) => [saved, ...prev]);
         const refreshedApprovals = await getApprovals();
         if (Array.isArray(refreshedApprovals)) setApprovalsList(refreshedApprovals);
-        showNotification(`RFP ${saved.rfpNo} committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'RFP committed', message: `RFP ${saved.rfpNo} committed to the Go API.` });
         addAuditLog(`Committed RFP ${saved.rfpNo} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`RFP was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'RFP was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -572,7 +569,7 @@ export default function Home() {
       },
       ...prev,
     ]);
-    showNotification(`Offline demo preview only: RFP Voucher ${newRFP.rfpNo} was not persisted.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `RFP voucher ${newRFP.rfpNo} was not persisted.` });
     addAuditLog(`Demo-only preview of Payment Voucher ${newRFP.rfpNo}`);
     return true;
   };
@@ -582,11 +579,11 @@ export default function Home() {
     const target = approvalsList.find((item) => item.id === id);
     if (!target) return false;
     if (stage === 'dcs' && target.type === 'Sales Quotation') {
-      showNotification('Sales Quotes do not have a DCS approval stage.');
+      showNotification({ severity: 'info', title: 'Approval routing', message: 'Sales Quotes do not have a DCS approval stage.' });
       return false;
     }
     if (!canApproveApprovalStage(viewAsRole, stage, target)) {
-      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute ${stage.toUpperCase()} Approval.`);
+      showNotification({ severity: 'info', title: 'Access restricted', message: `Role [${viewAsRole}] cannot execute ${stage.toUpperCase()} approval.` });
       return false;
     }
 
@@ -599,11 +596,11 @@ export default function Home() {
         )));
         const refreshedRfps = await getRFPs();
         if (Array.isArray(refreshedRfps)) setRfpList(refreshedRfps);
-        showNotification(`Approval stage ${stage.toUpperCase()} committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'Approval committed', message: `Approval stage ${stage.toUpperCase()} committed to the Go API.` });
         addAuditLog(`Committed ${stage.toUpperCase()} approval for ${id} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`Approval was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'Approval was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -618,7 +615,7 @@ export default function Home() {
         return item;
       })
     );
-    showNotification(`Offline demo preview only: approval stage ${stage.toUpperCase()} was not persisted.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Approval stage ${stage.toUpperCase()} was not persisted.` });
     addAuditLog(`Demo-only preview of ${stage.toUpperCase()} approval for item #${id}`);
     return true;
   };
@@ -631,11 +628,11 @@ export default function Home() {
         setQboQueue((prev) => prev.map((item) => (
           item.id === saved.id || item.docNumber === saved.docNumber ? saved : item
         )));
-        showNotification(`Queue item ${saved.docNumber || qboId} committed to the Go API.`);
+        showNotification({ severity: 'success', title: 'Queue item committed', message: `Queue item ${saved.docNumber || qboId} committed to the Go API.` });
         addAuditLog(`Committed QBO queue action for ${saved.docNumber || qboId} through the Go API`);
         return true;
       } catch (error) {
-        showNotification(`Queue sync was not committed: ${error instanceof Error ? error.message : 'API error'}`);
+        showNotification({ severity: 'error', title: 'Queue sync was not committed', message: error instanceof Error ? error.message : 'API error' });
         return false;
       }
     }
@@ -653,7 +650,7 @@ export default function Home() {
         return item;
       })
     );
-    showNotification(`Offline demo preview only: queue item ${qboId} was not posted to QuickBooks.`);
+    showNotification({ severity: 'info', title: 'Preview only', message: `Queue item ${qboId} was not posted to QuickBooks.` });
     addAuditLog(`Demo-only preview of QBO queue action for ${qboId}`);
     return true;
   };
@@ -680,7 +677,7 @@ export default function Home() {
     resetDemoData();
     if (apiOnline) {
       void hydrateFromApi();
-      showNotification('Reloaded authoritative data from the Go API.');
+      showNotification({ severity: 'success', title: 'Data reloaded', message: 'Reloaded authoritative data from the Go API.' });
       return;
     }
     setInventoryList(DEFAULT_INVENTORY);
@@ -694,7 +691,7 @@ export default function Home() {
     setRfpList(DEFAULT_RFP_LIST);
     setQboQueue(DEFAULT_QBO_QUEUE);
     setAuditLogs(DEFAULT_AUDIT_LOGS);
-    showNotification('Demo data restored to default settings.');
+    showNotification({ severity: 'success', title: 'Demo data restored', message: 'Demo data restored to default settings.' });
     addAuditLog('Restored system demo state to default seed data');
   };
 
@@ -734,8 +731,7 @@ export default function Home() {
         qboQueueCount={roleScopedData.queuedQboItems.length}
       />
 
-      {/* High-Visibility Confirmation Notification Modal */}
-      <SystemAlertModal message={toastMessage} onClose={() => setToastMessage(null)} viewAsRole={viewAsRole} />
+      <NotificationCenter notifications={notifications} onDismiss={dismissNotification} />
 
       {/* Feature Module Workspace Container */}
       <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="workspace-main flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10 xl:px-10">
@@ -802,14 +798,14 @@ export default function Home() {
                   },
                   ...prev,
                 ]);
-                showNotification(`Preview only: Sales Quote ${qrn} approval was not persisted.`);
+                showNotification({ severity: 'info', title: 'Preview only', message: `Sales Quote ${qrn} approval was not persisted.` });
                 addAuditLog(`Demo-only preview of Sales Quote ${qrn} approval routing`);
               }}
               onShowNotification={showNotification}
               onAddAuditLog={addAuditLog}
               onOpenClientRoiModal={(rfq) => {
                 if (!rfq) {
-                  showNotification('ROI preview unavailable: select an RFQ record first.');
+                  showNotification({ severity: 'info', title: 'ROI preview unavailable', message: 'Select an RFQ record first.' });
                   return;
                 }
                 setSelectedRfqData(rfq);
@@ -817,7 +813,7 @@ export default function Home() {
               }}
               onOpenRfqPreviewModal={(rfq) => {
                 if (!rfq) {
-                  showNotification('RFQ preview unavailable: select an RFQ record first.');
+                  showNotification({ severity: 'info', title: 'RFQ preview unavailable', message: 'Select an RFQ record first.' });
                   return;
                 }
                 setSelectedRfqData(rfq);
@@ -825,7 +821,7 @@ export default function Home() {
               }}
               onOpenClientAcceptanceModal={(quote) => {
                 if (!quote) {
-                  showNotification('Client acceptance preview unavailable: select a quotation record first.');
+                  showNotification({ severity: 'info', title: 'Client acceptance unavailable', message: 'Select a quotation record first.' });
                   return;
                 }
                 setSelectedPoData(null);
@@ -856,7 +852,7 @@ export default function Home() {
               onOpenReceivingModal={() => setIsPOReceivingModalOpen(true)}
                onOpenVendorInvoiceModal={(po) => {
                  if (!po) {
-                   showNotification('Vendor invoice preview unavailable: select a purchase order first.');
+                    showNotification({ severity: 'info', title: 'Vendor invoice unavailable', message: 'Select a purchase order first.' });
                    return;
                  }
                 setSelectedPoData(po);
@@ -864,7 +860,7 @@ export default function Home() {
               }}
                onOpenThreeWayMatchModal={(po) => {
                  if (!po) {
-                   showNotification('3-Way Match preview unavailable: select a purchase order first.');
+                    showNotification({ severity: 'info', title: '3-Way Match unavailable', message: 'Select a purchase order first.' });
                    return;
                  }
                  setSelectedPoData(po);
@@ -939,7 +935,7 @@ export default function Home() {
         isOpen={isScannerOpen}
         onClose={() => setIsScannerOpen(false)}
         onScan={(sku) => {
-          showNotification(`Scanned Barcode SKU: ${sku}`);
+          showNotification({ severity: 'info', title: 'Barcode scanned', message: `SKU ${sku} is ready in Inventory.` });
           addAuditLog(`Scanned Barcode SKU ${sku}`);
           setSearchQuery(sku);
           setActiveTab('inventory');
@@ -953,17 +949,17 @@ export default function Home() {
         products={inventoryList as any}
         onAddProduct={(newProd) => {
           setInventoryList((prev) => [newProd as any, ...prev]);
-          showNotification(`Preview only: product SKU ${newProd.sku} was not persisted.`);
+          showNotification({ severity: 'info', title: 'Preview only', message: `Product SKU ${newProd.sku} was not persisted.` });
           addAuditLog(`Demo-only preview of product SKU registration: ${newProd.sku}`);
         }}
         onUpdateProduct={(updatedProd) => {
           setInventoryList((prev) => prev.map((p) => (p.id === updatedProd.id ? (updatedProd as any) : p)));
-          showNotification(`Preview only: product SKU ${updatedProd.sku} changes were not persisted.`);
+          showNotification({ severity: 'info', title: 'Preview only', message: `Product SKU ${updatedProd.sku} changes were not persisted.` });
           addAuditLog(`Demo-only preview of product SKU revision: ${updatedProd.sku}`);
         }}
         onDeleteProduct={(prodId) => {
           setInventoryList((prev) => prev.filter((p) => p.id !== prodId));
-          showNotification('Preview only: product SKU removal was not persisted.');
+          showNotification({ severity: 'info', title: 'Preview only', message: 'Product SKU removal was not persisted.' });
           addAuditLog('Demo-only preview of product SKU removal');
         }}
       />
@@ -1030,7 +1026,7 @@ export default function Home() {
         onClose={() => setIsClientRoiOpen(false)}
         rfqData={selectedRfqData}
         onSaveROI={(roi) => {
-          showNotification(`Client-Format ROI Calculator linked! Payback Period: ${roi.roiYears.toFixed(2)} Years`);
+          showNotification({ severity: 'success', title: 'ROI preview saved', message: `Client-Format ROI Calculator linked. Payback period: ${roi.roiYears.toFixed(2)} years.` });
           addAuditLog(`Saved Client-Format ROI calculation matching REVISED ROI_ACE PATEROS.xlsx (${roi.roiYears.toFixed(2)} yrs)`);
         }}
       />
@@ -1049,7 +1045,7 @@ export default function Home() {
           setQuotationsList((prev) =>
             prev.map((q) => (q.qrn === evidence.quotationId || q.id === evidence.quotationId ? { ...q, status: 'CLIENT_APPROVED' } : q))
           );
-          showNotification('Preview only: client acceptance evidence was not persisted or used to unlock fulfillment.');
+          showNotification({ severity: 'info', title: 'Preview only', message: 'Client acceptance evidence was not persisted or used to unlock fulfillment.' });
           addAuditLog(`Demo-only preview of client acceptance evidence (${evidence.clientPONumber})`);
         }}
       />
@@ -1059,7 +1055,7 @@ export default function Home() {
         onClose={() => setIsVendorInvoiceOpen(false)}
         poData={selectedPoData}
         onSaveInvoice={(inv) => {
-          showNotification(`Preview only: Vendor Invoice ${inv.invoiceNo} was not persisted.`);
+          showNotification({ severity: 'info', title: 'Preview only', message: `Vendor invoice ${inv.invoiceNo} was not persisted.` });
           addAuditLog(`Demo-only preview of Vendor Invoice ${inv.invoiceNo} for PO ${inv.poNo}`);
         }}
       />
@@ -1069,7 +1065,7 @@ export default function Home() {
         onClose={() => setIsThreeWayMatchOpen(false)}
         poData={selectedPoData}
         onConfirmVerification={(match) => {
-          showNotification('Preview only: 3-Way Match evidence was not persisted or used to unlock payment.');
+          showNotification({ severity: 'info', title: 'Preview only', message: '3-Way Match evidence was not persisted or used to unlock payment.' });
           addAuditLog(`Demo-only preview of 3-Way Match verification for PO ${match.poNo}`);
         }}
       />

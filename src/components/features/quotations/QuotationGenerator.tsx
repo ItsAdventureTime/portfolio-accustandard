@@ -22,6 +22,7 @@ import {
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
 import { WorkflowStepper } from '@/components/common/WorkflowStepper';
 import { AccessibleModal } from '@/components/common/AccessibleModal';
+import type { NotificationInput } from '@/components/common/NotificationCenter';
 
 interface QuotationGeneratorProps {
   rfqList: any[];
@@ -31,7 +32,7 @@ interface QuotationGeneratorProps {
   onOpenExportModal: (title: string, filename: string, data: object[], elementId?: string) => void;
   onOpenCreateModal: () => void;
   onSubmitForApproval: (qrn: string) => void;
-  onShowNotification: (msg: string) => void;
+  onShowNotification: (notification: NotificationInput) => void;
   onAddAuditLog: (action: string) => void;
   onOpenClientRoiModal?: (rfq?: any) => void;
   onOpenRfqPreviewModal?: (rfq?: any) => void;
@@ -102,14 +103,14 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
     });
 
     onUpdateQuotationsList(updatedList);
-    onShowNotification(`Removed item from Quotation ${qrn}! Updated total value to ₱${updatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`);
+    onShowNotification({ severity: 'success', title: 'Quote item removed', message: `Removed an item from quotation ${qrn}. Updated total: ₱${updatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}.` });
     onAddAuditLog(`Removed item from Sales Quote ${qrn}`);
   };
 
   // Handle Applying ROI calculation directly to active quotation
   const handleApplyRoiToActiveQuote = () => {
     if (!activeQuote || !onUpdateQuotationsList) {
-      onShowNotification('ROI preview unavailable: select a quotation record first.');
+      onShowNotification({ severity: 'info', title: 'ROI preview unavailable', message: 'Select a quotation record first.' });
       setIsRoiModalOpen(false);
       return;
     }
@@ -136,7 +137,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
     });
 
     onUpdateQuotationsList(updatedList);
-    onShowNotification(`Applied ₱${roiProposedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })} unit price & ${marginPct.toFixed(1)}% margin to Quote ${qrn}! Preview updated live.`);
+    onShowNotification({ severity: 'success', title: 'ROI preview updated', message: `Applied a ₱${roiProposedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })} unit price and ${marginPct.toFixed(1)}% margin to quote ${qrn}.` });
     onAddAuditLog(`Applied ROI calculation (${marginPct.toFixed(1)}% margin) to Sales Quote ${qrn}`);
     setIsRoiModalOpen(false);
   };

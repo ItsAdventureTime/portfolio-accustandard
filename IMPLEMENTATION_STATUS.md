@@ -336,3 +336,21 @@ This is guidance for the next hardening phase, not a claim of compliance.
 - Browser visual QA and remote VPS deployment were not run in this pass. The
   production identity provider, persistent preview workflows, and full
   assistive-technology acceptance matrix remain release prerequisites.
+
+### 2026-08-14 notification consistency pass
+
+- Replaced the generic blocking notification popup with a shared Radix
+  `NotificationCenter` that uses explicit severity, deduplication, bounded
+  queuing, dismiss controls, predictable durations, and mobile safe-area
+  placement above bottom navigation.
+- Routine feedback now preserves workspace focus. User-action results use
+  foreground toast announcements; low-urgency informational updates use
+  background announcements. Offline state remains in the persistent page
+  status region.
+- Retained `SystemAlertModal` only as a real `alertdialog` contract with a
+  visible title/description, focus containment/restoration, and explicit
+  close/cancel actions. Form validation errors now use alert semantics and
+  connect affected fields with `aria-describedby`/`aria-invalid`.
+- Final notification validation is recorded after the Podman lint, TypeScript,
+  and static build checks below; browser/device visual QA remains an operator
+  follow-up.

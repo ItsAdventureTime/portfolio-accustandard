@@ -19,6 +19,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { AccessibleModal } from '@/components/common/AccessibleModal';
+import type { NotificationInput } from '@/components/common/NotificationCenter';
 import {
   canUseOperation,
   canManageUsers,
@@ -33,7 +34,7 @@ import {
 interface SystemAuditTrailProps {
   auditLogs: any[];
   viewAsRole?: Role;
-  onShowNotification?: (msg: string) => void;
+  onShowNotification?: (notification: NotificationInput) => void;
   onAddAuditLog?: (action: string, actorRole?: Role) => void;
   onOpenStartupImportModal?: () => void;
 }
@@ -79,7 +80,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   const handleSaveUserPermissions = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canEditUsers) {
-      if (onShowNotification) onShowNotification(`Permission Denied: Role [${viewAsRole}] cannot modify user permissions.`);
+      if (onShowNotification) onShowNotification({ severity: 'info', title: 'Access restricted', message: `Role [${viewAsRole}] cannot modify user permissions.` });
       return;
     }
 
@@ -100,7 +101,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
       })
     );
 
-    if (onShowNotification) onShowNotification(`Updated system user profile & permissions for ${intendedName}.`);
+    if (onShowNotification) onShowNotification({ severity: 'success', title: 'User access updated', message: `Updated the system user profile and permissions for ${intendedName}.` });
     if (onAddAuditLog) onAddAuditLog(`Updated user permissions matrix for ${intendedName} (Role: ${editRole})`, viewAsRole);
     setEditingUserModal(null);
   };
@@ -117,11 +118,11 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canEditUsers) {
-      if (onShowNotification) onShowNotification(`Permission denied: role [${viewAsRole}] cannot create users.`);
+      if (onShowNotification) onShowNotification({ severity: 'info', title: 'Access restricted', message: `Role [${viewAsRole}] cannot create users.` });
       return;
     }
     if (!newUserName.trim()) {
-      if (onShowNotification) onShowNotification('Please enter a full name for the new system user.');
+      if (onShowNotification) onShowNotification({ severity: 'warning', title: 'User name required', message: 'Enter a full name for the new system user.' });
       return;
     }
 
@@ -134,7 +135,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
     };
 
     setUserList((prev) => [...prev, newUser]);
-    if (onShowNotification) onShowNotification(`Registered user ${newUserName} as ${newUserRole}.`);
+    if (onShowNotification) onShowNotification({ severity: 'success', title: 'User registered', message: `Registered ${newUserName} as ${newUserRole}.` });
     if (onAddAuditLog) onAddAuditLog(`Registered new system user ${newUserName} with role ${newUserRole}`, viewAsRole);
     setNewUserName('');
   };

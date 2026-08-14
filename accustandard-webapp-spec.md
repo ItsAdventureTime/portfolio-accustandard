@@ -217,10 +217,26 @@ Across all data tables, primary key badges use interactive pill containers (`bg-
 - **PO Number:** `FileText` icon + PO Code + `Eye` preview badge &rarr; opens 3-Way Match PO Modal.
 - **RFP Voucher ID:** `CreditCard` icon + RFP Code + `Eye` preview badge &rarr; opens Expense Voucher Inspector Modal.
 
-### 6.5 High-Visibility Notification Confirmation Popup Modal
-To ensure system updates, approval confirmations, and security alerts are never overlooked:
-- **Confirmation Window Modal:** Replaces auto-dismissing toast banners with a centered popup window modal (`SystemAlertModal.tsx`).
-- **Explicit Acknowledgment:** Requires an explicit user click on `"Acknowledge & Close"` / `"Got It"` to dismiss.
+### 6.5 Notification and validation feedback
+- **Routine feedback:** Use the shared `NotificationCenter` and existing Radix
+  Toast primitive with explicit `info`, `success`, `warning`, or `error`
+  severity. User-action results use foreground announcements; low-urgency info
+  updates use background announcements by default. Toasts are dismissible,
+  deduplicated, queued, pause on hover/focus/window blur, and stay above mobile
+  navigation and the safe area.
+- **Offline state:** Keep offline/demo state in the persistent page status
+  region. Do not repeat it as a popup after every preview action.
+- **Inline validation:** Render the message as `role="alert"` with
+  `aria-live="assertive"` and connect affected fields using
+  `aria-describedby` and `aria-invalid`.
+- **Interruptive alerts:** Reserve `SystemAlertModal.tsx` for intentional
+  workflow interruptions. It uses an accessible `alertdialog` with a visible
+  title, description, close/cancel action, focus containment/restoration, and
+  no global Enter dismissal.
+
+Reference the current [Radix Toast documentation](https://www.radix-ui.com/primitives/docs/components/toast)
+and [WAI-ARIA alertdialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/)
+when extending this contract.
 
 ---
 

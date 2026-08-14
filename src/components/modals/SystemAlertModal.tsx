@@ -1,101 +1,92 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { ShieldAlert, CheckCircle2, X } from 'lucide-react';
+import React from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { CheckCircle2, ShieldAlert, TriangleAlert, X } from 'lucide-react';
+import type { NotificationSeverity } from '@/components/common/NotificationCenter';
 
 interface SystemAlertModalProps {
   message: string | null;
   onClose: () => void;
   viewAsRole: string;
+  severity: NotificationSeverity;
+  title?: string;
 }
 
-export const SystemAlertModal: React.FC<SystemAlertModalProps> = ({ message, onClose, viewAsRole }) => {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' || e.key === 'Enter') {
-        onClose();
-      }
-    };
-    if (message) {
-      window.addEventListener('keydown', handleKeyDown);
-    }
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [message, onClose]);
-
+/**
+ * Reserved for an intentional, workflow-interrupting alert. Routine feedback
+ * belongs in NotificationCenter; this dialog is never used as a generic toast.
+ */
+export const SystemAlertModal: React.FC<SystemAlertModalProps> = ({
+  message,
+  onClose,
+  viewAsRole,
+  severity,
+  title = 'System alert',
+}) => {
   if (!message) return null;
 
-  const isViolation =
-    message.includes('⛔') ||
-    message.includes('BLOCKED') ||
-    message.includes('Violation') ||
-    message.includes('HARD-BLOCKED') ||
-    message.includes('prohibited');
+  const isError = severity === 'error';
+  const isWarning = severity === 'warning';
+  const tone = isError
+    ? {
+        border: 'border-rose-200',
+        header: 'bg-rose-50',
+        icon: 'bg-rose-100 text-rose-700',
+        action: 'bg-rose-700 hover:bg-rose-800',
+      }
+    : isWarning
+      ? {
+          border: 'border-amber-200',
+          header: 'bg-amber-50',
+          icon: 'bg-amber-100 text-amber-800',
+          action: 'bg-amber-700 hover:bg-amber-800',
+        }
+      : {
+          border: 'border-blue-100',
+          header: 'bg-blue-50',
+          icon: 'bg-blue-100 text-blue-800',
+          action: 'bg-blue-900 hover:bg-blue-800',
+        };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-300 w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 text-slate-900">
-        {/* Header */}
-        <div
-          className={`p-4 border-b flex justify-between items-center ${
-            isViolation ? 'bg-rose-900 text-white border-rose-800' : 'bg-slate-900 text-white border-slate-800'
-          }`}
+    <Dialog.Root open onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md" />
+        <Dialog.Content
+          role="alertdialog"
+          aria-describedby="system-alert-description"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 focus:outline-none"
         >
-          <div className="flex items-center gap-3">
-            {isViolation ? (
-              <div className="p-2 bg-rose-800 rounded-xl">
-                <ShieldAlert className="w-6 h-6 text-rose-300 animate-pulse" />
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-300 bg-white text-slate-900 shadow-2xl">
+            <div className={`flex items-start justify-between gap-4 border-b p-5 ${tone.border} ${tone.header}`}>
+              <div className="flex items-start gap-3">
+                <span className={`rounded-xl p-2 ${tone.icon}`} aria-hidden="true">
+                  {isError ? <ShieldAlert className="h-5 w-5" /> : isWarning ? <TriangleAlert className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                </span>
+                <div>
+                  <Dialog.Title className="text-base font-bold">{title}</Dialog.Title>
+                  <p className="mt-1 text-xs font-medium text-slate-600">Active demo role: {viewAsRole}</p>
+                </div>
               </div>
-            ) : (
-              <div className="p-2 bg-slate-800 rounded-xl">
-                <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+              <button type="button" onClick={onClose} className="min-h-[44px] min-w-[44px] rounded-xl p-2 text-slate-500 hover:bg-white hover:text-slate-900" aria-label="Close alert">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div id="system-alert-description" className="space-y-4 p-5">
+              <Dialog.Description className="text-sm font-medium leading-relaxed text-slate-800">{message}</Dialog.Description>
+              <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                <button type="button" onClick={onClose} className="min-h-[44px] rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200">
+                  Cancel
+                </button>
+                <button type="button" autoFocus onClick={onClose} className={`min-h-[44px] rounded-xl px-4 py-2 text-sm font-semibold text-white ${tone.action}`}>
+                  Acknowledge and close
+                </button>
               </div>
-            )}
-            <div>
-              <h3 className="text-sm font-extrabold uppercase tracking-wider">
-                {isViolation ? 'COSO Internal Control Security Alert' : 'System Action Notification'}
-              </h3>
-              <p className="text-[11px] opacity-80">Impersonated Role: <strong className="text-amber-300">{viewAsRole}</strong></p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition"
-            title="Dismiss Alert (Esc)"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Content Body */}
-        <div className="p-6 bg-slate-50 space-y-3.5 text-center">
-          <div className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-200 text-slate-700">
-            {isViolation ? 'Execution Halted • Action Blocked' : 'System Notice'}
-          </div>
-          <p className={`text-base md:text-lg font-extrabold leading-snug ${isViolation ? 'text-rose-950' : 'text-slate-900'}`}>
-            {message}
-          </p>
-          {isViolation && (
-            <p className="text-xs text-rose-900 font-semibold bg-rose-100/80 border border-rose-300 p-3 rounded-xl text-left leading-relaxed">
-              ⚠️ <strong>COSO Segregation of Duties (SoD) Safeguard:</strong> This operation is restricted for role <span className="font-bold text-rose-950">[{viewAsRole}]</span> to enforce executive authorization levels and prevent unauthorized financial or operational modifications.
-            </p>
-          )}
-        </div>
-
-        {/* Footer Action */}
-        <div className="p-4 bg-white border-t border-slate-200">
-          <button
-            onClick={onClose}
-            autoFocus
-            className={`w-full py-3.5 px-4 rounded-xl text-sm font-black uppercase tracking-wider text-white shadow-md transition-all active:scale-95 ${
-              isViolation
-                ? 'bg-rose-600 hover:bg-rose-700 focus:ring-4 focus:ring-rose-300'
-                : 'bg-blue-900 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300'
-            }`}
-          >
-            Acknowledge & Close
-          </button>
-        </div>
-      </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };

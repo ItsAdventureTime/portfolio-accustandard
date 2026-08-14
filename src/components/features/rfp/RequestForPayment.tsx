@@ -44,10 +44,16 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
   const [inspectingRfp, setInspectingRfp] = useState<any | null>(null);
   const [bankSource, setBankSource] = useState('');
   const [refNo, setRefNo] = useState('');
+  const [releaseValidationError, setReleaseValidationError] = useState<string | null>(null);
 
   const handleConfirmRelease = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!releasingRfp) return;
+    if (!bankSource.trim() || !refNo.trim()) {
+      setReleaseValidationError('Enter the bank source and check or online reference number before continuing.');
+      return;
+    }
+    setReleaseValidationError(null);
     if (onReleaseRFP) {
       const committed = await onReleaseRFP(releasingRfp.id, bankSource, refNo);
       if (committed === false) return;
@@ -162,12 +168,12 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                   <p className="text-slate-500 font-medium">Select Admin Bank Account &amp; Reference No.</p>
                 </div>
               </div>
-              <button onClick={() => setReleasingRfp(null)} className="p-1 text-slate-400 hover:text-slate-700 rounded-full">
+              <button type="button" onClick={() => { setReleasingRfp(null); setReleaseValidationError(null); }} className="p-1 text-slate-400 hover:text-slate-700 rounded-full" aria-label="Close fund release dialog">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleConfirmRelease} className="space-y-3">
+            <form onSubmit={handleConfirmRelease} className="space-y-3" noValidate>
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                 <p><span className="font-bold">Payee:</span> {releasingRfp.payee}</p>
                 <p><span className="font-bold">Amount:</span> ₱{Number(releasingRfp.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
@@ -180,7 +186,9 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                   type="text"
                   required
                   value={bankSource}
-                  onChange={(e) => setBankSource(e.target.value)}
+                  onChange={(e) => { setBankSource(e.target.value); setReleaseValidationError(null); }}
+                  aria-describedby={releaseValidationError ? 'rfp-release-error' : undefined}
+                  aria-invalid={releaseValidationError && !bankSource.trim() ? true : undefined}
                   placeholder="Enter configured bank account"
                   className="w-full bg-slate-50 border border-slate-300 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none"
                 />
@@ -191,11 +199,15 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
                 <input
                   type="text"
                   value={refNo}
-                  onChange={(e) => setRefNo(e.target.value)}
+                  onChange={(e) => { setRefNo(e.target.value); setReleaseValidationError(null); }}
+                  aria-describedby={releaseValidationError ? 'rfp-release-error' : undefined}
+                  aria-invalid={releaseValidationError && !refNo.trim() ? true : undefined}
                   className="w-full bg-slate-50 border border-slate-300 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none"
                   required
                 />
               </div>
+
+              {releaseValidationError && <p id="rfp-release-error" role="alert" aria-live="assertive" aria-atomic="true" className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs font-semibold text-rose-900">{releaseValidationError}</p>}
 
               <div className="pt-2 flex justify-end gap-2 border-t border-slate-200">
                 <button

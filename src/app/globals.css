@@ -55,6 +55,7 @@
   --z-header: 30;
   --z-bottom-nav: 40;
   --z-drawer: 50;
+  --z-toast: 60;
   --z-print: 1000;
 
   /* Backward-compatible aliases used by existing feature modules. */
@@ -708,6 +709,170 @@ textarea:focus-visible {
   backdrop-filter: blur(18px);
 }
 
+/* Shared non-blocking notification surface. Keep it above mobile navigation
+   and the device safe area without obscuring the page's primary actions. */
+.notification-viewport {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem);
+  z-index: var(--z-toast);
+  display: flex;
+  width: min(26rem, calc(100vw - 1.5rem));
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 5.5rem);
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem;
+  outline: none;
+  pointer-events: none;
+  list-style: none;
+}
+
+.notification-toast {
+  pointer-events: auto;
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgb(148 163 184 / 0.42);
+  border-left: 3px solid var(--brand-royal);
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.97);
+  padding: 0.875rem;
+  color: var(--text-primary);
+  box-shadow: 0 12px 28px -16px rgb(23 53 111 / 0.4), 0 2px 6px -4px rgb(15 23 42 / 0.24);
+  backdrop-filter: blur(16px);
+  outline: none;
+  transform-origin: top right;
+  animation: notification-enter 180ms var(--ease-snappy) both;
+}
+
+.notification-toast[data-state="closed"] {
+  animation: notification-exit 120ms ease-in both;
+}
+
+.notification-toast[data-swipe="move"] {
+  transform: translateX(var(--radix-toast-swipe-move-x));
+}
+
+.notification-toast[data-swipe="cancel"] {
+  transform: translateX(0);
+  transition: transform 200ms ease-out;
+}
+
+.notification-toast[data-swipe="end"] {
+  animation: notification-swipe-out 100ms ease-out forwards;
+}
+
+.notification-toast[data-severity="success"] {
+  border-left-color: #15803d;
+}
+
+.notification-toast[data-severity="warning"] {
+  border-left-color: #b45309;
+}
+
+.notification-toast[data-severity="error"] {
+  border-left-color: var(--brand-red);
+}
+
+.notification-toast-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  background: var(--surface-subtle);
+  padding: 0.4rem;
+  color: var(--brand-royal);
+}
+
+.notification-toast[data-severity="success"] .notification-toast-icon {
+  color: #15803d;
+}
+
+.notification-toast[data-severity="warning"] .notification-toast-icon {
+  color: #b45309;
+}
+
+.notification-toast[data-severity="error"] .notification-toast-icon {
+  color: var(--brand-red);
+}
+
+.notification-toast-title {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.notification-toast-message {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.notification-toast-action {
+  min-height: 36px;
+  margin-top: 0.5rem;
+  border: 1px solid rgb(44 66 150 / 0.26);
+  border-radius: 0.625rem;
+  background: rgb(239 243 255 / 0.9);
+  padding: 0.35rem 0.65rem;
+  color: var(--brand-navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.notification-toast-action:hover {
+  border-color: var(--brand-royal);
+  background: var(--surface-hover);
+}
+
+.notification-toast-close {
+  display: inline-flex;
+  min-height: 36px;
+  min-width: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.625rem;
+  color: var(--text-muted);
+}
+
+.notification-toast-close:hover {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+@keyframes notification-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes notification-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+}
+
+@keyframes notification-swipe-out {
+  to {
+    opacity: 0;
+    transform: translateX(calc(100% + 1rem));
+  }
+}
+
 .mobile-nav-item {
   min-width: 3.75rem;
   border: 1px solid transparent;
@@ -794,6 +959,17 @@ textarea:focus-visible {
     margin-top: auto;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
+  }
+
+  .notification-viewport {
+    right: 0;
+    left: 0;
+    width: 100%;
+    padding-inline: 0.625rem;
+  }
+
+  .notification-toast {
+    border-radius: 0.875rem;
   }
 }
 
