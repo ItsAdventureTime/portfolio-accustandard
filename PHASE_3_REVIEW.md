@@ -32,8 +32,18 @@ Implementation:
 - `tabular-data`, `data-number`, and `font-mono` now opt into tabular figures.
 - `text-wrap: balance` and `text-wrap: pretty` reduce awkward headings and
   paragraph endings.
-- The font stack prefers Outfit/Geist Mono when available, then uses local
-  system fallbacks without a new network font dependency.
+- The font stack uses the vendored Outfit variable font through
+  `next/font/local`, keeps Geist Mono for code/data, and retains local system
+  fallbacks without a new network font dependency.
+
+### Frontend font build contract
+
+The production frontend build no longer depends on Google Fonts. Outfit's
+license and provenance are tracked beside the vendored WOFF2 in
+`src/app/fonts/`. Dependency installation, npm registry access, pinned image
+pulls, and other module/image downloads still require deployment network
+access; after those prerequisites are obtained, the frontend build must also
+pass with network access disabled.
 
 Reference: [Tailwind theme variables](https://tailwindcss.com/docs/theme).
 
@@ -132,9 +142,18 @@ Reference: [Next.js production checklist](https://nextjs.org/docs/app/guides/pro
 
 Run the project toolchain inside Podman as required by the repository rules:
 
+Obtain dependencies and the pinned builder image while networked, then repeat
+the frontend lint, type-check, and build with network access disabled. The
+offline build is the release-blocking font check; it must not request Google
+Fonts or use `next/font/google`.
+
 ```bash
 /opt/homebrew/bin/podman build --target builder -f Containerfile .
 ```
+
+On 2026-08-14, the focused Podman run passed lint, TypeScript, and the
+Webpack static export with `--network=none` after dependency and image
+acquisition. The remote demo deployment was not run in this review.
 
 Then run the remote-only demo release path only after reviewing `git status`:
 

@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const outfit = Outfit({
-  subsets: ['latin'],
+const outfit = localFont({
+  src: './fonts/Outfit-Variable.woff2',
+  weight: '100 900',
+  style: 'normal',
   display: 'swap',
   variable: '--font-outfit',
+  fallback: ['Avenir Next', 'Segoe UI Variable', 'system-ui', 'sans-serif'],
 });
 
 export const metadata: Metadata = {

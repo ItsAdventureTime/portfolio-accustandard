@@ -16,6 +16,24 @@ Backblaze B2 is not the current web host. The demo website is served from the
 VPS static export through Caddy; B2 is reserved for object storage such as
 future attachments, imports, exports, or documents.
 
+## Frontend font and network contract
+
+Outfit is vendored as `src/app/fonts/Outfit-Variable.woff2` with its SIL Open
+Font License 1.1 and provenance record. `src/app/layout.tsx` loads it through
+`next/font/local`, so the frontend build no longer needs Google Fonts CSS or
+font data and the browser does not depend on a runtime Google stylesheet.
+
+The deployment still needs network access for `npm ci`, `--pull=always` image
+downloads, and any other npm/module/image downloads. The offline-build
+validation contract is to install dependencies and pull the pinned Node image
+while networked, then run lint, type-check, and the frontend build with network
+access disabled. That build must succeed without a `next/font/google` import or
+Google Fonts request.
+
+This contract was verified on 2026-08-14 in disposable Podman with
+`--network=none`: lint, TypeScript, and the Webpack static export all passed.
+The remote `npm run deploy:demo` release was not run during that repair.
+
 ## 1. One-time macOS prerequisites
 
 Install or verify the client-side tools. The deployment script uses SSH and
