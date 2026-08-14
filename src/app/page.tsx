@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { ExecutiveOverview } from '@/components/features/overview/ExecutiveOverview';
 import { InventoryControl } from '@/components/features/inventory/InventoryControl';
@@ -32,6 +32,14 @@ import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMat
 import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
 import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
 import { SystemAlertModal } from '@/components/modals/SystemAlertModal';
+import {
+  canApproveApprovalStage,
+  DEFAULT_ROLE,
+  getAllowedTabs,
+  type ApprovalStage,
+  type Role,
+  selectRoleScopedDashboardData,
+} from '@/lib/permissions';
 import {
   getApprovals,
   getAuditLogs,
@@ -68,19 +76,9 @@ import {
   DEFAULT_AUDIT_LOGS,
 } from '@/lib/useDemoStore';
 
-const ROLE_ALLOWED_TABS: Record<string, string[]> = {
-  'Admin': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'Bookkeeper': ['overview', 'soa', 'purchasing', 'rfp'],
-  'Warehouse': ['overview', 'inventory', 'purchasing'],
-  'Marketing': ['overview', 'quotations'],
-  'Sales': ['overview', 'quotations', 'inventory'],
-};
-
 export default function Home() {
   const { resetDemoData } = useDemoStore();
-  const [viewAsRole, setViewAsRole] = useState('General Manager');
+  const [viewAsRole, setViewAsRole] = useState<Role>(DEFAULT_ROLE);
   const [activeTab, setActiveTab] = useState('overview');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -98,6 +96,17 @@ export default function Home() {
   const [auditLogs, setAuditLogs] = useState(DEFAULT_AUDIT_LOGS);
   const [apiOnline, setApiOnline] = useState(false);
   const [isHydrating, setIsHydrating] = useState(false);
+
+  const roleScopedData = useMemo(() => selectRoleScopedDashboardData({
+    role: viewAsRole,
+    approvals: approvalsList,
+    inventory: inventoryList,
+    rfqs: rfqList,
+    quotations: quotationsList,
+    purchaseOrders: poList,
+    soaRows: soaData.rows,
+    qboQueue,
+  }), [approvalsList, inventoryList, poList, qboQueue, quotationsList, rfqList, soaData.rows, viewAsRole]);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,7 +216,7 @@ export default function Home() {
 
   // Tab Selection with Strict RBAC Check
   const handleSelectTab = (tab: string) => {
-    const allowed = ROLE_ALLOWED_TABS[viewAsRole] || [];
+    const allowed = getAllowedTabs(viewAsRole);
     if (!allowed.includes(tab)) {
       showNotification(`Access Restricted: Role [${viewAsRole}] cannot access the ${tab.toUpperCase()} module.`);
       return;
@@ -216,9 +225,9 @@ export default function Home() {
   };
 
   // Handle Role Change & Auto-Navigate to Allowed Tab
-  const handleChangeRole = (role: string) => {
+  const handleChangeRole = (role: Role) => {
     setViewAsRole(role);
-    const allowed = ROLE_ALLOWED_TABS[role] || ['overview'];
+    const allowed = getAllowedTabs(role);
     if (!allowed.includes(activeTab)) {
       setActiveTab(allowed[0]);
     }
@@ -630,7 +639,7 @@ export default function Home() {
   };
 
   // Handle Approval Action
-  const handleApproveItem = async (id: string, stage: string): Promise<boolean> => {
+  const handleApproveItem = async (id: string, stage: ApprovalStage): Promise<boolean> => {
     const target = approvalsList.find((item) => item.id === id);
     if (!target) return false;
     if (stage === 'dcs' && target.type === 'Sales Quotation') {
@@ -638,16 +647,8 @@ export default function Home() {
       return false;
     }
     const isPOAccountingReview = stage === 'reviewer' && target.type === 'Purchase Order';
-    if (stage === 'reviewer' && !['Admin', 'Marketing'].includes(viewAsRole) && !(isPOAccountingReview && viewAsRole === 'Bookkeeper')) {
-      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute Reviewer Approval.`);
-      return false;
-    }
-    if (stage === 'gm' && !['Admin', 'General Manager'].includes(viewAsRole)) {
-      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute GM Approval.`);
-      return false;
-    }
-    if (stage === 'dcs' && !['Admin', 'Chairman (DCS)'].includes(viewAsRole)) {
-      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute DCS Chairman Approval.`);
+    if (!canApproveApprovalStage(viewAsRole, stage, target)) {
+      showNotification(`Permission Denied: Role [${viewAsRole}] cannot execute ${stage.toUpperCase()} Approval.`);
       return false;
     }
 
@@ -771,16 +772,14 @@ export default function Home() {
       [{
         role: viewAsRole,
         generatedAt: new Date().toISOString(),
-        pendingApprovals: approvalsList.length,
-        inventoryItems: inventoryList.length,
-        activeRFQs: rfqList.length,
+        pendingApprovals: roleScopedData.pendingApprovals.length,
+        criticalStockItems: roleScopedData.criticalStock.length,
+        activeRFQs: roleScopedData.activeRfqs.length,
         purchaseOrders: poList.length,
-        qboQueueItems: qboQueue.length,
+        qboQueueItems: roleScopedData.queuedQboItems.length,
       }],
     );
   };
-
-  const allowedTabs = ROLE_ALLOWED_TABS[viewAsRole] || [];
 
   return (
     <div className="workspace-shell flex min-h-[100dvh] w-full flex-col font-sans text-slate-900 antialiased selection:bg-blue-600 selection:text-white">
@@ -799,8 +798,7 @@ export default function Home() {
         onOpenStartupImport={() => setIsStartupImportOpen(true)}
         onOpenQBOQueue={() => setIsQboQueueOpen(true)}
         onOpenProductManager={() => setIsProductManagerOpen(true)}
-        qboQueueCount={qboQueue.filter((item) => item.syncStatus !== 'SYNCED').length}
-        allowedTabs={allowedTabs}
+        qboQueueCount={roleScopedData.queuedQboItems.length}
       />
 
       {/* High-Visibility Confirmation Notification Modal */}
@@ -823,15 +821,9 @@ export default function Home() {
           </div>
           {activeTab === 'overview' && (
             <ExecutiveOverview
-              approvalsList={approvalsList}
-              inventoryList={inventoryList}
-              soaRows={soaData.rows}
-              poList={poList}
-              rfpList={rfpList}
-              rfqList={rfqList}
-              qboQueue={qboQueue}
-              quotationsList={quotationsList}
-              collectionsList={collectionsList}
+              approvalsList={roleScopedData.pendingApprovals}
+              reviewablePOItems={roleScopedData.reviewablePurchaseOrders}
+              roleScopedData={roleScopedData}
               viewAsRole={viewAsRole}
               onApproveItem={handleApproveItem}
               onSelectTab={handleSelectTab}
@@ -1036,10 +1028,7 @@ export default function Home() {
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenPWAInstall={() => setIsPwaInstallModalOpen(true)}
-        approvalsCount={approvalsList.length}
-        inventoryCount={inventoryList.length}
-        soaCount={soaData.rows.length}
-        auditCount={auditLogs.length}
+        roleScopedData={roleScopedData}
       />
 
       <BottomNav
@@ -1047,7 +1036,7 @@ export default function Home() {
         onSelectTab={handleSelectTab}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
-        allowedTabs={allowedTabs}
+        viewAsRole={viewAsRole}
       />
 
       <PWAInstallModal

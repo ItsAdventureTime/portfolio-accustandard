@@ -54,9 +54,16 @@ Where an older document conflicts with the first four, the first four control.
 - The dashboard exposes an explicit live/offline status region. When the Go API
   is unavailable, the UI labels itself as an offline demo and does not imply
   persistence.
+- `src/lib/permissions.ts` is the shared typed client-side permission model for
+  allowed tabs, create/export/import/QBO/barcode/scanner/PWA/admin operation
+  helpers, approval selectors, reviewable PO targets, and role/action-specific
+  navigation counts. These UI checks do not secure backend APIs.
 - Header secondary operations are grouped under `Operations & tools`; the
-  primary `Create new` trigger opens the existing command palette without
-  changing workflow permissions.
+  menu uses stable WAI-ARIA menu-button semantics, keyboard open/navigation
+  (Enter, Space, Arrow Up/Down, Home, End), Escape/outside-pointer close, and
+  focus return. The role selector is labeled as a demo simulation.
+- Outfit is loaded through `next/font/google` and exposed to the existing
+  `font-sans` token without adding a dependency.
 - Purchasing separates Purchase Orders from Receiving Reports, and Inventory
   exposes Class 1/2/3 stock filters plus a critical-stock reorder entry point.
 - Quotation, PO, RFP, and Receiving Report entry use three-step progressive
@@ -98,6 +105,9 @@ server-backed record, authorization, audit event, and refresh-safe test.
   setting; Admin-managed rule persistence and conditional PO DCS routing remain
   pre-acceptance gaps.
 - The demo API is unauthenticated and must not handle real company data.
+- Backend authentication, session identity, and server-enforced authorization
+  remain unresolved requirements. Client-side role simulation and shared UI
+  permissions are not a substitute for those controls.
 - QBO behavior in this runtime is a queue/demo stub, not a live QuickBooks
   Online integration.
 - Caddy and the remote deployment script now agree on the static export root:
@@ -197,6 +207,30 @@ production acceptance release from a lint/build result alone.
   remained permission-aware. This is a visual/UI smoke check, not production
   acceptance or a full WCAG conformance result.
 
+### 2026-08-14 role, accuracy, and keyboard hardening pass
+
+- Added `src/lib/permissions.ts` as the shared typed client-side source for
+  role tabs, operation visibility, approval-stage rules, reviewable PO targets,
+  and role-scoped dashboard/mobile counts.
+- Header tools, QBO visibility, the mobile drawer, and the bottom scanner
+  action now consume the shared operation permissions. These checks improve
+  the demo UI only; they are not backend authorization.
+- Removed the overview's arbitrary first-eight PO slice. Review counts,
+  review targets, and mobile badges now use the same role-scoped selectors.
+- Implemented WAI-ARIA menu-button behavior for the desktop operations menu,
+  including keyboard opening/navigation, Escape and outside-pointer close, and
+  focus return.
+- Loaded Outfit with `next/font/google` and aligned the active design and
+  deployment guides with the current shell and GitHub HTTPS-only workflow.
+- Podman validation passed after follow-up fixes: `npm ci
+  --ignore-scripts --no-audit --no-fund`, `npm run lint`, `npx tsc --noEmit`,
+  and `npm run build` using `node:24.18-alpine3.24`.
+- Backend authentication, session identity, server-enforced authorization,
+  and full assistive-technology testing remain release prerequisites. The
+  production dependency audit is clean after updating transitive `nanoid` to
+  3.3.18; development-only Capacitor CLI `tar` findings remain and require a
+  breaking major upgrade, so no force upgrade was applied.
+
 ## Current-framework notes
 
 The repository targets Next.js 16/React 19/Tailwind 4. Next.js 16 requires
@@ -213,6 +247,12 @@ export guide](https://nextjs.org/docs/app/guides/static-exports),
 [WCAG 2.2](https://www.w3.org/TR/WCAG22/), and
 [Radix accessibility guidance](https://www.radix-ui.com/primitives/docs/overview/accessibility).
 Existing Radix components do not require a shadcn migration.
+
+For current interaction guidance, use the [Next.js accessibility
+guide](https://nextjs.org/docs/architecture/accessibility), [Next.js
+authentication guide](https://nextjs.org/docs/app/guides/authentication),
+[Next.js font optimization guide](https://nextjs.org/docs/app/getting-started/fonts),
+and the WAI-ARIA [menu button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/).
 
 `next.config.ts` includes `allowedDevOrigins: ['127.0.0.1']` for local browser
 verification of development-only chunks. Next.js applies this setting only in

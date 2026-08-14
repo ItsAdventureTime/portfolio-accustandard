@@ -8,6 +8,11 @@ This application is a control-first medical supply chain and internal financial 
 not an accepted production ERP. The Go API currently provides a limited
 server-backed surface; several workflow screens remain local preview paths.
 QBO behavior is a queue/demo stub, not a live QuickBooks Online connection.
+There is no real login or server-side user session in this demo. The role
+selector is a clearly labeled UI-only simulation; shared client-side
+permissions filter navigation, operations, queues, and badges, but they do not
+secure backend APIs. Backend authentication and server-enforced authorization
+remain unresolved production requirements.
 See [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) for the audited
 boundary and validation record.
 
@@ -78,8 +83,10 @@ PO numbers open an expanded **3-Way Match Inspection Modal** (`max-w-3xl`) displ
 ### 6. Non-PO Request for Payment (RFP) Vouchers & Bank Releasing
 RFP Voucher IDs open an expanded **Expense Voucher Inspector Modal** (`max-w-3xl`) displaying GL Chart of Accounts picklists and Admin Bank Fund Releasing modal (BDO/Metrobank/BPI).
 
-### 7. User Access Matrix & Dynamic Role Permissions Editor
-In User & Audit Logs, user rows open an expanded **User Access Profile & Role Permissions Modal** (`max-w-3xl`). Active **Admin** and **DCS Chairman** roles can edit system roles and toggle module view checkboxes dynamically (enforces read-only restrictions for non-admin roles).
+### 7. User Setup & Audit Trail
+User & Audit Logs provides the current demo's local user/module matrix and
+audit stream. Its role and module controls are preview behavior only; they do
+not create authenticated sessions or enforce backend authorization.
 
 ### 8. QuickBooks Online (QBO) Export Queue & Go REST API
 Dedicated queue drawer (`max-w-4xl`) holding validated demo transactions
@@ -91,6 +98,11 @@ remains future scope.
 ## 👥 Role-Based Access Control (RBAC)
 
 The app supports 7 distinct user roles, each with specific navigation and approval permissions:
+
+The role selector is a demo simulation. `src/lib/permissions.ts` is the shared
+typed client-side model for allowed tabs, operation helpers (create, export,
+import, QBO, barcode, scanner, PWA, and admin), approval queues, and
+role-scoped badges. These UI checks are not an API security boundary.
 
 | User Role | Permitted Modules | Approval Level | Restricted Actions |
 | :--- | :--- | :--- | :--- |

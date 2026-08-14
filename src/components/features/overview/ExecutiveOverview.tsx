@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   CheckCircle2,
   Clock,
@@ -12,43 +12,31 @@ import {
   X,
 } from 'lucide-react';
 import { RoleActionCenter } from '@/components/features/overview/RoleActionCenter';
+import {
+  canApproveApprovalStage,
+  getNextApprovalStage,
+  type ApprovalRecord,
+  type ApprovalStage,
+  type Role,
+  type RoleScopedDashboardData,
+  type ReviewablePurchaseOrder,
+} from '@/lib/permissions';
 
 interface ExecutiveOverviewProps {
-  approvalsList: any[];
-  inventoryList: any[];
-  soaRows: any[];
-  poList: any[];
-  rfpList: any[];
-  rfqList?: any[];
-  qboQueue?: any[];
-  quotationsList?: any[];
-  collectionsList?: any[];
-  viewAsRole: string;
-  onApproveItem: (id: string, stage: string) => void;
+  approvalsList: readonly ApprovalRecord[];
+  reviewablePOItems: readonly ReviewablePurchaseOrder[];
+  roleScopedData: RoleScopedDashboardData;
+  viewAsRole: Role;
+  onApproveItem: (id: string, stage: ApprovalStage) => void;
   onSelectTab: (tabKey: string) => void;
   onOpenQBOQueue?: () => void;
   onOpenCreateQuotationModal?: () => void;
 }
 
-type ApprovalStage = 'reviewer' | 'gm' | 'dcs';
-
 const stageLabel: Record<ApprovalStage, string> = {
   reviewer: 'Reviewer',
   gm: 'GM',
   dcs: 'DCS',
-};
-
-const getNextApprovalStage = (item: any): ApprovalStage | null => {
-  if (item.reviewerStatus === 'PENDING') return 'reviewer';
-  if (item.gmStatus === 'PENDING') return 'gm';
-  if (item.type !== 'Sales Quotation' && item.dcsStatus === 'PENDING') return 'dcs';
-  return null;
-};
-
-const canApproveStage = (role: string, stage: ApprovalStage, item: any) => {
-  if (stage === 'reviewer') return ['Admin', 'Marketing'].includes(role) || (role === 'Bookkeeper' && item.type === 'Purchase Order');
-  if (stage === 'gm') return ['Admin', 'General Manager'].includes(role);
-  return ['Admin', 'Chairman (DCS)'].includes(role) && item.type !== 'Sales Quotation';
 };
 
 const getApprovalStatus = (item: any) => {
@@ -79,14 +67,8 @@ const formatCurrency = (value: unknown) => {
 
 export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   approvalsList,
-  inventoryList,
-  soaRows,
-  poList,
-  rfpList,
-  rfqList = [],
-  qboQueue = [],
-  quotationsList = [],
-  collectionsList = [],
+  reviewablePOItems,
+  roleScopedData,
   viewAsRole,
   onApproveItem,
   onSelectTab,
@@ -138,31 +120,16 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
     };
   }, [selectedDocModal]);
 
-  const recentQueue = useMemo(() => poList.slice(0, 8).map((purchaseOrder) => {
-    const approval = approvalsList.find((item) => item.qrn === purchaseOrder.poNumber);
-    const fallbackId = purchaseOrder.poNumber || purchaseOrder.id || 'unknown';
-    return {
-      ...(approval || {}),
-      ...purchaseOrder,
-      id: String(approval?.id || `po-${fallbackId}`),
-      approvalId: approval?.id ? String(approval.id) : null,
-      qrn: purchaseOrder.poNumber,
-      type: 'Purchase Order',
-      maker: approval?.maker || purchaseOrder.ownerRole || 'Purchasing Officer',
-      reviewerStatus: approval?.reviewerStatus || (purchaseOrder.accountingApproved ? 'APPROVED' : 'PENDING'),
-      gmStatus: approval?.gmStatus || (purchaseOrder.gmApproved ? 'APPROVED' : 'PENDING'),
-      dcsStatus: approval?.dcsStatus || (purchaseOrder.dcsApproved ? 'APPROVED' : 'PENDING'),
-    };
-  }), [approvalsList, poList]);
+  const recentQueue = reviewablePOItems;
   const selectedStage = selectedDocModal ? getNextApprovalStage(selectedDocModal) : null;
   const selectedStageCanApprove = selectedDocModal?.approvalId && selectedStage
-    ? canApproveStage(viewAsRole, selectedStage, selectedDocModal)
+    ? canApproveApprovalStage(viewAsRole, selectedStage, selectedDocModal)
     : false;
 
   const reviewApprovals = () => {
     const firstActionable = recentQueue.find((item) => {
       const nextStage = getNextApprovalStage(item);
-      return Boolean(item.approvalId) && nextStage && canApproveStage(viewAsRole, nextStage, item);
+      return Boolean(item.approvalId) && nextStage && canApproveApprovalStage(viewAsRole, nextStage, item);
     });
     if (firstActionable) {
       setSelectedDocModal(firstActionable);
@@ -182,14 +149,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
     <div className="space-y-7">
       <RoleActionCenter
         viewAsRole={viewAsRole}
-        approvalsList={approvalsList}
-        inventoryList={inventoryList}
-        rfqList={rfqList}
-        quotationsList={quotationsList}
-        poList={poList}
-        soaRows={soaRows}
-        collectionsList={collectionsList}
-        qboQueue={qboQueue}
+        roleScopedData={roleScopedData}
         onSelectTab={onSelectTab}
         onOpenApprovals={reviewApprovals}
         onOpenQBOQueue={onOpenQBOQueue}
@@ -200,14 +160,14 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
         <div className="flex flex-col justify-between gap-3 border-b border-slate-200/80 px-5 py-5 sm:flex-row sm:items-end sm:px-6">
           <div>
             <p className="section-kicker">Control trail</p>
-            <h2 id="approval-table-title" className="mt-1 text-xl font-semibold tracking-[-0.02em] text-slate-950">Approval activity</h2>
-            <p className="mt-1 text-sm text-slate-600">Recent purchase orders and their current approval stage.</p>
+            <h2 id="approval-table-title" className="mt-1 text-xl font-semibold tracking-[-0.02em] text-slate-950">Reviewable purchase orders</h2>
+            <p className="mt-1 text-sm text-slate-600">{approvalsList.length} pending approval items; purchase orders assigned to the active demo role appear below.</p>
           </div>
           <span className="w-fit rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium tabular-nums text-slate-600">{recentQueue.length} records</span>
         </div>
         <div className="table-responsive-wrapper">
           <table className="wayfinding-grid w-full min-w-[760px] border-collapse text-left">
-            <caption className="sr-only">Recent purchase orders and approval status</caption>
+            <caption className="sr-only">Reviewable purchase orders and approval status</caption>
             <thead className="border-b border-slate-200 bg-white text-base text-slate-950">
               <tr>
                 <th scope="col" className="px-6 py-4 font-medium">PO Number <span className="ml-1 text-slate-400">↕</span></th>
@@ -221,7 +181,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
               {recentQueue.map((item) => {
                 const nextStage = getNextApprovalStage(item);
                 const status = getApprovalStatus(item);
-                const canApprove = Boolean(item.approvalId) && nextStage ? canApproveStage(viewAsRole, nextStage, item) : false;
+                const canApprove = Boolean(item.approvalId) && nextStage ? canApproveApprovalStage(viewAsRole, nextStage, item) : false;
                 return (
                   <tr key={item.id} className="border-b border-slate-200 last:border-b-0 hover:bg-slate-50">
                     <td className="px-6 py-4">

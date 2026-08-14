@@ -2,13 +2,14 @@
 
 import React from 'react';
 import { Layers, Package, Camera, Menu, FileText, FileCheck } from 'lucide-react';
+import { canUseOperation, getAllowedTabs, type Role } from '@/lib/permissions';
 
 interface BottomNavProps {
   activeTab: string;
   onSelectTab: (tabKey: string) => void;
   onOpenScanner: () => void;
   onOpenMobileDrawer: () => void;
-  allowedTabs?: string[];
+  viewAsRole: Role;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
@@ -16,8 +17,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onSelectTab,
   onOpenScanner,
   onOpenMobileDrawer,
-  allowedTabs = ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
+  viewAsRole,
 }) => {
+  const allowedTabs = getAllowedTabs(viewAsRole);
+
   return (
     <nav aria-label="Mobile primary navigation" className="bottom-nav fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around gap-1 px-2 pt-2 text-slate-700 no-print lg:hidden">
       {/* 1. Overview */}
@@ -57,7 +60,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       )}
 
       {/* 3. Primary Elevated Center Action: Barcode Camera Scanner */}
-      <button
+      {canUseOperation(viewAsRole, 'scanner') && <button
         type="button"
         onClick={onOpenScanner}
         aria-label="Open camera barcode scanner"
@@ -65,7 +68,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         title="Camera barcode scanner"
       >
         <Camera className="w-6 h-6 text-amber-400" />
-      </button>
+      </button>}
 
       {/* 4. Quotes / SOA based on permission */}
       {allowedTabs.includes('quotations') ? (

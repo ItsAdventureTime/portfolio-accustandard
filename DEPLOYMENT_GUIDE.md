@@ -19,13 +19,17 @@ future attachments, imports, exports, or documents.
 ## 1. One-time macOS prerequisites
 
 Install or verify the client-side tools. The deployment script uses SSH and
-rsync only to transfer source; all dependency installation, frontend
-compilation, backend compilation, and service startup happen on the VPS.
+rsync only to transfer source to the configured demo VPS; all dependency
+installation, frontend compilation, backend compilation, and service startup
+happen on the VPS. This transport is separate from GitHub synchronization:
+Git commits and GitHub updates for this repository must use authenticated
+`gh` HTTPS commands only. Do not configure GitHub SSH remotes, SSH keys, or
+passkeys.
 
 ```bash
 command -v gh
 command -v rsync
-command -v ssh
+command -v ssh # VPS deployment transport only; never use for GitHub
 /opt/homebrew/bin/podman version
 ```
 

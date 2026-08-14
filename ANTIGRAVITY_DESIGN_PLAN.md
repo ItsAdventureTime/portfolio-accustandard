@@ -13,6 +13,16 @@
 > See `IMPLEMENTATION_STATUS.md` and `UI_UX_ACCESSIBILITY_GUIDE.md` for the
 > verified current state and the remaining feature-module roadmap.
 
+> **Current implementation boundary (2026-08-14):** The active shell uses a
+> full-width horizontal desktop rail, a responsive mobile drawer/bottom rail,
+> and the supplied logo. `Sidebar.tsx` is retained only as an unmounted legacy
+> component. `src/lib/permissions.ts` is the shared client-side model for
+> role-filtered tabs, operations, approval selectors, and navigation counts.
+> The role selector is an explicitly labeled demo simulation; the Go API still
+> requires authentication, session identity, and server-enforced authorization
+> before production use. This blueprint's future-state requirements must not be
+> read as evidence that those controls already exist.
+
 ---
 
 ## 1. Redesign Philosophy & Core Objectives
@@ -84,7 +94,7 @@ body {
 
 ### 2.2 Typography Scale & Rules
 - **Font Stack:** Primary sans-serif: `Outfit` (or `Geist` / `Satoshi`). Monospace for financial data and codes: `Geist Mono`.
-- **Headlines:** Tight tracking (`tracking-tight`), heavy weight (`font-bold` / `font-extrabold`), `text-wrap: balance`.
+- **Headlines:** Tight tracking (`tracking-tight`), semibold weight (`font-semibold`), and `text-wrap: balance`; reserve heavier weights for high-priority status only.
 - **Financial & Quantity Figures:** Always apply `font-variant-numeric: tabular-nums` or `tabular-data` class to prevent column shifting during live recalculations.
 - **Labels & Subheaders:** Upper-case small caps (`font-semibold text-xs tracking-wider uppercase text-slate-500`).
 
@@ -153,6 +163,10 @@ Replace high-saturation fills with quiet, muted status pills:
 ## 3. Structural Redesign Blueprints
 
 ### 3.1 Header & Global Navigation Shell (`Header.tsx` & `Sidebar.tsx`)
+- **Current baseline:** `Header.tsx` is the active shell. It renders a filtered
+  horizontal rail at desktop widths and the mobile drawer trigger below the
+  desktop breakpoint. `Sidebar.tsx` is not mounted by the active page and is
+  retained for legacy reference only.
 - **Visual Style:** Ultra-thin glassmorphic top header bar (`bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40`).
 - **Brand Element:** Official logo preview + stylized Rx red accent bar.
 - **Search Bar:** Elevated trigger button showing `Search transactions, SKUs, or documents... (Cmd + K)`.
@@ -239,11 +253,14 @@ feature-module roadmap:
   center, approval activity table, document inspector focus management, API
   status treatment, responsive navigation, and reduced-motion support.
 
-1. **Phase 2.1: CSS & Tokens Setup (`src/app/globals.css`)**
-   - Update CSS custom properties, font definitions (`Outfit`, `Geist Mono`), quiet badge utility classes, and custom scrollbar rules.
+1. **Phase 2.1: CSS & Tokens Setup (`src/app/globals.css`) — complete**
+   - CSS custom properties, quiet badge utilities, focus styles, responsive
+     shell tokens, and `Outfit` via `next/font/google` are implemented.
 
-2. **Phase 2.2: Shell & Navigation Refactor**
-   - Refactor `Header.tsx`, `Sidebar.tsx`, `BottomNav.tsx`, and `MobileNavDrawer.tsx` to apply quiet glassmorphic chrome and smooth role switcher controls.
+2. **Phase 2.2: Shell & Navigation Refactor — complete**
+   - `Header.tsx`, `BottomNav.tsx`, and `MobileNavDrawer.tsx` use the branded
+     responsive shell, shared role permissions, and accessible operations-menu
+     behavior. `Sidebar.tsx` remains unmounted legacy code.
 
 3. **Phase 2.3: Reusable Component Polish**
    - Enhance Rx Pill badges, status pills, data table wrappers (`table-responsive-wrapper`), and bottom sheet modal containers (`mobile-modal-container`).
@@ -251,5 +268,8 @@ feature-module roadmap:
 4. **Phase 2.4: Core Feature Modules Refactor**
    - Upgrade Overview (`src/components/features/overview`), Inventory (`src/components/features/inventory`), Quotations (`src/components/features/quotations`), Purchasing (`src/components/features/purchasing`), Finance/SOA (`src/components/features/soa`), and Admin (`src/components/features/admin`).
 
-5. **Phase 2.5: Verification & Quality Assurance**
-   - Run `npm run lint` and `npm run build` in Podman container environment to confirm zero TypeScript, ESLint, or CSS errors.
+5. **Phase 2.5: Verification & Quality Assurance — current pass**
+   - `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass in the pinned
+     `node:24.18-alpine3.24` Podman environment. Backend authorization,
+     authenticated deployment, and full accessibility assistive-technology
+     testing remain release prerequisites.

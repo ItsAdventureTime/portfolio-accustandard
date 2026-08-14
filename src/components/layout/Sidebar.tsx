@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
+import { getAllowedTabs } from '@/lib/permissions';
 
 interface SidebarProps {
   activeTab: string;
@@ -34,16 +35,6 @@ interface SidebarProps {
   onToggleCollapse?: () => void;
 }
 
-const ROLE_ALLOWED_TABS: Record<string, string[]> = {
-  Admin: ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'Chairman (DCS)': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  'General Manager': ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
-  Bookkeeper: ['overview', 'soa', 'purchasing', 'rfp'],
-  Warehouse: ['overview', 'inventory', 'purchasing'],
-  Marketing: ['overview', 'quotations'],
-  Sales: ['overview', 'quotations', 'inventory'],
-};
-
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
@@ -58,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed = false,
   onToggleCollapse,
 }) => {
-  const allowed = ROLE_ALLOWED_TABS[viewAsRole] || ROLE_ALLOWED_TABS['Admin'];
+  const allowed = getAllowedTabs(viewAsRole);
 
   const navItems = [
     {

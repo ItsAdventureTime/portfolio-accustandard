@@ -2,7 +2,7 @@
 
 /* AccuStandard calm enterprise design tokens. */
 @theme {
-  --font-sans: "Outfit", "Avenir Next", "Segoe UI Variable", system-ui,
+  --font-sans: var(--font-outfit), "Avenir Next", "Segoe UI Variable", system-ui,
     -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "Geist Mono", "SFMono-Regular", Consolas, "Liberation Mono",
     monospace;
