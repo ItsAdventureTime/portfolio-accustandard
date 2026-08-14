@@ -154,9 +154,10 @@ export const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({
       onClose={onClose}
       title={title}
       description="Scan a barcode with the camera or enter a SKU manually."
+      size="lg"
       contentClassName="text-slate-900"
     >
-      <div className="bg-white text-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-300 flex flex-col animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out space-y-6 text-sm">
+      <div className="modal-panel gap-6 p-6 text-slate-900 sm:p-8">
         {/* Hidden File Input */}
         <input
           ref={fileInputRef}

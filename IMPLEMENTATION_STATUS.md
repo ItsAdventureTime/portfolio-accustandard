@@ -266,6 +266,24 @@ production acceptance release from a lint/build result alone.
 - `npm run deploy:demo` was not run during this repair; remote VPS deployment
   and post-deploy site/API verification remain operator steps.
 
+### 2026-08-14 modal nested-surface consistency retry
+
+- Re-audited every blocking dialog, document preview, scanner, drawer, and
+  command surface after the first shared-shell pass. Legacy nested roots that
+  still carried bespoke `rounded-2xl`/`rounded-3xl`, `shadow-2xl`, and
+  `animate-in` treatment now use the shared `modal-panel` contract.
+- Added explicit modal size tokens for compact, form, inspector, ROI, and
+  document workflows. The shared panel now owns overflow, tinted elevation,
+  calmer modal typography, and responsive spacing instead of each feature
+  recreating its own card shell.
+- Removed the RFQ preview's conditional pre-hook return so its state hooks
+  remain stable while `AccessibleModal` owns open/close rendering.
+- Source audit confirms no remaining `animate-in` modal wrappers or bespoke
+  `fixed inset-0` overlays in `src/components`. Feature cards and the
+  operations menu remain intentionally non-modal surfaces.
+- This follow-up requires the same disposable Podman lint, type-check, build,
+  and diff validation before publication.
+
 ## Current-framework notes
 
 The repository targets Next.js 16/React 19/Tailwind 4. Next.js 16 requires

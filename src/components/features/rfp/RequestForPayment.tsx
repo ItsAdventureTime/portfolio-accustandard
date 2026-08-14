@@ -155,9 +155,10 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
           onClose={() => setReleasingRfp(null)}
           title={`Fund release: ${releasingRfp.rfpNo}`}
           description="Confirm bank release details for an eligible payment request."
+          size="md"
           contentClassName="text-slate-900"
         >
-          <div className="bg-white rounded-3xl shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-5 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-xs sm:text-sm">
+          <div className="modal-panel gap-5 p-6 text-slate-900 text-xs sm:p-8 sm:text-sm">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-emerald-700 text-white rounded-xl">
@@ -237,9 +238,10 @@ export const RequestForPayment: React.FC<RequestForPaymentProps> = ({
           onClose={() => setInspectingRfp(null)}
           title={`RFP details: ${inspectingRfp.rfpNo}`}
           description="Inspect payment request status and release eligibility."
+          size="lg"
           contentClassName="text-slate-900"
         >
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
+          <div className="modal-panel gap-6 p-6 text-slate-900 text-sm sm:p-8">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">

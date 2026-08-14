@@ -16,7 +16,7 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
   onClose,
   rfqData = {},
 }) => {
-  if (!isOpen) return null;
+  rfqData = rfqData ?? {};
 
   // Build initial dynamic category list matching quote item selections
   const initialCategories = (rfqData.categories && rfqData.categories.length > 0)
@@ -101,9 +101,10 @@ export const RFQDocumentPreviewModal: React.FC<RFQDocumentPreviewModalProps> = (
       onClose={onClose}
       title="Official RFQ Document Template"
       description="Review the selected request for quotation document preview."
+      size="xl"
       contentClassName="text-slate-900"
     >
-      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full border border-slate-300 my-auto text-slate-900 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out flex flex-col max-h-[92vh]">
+      <div className="modal-panel modal-document-preview text-slate-900">
         {/* Header Block Matching Screenshot Design System */}
         <div className="p-6 sm:p-7 border-b border-slate-100 flex items-start justify-between gap-4 shrink-0 bg-white">
           <div className="flex items-start gap-4">

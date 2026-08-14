@@ -747,7 +747,8 @@ textarea:focus-visible {
   width: min(100%, var(--modal-width, 48rem));
   max-height: min(100%, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem));
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid rgb(148 163 184 / 0.48);
   border-radius: 1.25rem;
   background: var(--surface-card);
@@ -840,6 +841,7 @@ textarea:focus-visible {
 }
 
 .modal-document-preview {
+  overflow: hidden;
   background: var(--surface-canvas);
 }
 
@@ -886,6 +888,11 @@ textarea:focus-visible {
 .modal-panel .font-extrabold,
 .modal-surface .font-black,
 .modal-surface .font-extrabold {
+  font-weight: 600;
+}
+
+.modal-panel .font-bold,
+.modal-surface .font-bold {
   font-weight: 600;
 }
 

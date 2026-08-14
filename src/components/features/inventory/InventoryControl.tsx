@@ -466,9 +466,10 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
           onClose={() => setSelectedSkuModal(null)}
           title={`SKU details: ${selectedSkuModal.sku}`}
           description="Inventory record details and stock actions."
+          size="lg"
           contentClassName="text-slate-900"
         >
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-slate-300 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 ease-out text-slate-900 text-sm">
+          <div className="modal-panel gap-6 p-6 text-slate-900 text-sm sm:p-8">
             {/* Header */}
             <div className="flex justify-between items-center border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">

@@ -513,9 +513,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           onClose={() => setIsRoiModalOpen(false)}
           title="Marketing ROI and margin calculator"
           description="Review quotation-specific cost, price, and margin calculations."
+          size="xl"
           contentClassName="text-slate-900"
         >
-          <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-4xl overflow-hidden p-6 sm:p-8 space-y-6">
+          <div className="modal-panel gap-6 p-6 sm:p-8">
             {/* Header Block */}
             <div className="flex justify-between items-start border-b border-slate-200 pb-5">
               <div className="flex items-center gap-3.5">
@@ -820,9 +821,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           onClose={() => setSelectedRfqModal(null)}
           title={`Sales RFQ document inspector: ${selectedRfqModal.rfqNo}`}
           description="Review the selected request for quotation and approval chain."
+          size="lg"
           contentClassName="text-slate-900"
         >
-          <div className="modal-surface bg-white rounded-3xl border border-slate-300 shadow-2xl w-full max-w-3xl overflow-hidden p-6 sm:p-8 space-y-6">
+          <div className="modal-panel gap-6 p-6 sm:p-8">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-blue-900 text-white rounded-2xl shadow-sm">
