@@ -280,3 +280,9 @@ feature-module roadmap:
    - The 2026-08-14 repair verified that contract with `--network=none`:
      lint, TypeScript, and the Webpack static export passed using the vendored
      Outfit asset. `npm run deploy:demo` remains an operator-run remote step.
+
+   - The focused 2026-08-14 action pass keeps one prominent action per module,
+     uses restrained supporting and attention treatments, and exposes rare
+     actions through visible native disclosures. Mobile operations remain a
+     single role-filtered `Operations & tools` disclosure rather than a second
+     action grid.

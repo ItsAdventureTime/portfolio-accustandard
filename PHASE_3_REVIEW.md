@@ -59,8 +59,9 @@ work through backward-compatible token aliases.
 
 The plan asks for a decision-first overview, stable max-width containers, CSS
 Grid, mobile cards, and `dvh`-safe bottom sheets. The application shell now uses
-a 1440px container, the overview action center uses an asymmetric grid, and
-mobile navigation/sheets use `85dvh`-bounded content with safe-area spacing.
+a responsive rail up to `1680px`, the overview action center uses an asymmetric
+grid, and mobile navigation/sheets use `85dvh`-bounded content with safe-area
+spacing.
 
 MDN documents `dvh` as the viewport unit that responds to dynamic browser
 chrome, while noting that it can resize during scrolling. The sheet uses it for
@@ -186,3 +187,18 @@ The application still contains legacy hand-rolled dialogs in feature modules.
 The mobile navigation sheet is now on the Radix modal pattern; migrating the
 remaining dialogs is a separate, higher-risk accessibility pass because each
 one has different close and submission behavior.
+
+## Focused action and mobile operations contract
+
+The current shell uses shared primary/supporting/quiet/attention action styles
+and native `More actions` disclosures for low-frequency controls. Desktop
+operations remain an APG menu button labeled `More tools`; the mobile Radix
+drawer exposes one permission-filtered `Operations & tools` disclosure using
+the existing `canUseOperation` checks and page callbacks for export, startup
+import, QBO queue, barcode manager, scanner, and PWA installation.
+
+The 2026-08-14 screenshot follow-up also softened visible table and workflow
+copy: sentence case is preferred, regular/medium text carries most information,
+and heavier weights are reserved for headings, active controls, and critical
+status values. This keeps the branded navy/royal/red hierarchy legible without
+turning every label into an alarm.

@@ -196,7 +196,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={item.key}
                 type="button"
                 onClick={() => onSelectTab(item.target)}
-                className="header-nav-link px-1"
+                className="header-nav-link px-2.5"
                 aria-current={active ? 'page' : undefined}
               >
                 {item.label}
@@ -256,10 +256,11 @@ export const Header: React.FC<HeaderProps> = ({
               aria-expanded={isToolsOpen}
               aria-haspopup="menu"
               aria-controls={operationsMenuId}
-              aria-label="Open operations and tools"
-              className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg"
+              aria-label="Open more tools"
+              className="header-icon-button inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-3"
             >
               <MoreHorizontal className="h-5 w-5" />
+              <span>More tools</span>
             </button>
             {isToolsOpen && (
               <div id={operationsMenuId} ref={toolsMenuRef} role="menu" aria-labelledby={operationsButtonId} className="wayfinding-card absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 p-2 shadow-xl">

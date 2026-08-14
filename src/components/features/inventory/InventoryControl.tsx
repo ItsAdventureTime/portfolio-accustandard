@@ -74,22 +74,24 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             Inventory control
           </h2>
           <p className="mt-1 text-sm font-medium text-slate-600">
-            Live Stock Items: <span className="font-bold text-slate-900">{filteredInventory.length} SKUs maintained</span> &bull; Demand-Driven Replenishment &amp; FEFO Expiry
+            Live stock items: <span className="font-semibold text-slate-900">{filteredInventory.length} SKUs maintained</span> &bull; Demand-driven replenishment &amp; FEFO expiry
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
           <button
+            type="button"
             onClick={onOpenProductManager}
-            className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            className="action-quiet flex-1 sm:flex-initial text-xs sm:text-sm"
           >
-            <QrCode className="w-4 h-4 text-emerald-400" />
+            <QrCode className="w-4 h-4 text-blue-700" />
             <span>Manage Barcode SKUs</span>
           </button>
 
           <button
+            type="button"
             onClick={onOpenAddStock}
-            className="flex-1 sm:flex-initial px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+            className="action-primary flex-1 sm:flex-initial text-xs sm:text-sm"
           >
             <Plus className="w-4 h-4" />
             <span>Add Stock Batch</span>
@@ -98,7 +100,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             <button
               type="button"
               onClick={onOpenCreatePO}
-              className="flex-1 sm:flex-initial px-4 py-2.5 bg-rose-700 hover:bg-rose-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
+              className="action-attention flex-1 sm:flex-initial text-xs sm:text-sm"
             >
               <AlertTriangle className="w-4 h-4" />
               <span>Create reorder PO ({criticalItems.length})</span>
@@ -114,11 +116,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
           role="tab"
           onClick={() => setActiveTab('LIVE')}
           aria-selected={activeTab === 'LIVE'}
-          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
-            activeTab === 'LIVE'
-              ? 'bg-blue-900 text-white shadow-md scale-100'
-              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-          }`}
+          className="action-segment flex items-center justify-center gap-2 text-xs sm:text-sm"
         >
           <Package className="w-4 h-4" />
           <span>Live Inventory SKUs ({inventoryList.length})</span>
@@ -129,11 +127,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
           role="tab"
           onClick={() => setActiveTab('REPLENISHMENT')}
           aria-selected={activeTab === 'REPLENISHMENT'}
-          className={`px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer ${
-            activeTab === 'REPLENISHMENT'
-              ? 'bg-blue-900 text-white shadow-md scale-100'
-              : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-          }`}
+          className="action-segment flex items-center justify-center gap-2 text-xs sm:text-sm"
         >
           <Layers className="w-4 h-4" />
           <span>Demand Replenishment Planner ({replenishmentPlannerList.length})</span>
@@ -158,10 +152,11 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             </div>
 
             <button
+              type="button"
               onClick={onOpenScanner}
-              className="w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm shrink-0"
+              className="action-quiet w-full shrink-0 text-xs sm:w-auto sm:text-sm"
             >
-              <QrCode className="w-4 h-4" />
+              <QrCode className="w-4 h-4 text-blue-700" />
               <span>Camera Barcode Scanner</span>
             </button>
           </div>
@@ -179,8 +174,8 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                   className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${isActive ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-100' : 'border-slate-200 bg-white'}`}
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-black text-slate-900">{card.label}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-black ${card.tone === 'emerald' ? 'bg-emerald-100 text-emerald-900' : card.tone === 'amber' ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-900'}`}>{count}</span>
+                    <span className="text-sm font-semibold text-slate-900">{card.label}</span>
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${card.tone === 'emerald' ? 'bg-emerald-100 text-emerald-900' : card.tone === 'amber' ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-900'}`}>{count}</span>
                   </div>
                   <span className="mt-1 block text-xs font-semibold text-slate-500">{card.detail}</span>
                 </button>
@@ -188,7 +183,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             })}
           </div>
           {activeStockClass !== 'ALL' && (
-            <button type="button" onClick={() => setActiveStockClass('ALL')} className="text-left text-xs font-black text-blue-900 underline decoration-blue-300 underline-offset-4 hover:text-blue-700">
+             <button type="button" onClick={() => setActiveStockClass('ALL')} className="text-left text-xs font-medium text-blue-900 underline decoration-blue-300 underline-offset-4 hover:text-blue-700">
               Show all stock categories
             </button>
           )}
@@ -210,7 +205,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                         e.stopPropagation();
                         setSelectedSkuModal(item);
                       }}
-                      className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
+                      className="font-medium font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                     >
                       <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
                       <span>{item.sku}</span>
@@ -256,7 +251,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200 text-xs">
                   <tr>
                     <th className="p-4">SKU / Barcode</th>
                     <th className="p-4">Item Description</th>
@@ -266,7 +261,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                     <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+                <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {filteredInventory.map((item) => (
                     <tr
                       key={item.id}
@@ -277,7 +272,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedSkuModal(item)}
-                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
+                           className="font-medium font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                           title="Click to inspect SKU barcode details & batch FEFO"
                         >
                           <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
@@ -285,9 +280,9 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                           <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                         </button>
                       </td>
-                      <td className="p-4 font-bold text-slate-900">{item.description}</td>
+                      <td className="p-4 font-medium text-slate-900">{item.description}</td>
                       <td className="p-4">
-                        <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-bold flex items-center gap-1.5 w-fit">
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-medium flex items-center gap-1.5 w-fit">
                           <Building2 className="w-3.5 h-3.5 text-blue-700" />
                           {item.location}
                         </span>
@@ -296,9 +291,9 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                         {item.available}
                       </td>
                       <td className="p-4 text-center">
-                        {Number(item.available ?? item.onHand ?? 0) < 50 ? <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Critical stock</span> : <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Available</span>}
+                        {Number(item.available ?? item.onHand ?? 0) < 50 ? <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-900">Critical stock</span> : <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-900">Available</span>}
                       </td>
-                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedSkuModal(item)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedSkuModal(item)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -310,16 +305,16 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
       {activeTab === 'REPLENISHMENT' && (
         <div className="space-y-5">
-          <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200/90 rounded-2xl text-xs sm:text-sm text-amber-950 font-semibold space-y-2 shadow-2xs">
-            <p className="font-black flex items-center gap-2 text-sm sm:text-base text-amber-950 uppercase tracking-wider">
-              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
-              Demand-Driven Replenishment Rules (Blueprint Section 3)
-            </p>
-            <div className="text-amber-900 space-y-1 font-semibold leading-relaxed">
+           <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200/90 rounded-2xl text-xs sm:text-sm text-amber-950 font-medium space-y-2 shadow-2xs">
+              <p className="flex items-center gap-2 text-sm font-semibold text-amber-950 sm:text-base">
+                <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
+              Demand-driven replenishment rules (Blueprint section 3)
+              </p>
+            <div className="space-y-1 font-normal leading-relaxed text-amber-900">
               <p>Replenishment is triggered by actual available stock, reservations, open customer demand, lead time, and critical levels:</p>
-              <p>&bull; <strong>Class 1 (Core Stock)</strong>: Reorder automatically at critical level + 10% safety buffer.</p>
-              <p>&bull; <strong>Class 2 (Controlled)</strong>: Requires demand forecast review prior to purchase order creation.</p>
-              <p>&bull; <strong>Class 3 (Short-Expiry / Special)</strong>: Hard-blocked without linked Customer PO to prevent over-stocking.</p>
+              <p>&bull; <strong>Class 1 (Core stock)</strong>: Reorder automatically at critical level + 10% safety buffer.</p>
+              <p>&bull; <strong>Class 2 (Controlled)</strong>: Requires demand forecast review before purchase order creation.</p>
+              <p>&bull; <strong>Class 3 (Short-expiry / special)</strong>: Hard-blocked without a linked customer PO to prevent over-stocking.</p>
             </div>
           </div>
 
@@ -375,28 +370,28 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                       <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5" />
                     </button>
 
-                    <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-extrabold rounded-lg border border-slate-200">
+                    <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200">
                       {item.itemClass}
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="font-extrabold text-sm text-slate-900 leading-snug">{item.description}</h4>
+                    <h4 className="font-medium text-sm text-slate-900 leading-snug">{item.description}</h4>
                     <p className="text-xs text-slate-500 font-semibold">{item.supplier} &bull; Lead: {item.leadTimeDays} days</p>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
                     <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
-                      <span className="text-[10px] font-black uppercase text-slate-500 block">Available</span>
-                      <span className="font-mono font-extrabold text-slate-900 text-sm">{item.availableStock}</span>
+                      <span className="text-[10px] font-medium text-slate-500 block">Available</span>
+                      <span className="font-mono font-semibold text-slate-900 text-sm">{item.availableStock}</span>
                     </div>
                     <div className="bg-slate-50 p-2 rounded-xl border border-slate-200">
-                      <span className="text-[10px] font-black uppercase text-slate-500 block">Demand</span>
-                      <span className="font-mono font-extrabold text-blue-700 text-sm">{item.openDemand}</span>
+                      <span className="text-[10px] font-medium text-slate-500 block">Demand</span>
+                      <span className="font-mono font-semibold text-blue-700 text-sm">{item.openDemand}</span>
                     </div>
                     <div className="bg-amber-50/60 p-2 rounded-xl border border-amber-200">
-                      <span className="text-[10px] font-black uppercase text-amber-800 block">Proposed Order</span>
-                      <span className="font-mono font-black text-amber-900 text-sm">{item.proposedOrderQty}</span>
+                      <span className="text-[10px] font-medium text-amber-800 block">Proposed order</span>
+                      <span className="font-mono font-semibold text-amber-900 text-sm">{item.proposedOrderQty}</span>
                     </div>
                   </div>
                 </div>
@@ -406,7 +401,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200 text-xs">
                   <tr>
                     <th className="p-4">SKU / Class</th>
                     <th className="p-4">Description / Supplier</th>
@@ -416,7 +411,7 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                     <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+                <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {replenishmentPlannerList.map((item) => (
                     <tr
                       key={item.id}
@@ -457,51 +452,51 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
                             };
                             setSelectedSkuModal(matched);
                           }}
-                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
+                          className="font-medium font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer whitespace-nowrap"
                           title="Click to inspect SKU barcode details & batch FEFO"
                         >
                           <Barcode className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
                           <span>{item.sku}</span>
                           <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                         </button>
-                        <span className="inline-block mt-2 px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
+                        <span className="inline-block mt-2 px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-lg border border-slate-200">
                           {item.itemClass}
                         </span>
                       </td>
                       <td className="p-4">
-                        <div className="font-extrabold text-slate-900 text-sm sm:text-base">{item.description}</div>
-                        <div className="text-xs text-slate-600 font-semibold mt-0.5">{item.supplier} &bull; Lead Time: <span className="font-bold text-slate-800">{item.leadTimeDays} days</span></div>
+                        <div className="font-medium text-slate-900 text-sm sm:text-base">{item.description}</div>
+                        <div className="text-xs text-slate-600 font-medium mt-0.5">{item.supplier} &bull; Lead time: <span className="font-semibold text-slate-800">{item.leadTimeDays} days</span></div>
                       </td>
-                      <td className="p-4 text-right font-mono font-black text-blue-900 text-base sm:text-lg">
+                      <td className="p-4 text-right font-mono font-semibold text-blue-900 text-base sm:text-lg">
                         {item.proposedOrderQty}
                       </td>
                       <td className="p-4">
-                        <span className="text-xs font-bold text-slate-700">{item.availableStock} available · {item.openCustomerDemand} open demand</span>
+                        <span className="text-xs font-medium text-slate-700">{item.availableStock} available · {item.openCustomerDemand} open demand</span>
                       </td>
                       <td className="p-4 text-center">
                         {item.itemClass.includes('Class 3') && (
                           <div className="space-y-1">
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
                               <FileCheck className="w-4 h-4 text-emerald-700" />
                               Customer PO Linked
                             </span>
-                            <p className="text-xs font-mono text-slate-600 font-bold">{item.linkedCustomerPO}</p>
+                            <p className="text-xs font-mono text-slate-600 font-medium">{item.linkedCustomerPO}</p>
                           </div>
                         )}
                         {item.itemClass.includes('Class 1') && (
-                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
                             <AlertTriangle className="w-4 h-4 text-amber-700" />
                             Buffer +10% Applied
                           </span>
                         )}
                         {item.itemClass.includes('Class 2') && (
-                          <span className="px-3 py-1 bg-blue-100 text-blue-900 border border-blue-300 text-xs font-extrabold rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
+                          <span className="px-3 py-1 bg-blue-100 text-blue-900 border border-blue-300 text-xs font-medium rounded-xl inline-flex items-center gap-1.5 shadow-2xs">
                             <Layers className="w-4 h-4 text-blue-700" />
                             Forecast Verified
                           </span>
                         )}
                       </td>
-                      <td className="p-4 text-center"><button type="button" onClick={() => { const matched = inventoryList.find((i: any) => i.sku === item.sku) || { id: item.id, sku: item.sku, description: item.description, location: 'Quezon City', lotNumber: 'LOT-2026-X1', expiryDate: '2027-12-31', onHand: item.availableStock, reserved: 0, available: item.availableStock, criticalLevel: item.criticalLevel, unit: 'Kits' }; setSelectedSkuModal(matched); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => { const matched = inventoryList.find((i: any) => i.sku === item.sku) || { id: item.id, sku: item.sku, description: item.description, location: 'Quezon City', lotNumber: 'LOT-2026-X1', expiryDate: '2027-12-31', onHand: item.availableStock, reserved: 0, available: item.availableStock, criticalLevel: item.criticalLevel, unit: 'Kits' }; setSelectedSkuModal(matched); }} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>

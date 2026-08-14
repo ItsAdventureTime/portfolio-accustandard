@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import {
   FileText,
+  ChevronDown,
   Printer,
   Calculator,
   UserCheck,
@@ -286,59 +287,73 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
         {/* Action Header Buttons */}
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={onOpenCreateModal}
+            className="action-primary text-xs sm:text-sm"
+          >
+            <FileText className="w-4 h-4 text-amber-300" />
+            <span>Create Sales Quote</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSubmitForApproval(qrn)}
+            className="action-supporting text-xs sm:text-sm"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Submit for Approval</span>
+          </button>
+
+          <details className="action-disclosure relative">
+            <summary>
+              <span>More actions</span>
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            </summary>
+            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 flex min-w-[17rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
           {onOpenClientRoiModal && (
             <button
+              type="button"
               onClick={() => onOpenClientRoiModal(rfqList[0])}
-              className="px-3.5 py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
-              <Calculator className="w-4 h-4 text-emerald-400" />
+              <Calculator className="w-4 h-4 text-blue-700" />
               <span>Client-Format ROI Calculator</span>
             </button>
           )}
 
           {onOpenRfqPreviewModal && (
             <button
+              type="button"
               onClick={() => onOpenRfqPreviewModal(rfqList[0])}
-              className="px-3.5 py-2.5 bg-indigo-950 hover:bg-indigo-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
-              <Eye className="w-4 h-4 text-indigo-300" />
-              <span>Official RFQ Template</span>
+              <Eye className="w-4 h-4 text-blue-700" />
+              <span>RFQ preview</span>
             </button>
           )}
 
           {onOpenClientAcceptanceModal && (
             <button
+              type="button"
               onClick={() => onOpenClientAcceptanceModal()}
-              className="px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+              className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-200" />
-              <span>Record Client Acceptance</span>
+              <ShieldCheck className="w-4 h-4 text-emerald-700" />
+              <span>Record client acceptance</span>
             </button>
           )}
 
           <button
-            onClick={onOpenCreateModal}
-            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
-          >
-            <FileText className="w-4 h-4 text-amber-400" />
-            <span>+ Create Sales Quote</span>
-          </button>
-
-          <button
-            onClick={() => onSubmitForApproval(qrn)}
-            className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md active:scale-95 cursor-pointer"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Submit for Approval</span>
-          </button>
-
-          <button
+            type="button"
             onClick={() => onOpenPrintModal(`Official Sales Quotation - ${qrn}`, 'printableQuotationDoc', quotationDocumentContent)}
-            className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+            className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
           >
             <Printer className="w-4 h-4" />
             <span>Print Quote</span>
           </button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -348,24 +363,20 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 w-fit border border-slate-300/80 shadow-2xs">
           <button
+            role="tab"
             onClick={() => setActiveSubTab('QUOTE')}
-            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-              activeSubTab === 'QUOTE'
-                ? 'bg-blue-900 text-white shadow-md scale-100'
-                : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-            }`}
+            aria-selected={activeSubTab === 'QUOTE'}
+            className="action-segment flex items-center gap-2 text-xs sm:text-sm"
           >
             <FileText className="w-4 h-4" />
             <span>Official Sales Quotation Document</span>
           </button>
 
           <button
+            role="tab"
             onClick={() => setActiveSubTab('RFQ')}
-            className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-              activeSubTab === 'RFQ'
-                ? 'bg-blue-900 text-white shadow-md scale-100'
-                : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-            }`}
+            aria-selected={activeSubTab === 'RFQ'}
+            className="action-segment flex items-center gap-2 text-xs sm:text-sm"
           >
             <UserCheck className="w-4 h-4 text-amber-400" />
             <span>RFQ / Demand Requests ({rfqList.length})</span>
@@ -378,10 +389,10 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
             setRoiProposedPrice(activeQuote?.unitPrice || 31500);
             setIsRoiModalOpen(true);
           }}
-          className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-md cursor-pointer transition active:scale-95 border border-emerald-600"
+          className="action-quiet text-xs sm:text-sm"
           title="Click to launch interactive Marketing Manager ROI & Contract Margin Calculator Popup"
         >
-          <Calculator className="w-4 h-4 text-emerald-200" />
+           <Calculator className="w-4 h-4 text-emerald-700" />
           <span>Launch Marketing ROI Calculator</span>
         </button>
       </div>
@@ -392,11 +403,11 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           {quotationsList.length > 0 && (
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-4 gap-3 shadow-2xs">
               <div className="flex items-center gap-3 flex-wrap">
-                <span className="font-black text-xs text-slate-800 uppercase tracking-wider">Select Quotation Document:</span>
+                 <span className="font-semibold text-xs text-slate-800">Select quotation document:</span>
                 <select
                   value={safeIndex}
                   onChange={(e) => setSelectedIndex(Number(e.target.value))}
-                  className="bg-white border border-slate-300 font-extrabold text-xs sm:text-sm rounded-xl px-4 py-2 text-blue-950 focus:outline-none focus:border-blue-700 shadow-2xs cursor-pointer"
+                   className="bg-white border border-slate-300 font-medium text-xs sm:text-sm rounded-xl px-4 py-2 text-blue-950 focus:outline-none focus:border-blue-700 shadow-2xs cursor-pointer"
                 >
                   {quotationsList.map((q, idx) => (
                     <option key={q.id || idx} value={idx}>
@@ -405,14 +416,14 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                   ))}
                 </select>
               </div>
-              <span className="text-xs text-slate-600 font-bold">{quotationsList.length} Active System Quote(s)</span>
+               <span className="text-xs text-slate-600 font-medium">{quotationsList.length} active system quote(s)</span>
             </div>
           )}
 
           <div className="bg-slate-100/90 p-2.5 sm:p-6 rounded-3xl border border-slate-300 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
-              <span className="uppercase tracking-wider font-extrabold text-[11px] text-slate-700">Official Sales Quotation Document Preview</span>
-              <span className="block sm:hidden text-blue-900 font-extrabold text-[10px] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+             <div className="flex items-center justify-between text-xs font-medium text-slate-600 px-1">
+               <span className="font-semibold text-[11px] text-slate-700">Official sales quotation document preview</span>
+               <span className="block sm:hidden text-blue-900 font-medium text-[10px] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
                 &larr; Pinch to zoom / Swipe document &rarr;
               </span>
             </div>
@@ -425,24 +436,24 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
 
       {activeSubTab === 'RFQ' && (
         <div className="space-y-5">
-          <div className="p-4 sm:p-5 bg-blue-50 border border-blue-200/90 rounded-2xl text-xs sm:text-sm text-blue-950 font-semibold space-y-2 shadow-2xs">
-            <p className="font-black flex items-center gap-2 text-sm sm:text-base text-blue-950 uppercase tracking-wider">
+           <div className="p-4 sm:p-5 bg-blue-50 border border-blue-200/90 rounded-2xl text-xs sm:text-sm text-blue-950 font-medium space-y-2 shadow-2xs">
+             <p className="font-semibold flex items-center gap-2 text-sm sm:text-base text-blue-950">
               <UserCheck className="w-5 h-5 text-blue-700 shrink-0" />
-              Sales Demand Qualification Workflow (Blueprint Section 1)
+              Sales demand qualification workflow (Blueprint section 1)
             </p>
-            <p className="text-blue-900 font-semibold leading-relaxed">
+            <p className="font-normal leading-relaxed text-blue-900">
               Sales Agents create RFQs by specifying client sample census, LIS connectivity requirements, and expected contract terms.
               Sales Officers cannot set pricing or approve their own quotes.
             </p>
           </div>
 
           <div className="wayfinding-card overflow-hidden">
-            <div className="block sm:hidden text-[11px] text-slate-500 font-extrabold text-center py-1.5 bg-slate-100/90 border-b border-slate-200 uppercase tracking-wider">
+             <div className="block sm:hidden text-[11px] text-slate-500 font-medium text-center py-1.5 bg-slate-100/90 border-b border-slate-200">
               &larr; Swipe table horizontally for details &rarr;
             </div>
             <div className="table-responsive-wrapper">
               <table className="wayfinding-grid w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                 <thead className="bg-slate-100 text-slate-700 font-medium border-b border-slate-200 text-xs">
                   <tr>
                     <th className="p-4">RFQ Ref #</th>
                     <th className="p-4">Customer facility</th>
@@ -452,7 +463,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                     <th className="p-4 text-center">Primary action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+                 <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {rfqList.map((rfq) => (
                     <tr
                       key={rfq.id}
@@ -463,7 +474,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedRfqModal(rfq)}
-                          className="font-extrabold font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                           className="font-medium font-mono text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
                           title="Click to inspect Sales RFQ document details & COSO approval status"
                         >
                           <FileText className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
@@ -471,17 +482,17 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
                           <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                         </button>
                       </td>
-                      <td className="p-4 font-extrabold text-slate-900 text-sm sm:text-base">{rfq.customerName}</td>
+                      <td className="p-4 font-medium text-slate-900 text-sm sm:text-base">{rfq.customerName}</td>
                       <td className="p-4 text-xs font-semibold text-slate-700">{rfq.createdAt || rfq.requestedAt || '—'}</td>
                       <td className="p-4 text-center">
                         {rfq.marketingRoiStatus === 'ROI_COMPLETED' ? (
-                          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Ready for quote</span>
+                          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-900">Ready for quote</span>
                         ) : (
-                          <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Pending review</span>
+                          <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-900">Pending review</span>
                         )}
                       </td>
-                      <td className="p-4 text-right font-mono font-black text-slate-900">{rfq.proposedSellingPrice ? `₱${Number(rfq.proposedSellingPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}</td>
-                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedRfqModal(rfq)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-black text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
+                      <td className="p-4 text-right font-mono font-semibold text-slate-900">{rfq.proposedSellingPrice ? `₱${Number(rfq.proposedSellingPrice).toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}</td>
+                      <td className="p-4 text-center"><button type="button" onClick={() => setSelectedRfqModal(rfq)} className="inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-medium text-blue-950 transition hover:bg-blue-900 hover:text-white"><Eye className="h-4 w-4" /> Inspect</button></td>
                     </tr>
                   ))}
                 </tbody>

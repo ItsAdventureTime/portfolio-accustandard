@@ -13,6 +13,7 @@ import {
   Edit,
   X,
   UserCheck,
+  ChevronDown,
 } from 'lucide-react';
 
 import { AccustandardLogo } from '@/components/brand/AccustandardLogo';
@@ -393,50 +394,62 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
         <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
           <button
+            type="button"
             onClick={() => setIsAddInvoiceModalOpen(true)}
-            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer border border-emerald-600"
+            className="action-primary text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4 text-emerald-200" />
-            <span>+ Add Invoice to SOA</span>
+            <Plus className="w-4 h-4" />
+            <span>Add Invoice to SOA</span>
           </button>
 
           <button
+            type="button"
             onClick={() => setIsCollectionModalOpen(true)}
-            className="px-4 py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+            className="action-supporting text-xs sm:text-sm"
           >
-            <CreditCard className="w-4 h-4 text-blue-200" />
-            <span>+ Allocate Multi-SOA Check</span>
+            <CreditCard className="w-4 h-4" />
+            <span>Allocate Multi-SOA Check</span>
           </button>
 
-          <button
-            onClick={() => onOpenPrintModal('Statement of Account', 'printable-soa-target', soaDocumentContent)}
-            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Print SOA</span>
-          </button>
+          <details className="action-disclosure relative">
+            <summary>
+              <span>More actions</span>
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+            </summary>
+            <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 flex min-w-[13rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+              <button
+                type="button"
+                onClick={() => onOpenPrintModal('Statement of Account', 'printable-soa-target', soaDocumentContent)}
+                className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print SOA</span>
+              </button>
 
-          <button
-            onClick={handleExportData}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-blue-400" />
-            <span>Export SOA...</span>
-          </button>
+              <button
+                type="button"
+                onClick={handleExportData}
+                className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
+              >
+                <Download className="w-4 h-4 text-blue-700" />
+                <span>Export SOA</span>
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 
       {/* Client Selector Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-4 gap-3 shadow-2xs">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="font-black text-xs text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Building2 className="w-4 h-4 text-blue-700" />
-            Select Client SOA Ledger:
+           <span className="font-semibold text-xs text-slate-800 flex items-center gap-1.5">
+             <Building2 className="w-4 h-4 text-blue-700" />
+             Select client SOA ledger:
           </span>
           <select
             value={selectedClientId}
             onChange={(e) => setSelectedClientId(e.target.value)}
-            className="bg-white border border-slate-300 font-extrabold text-xs sm:text-sm rounded-xl px-4 py-2 text-blue-950 focus:outline-none focus:border-blue-700 shadow-2xs cursor-pointer"
+             className="bg-white border border-slate-300 font-medium text-xs sm:text-sm rounded-xl px-4 py-2 text-blue-950 focus:outline-none focus:border-blue-700 shadow-2xs cursor-pointer"
           >
             {clientOptions.map((c) => (
               <option key={c.id} value={c.id}>
@@ -445,21 +458,21 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
             ))}
           </select>
         </div>
-        <div className="flex items-center gap-4 text-xs font-bold text-slate-700">
-          <span>Terms: <strong className="text-blue-950">{activeClient.terms}</strong></span>
-          <span>Rep: <strong className="text-blue-950">{activeClient.salesperson}</strong></span>
+         <div className="flex items-center gap-4 text-xs font-medium text-slate-700">
+           <span>Terms: <strong className="font-semibold text-blue-950">{activeClient.terms}</strong></span>
+           <span>Rep: <strong className="font-semibold text-blue-950">{activeClient.salesperson}</strong></span>
         </div>
       </div>
 
       <section aria-labelledby="soa-aging-overview" className="wayfinding-card table-responsive-wrapper">
-        <div className="border-b border-slate-200 px-4 py-3"><h3 id="soa-aging-overview" className="text-sm font-black text-slate-900">Aging overview</h3><p className="mt-0.5 text-xs font-medium text-slate-500">High-signal balances are shown here. The official printable statement below keeps its controlled format.</p></div>
+         <div className="border-b border-slate-200 px-4 py-3"><h3 id="soa-aging-overview" className="text-sm font-semibold text-slate-900">Aging overview</h3><p className="mt-0.5 text-xs font-medium text-slate-500">High-signal balances are shown here. The official printable statement below keeps its controlled format.</p></div>
         <table className="wayfinding-grid w-full min-w-[720px] border-collapse text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wider text-slate-700"><tr><th className="p-4">Invoice</th><th className="p-4">Client</th><th className="p-4">Due date</th><th className="p-4 text-center">Status</th><th className="p-4 text-right">Balance</th><th className="p-4 text-center">Details</th></tr></thead>
+           <thead className="bg-slate-50 text-left text-xs font-medium text-slate-700"><tr><th className="p-4">Invoice</th><th className="p-4">Client</th><th className="p-4">Due date</th><th className="p-4 text-center">Status</th><th className="p-4 text-right">Balance</th><th className="p-4 text-center">Details</th></tr></thead>
           <tbody className="divide-y divide-slate-200">
             {computedRows.map((row, index) => {
               const age = Number(row.age || row.ageDays || 0);
               const isPaid = Number(row.invoiceBalance) <= 0;
-              return <tr key={`overview-${row.id || index}`} className="transition hover:bg-blue-50/50"><td className="p-4 font-mono font-black text-blue-950">{row.salesInvoiceNo}</td><td className="p-4 font-bold text-slate-900">{activeClient.name}</td><td className="p-4 text-xs font-semibold text-slate-600">{row.dueDate}</td><td className="p-4 text-center">{isPaid ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-900">Paid</span> : age > 30 ? <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-extrabold text-rose-900">Overdue</span> : <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-extrabold text-amber-900">Open</span>}</td><td className="p-4 text-right font-mono font-black">₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td><td className="p-4 text-center"><details className="relative inline-block"><summary className="min-h-[44px] cursor-pointer list-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-700 hover:bg-slate-100">Inspect</summary><div className="absolute right-0 z-10 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 text-left text-xs shadow-xl"><p className="font-black text-slate-900">{row.drNo}</p><p className="mt-1 text-slate-600">Amount paid: ₱{Number(row.amountPaid || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p><p className="mt-1 text-slate-600">Running balance: ₱{Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p></div></details></td></tr>;
+               return <tr key={`overview-${row.id || index}`} className="transition hover:bg-blue-50/50"><td className="p-4 font-mono font-semibold text-blue-950">{row.salesInvoiceNo}</td><td className="p-4 font-medium text-slate-900">{activeClient.name}</td><td className="p-4 text-xs font-medium text-slate-600">{row.dueDate}</td><td className="p-4 text-center">{isPaid ? <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-900">Paid</span> : age > 30 ? <span className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-medium text-rose-900">Overdue</span> : <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-900">Open</span>}</td><td className="p-4 text-right font-mono font-semibold">₱{Number(row.invoiceBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td><td className="p-4 text-center"><details className="relative inline-block"><summary className="min-h-[44px] cursor-pointer list-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100">Inspect</summary><div className="absolute right-0 z-10 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-3 text-left text-xs shadow-xl"><p className="font-semibold text-slate-900">{row.drNo}</p><p className="mt-1 text-slate-600">Amount paid: ₱{Number(row.amountPaid || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p><p className="mt-1 text-slate-600">Running balance: ₱{Number(row.runningBalance).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p></div></details></td></tr>;
             })}
           </tbody>
         </table>
@@ -467,9 +480,9 @@ export const StatementOfAccount: React.FC<StatementOfAccountProps> = ({
 
       {/* Live Rendered SOA Document Preview Container */}
       <div className="bg-slate-100/90 p-2.5 sm:p-6 rounded-3xl border border-slate-300 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1">
-          <span className="uppercase tracking-wider font-extrabold text-[11px] text-slate-700">Official Printable SOA Document Preview</span>
-          <span className="block sm:hidden text-blue-900 font-extrabold text-[10px] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+         <div className="flex items-center justify-between text-xs font-medium text-slate-600 px-1">
+           <span className="font-semibold text-[11px] text-slate-700">Official printable SOA document preview</span>
+           <span className="block sm:hidden text-blue-900 font-medium text-[10px] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
             &larr; Pinch to zoom / Swipe document &rarr;
           </span>
         </div>

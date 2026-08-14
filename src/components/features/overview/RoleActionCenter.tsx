@@ -84,9 +84,9 @@ export const RoleActionCenter: React.FC<RoleActionCenterProps> = ({
     <section aria-labelledby="role-action-center-title">
       <div className="mb-7 flex flex-col justify-between gap-5 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-end">
         <div>
-          <p className="section-kicker mb-2">Role action center</p>
-          <h1 id="role-action-center-title" className="max-w-2xl text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.045em] text-slate-950">Needs your attention today</h1>
-          <p className="mt-3 max-w-2xl text-base text-slate-600">A prioritized work queue for your current role.</p>
+          <p className="section-kicker mb-2">Work queue</p>
+          <h1 id="role-action-center-title" className="max-w-2xl text-[clamp(2rem,4vw,3.25rem)] font-semibold leading-[1.05] tracking-[-0.045em] text-slate-950">Your work queue</h1>
+          <p className="mt-3 max-w-2xl text-base text-slate-600">Role-filtered tasks and exceptions ready for action.</p>
         </div>
         <div className="flex w-fit items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50/70 px-3.5 py-2 text-sm">
           <span className="h-2 w-2 rounded-full bg-[var(--brand-red)]" aria-hidden="true" />

@@ -16,6 +16,7 @@ import {
   Save,
   ShieldAlert,
   Eye,
+  ChevronDown,
 } from 'lucide-react';
 
 interface SystemAuditTrailProps {
@@ -146,43 +147,51 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
             User setup &amp; audit log
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
-            User Setup &amp; Module Access Matrix &bull; COSO Internal Control Supervision &bull; Active Role: [{viewAsRole}]
+            User setup and module access matrix &bull; COSO internal control supervision &bull; Active role: [{viewAsRole}]
           </p>
         </div>
 
         {/* Tab Switcher & Startup Import Action */}
         <div className="flex items-center gap-3 flex-wrap">
           {onOpenStartupImportModal && (
-            <button
-              type="button"
-              onClick={onOpenStartupImportModal}
-              className="px-4 py-2.5 bg-blue-950 hover:bg-blue-900 text-white font-extrabold text-xs sm:text-sm rounded-2xl transition flex items-center gap-2 shadow-md cursor-pointer active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-emerald-400" />
-              <span>Execute Startup Cutover Data Import</span>
-            </button>
+            <details className="action-disclosure relative">
+              <summary>
+                <span>More actions</span>
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </summary>
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 flex min-w-[16rem] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                <button
+                  type="button"
+                  onClick={onOpenStartupImportModal}
+                  className="action-quiet w-full justify-start text-left text-xs sm:text-sm"
+                >
+                  <Plus className="w-4 h-4 text-blue-700" />
+                  <span>Startup cutover data import</span>
+                </button>
+              </div>
+            </details>
           )}
 
           <div className="bg-slate-200/70 p-1.5 rounded-2xl flex gap-1.5 shrink-0 border border-slate-300/80 shadow-2xs">
             <button
               type="button"
+              role="tab"
               onClick={() => setActiveSubTab('USERS')}
-              className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-                activeSubTab === 'USERS' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-              }`}
+                aria-selected={activeSubTab === 'USERS'}
+                className="action-segment flex items-center gap-2 text-xs sm:text-sm"
             >
               <User className="w-4 h-4" />
-              <span>User &amp; Role Setup ({userList.length})</span>
+              <span>User &amp; role setup ({userList.length})</span>
             </button>
             <button
               type="button"
+              role="tab"
               onClick={() => setActiveSubTab('AUDIT')}
-              className={`px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-                activeSubTab === 'AUDIT' ? 'bg-blue-900 text-white shadow-md' : 'text-slate-700 hover:text-slate-950 hover:bg-slate-300/60'
-              }`}
+                aria-selected={activeSubTab === 'AUDIT'}
+                className="action-segment flex items-center gap-2 text-xs sm:text-sm"
             >
               <Clock className="w-4 h-4" />
-              <span>Audit Action Stream ({auditLogs.length})</span>
+              <span>Audit action stream ({auditLogs.length})</span>
             </button>
           </div>
         </div>
@@ -193,30 +202,30 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
         <div className="space-y-4">
           {/* Add User Form */}
           <form onSubmit={handleAddUser} className="wayfinding-card p-5 space-y-3">
-            <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <Plus className="w-4 h-4 text-blue-800" />
               Register New System User &amp; Assign Role
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">User Full Name *</label>
+                <label className="mb-1 block font-medium text-slate-700">User full name *</label>
                 <input
                   type="text"
                   placeholder="e.g. Alex Santos"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3.5 py-2.5 focus:outline-none focus:border-blue-600"
+                  className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-normal text-slate-900 focus:border-blue-600 focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Assigned System Role</label>
+                <label className="mb-1 block font-medium text-slate-700">Assigned system role</label>
                 <select
                   value={newUserRole}
                   onChange={(e) => setNewUserRole(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 text-slate-900 font-bold rounded-lg px-3.5 py-2.5 focus:outline-none focus:border-blue-600 cursor-pointer"
+                  className="w-full cursor-pointer rounded-lg border border-slate-300 bg-slate-50 px-3.5 py-2.5 font-normal text-slate-900 focus:border-blue-600 focus:outline-none"
                 >
                   <option value="Admin">Admin (Bridge)</option>
                   <option value="Chairman (DCS)">Chairman (DCS)</option>
@@ -231,7 +240,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-xs sm:text-sm rounded-lg transition shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
+                  className="action-primary w-full rounded-lg text-xs sm:text-sm"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add System User</span>
@@ -244,14 +253,14 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
           <div className="wayfinding-card overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider">
-                  User Access &amp; Allowed Module View Permissions
+                <h3 className="text-sm font-semibold text-slate-900">
+                  User access and allowed module view permissions
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
                   {canEditUsers ? 'Click any user row or card to modify assigned role and module permissions' : 'Read-only view (Only Admin and DCS Chairman can edit user access)'}
                 </p>
               </div>
-              <span className={`text-xs font-extrabold px-3 py-1 rounded-full w-fit ${canEditUsers ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
+              <span className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${canEditUsers ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>
                 {canEditUsers ? '✓ Admin controls available' : '🔒 Read-only mode'}
               </span>
             </div>
@@ -269,22 +278,22 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                       <div className="p-2 bg-blue-100 text-blue-900 rounded-xl">
                         <User className="w-4 h-4" />
                       </div>
-                      <span className="font-extrabold text-sm text-slate-900">{usr.name}</span>
+                      <span className="text-sm font-semibold text-slate-900">{usr.name}</span>
                     </div>
-                    <span className="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-950 border border-blue-200 font-extrabold text-xs">
+                    <span className="rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-950">
                       {usr.role}
                     </span>
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider block">
-                      Allowed Module Views ({usr.allowedViews.length}):
+                    <span className="block text-[10px] font-medium tracking-wider text-slate-500">
+                      Allowed module views ({usr.allowedViews.length}):
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {usr.allowedViews.map((v) => (
                         <span
                           key={v}
-                          className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-800 text-xs font-extrabold"
+                          className="rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800"
                         >
                           {v}
                         </span>
@@ -293,13 +302,13 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                   </div>
 
                   <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs font-bold text-slate-500">
-                    <span className="text-emerald-700 flex items-center gap-1 font-extrabold text-[11px]">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Active &bull; COSO Verified
                     </span>
-                    <span className="text-blue-700 font-extrabold flex items-center gap-1 text-[11px]">
-                      Edit Access <Eye className="w-3.5 h-3.5" />
-                    </span>
+                    <button type="button" onClick={() => handleOpenEditUser(usr)} className="action-quiet min-h-[44px] px-2 py-1 text-[11px] text-blue-700">
+                      Edit access <Eye className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -308,7 +317,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
             {/* Desktop Table View */}
             <div className="hidden sm:block table-responsive-wrapper">
               <table className="wayfinding-grid w-full text-left text-sm border-collapse">
-                <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase text-xs">
+                <thead className="border-b border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700">
                   <tr>
                     <th className="p-4">User Name</th>
                     <th className="p-4">Role</th>
@@ -316,7 +325,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                     <th className="p-4 text-center">Account Security</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-semibold text-slate-800">
+                <tbody className="divide-y divide-slate-200 font-medium text-slate-800">
                   {userList.map((usr) => (
                     <tr
                       key={usr.id}
@@ -330,7 +339,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                             e.stopPropagation();
                             handleOpenEditUser(usr);
                           }}
-                          className="font-extrabold text-blue-950 bg-blue-50/90 border border-blue-200/90 hover:bg-blue-900 hover:text-white px-3 py-1.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 transition-all shadow-2xs group cursor-pointer"
+                          className="flex items-center gap-1.5 rounded-xl border border-blue-200/90 bg-blue-50/90 px-3 py-1.5 text-xs font-semibold text-blue-950 transition-all shadow-2xs group hover:bg-blue-900 hover:text-white sm:text-sm"
                           title="Click to inspect and edit user role & access permissions"
                         >
                           <User className="w-4 h-4 text-blue-700 group-hover:text-blue-200 shrink-0" />
@@ -338,18 +347,18 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                           <Eye className="w-3.5 h-3.5 text-blue-600 group-hover:text-white shrink-0 ml-0.5 opacity-80 group-hover:opacity-100" />
                         </button>
                       </td>
-                      <td className="p-4 font-black text-blue-950 text-sm">{usr.role}</td>
+                      <td className="p-4 text-sm font-semibold text-blue-950">{usr.role}</td>
                       <td className="p-4">
                         <div className="flex flex-wrap gap-1.5">
                           {usr.allowedViews.map((v) => (
-                            <span key={v} className="px-2.5 py-1 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 text-xs font-extrabold shadow-2xs">
+                            <span key={v} className="rounded-xl border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-800 shadow-2xs">
                               {v}
                             </span>
                           ))}
                         </div>
                       </td>
                       <td className="p-4 text-center whitespace-nowrap">
-                        <span className="px-3 py-1 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold inline-flex items-center gap-1.5 shadow-2xs">
+                        <span className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-900 shadow-2xs">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
                           Active &bull; COSO Verified
                         </span>
@@ -364,7 +373,7 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
       ) : (
         /* Audit Log Stream */
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
@@ -372,18 +381,18 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                 placeholder="Filter audit logs by user, timestamp, or action description..."
                 value={filterQuery}
                 onChange={(e) => setFilterQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full rounded-xl border border-slate-300 bg-slate-50 py-2 pl-10 pr-4 text-sm font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-sm font-black uppercase text-slate-900 tracking-wider flex items-center gap-2">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                 <ShieldCheck className="w-4 h-4 text-blue-800" />
                 Audit Action Log Records
               </h3>
-              <span className="text-xs font-mono font-bold text-slate-500">{filteredLogs.length} Log Entries</span>
+              <span className="font-mono text-xs font-medium text-slate-500">{filteredLogs.length} log entries</span>
             </div>
 
             <div className="divide-y divide-slate-200 text-xs sm:text-sm">
@@ -394,13 +403,13 @@ export const SystemAuditTrail: React.FC<SystemAuditTrailProps> = ({
                   </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-blue-900 flex items-center gap-1.5">
+                      <span className="flex items-center gap-1.5 font-semibold text-blue-900">
                         <User className="w-4 h-4 text-slate-500" />
                         {log.user}
                       </span>
                       <span className="font-mono text-xs text-slate-500 font-semibold">{log.time}</span>
                     </div>
-                    <p className="text-slate-800 font-semibold">{log.action}</p>
+                    <p className="font-medium text-slate-800">{log.action}</p>
                   </div>
                 </div>
               ))}

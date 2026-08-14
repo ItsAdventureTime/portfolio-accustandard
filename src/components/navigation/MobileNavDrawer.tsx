@@ -14,6 +14,11 @@ import {
   Search,
   Camera,
   Smartphone,
+  Download,
+  Upload,
+  Database,
+  QrCode,
+  ChevronDown,
   Eye,
   Lock,
 } from 'lucide-react';
@@ -38,6 +43,10 @@ interface MobileNavDrawerProps {
   onOpenScanner: () => void;
   onOpenCommandPalette: () => void;
   onOpenPWAInstall: () => void;
+  onOpenExport: () => void;
+  onOpenStartupImport: () => void;
+  onOpenQBOQueue: () => void;
+  onOpenProductManager: () => void;
   roleScopedData: RoleScopedDashboardData;
 }
 
@@ -51,6 +60,10 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   onOpenScanner,
   onOpenCommandPalette,
   onOpenPWAInstall,
+  onOpenExport,
+  onOpenStartupImport,
+  onOpenQBOQueue,
+  onOpenProductManager,
   roleScopedData,
 }) => {
   const allowed = getAllowedTabs(viewAsRole);
@@ -64,7 +77,17 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
     incomingPOs,
     criticalStock,
     openReceivables,
+    queuedQboItems,
   } = roleScopedData;
+
+  const operationItems: Array<{ id: string; label: string; icon: React.ElementType; visible: boolean; onSelect: () => void; count?: number }> = [
+    { id: 'export', label: 'Export report', icon: Download, visible: canUseOperation(viewAsRole, 'export'), onSelect: onOpenExport },
+    { id: 'startup-import', label: 'Startup import', icon: Upload, visible: canUseOperation(viewAsRole, 'import') && canOpenAdmin, onSelect: onOpenStartupImport },
+    { id: 'qbo-queue', label: 'QBO sync queue', icon: Database, visible: canUseOperation(viewAsRole, 'qbo'), onSelect: onOpenQBOQueue, count: queuedQboItems.length },
+    { id: 'barcode-manager', label: 'Barcode manager', icon: QrCode, visible: canUseOperation(viewAsRole, 'barcode'), onSelect: onOpenProductManager },
+    { id: 'barcode-scanner', label: 'Barcode scanner', icon: Camera, visible: canUseOperation(viewAsRole, 'scanner'), onSelect: onOpenScanner },
+    { id: 'install-app', label: 'Install app', icon: Smartphone, visible: canUseOperation(viewAsRole, 'pwa'), onSelect: onOpenPWAInstall },
+  ].filter((item) => item.visible);
 
   const navItems = [
     { key: 'overview', label: 'Executive Overview', subtitle: 'COSO approvals pipeline', icon: Layers, badge: pendingApprovals.length },
@@ -119,43 +142,48 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
           </select>
         </div>
 
-        {/* Action Buttons Bar */}
-        <div className="grid grid-cols-3 gap-2 border-b border-slate-200 bg-slate-50 p-3 text-xs">
-          {canUseOperation(viewAsRole, 'scanner') && <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onOpenScanner();
-            }}
-            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[var(--brand-red)] p-2.5 font-medium text-white shadow-sm hover:bg-red-800"
-          >
-            <Camera className="w-4 h-4" />
-            <span>Scan Barcode</span>
-          </button>}
-
+        {/* Search and filtered operations */}
+        <div className="border-b border-slate-200 bg-slate-50 p-3 text-xs">
           <button
             type="button"
             onClick={() => {
               onClose();
               onOpenCommandPalette();
             }}
-            className="flex flex-col items-center justify-center gap-1 rounded-xl border border-slate-300 bg-white p-2.5 font-medium text-slate-800 shadow-sm hover:bg-slate-100"
+            className="action-quiet w-full justify-center text-sm"
           >
             <Search className="h-4 w-4 text-blue-700" />
             <span>Search (⌘K)</span>
           </button>
 
-          {canUseOperation(viewAsRole, 'pwa') && <button
-            type="button"
-            onClick={() => {
-              onClose();
-              onOpenPWAInstall();
-            }}
-            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[var(--brand-navy)] p-2.5 font-medium text-white shadow-sm hover:bg-[var(--brand-royal)]"
-          >
-            <Smartphone className="w-4 h-4 text-amber-400" />
-            <span>PWA Mode Guide</span>
-          </button>}
+          {operationItems.length > 0 && (
+            <details className="action-disclosure mt-3 w-full">
+              <summary className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-blue-700" />
+                  Operations &amp; tools
+                </span>
+                <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              </summary>
+              <div className="grid gap-2 border-t border-slate-200 p-3 sm:grid-cols-2">
+                {operationItems.map(({ id, label, icon: Icon, onSelect, count }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onSelect();
+                    }}
+                    className="action-quiet w-full justify-start text-left text-sm"
+                  >
+                    <Icon className="h-4 w-4 text-blue-700" />
+                    <span>{label}</span>
+                    {id === 'qbo-queue' && count ? <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{count}</span> : null}
+                  </button>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
 
         {/* Scrollable Navigation Options */}
