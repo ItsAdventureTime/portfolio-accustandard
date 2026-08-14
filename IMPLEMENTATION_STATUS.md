@@ -175,20 +175,27 @@ production acceptance release from a lint/build result alone.
   automatic audit fix was applied because it could change the lockfile or
   introduce breaking upgrades.
 
-### 2026-08-14 UI/UX redesign review pass
+### 2026-08-14 full-shell UI/UX redesign pass
 
-- `git diff --check`: passed.
-- Disposable `node:20-alpine` Podman: `npm ci --ignore-scripts`,
-  `npm run lint`, `npx tsc --noEmit`, and `npm run build`: passed.
-- The Next.js 16 Webpack build compiled the static routes `/`, `/_not-found`,
-  `/icon.svg`, and `/manifest.json`; no host build artifacts were retained.
-- Visual browser review confirmed the supplied logo, navy/royal/red brand
-  system, role action center, approval activity table, responsive shell, and
-  visible offline status treatment.
-- The local browser harness did not provide a reliable full click/state smoke
-  test, so this pass is not an end-to-end acceptance result.
-- `npm ci` reported 3 audit findings (2 high, 1 critical); no automatic audit
-  fix was applied and no dependency changes were introduced.
+- The shared shell now uses a responsive `1680px` content rail, calmer
+  typography weights, the supplied AccuStandard wordmark, navy/royal/red brand
+  tokens, and a tablet-safe header breakpoint.
+- The overview action center uses one primary priority card with two stacked
+  secondary cards; counts, destinations, approval identity, and role gates are
+  unchanged.
+- Mobile bottom navigation keeps the barcode scanner as the single elevated
+  action. The mobile drawer uses lighter controls and preserves locked-module
+  feedback for restricted roles.
+- `git diff --check`: passed before final validation; repeat after any further
+  edits.
+- Disposable pinned `node:24.18-alpine3.24` Podman validation passed for
+  `npm ci --ignore-scripts`, `npm run lint`, `npx tsc --noEmit`, and
+  `npm run build`; no host dependencies or build artifacts were retained.
+- Browser visual review covered 1536px desktop, 1280px desktop, 1024px tablet,
+  and 390px mobile. The mobile drawer opened successfully after enabling the
+  development-only `allowedDevOrigins` entry for `127.0.0.1`; role selection
+  remained permission-aware. This is a visual/UI smoke check, not production
+  acceptance or a full WCAG conformance result.
 
 ## Current-framework notes
 
@@ -206,6 +213,11 @@ export guide](https://nextjs.org/docs/app/guides/static-exports),
 [WCAG 2.2](https://www.w3.org/TR/WCAG22/), and
 [Radix accessibility guidance](https://www.radix-ui.com/primitives/docs/overview/accessibility).
 Existing Radix components do not require a shadcn migration.
+
+`next.config.ts` includes `allowedDevOrigins: ['127.0.0.1']` for local browser
+verification of development-only chunks. Next.js applies this setting only in
+development; it does not expand the production static export or API origin
+policy.
 
 The current container pins follow the official supported release lines: Node
 24.18 LTS, Go 1.26.5, PostgreSQL 17.10, Alpine 3.24.1, and Nginx 1.30.4.

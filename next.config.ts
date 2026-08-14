@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   basePath: '/accustandard/demo',
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
+  allowedDevOrigins: ['127.0.0.1'],
   images: {
     unoptimized: true,
   },

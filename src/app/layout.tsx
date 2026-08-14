@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "AccuStandard ERP Dashboard",
+  title: {
+    default: "AccuStandard ERP Dashboard",
+    template: "%s | AccuStandard ERP",
+  },
   description: "Control-first operations, inventory, purchasing, and finance workspace for AccuStandard Medical and Diagnostic Supplies Corporation.",
   applicationName: "AccuStandard ERP",
 };

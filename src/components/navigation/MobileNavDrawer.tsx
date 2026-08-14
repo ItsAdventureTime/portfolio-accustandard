@@ -76,17 +76,17 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md" />
-        <Dialog.Content className="sheet-enter mobile-modal-container fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border-t border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none">
+        <Dialog.Overlay className="fade-enter fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm" />
+        <Dialog.Content className="sheet-enter mobile-modal-container fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-xl flex-col overflow-hidden rounded-t-[2rem] border-t border-slate-300 bg-white text-slate-900 shadow-2xl focus:outline-none">
           <Dialog.Title className="sr-only">Mobile navigation menu</Dialog.Title>
           <Dialog.Description className="sr-only">Choose a workspace module or launch a mobile operation.</Dialog.Description>
         {/* Drag Handle Indicator */}
-        <div className="pt-3 pb-1 flex justify-center bg-slate-50 border-b border-slate-100">
-          <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+        <div className="flex justify-center border-b border-slate-100 bg-slate-50 pb-2 pt-3">
+          <div className="h-1.5 w-12 rounded-full bg-slate-300" />
         </div>
 
         {/* Sheet Title Bar */}
-        <div className="px-5 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
           <AccustandardLogo size="sm" />
           <Dialog.Close asChild>
             <button
@@ -101,8 +101,8 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         </div>
 
         {/* Role Impersonation Banner inside Drawer */}
-        <div className="p-4 bg-blue-50 border-b border-blue-200 flex items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2 text-blue-950 font-bold">
+        <div className="flex items-center justify-between gap-3 border-b border-blue-200 bg-blue-50 p-4 text-sm">
+          <div className="flex items-center gap-2 font-medium text-blue-950">
             <Eye className="w-4 h-4 text-blue-700 shrink-0" />
             <span>Active View Role:</span>
           </div>
@@ -110,7 +110,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
             aria-label="Active view role"
             value={viewAsRole}
             onChange={(e) => onChangeRole(e.target.value)}
-            className="bg-white border border-blue-300 text-blue-950 font-extrabold text-sm rounded-lg px-2.5 py-1 focus:outline-none cursor-pointer"
+            className="cursor-pointer rounded-lg border border-blue-300 bg-white px-2.5 py-1 text-sm font-medium text-blue-950 focus:outline-none"
           >
             <option value="Admin">Admin (Bridge)</option>
             <option value="Chairman (DCS)">Chairman (DCS)</option>
@@ -123,13 +123,13 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
         </div>
 
         {/* Action Buttons Bar */}
-        <div className="p-3 bg-slate-100 border-b border-slate-200 grid grid-cols-3 gap-2 text-xs">
+        <div className="grid grid-cols-3 gap-2 border-b border-slate-200 bg-slate-50 p-3 text-xs">
           <button
             onClick={() => {
               onClose();
               onOpenScanner();
             }}
-            className="p-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm"
+            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[var(--brand-red)] p-2.5 font-medium text-white shadow-sm hover:bg-red-800"
           >
             <Camera className="w-4 h-4" />
             <span>Scan Barcode</span>
@@ -140,9 +140,9 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               onClose();
               onOpenCommandPalette();
             }}
-            className="p-2.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm"
+            className="flex flex-col items-center justify-center gap-1 rounded-xl border border-slate-300 bg-white p-2.5 font-medium text-slate-800 shadow-sm hover:bg-slate-100"
           >
-            <Search className="w-4 h-4 text-blue-400" />
+            <Search className="h-4 w-4 text-blue-700" />
             <span>Search (⌘K)</span>
           </button>
 
@@ -151,7 +151,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
               onClose();
               onOpenPWAInstall();
             }}
-            className="p-2.5 bg-blue-900 hover:bg-blue-800 text-white font-extrabold rounded-xl flex flex-col items-center justify-center gap-1 shadow-sm"
+            className="flex flex-col items-center justify-center gap-1 rounded-xl bg-[var(--brand-navy)] p-2.5 font-medium text-white shadow-sm hover:bg-[var(--brand-royal)]"
           >
             <Smartphone className="w-4 h-4 text-amber-400" />
             <span>PWA Mode Guide</span>
@@ -177,9 +177,9 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                 aria-disabled={!isPermitted}
                 className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between ${
                   isActive
-                    ? 'bg-blue-900 text-white font-extrabold shadow-md'
+                    ? 'bg-blue-900 text-white font-semibold shadow-md'
                     : isPermitted
-                    ? 'hover:bg-slate-100 text-slate-800 font-bold border border-slate-200'
+                    ? 'border border-slate-200 text-slate-800 hover:bg-slate-100'
                     : 'opacity-50 text-slate-400 border border-slate-200 bg-slate-50'
                 }`}
               >
@@ -188,7 +188,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                     <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-sm font-extrabold flex items-center gap-1.5 leading-snug">
+                    <span className="flex items-center gap-1.5 text-sm font-semibold leading-snug">
                       <span>{item.label}</span>
                       {!isPermitted && <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
                     </span>
@@ -198,7 +198,7 @@ export const MobileNavDrawer: React.FC<MobileNavDrawerProps> = ({
                   </div>
                 </div>
                 {item.badge !== null && isPermitted && (
-                  <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${isActive ? 'bg-white text-blue-950' : 'bg-blue-100 text-blue-900'}`}>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${isActive ? 'bg-white text-blue-950' : 'bg-blue-100 text-blue-900'}`}>
                     {item.badge}
                   </span>
                 )}

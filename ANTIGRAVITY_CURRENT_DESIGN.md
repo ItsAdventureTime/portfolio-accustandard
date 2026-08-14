@@ -168,9 +168,9 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 
 | Breakpoint Range | Device Class | Navigation Strategy | Layout & Component Adaptation |
 | :--- | :--- | :--- | :--- |
-| **>= 1024px** | Desktop / Laptop | Sticky Header + Collapsible Sidebar | Full 5-7 column data grids, right slide-over drawers (`max-w-4xl`), 768px modals (`max-w-3xl`) |
-| **768px - 1023px**| Tablet (Portrait/Land) | Header + Mobile Drawer | 4-5 column responsive tables with horizontal scroll wrapper (`table-responsive-wrapper`) |
-| **< 768px (375px)**| Mobile Phone | Header + Bottom Navigation Rail | Stacked card layouts, full-width touch targets (44px min), mobile bottom sheets (`mobile-modal-container`) |
+| **>= 1280px** | Desktop / Laptop | Sticky header + filtered horizontal navigation | Full-width workspace rail (up to `1680px`), 5-7 column data grids, right slide-over drawers (`max-w-4xl`), 768px modals (`max-w-3xl`) |
+| **768px - 1279px**| Tablet / compact laptop | Header + mobile drawer | Responsive module layouts, stacked controls, and horizontal table containment where a table must remain tabular |
+| **< 768px (375px)**| Mobile phone | Header + bottom navigation rail | Stacked card layouts, full-width touch targets (44px min), mobile bottom sheets (`mobile-modal-container`) |
 
 ---
 
@@ -229,6 +229,15 @@ changing backend contracts or the role permission model:
 - `globals.css` centralizes the current brand tokens, visible focus rings,
   reduced-motion handling, skeleton states, responsive navigation, and table
   ergonomics.
+- The shell uses a responsive full-width rail capped at `1680px`, a lighter
+  role selector, a tablet-safe mobile-drawer breakpoint, and a single elevated
+  scanner action in the mobile bottom navigation.
+- Shared typography now tones down `font-bold`/`font-extrabold` utility use in
+  the workspace so emphasis comes from hierarchy, spacing, and color rather
+  than stacked heavy text weights.
+- `next.config.ts` allows `127.0.0.1` to request development-only chunks for
+  local browser QA. This option is development-only and does not grant a
+  production origin or change API permissions.
 
 Review resolutions and the release checklist live in
 [`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md). This addendum is

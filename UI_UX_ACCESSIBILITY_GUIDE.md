@@ -31,6 +31,23 @@ Prefer calm surfaces, short labels, tabular figures, and clear information
 density. Avoid arbitrary purple gradients, decorative bento grids, and cards
 that show a metric without a decision or next action.
 
+### Shell and responsive composition
+
+- The shared workspace uses the available desktop width up to
+  `--content-max-width: 1680px`, with responsive gutters rather than a fixed
+  1,440px rail.
+- At 1,280px and above, the header uses filtered horizontal navigation. Below
+  that threshold, the mobile menu remains available so tablet layouts do not
+  force primary navigation labels into the role and utility controls.
+- The overview action center uses one primary priority card with two stacked
+  secondary cards. Preserve this hierarchy when adding role-specific actions;
+  do not revert to three equal metric tiles.
+- Body copy and labels use regular or medium weight by default. Reserve 600–650
+  weight for headings, active controls, and critical status text; do not use
+  bold weight as a substitute for spacing or hierarchy.
+- Mobile bottom navigation keeps the scanner as the single elevated action and
+  uses sentence-case labels with a minimum 44px touch target.
+
 ## Interaction contract
 
 - Action-center cards are role-specific and data-backed. Never expose an
@@ -86,6 +103,10 @@ Before merging a visual or interaction change:
 - [WAI-ARIA Authoring Practices: Modal Dialog Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
 - [Next.js App Router production checklist](https://nextjs.org/docs/app/guides/production-checklist)
 - [Next.js Metadata and OG images](https://nextjs.org/docs/app/getting-started/metadata-and-og-images)
+- [Next.js CSS guidance](https://nextjs.org/docs/app/getting-started/css)
+- [Next.js accessibility guidance](https://nextjs.org/docs/architecture/accessibility)
+- [Tailwind responsive design](https://tailwindcss.com/docs/responsive-design)
+- [Tailwind hover and focus states](https://tailwindcss.com/docs/hover-focus-and-other-states)
 
 WCAG 2.2 is the conformance target for new UI work. Automated checks are only
 one part of review; keyboard, responsive, visual, and assistive-technology

@@ -95,20 +95,20 @@ export const Header: React.FC<HeaderProps> = ({
       role="banner"
       className="wayfinding-header sticky top-0 z-[var(--z-header)] w-full pt-[env(safe-area-inset-top,0px)] text-slate-950"
     >
-      <div className="mx-auto flex min-h-[72px] w-full max-w-[1440px] items-center gap-4 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8">
+      <div className="header-inner mx-auto flex min-h-[72px] w-full items-center gap-3 px-4 py-3 sm:gap-5 sm:px-6 lg:px-8 xl:px-10">
         <div className="flex min-w-0 shrink-0 items-center gap-2.5">
           <button
             type="button"
             onClick={onOpenMobileDrawer}
-            className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg lg:hidden"
+            className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg min-[1280px]:hidden"
             aria-label="Open mobile menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <AccustandardLogo size="sm" className="max-w-[154px] shrink-0 sm:max-w-[190px]" />
+          <AccustandardLogo size="md" className="max-w-[154px] shrink-0 sm:max-w-[190px]" />
         </div>
 
-        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-6 lg:flex">
+        <nav aria-label="Primary navigation" className="hidden min-w-0 flex-1 items-center gap-4 min-[1280px]:flex xl:gap-6">
           {navigation.map((item) => {
             const active = isActive(item.key, item.target);
             return (
@@ -129,14 +129,14 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={onOpenCommandPalette}
-             className="header-search hidden h-10 w-[290px] items-center justify-between rounded-md px-3.5 text-left text-sm shadow-none xl:flex"
+            className="header-search hidden h-10 w-[250px] items-center justify-between rounded-md px-3.5 text-left text-sm shadow-none min-[1536px]:flex"
             aria-label="Quick search"
           >
             <span className="flex items-center gap-2"><Search className="h-4 w-4" /> Quick search</span>
-            <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-300">⌘K</kbd>
+            <kbd className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-500">⌘K</kbd>
           </button>
 
-          <div className="role-switcher flex min-h-[44px] items-center gap-1 rounded-lg px-3">
+          <div className="role-switcher hidden min-h-[44px] items-center gap-1 rounded-lg px-3 sm:flex">
             <select
               aria-label="View as role"
               value={viewAsRole}
@@ -147,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <option key={value} value={value} className="bg-white text-slate-900">{label}</option>
               ))}
             </select>
-            <ChevronDown aria-hidden="true" className="h-4 w-4 text-slate-300" />
+            <ChevronDown aria-hidden="true" className="h-4 w-4 text-slate-500" />
           </div>
 
           <span role="img" className="hidden h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-slate-700 sm:inline-flex" aria-label="Current user">
@@ -164,7 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
              {qboQueueCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--brand-red)] ring-2 ring-white" />}
           </button>
 
-          <div className="relative hidden lg:block">
+          <div className="relative hidden min-[1280px]:block">
             <button
               type="button"
               onClick={() => setIsToolsOpen((open) => !open)}
@@ -178,20 +178,20 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             {isToolsOpen && (
               <div id="operations-menu" role="menu" className="wayfinding-card absolute right-0 top-[calc(100%+0.5rem)] z-40 w-64 p-2 shadow-xl">
-                <p className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500">Operations &amp; tools</p>
-                <button type="button" role="menuitem" onClick={() => { onOpenCreateNew(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Plus className="h-4 w-4 text-blue-700" /> Create new</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Download className="h-4 w-4 text-blue-700" /> Export report</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenStartupImport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Upload className="h-4 w-4 text-blue-700" /> Startup import</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenQBOQueue(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><span className="flex items-center gap-3"><Database className="h-4 w-4 text-emerald-700" /> QBO sync queue</span>{qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenProductManager(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Barcode className="h-4 w-4 text-indigo-700" /> Barcode manager</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenScanner(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><ScanLine className="h-4 w-4 text-rose-700" /> Barcode scanner</button>
-                <button type="button" role="menuitem" onClick={() => { onOpenPWAInstall(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-800 hover:bg-slate-50"><Smartphone className="h-4 w-4 text-blue-700" /> Install app</button>
+                <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">Operations &amp; tools</p>
+                <button type="button" role="menuitem" onClick={() => { onOpenCreateNew(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Plus className="h-4 w-4 text-blue-700" /> Create new</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenExport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Download className="h-4 w-4 text-blue-700" /> Export report</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenStartupImport(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Upload className="h-4 w-4 text-blue-700" /> Startup import</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenQBOQueue(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><span className="flex items-center gap-3"><Database className="h-4 w-4 text-emerald-700" /> QBO sync queue</span>{qboQueueCount > 0 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">{qboQueueCount}</span>}</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenProductManager(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Barcode className="h-4 w-4 text-indigo-700" /> Barcode manager</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenScanner(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><ScanLine className="h-4 w-4 text-rose-700" /> Barcode scanner</button>
+                <button type="button" role="menuitem" onClick={() => { onOpenPWAInstall(); setIsToolsOpen(false); }} className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"><Smartphone className="h-4 w-4 text-blue-700" /> Install app</button>
               </div>
             )}
           </div>
 
-           <button type="button" onClick={onOpenCommandPalette} className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg xl:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
-           <button type="button" onClick={onOpenPWAInstall} className="header-icon-button hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg sm:inline-flex lg:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
+           <button type="button" onClick={onOpenCommandPalette} className="header-icon-button inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg min-[1536px]:hidden" aria-label="Quick search"><Search className="h-5 w-5" /></button>
+           <button type="button" onClick={onOpenPWAInstall} className="header-icon-button hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg sm:inline-flex min-[1280px]:hidden" aria-label="Install app"><Smartphone className="h-5 w-5" /></button>
         </div>
       </div>
     </header>

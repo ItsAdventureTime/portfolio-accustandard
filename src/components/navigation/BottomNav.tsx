@@ -19,21 +19,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   allowedTabs = ['overview', 'inventory', 'quotations', 'soa', 'purchasing', 'rfp', 'admin'],
 }) => {
   return (
-    <nav aria-label="Mobile primary navigation" className="bottom-nav fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 pt-2 text-slate-700 no-print lg:hidden">
+    <nav aria-label="Mobile primary navigation" className="bottom-nav fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around gap-1 px-2 pt-2 text-slate-700 no-print lg:hidden">
       {/* 1. Overview */}
       {allowedTabs.includes('overview') && (
         <button
           type="button"
           onClick={() => onSelectTab('overview')}
           aria-current={activeTab === 'overview' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition cursor-pointer min-h-[44px] ${
+          data-active={activeTab === 'overview'}
+          className={`mobile-nav-item flex flex-col items-center justify-center py-1 px-2 transition cursor-pointer min-h-[44px] ${
             activeTab === 'overview'
-              ? 'text-blue-950 font-black bg-blue-50 border border-blue-200/90 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 font-semibold'
+              ? 'font-medium'
+              : 'font-normal'
           }`}
         >
           <Layers className={`w-5 h-5 ${activeTab === 'overview' ? 'text-blue-900 scale-110' : 'text-slate-500'}`} />
-          <span className="text-[10px] mt-0.5 uppercase tracking-wider">Overview</span>
+          <span className="mt-0.5 text-[10px] tracking-tight">Overview</span>
         </button>
       )}
 
@@ -43,14 +44,15 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           type="button"
           onClick={() => onSelectTab('inventory')}
           aria-current={activeTab === 'inventory' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition cursor-pointer min-h-[44px] ${
+          data-active={activeTab === 'inventory'}
+          className={`mobile-nav-item flex flex-col items-center justify-center py-1 px-2 transition cursor-pointer min-h-[44px] ${
             activeTab === 'inventory'
-              ? 'text-blue-950 font-black bg-blue-50 border border-blue-200/90 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 font-semibold'
+              ? 'font-medium'
+              : 'font-normal'
           }`}
         >
           <Package className={`w-5 h-5 ${activeTab === 'inventory' ? 'text-blue-900 scale-110' : 'text-slate-500'}`} />
-          <span className="text-[10px] mt-0.5 uppercase tracking-wider">Stock</span>
+          <span className="mt-0.5 text-[10px] tracking-tight">Stock</span>
         </button>
       )}
 
@@ -59,7 +61,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         type="button"
         onClick={onOpenScanner}
         aria-label="Open camera barcode scanner"
-        className="-mt-6 flex min-h-[56px] min-w-[56px] shrink-0 flex-col items-center justify-center rounded-full border-4 border-white bg-blue-900 p-3.5 text-white shadow-xl hover:bg-blue-800"
+        className="mobile-nav-action -mt-6 flex min-h-[56px] min-w-[56px] shrink-0 flex-col items-center justify-center rounded-full p-3 text-white"
         title="Camera barcode scanner"
       >
         <Camera className="w-6 h-6 text-amber-400" />
@@ -71,28 +73,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           type="button"
           onClick={() => onSelectTab('quotations')}
           aria-current={activeTab === 'quotations' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition cursor-pointer min-h-[44px] ${
+          data-active={activeTab === 'quotations'}
+          className={`mobile-nav-item flex flex-col items-center justify-center py-1 px-2 transition cursor-pointer min-h-[44px] ${
             activeTab === 'quotations'
-              ? 'text-blue-950 font-black bg-blue-50 border border-blue-200/90 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 font-semibold'
+              ? 'font-medium'
+              : 'font-normal'
           }`}
         >
           <FileText className={`w-5 h-5 ${activeTab === 'quotations' ? 'text-blue-900 scale-110' : 'text-slate-500'}`} />
-          <span className="text-[10px] mt-0.5 uppercase tracking-wider">Quotes</span>
+          <span className="mt-0.5 text-[10px] tracking-tight">Quotes</span>
         </button>
       ) : allowedTabs.includes('soa') ? (
         <button
           type="button"
           onClick={() => onSelectTab('soa')}
           aria-current={activeTab === 'soa' ? 'page' : undefined}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition cursor-pointer min-h-[44px] ${
+          data-active={activeTab === 'soa'}
+          className={`mobile-nav-item flex flex-col items-center justify-center py-1 px-2 transition cursor-pointer min-h-[44px] ${
             activeTab === 'soa'
-              ? 'text-blue-950 font-black bg-blue-50 border border-blue-200/90 shadow-2xs'
-              : 'text-slate-500 hover:text-slate-900 font-semibold'
+              ? 'font-medium'
+              : 'font-normal'
           }`}
         >
           <FileCheck className={`w-5 h-5 ${activeTab === 'soa' ? 'text-blue-900 scale-110' : 'text-slate-500'}`} />
-          <span className="text-[10px] mt-0.5 uppercase tracking-wider">SOA</span>
+          <span className="mt-0.5 text-[10px] tracking-tight">SOA</span>
         </button>
       ) : null}
 
@@ -101,10 +105,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         type="button"
         onClick={onOpenMobileDrawer}
         aria-label="Open more modules"
-        className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 hover:text-slate-900 font-semibold transition cursor-pointer min-h-[44px]"
+        className="mobile-nav-item flex flex-col items-center justify-center py-1 px-2 font-normal transition cursor-pointer min-h-[44px]"
       >
         <Menu className="w-5 h-5 text-slate-600" />
-        <span className="text-[10px] mt-0.5 uppercase tracking-wider">More</span>
+        <span className="mt-0.5 text-[10px] tracking-tight">More</span>
       </button>
     </nav>
   );
