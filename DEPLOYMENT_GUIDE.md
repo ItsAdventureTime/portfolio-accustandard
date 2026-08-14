@@ -100,8 +100,10 @@ The script performs this sequence:
 5. Installs only the demo Quadlets and publishes the static `out/` export to
    the remote `web-dist/` directory.
 6. Starts PostgreSQL 17, checks `pg_isready`, verifies the PostgreSQL major
-   version, starts the API, and retries the API readiness endpoint for up to
-   60 seconds.
+   version, starts the API, and quietly retries the API readiness endpoint for
+   up to 60 seconds. Expected transient curl retry errors are suppressed; if
+   readiness is still unavailable, the script exits nonzero and prints the API
+   unit status plus the recent journal.
 7. Removes disposable remote frontend artifacts while retaining the runtime
    API image required by the Quadlet.
 8. Verifies the remote `web-dist/index.html` exists.
@@ -121,6 +123,11 @@ The backend image does not embed `DATABASE_URL`; the demo Quadlet injects its
 demo-only connection string at runtime. Production still requires an external
 secret source, rotation, backups, authentication, and a separate approved
 release workflow.
+
+The automated readiness probe uses curl's `--fail --silent` retry pattern. The
+deployment log stays readable while the API listener is binding, but a failed
+60-second probe is not hidden: the script emits its own timeout message and
+collects the API service diagnostics before returning a failure.
 
 ## 4. Verify the deployed demo
 

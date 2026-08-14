@@ -284,6 +284,18 @@ production acceptance release from a lint/build result alone.
 - This follow-up requires the same disposable Podman lint, type-check, build,
   and diff validation before publication.
 
+### 2026-08-15 API readiness log cleanup
+
+- The automated VPS readiness probes in `vps-deploy-accustandard.sh` and
+  `vps-migrate-to-go.sh` now use curl's quiet mode without `--show-error`.
+  Transient listener resets no longer print noisy `curl: (56)` lines for each
+  retry while the Go API binds its port.
+- `--fail`, retry limits, connection/read timeouts, and the explicit API unit
+  status/journal diagnostics remain unchanged. Exhausting the 60-second probe
+  still exits nonzero.
+- Manual post-deployment verification commands retain `--show-error` so an
+  operator-requested check still reports its own curl failure details.
+
 ## Current-framework notes
 
 The repository targets Next.js 16/React 19/Tailwind 4. Next.js 16 requires
