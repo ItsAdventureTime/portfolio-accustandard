@@ -1,4 +1,4 @@
-# 2026 Podman isolated disposable static export builder.
+# Optional Docker Sandbox static export builder.
 # Keep the Node/Alpine versions explicit for reproducible builds.
 
 FROM docker.io/library/node:24.18-alpine3.24 AS builder

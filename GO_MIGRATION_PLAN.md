@@ -65,21 +65,35 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 
 ## ⚡ 1-Command Deployment Workflow
 
-Remote-only single command deployment: **`./scripts/deploy-demo.sh`** (or
-`npm run deploy:demo`). The local machine performs only SSH/rsync operations.
+Local-build single command deployment: **`./scripts/deploy-demo.sh`** (or
+`npm run deploy:demo`). The Docker Sandbox performs the frontend validation,
+static export, and backend image build; the host performs only artifact staging
+plus SSH/rsync transfer.
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 1. Sync source to the VPS; no local build occurs.
-rsync -az --delete --exclude node_modules --exclude .next --exclude out/ \
-  ./ jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/source/
+# 1. Build in the local Docker Sandbox and stage out/, the backend image
+#    archive, and the demo Quadlets in .deploy-demo-release/.
+jk-sbx-project ensure
+jk-sbx-project exec npm ci --no-audit --no-fund
+jk-sbx-project exec npm run build
+jk-sbx-project exec docker build --pull --provenance=false \
+  --platform linux/amd64 \
+  --tag localhost/accustandard-bridge-backend:demo \
+  --file backend/Dockerfile backend
+jk-sbx-project exec docker save --output \
+  .deploy-demo-release/accustandard-bridge-backend-demo.tar \
+  localhost/accustandard-bridge-backend:demo
 
-# 2. Build remotely in podman run --rm, build the persistent Go image,
-#    publish out/, start/wait for PostgreSQL, restart the demo API Quadlet,
-#    and retry its HTTP readiness endpoint during listener startup.
-ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
+# 2. Transfer the release bundle and activate the existing VPS runtime.
+rsync -az --delete -e 'ssh -p 22' \
+  .deploy-demo-release/ \
+  jk@216.75.75.136:/home/jk/bridge-ph/accustandard-demo/release/
+ssh -p 22 jk@216.75.75.136 \
+  "RELEASE_ROOT=/home/jk/bridge-ph/accustandard-demo/release bash -s" \
+  < scripts/vps-deploy-accustandard.sh
 ```
 
 ---
@@ -104,19 +118,18 @@ ssh -p 22 jk@216.75.75.136 'bash -s' < scripts/vps-deploy-accustandard.sh
 - RFP release is approval-gated, row-locked, repeat-safe, and audit-recorded;
   server authentication and configurable PO DCS rules remain open work.
 
-## Remote-only demo deployment procedure
+## Local-build demo deployment procedure
 
-The preferred demo deployment performs no local build or execution. The
-deployment client only uses SSH/rsync to synchronize source into
-`/home/jk/bridge-ph/accustandard-demo/source/`. The VPS then runs the
-disposable frontend build, builds the persistent Go image, publishes `out/`
-to `web-dist/`, installs the demo Quadlets into
-`/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`, starts the
-database if needed, waits for `pg_isready`, restarts
+The preferred demo deployment uses the Docker Sandbox for dependency
+installation, frontend lint/type-check/static export, and the target-platform
+backend image build. The deployment client transfers only the release bundle
+to `/home/jk/bridge-ph/accustandard-demo/release/`. The VPS loads the
+prebuilt image, publishes `out/` to `web-dist/`, installs the demo Quadlets
+into `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`,
+starts the database if needed, waits for `pg_isready`, restarts
 `accustandard-demo-app.service`, and waits up to 60 seconds for the API
-readiness endpoint with curl retries. Backend image builds use
-`--pull=always` so the repository's pinned base image manifests are refreshed
-on each remote run. Version changes require a reviewed dependency update.
+readiness endpoint with curl retries. Backend base-image changes require a
+reviewed dependency update and a local sandbox build.
 
 The database data directory persists across normal frontend and API updates.
 For this disposable demo only, a data directory whose `PG_VERSION` is not 17,

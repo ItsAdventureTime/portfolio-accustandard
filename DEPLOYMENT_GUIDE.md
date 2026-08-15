@@ -1,8 +1,9 @@
 # AccuStandard Website and Web-App Deployment Guide
 
 This is the operator guide for the current repository. The supported automated
-release path is the remote demo deployment. It does not build or run the app on
-macOS.
+release path builds the release locally in the Docker Sandbox, then performs a
+plain artifact deployment to the demo VPS. The VPS does not compile or build
+source.
 
 ## Current deployment targets
 
@@ -23,37 +24,37 @@ Font License 1.1 and provenance record. `src/app/layout.tsx` loads it through
 `next/font/local`, so the frontend build no longer needs Google Fonts CSS or
 font data and the browser does not depend on a runtime Google stylesheet.
 
-The deployment still needs network access for `npm ci`, `--pull=always` image
-downloads, and any other npm/module/image downloads. The offline-build
-validation contract is to install dependencies and pull the pinned Node image
-while networked, then run lint, type-check, and the frontend build with network
-access disabled. That build must succeed without a `next/font/google` import or
-Google Fonts request.
+The local Docker Sandbox needs network access for `npm ci` and Docker image
+pulls. The release build must succeed without a `next/font/google` import or
+Google Fonts request. The static export is generated in `out/` according to
+Next.js's current static-export contract; the backend image is built for the
+VPS target platform and exported as a release archive.
 
-The historical 2026-08-14 Podman validation remains recorded in
-`IMPLEMENTATION_STATUS.md`. Current local validation uses the Docker Sandbox;
-the remote `npm run deploy:demo` release still builds on the VPS with Podman.
+Historical Podman validation remains recorded in `IMPLEMENTATION_STATUS.md`.
+Current local validation and release builds use the Docker Sandbox. The VPS
+still uses rootless Podman Quadlets only to run the existing PostgreSQL/API
+runtime; it does not build or compile the release.
 
 ## 1. One-time macOS prerequisites
 
-Install or verify the client-side tools. The deployment script uses SSH and
-rsync only to transfer source to the configured demo VPS; all dependency
-installation, frontend compilation, backend compilation, and service startup
-happen on the VPS. This transport is separate from GitHub synchronization:
-Git commits and GitHub updates for this repository must use authenticated
-`gh` HTTPS commands only. Do not configure GitHub SSH remotes, SSH keys, or
-passkeys.
+Install or verify the client-side tools. The deployment script uses the Docker
+Sandbox for dependency installation, validation, and release builds, then uses
+SSH and rsync only to transfer release artifacts and activate the configured
+demo VPS runtime. This transport is separate from GitHub synchronization: Git
+commits and GitHub updates for this repository must use authenticated `gh`
+HTTPS commands only. Do not configure GitHub SSH remotes, SSH keys, or passkeys.
 
 ```bash
 command -v gh
 command -v rsync
 command -v ssh # VPS deployment transport only; never use for GitHub
 command -v jk-sbx-project
-jk-sbx-project status
+jk-sbx-project ensure
 ```
 
-The Docker Sandbox is only for optional local validation. The deployment build
-does not run on macOS; it runs on the VPS with rootless Podman.
+The Docker Sandbox is the local execution plane for validation and release
+builds. The VPS receives artifacts and uses its existing rootless Podman
+Quadlets only for runtime activation.
 
 Configure GitHub CLI for HTTPS. Never configure an SSH GitHub remote or create
 an SSH key for repository synchronization:
@@ -89,25 +90,36 @@ npm run deploy:demo
 
 The script performs this sequence:
 
-1. Connects to the configured demo VPS and creates the remote source/web/data
-   directories.
-2. Transfers source with `rsync`, excluding Git metadata, dependencies, Next
-   build output, and macOS metadata.
-3. Runs the frontend build in disposable
-   `docker.io/library/node:24.18-alpine3.24` Podman on the VPS.
-4. Builds the Go API image remotely using pinned
-   `docker.io/library/golang:1.26.5-alpine3.24` and
-   `docker.io/library/alpine:3.24.1` images with `--pull=always`.
-5. Installs only the demo Quadlets and publishes the static `out/` export to
-   the remote `web-dist/` directory.
-6. Starts PostgreSQL 17, checks `pg_isready`, verifies the PostgreSQL major
+1. Ensures the project Docker Sandbox is ready.
+2. Installs frontend dependencies and runs lint, TypeScript validation, and the
+   Next.js static export locally inside the sandbox.
+3. Builds the Go API image locally inside the sandbox's private Docker engine
+   for `linux/amd64`, then exports it as
+   `.deploy-demo-release/accustandard-bridge-backend-demo.tar`.
+4. Stages the static `out/` export, image archive, and demo Quadlets in the
+   temporary `.deploy-demo-release/` directory.
+5. Transfers only that release bundle to the VPS with `rsync`; repository
+   source, `node_modules/`, and `.next/` are not transferred.
+6. Loads the prebuilt image, installs the transferred Quadlets, and publishes
+   the static export to the remote `web-dist/` directory.
+7. Starts PostgreSQL 17, checks `pg_isready`, verifies the PostgreSQL major
    version, starts the API, and quietly retries the API readiness endpoint for
    up to 60 seconds. Expected transient curl retry errors are suppressed; if
    readiness is still unavailable, the script exits nonzero and prints the API
    unit status plus the recent journal.
-7. Removes disposable remote frontend artifacts while retaining the runtime
-   API image required by the Quadlet.
-8. Verifies the remote `web-dist/index.html` exists.
+8. Removes the temporary local and successfully transferred release bundles
+   while retaining the loaded runtime image and published static files.
+
+The release script targets `linux/amd64` by default because that is the
+current VPS image contract. Set `ACCUSTANDARD_TARGET_PLATFORM` only after
+verifying a different VPS architecture and its Docker/Podman image support.
+
+To validate the complete local build and staging path without contacting the
+VPS, run:
+
+```bash
+ACCUSTANDARD_DEPLOY_DRY_RUN=true npm run deploy:demo
+```
 
 The PostgreSQL demo reset policy is intentionally disposable: legacy or
 incompatible demo data may be removed without a recoverable backup, then
@@ -209,9 +221,13 @@ it is treated as deployable.
 
 ## References
 
+- [Project update standard](PROJECT_UPDATE_STANDARD.md)
 - [GitHub HTTPS workflow](GITHUB_HTTPS_WORKFLOW.md)
 - [Backblaze B2 workflow](BACKBLAZE_S3_WORKFLOW.md)
+- [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/)
+- [Docker Sandbox usage](https://docs.docker.com/ai/sandboxes/usage/)
 - [Next.js deployment guidance](https://nextjs.org/docs/app/getting-started/deploying)
+- [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports)
 - [npm install-script approval guidance](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/)
 - [Podman Quadlet documentation](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html)
 - [PostgreSQL `ALTER TABLE` documentation](https://www.postgresql.org/docs/current/sql-altertable.html)

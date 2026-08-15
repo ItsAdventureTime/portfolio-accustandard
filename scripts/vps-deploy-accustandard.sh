@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
-# Accustandard Medical ERP — remote VPS build and Quadlet deployment
+# Accustandard Medical ERP — VPS artifact activation and Quadlet deployment
+# This script intentionally does not compile or build on the VPS.
 
 set -euo pipefail
 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 DEMO_ROOT="${HOME}/bridge-ph/accustandard-demo"
-SOURCE_ROOT="${DEMO_ROOT}/source"
+RELEASE_ROOT="${RELEASE_ROOT:-${DEMO_ROOT}/release}"
 DEMO_QUADLET_DIR="${HOME}/.config/containers/systemd/bridge-ph/accustandard-demo"
 POSTGRES_DATA_DIR="${DEMO_ROOT}/postgres-data"
+BACKEND_IMAGE_ARCHIVE="${RELEASE_ROOT}/accustandard-bridge-backend-demo.tar"
 
 stop_demo_services() {
   local service
@@ -99,44 +101,35 @@ wait_for_api_readiness() {
   return 1
 }
 
-# Frontend build output is disposable. Keep the backend image below because
-# the demo Quadlet references it after this script exits.
-cleanup_frontend_artifacts() {
-  rm -rf -- "${SOURCE_ROOT}/out" "${SOURCE_ROOT}/node_modules" "${SOURCE_ROOT}/.next"
+cleanup_release_after_success() {
+  if [[ "${DEPLOYMENT_SUCCEEDED:-false}" == true ]]; then
+    rm -rf -- "${RELEASE_ROOT}"
+  fi
 }
-trap cleanup_frontend_artifacts EXIT INT TERM
+trap cleanup_release_after_success EXIT
 
-echo '[1/6] Verifying remote source and data directories...'
+echo '[1/5] Verifying the transferred release bundle...'
 mkdir -p "${DEMO_ROOT}/web-dist" "${POSTGRES_DATA_DIR}" "${DEMO_QUADLET_DIR}"
-test -d "${SOURCE_ROOT}/backend"
-test -f "${SOURCE_ROOT}/package-lock.json"
+test -s "${BACKEND_IMAGE_ARCHIVE}"
+test -f "${RELEASE_ROOT}/web-dist/index.html"
+test -f "${RELEASE_ROOT}/quadlets/accustandard-demo-app.container"
+test -f "${RELEASE_ROOT}/quadlets/accustandard-demo-db.container"
+test -f "${RELEASE_ROOT}/quadlets/accustandard-demo-pod.pod"
 
 stop_demo_services
+
+echo '[2/5] Loading the prebuilt backend image...'
+podman load --input "${BACKEND_IMAGE_ARCHIVE}"
+podman image inspect localhost/accustandard-bridge-backend:demo >/dev/null
 reset_demo_database_if_needed
 
-echo '[2/6] Building the frontend in a disposable container...'
-podman run --pull=always --rm --userns=keep-id \
-  -v "${SOURCE_ROOT}:/workspace:Z" \
-  -v /workspace/node_modules \
-  -v /workspace/.next \
-  -w /workspace \
-  docker.io/library/node:24.18-alpine3.24 \
-  sh -lc 'npm ci --no-audit --no-fund && npm run build'
-test -f "${SOURCE_ROOT}/out/index.html"
+echo '[3/5] Installing the transferred demo Quadlets...'
+cp -f "${RELEASE_ROOT}/quadlets/"* "${DEMO_QUADLET_DIR}/"
 
-echo '[3/6] Building the persistent Go image for the Quadlet...'
-podman build --pull=always --layers=false --force-rm \
-  --tag localhost/accustandard-bridge-backend:demo \
-  --file "${SOURCE_ROOT}/backend/Dockerfile" \
-  "${SOURCE_ROOT}/backend"
+echo '[4/5] Publishing the transferred static export...'
+rsync -a --delete "${RELEASE_ROOT}/web-dist/" "${DEMO_ROOT}/web-dist/"
 
-echo '[4/6] Installing only the AccuStandard demo Quadlets...'
-cp -f "${SOURCE_ROOT}/deploy/quadlets/demo/"* "${DEMO_QUADLET_DIR}/"
-
-echo '[5/6] Publishing the static export to web-dist...'
-rsync -a --delete "${SOURCE_ROOT}/out/" "${DEMO_ROOT}/web-dist/"
-
-echo '[6/6] Starting the demo database and API services...'
+echo '[5/5] Starting the demo database and API services...'
 loginctl enable-linger "${USER}" 2>/dev/null || true
 stop_demo_services
 systemctl --user daemon-reload
@@ -171,4 +164,5 @@ systemctl --user is-active --quiet accustandard-demo-db.service
 systemctl --user is-active --quiet accustandard-demo-app.service
 wait_for_api_readiness
 
-echo '==> Remote VPS build and Quadlet deployment completed'
+DEPLOYMENT_SUCCEEDED=true
+echo '==> VPS artifact deployment and Quadlet activation completed'

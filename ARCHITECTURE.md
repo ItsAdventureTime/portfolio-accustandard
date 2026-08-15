@@ -86,11 +86,11 @@ boundary. This runtime does not provide a live QuickBooks Online integration.
 
 ## 🐳 Containerized Deployment Architecture (Demo Target)
 
-Until leadership approves a production release, all builds are deployed
-exclusively to the Demo environment. The deployment is remote-only and builds
-the frontend in a disposable Podman container; it removes remote source build
-artifacts after publishing while retaining the backend image required by
-Quadlet:
+Until leadership approves a production release, all releases are deployed
+exclusively to the Demo environment. The Docker Sandbox builds the static
+frontend and target-platform backend image locally. The deployment transfers
+only the release artifacts and Quadlet definitions; the VPS loads the image and
+activates the existing rootless Podman runtime:
 
 ```
 [ Internet Client ]
@@ -99,7 +99,10 @@ Quadlet:
 [ Caddy Reverse Proxy (caddy.service) ]
        |
        v /accustandard/demo
-[ Demo Pod: accustandard-demo-pod ] (localhost:8080 API + mounted static web root)
+ [ Demo Pod: accustandard-demo-pod ] (localhost:8080 API)
+        ^
+        | prebuilt image loaded by the VPS activation script
+ [ Docker Sandbox release bundle ] (static export + backend image archive)
 ```
 
 ### Path Specifications
@@ -109,7 +112,7 @@ Quadlet:
 
 ### Quadlet Services (`deploy/quadlets/demo/`)
 - **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 8080 for the Go API.
-- **`accustandard-demo-app.container`**: Go API container serving `/accustandard/demo/api/v1`.
+- **`accustandard-demo-app.container`**: Go API container loaded from the locally built image and serving `/accustandard/demo/api/v1`.
 - **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
 
 ---

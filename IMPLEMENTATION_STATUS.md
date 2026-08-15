@@ -144,16 +144,17 @@ fixing the parser ambiguity that produced values such as `emptyn` while
 preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
 - Container base images are version-pinned for the current demo release:
   Node `24.18-alpine3.24`, Go `1.26.5-alpine3.24`, Alpine `3.24.1`, Nginx
-  `1.30.4-alpine`, and PostgreSQL `17.10-alpine3.24`. Remote builds use
-  `--pull=always`; version changes require a reviewed dependency refresh.
+  `1.30.4-alpine`, and PostgreSQL `17.10-alpine3.24`. Local Docker release
+  builds use `--pull`; version changes require a reviewed dependency refresh.
 
 ## Validation record
 
-Frontend validation for this UI pass must run in disposable Podman only;
-local host builds are not required. Remote VPS deployment, PostgreSQL
-integration, authentication, and the full acceptance matrix remain unverified
-unless a dated run is recorded here. This status file must not claim a
-production acceptance release from a lint/build result alone.
+Frontend validation for this UI pass must run in the initialized Docker Sandbox;
+macOS host builds are not required. The VPS receives release artifacts and
+activates its existing rootless Podman runtime; it does not compile or build
+source. PostgreSQL integration, authentication, and the full acceptance matrix
+remain unverified unless a dated run is recorded here. This status file must not
+claim a production acceptance release from a lint/build result alone.
 
 ### 2026-08-14 deployment incident repair
 
@@ -440,3 +441,31 @@ This is guidance for the next hardening phase, not a claim of compliance.
 - Ran `jk-sbx-project ensure` to initialize the project sandbox. This was a
   documentation-only update; no application build or runtime acceptance claim
   is made from this entry.
+
+### 2026-08-16 local-build release workflow
+
+- Updated `scripts/deploy-demo.sh` to run frontend dependency installation,
+  lint, TypeScript validation, static export, and target-platform backend image
+  creation inside the Docker Sandbox. It now transfers only the static export,
+  backend image archive, and demo Quadlets.
+- Updated `scripts/vps-deploy-accustandard.sh` so the VPS activation path
+  loads the prebuilt image, publishes `web-dist/`, installs the transferred
+  Quadlets, and starts the existing runtime services without source compilation
+  or image builds. Rootless Podman remains a VPS runtime dependency until a
+  separate PostgreSQL/systemd migration is approved.
+- Docker Sandbox validation completed after the release-script migration:
+  `npm ci --no-audit --no-fund` (successful retry after one transient
+  `ECONNRESET`), `npm run lint`, `npx tsc --noEmit --incremental false`,
+  `npm run build`, `cd backend && go test ./...`, and
+  `cd backend && go vet ./...`.
+- The backend image built and exported successfully with Docker for
+  `linux/amd64`; `docker image inspect` confirmed `linux/amd64`, and the
+  release archive was written to the temporary staging directory.
+- `git diff --check` and `bash -n scripts/deploy-demo.sh
+  scripts/vps-deploy-accustandard.sh scripts/vps-migrate-to-go.sh` passed.
+- `ACCUSTANDARD_DEPLOY_DRY_RUN=true npm run deploy:demo` completed local
+  release staging and cleaned its temporary release directory without contacting
+  the VPS.
+- Remote VPS deployment was not run in this pass. VPS service readiness,
+  PostgreSQL integration after artifact activation, browser/device QA, and the
+  full acceptance matrix remain operator follow-ups.

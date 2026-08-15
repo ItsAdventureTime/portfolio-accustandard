@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Accustandard Medical ERP — VPS Go Backend & Database Migration Script
+# Accustandard Medical ERP — VPS runtime migration compatibility helper
+# Release builds now happen locally in the Docker Sandbox.
 # Target Host: jk@216.75.75.136
 # Target Directory: /home/jk/bridge-ph/accustandard-demo/
 # ==============================================================================
@@ -10,7 +11,6 @@ set -euo pipefail
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 DEMO_ROOT="/home/jk/bridge-ph/accustandard-demo"
-SOURCE_ROOT="$DEMO_ROOT/source"
 QUADLET_DIR="/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo"
 POSTGRES_DATA_DIR="$DEMO_ROOT/postgres-data"
 
@@ -103,23 +103,23 @@ wait_for_api_readiness() {
 }
 
 echo "======================================================================"
-echo "==> Initializing VPS Go Backend & PostgreSQL Database Migration..."
+echo "==> Checking the prebuilt VPS Go backend and PostgreSQL runtime..."
 echo "======================================================================"
 
 # 1. Ensure required directory structure exists
 mkdir -p "$POSTGRES_DATA_DIR"
 mkdir -p "$DEMO_ROOT/web-dist"
-mkdir -p "$SOURCE_ROOT"
 mkdir -p "$QUADLET_DIR"
 
+# 2. Release builds happen in the local Docker Sandbox. This compatibility
+# helper only verifies that the artifact-only deployment loaded the image.
+echo "[1/3] Verifying the prebuilt Go Backend image..."
+if ! podman image inspect localhost/accustandard-bridge-backend:demo >/dev/null; then
+  echo "Prebuilt backend image is unavailable. Run npm run deploy:demo locally." >&2
+  exit 1
+fi
 stop_demo_services
 reset_demo_database_if_needed
-
-# 2. Build Go API Container Image on VPS if backend code is present
-if [ -d "$SOURCE_ROOT/backend" ] && [ -f "$SOURCE_ROOT/backend/Dockerfile" ]; then
-  echo "[1/3] Building Go Backend image (localhost/accustandard-bridge-backend:demo)..."
-  podman build --pull=always --layers=false --force-rm -t localhost/accustandard-bridge-backend:demo -f "$SOURCE_ROOT/backend/Dockerfile" "$SOURCE_ROOT/backend"
-fi
 
 # 3. Reload systemd daemon & start the database before the API Quadlet
 echo "[2/3] Reloading systemd user daemon & starting the database/API services..."
@@ -154,7 +154,7 @@ systemctl --user is-active --quiet accustandard-demo-app.service
 wait_for_api_readiness
 
 # 4. Verify DB & Go container execution status
-echo "[3/3] Checking container status..."
+echo "[3/3] Checking runtime status..."
 podman ps --filter "name=accustandard-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 echo "======================================================================"

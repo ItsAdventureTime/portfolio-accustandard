@@ -53,17 +53,35 @@ jk-sbx-project exec npm ci
 jk-sbx-project exec npm run lint
 jk-sbx-project exec npx tsc --noEmit --incremental false
 jk-sbx-project exec npm run build
+jk-sbx-project exec sh -lc 'cd backend && go test ./...'
+jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
 ```
 
 Use `jk-sbx-project run '<compound shell command>'` for a bounded compound
 check, and `jk-sbx-project exec-bg` only for a service that needs to remain
 running. Run `git diff --check` on the host control plane. The remote demo
-release remains a separate workflow: `npm run deploy:demo` builds on the VPS
-with rootless Podman and publishes the static export.
+release remains a plain artifact deployment: `npm run deploy:demo` builds the
+frontend and backend image locally in the Docker Sandbox, transfers the static
+export/image archive/Quadlets, and activates the existing VPS runtime.
+`Podman` remains a VPS runtime dependency for the current PostgreSQL and API
+Quadlets; it is not used for local builds, compilation, or tests. Removing that
+runtime dependency requires a separate approved PostgreSQL/systemd migration.
 
 Record the exact checks and their result in `IMPLEMENTATION_STATUS.md`. For a
 documentation-only update, say so explicitly and do not imply that a runtime
 build was rerun.
+
+The demo release additionally runs:
+
+```bash
+jk-sbx-project exec docker build --pull --provenance=false \
+  --platform linux/amd64 \
+  --tag localhost/accustandard-bridge-backend:demo \
+  --file backend/Dockerfile backend
+jk-sbx-project exec docker save --output \
+  .deploy-demo-release/accustandard-bridge-backend-demo.tar \
+  localhost/accustandard-bridge-backend:demo
+```
 
 ## 5. Commit locally, publish remotely through `gh` over HTTPS
 
@@ -136,6 +154,10 @@ still preserved locally.
 - [GitHub CLI authentication](https://cli.github.com/manual/gh_auth_login)
 - [GitHub CLI Git credential setup](https://cli.github.com/manual/gh_auth_setup-git)
 - [GitHub Git database REST API](https://docs.github.com/en/rest/git)
+- [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/)
+- [Docker Sandbox usage](https://docs.docker.com/ai/sandboxes/usage/)
 - [Next.js production checklist](https://nextjs.org/docs/app/guides/production-checklist)
+- [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports)
+- [Go command documentation](https://go.dev/cmd/go/)
 - [npm install-script policy](https://docs.npmjs.com/cli/v11/commands/npm-install-scripts/)
 - [W3C WCAG 2.2](https://www.w3.org/TR/WCAG22/)

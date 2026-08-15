@@ -141,7 +141,7 @@ Reference: [Next.js production checklist](https://nextjs.org/docs/app/guides/pro
 
 ## Validation protocol
 
-Run the project toolchain inside Podman as required by the repository rules:
+Run the project toolchain inside the initialized Docker Sandbox:
 
 Obtain dependencies and the pinned builder image while networked, then repeat
 the frontend lint, type-check, and build with network access disabled. The
@@ -149,21 +149,26 @@ offline build is the release-blocking font check; it must not request Google
 Fonts or use `next/font/google`.
 
 ```bash
-/opt/homebrew/bin/podman build --target builder -f Containerfile .
+jk-sbx-project ensure
+jk-sbx-project exec npm ci --no-audit --no-fund
+jk-sbx-project exec npm run lint
+jk-sbx-project exec npx tsc --noEmit --incremental false
+jk-sbx-project exec npm run build
 ```
 
-On 2026-08-14, the focused Podman run passed lint, TypeScript, and the
-Webpack static export with `--network=none` after dependency and image
-acquisition. The remote demo deployment was not run in this review.
+The 2026-08-14 Podman result is retained as historical evidence only. Current
+release validation uses the Docker Sandbox, and the backend image is built
+there for the VPS target platform.
 
-Then run the remote-only demo release path only after reviewing `git status`:
+Then run the local-build demo release path only after reviewing `git status`:
 
 ```bash
 npm run deploy:demo
 ```
 
-The deployment script transfers source and performs the frontend/API build on
-the configured VPS. It does not build or run the application on macOS.
+The deployment script builds the frontend and backend image locally, transfers
+the release artifacts, and activates the existing VPS runtime. It does not
+transfer source or perform compilation on the VPS.
 
 ## GitHub synchronization
 
@@ -171,9 +176,9 @@ Remote repository synchronization follows
 [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md): the active GitHub CLI
 account is authenticated on `github.com`, the Git protocol is `https`, and the
 origin is `https://github.com/ItsAdventureTime/bridge-accustandard.git`. GitHub
-CLI has no separate `gh push` command; `gh auth setup-git --hostname
-github.com` configures Git to use the authenticated CLI credential helper for
-the HTTPS push.
+CLI has no separate `gh push` command. Local commits use local Git because
+GitHub CLI has no local commit command; remote Git objects and the `main` ref
+are published with authenticated `gh api` Git Database calls over HTTPS.
 
 ## Remaining follow-up
 
