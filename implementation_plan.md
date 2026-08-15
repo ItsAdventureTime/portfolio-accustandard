@@ -119,11 +119,11 @@ Validation is sandbox-only for this repository. Do not require or report a
 macOS host Node/npm/Go build. When compilation is needed, run it through the
 deterministic Docker Sandbox (`jk-sbx-project exec ...`) and keep generated
 `node_modules/`, `.next/`, and `out/` artifacts out of the host checkout.
-`npm run deploy:demo` remains a bash-executable remote workflow; it syncs
-source, builds the static export in a disposable container on the VPS,
-publishes `out/` to `web-dist/`, cleans remote source artifacts, and retains
-the backend image required by Quadlet. The target VPS is Fedora CoreOS with
-rootless Podman user Quadlets (`systemctl --user` and
+`npm run deploy:demo` remains a bash-executable local-build workflow; it runs
+frontend validation/static export and the target-platform backend image build
+inside the Docker Sandbox, then transfers only release artifacts to the VPS.
+The target VPS is Fedora CoreOS with rootless Podman user Quadlets
+(`systemctl --user` and
   `~/.config/containers/systemd/`); PostgreSQL 17 data is persistent and is
   updated by GORM and the idempotent seed during deployment. A legacy or
   incomplete PostgreSQL data directory (different `PG_VERSION`, or non-empty
@@ -137,9 +137,10 @@ rootless Podman user Quadlets (`systemctl --user` and
   reset-state parser
   consumes line-free tokens (`version:17`, `version:16`, `invalid`, or `empty`),
   preventing command substitution from appending a literal `n` such as `emptyn`;
-  rootless `podman unshare` and the PostgreSQL 17 reset policy remain required.
+  rootless `podman unshare` and the PostgreSQL 17 reset policy remain required
+  for the current VPS runtime.
 
-  Remote image builds use `--pull=always` with the reviewed pinned images
+  Local Docker image builds use `--pull` with the reviewed pinned images
   `golang:1.26.5-alpine3.24` and `alpine:3.24.1`; version changes require a
   dependency review rather than silently following a mutable tag.
 
@@ -175,10 +176,9 @@ shadcn guidance supports keeping an existing Radix app when its primitives
 already meet the product needs.
 
 The production `build` script uses Next's documented `--webpack` opt-out.
-Next.js 16 defaults to Turbopack, but the demo VPS has constrained builder
-memory and the Webpack path is the verified static-export path. Revisit this
-choice only after a remote Turbopack build succeeds within the VPS resource
-budget.
+Next.js 16 defaults to Turbopack, but the Webpack path is the currently
+verified static-export path in the Docker Sandbox. Revisit this choice after a
+deliberate sandbox validation confirms the resource and output contract.
 
 ---
 

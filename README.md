@@ -166,10 +166,10 @@ diagnostics, Backblaze asset handling, and production boundary, see
 
 ### Deployment command
 
-This repository uses a remote-first workflow. On macOS, do not install
-dependencies or run a host Node/npm build for the demo. The deployment script
-only synchronizes source; the VPS performs the frontend build in disposable
-Podman and publishes the resulting static export.
+This repository uses a local-build workflow. The deployment script runs
+dependency installation, lint, TypeScript validation, the Next.js static export,
+and the backend image build inside the Docker Sandbox. It then transfers the
+release artifacts to the VPS; the VPS does not compile or build source.
 
 ```bash
 gh repo clone ItsAdventureTime/bridge-accustandard
@@ -177,21 +177,22 @@ cd bridge-accustandard
 npm run deploy:demo
 ```
 
-For local lint/type-check/export validation, use the Docker Sandbox commands in
-`PROJECT_UPDATE_STANDARD.md` and `CONTRIBUTING.md`; dependencies and generated
-output stay in the sandbox execution plane. The remote demo release still
-builds on the VPS with rootless Podman.
+For the full build and artifact contract, use
+`PROJECT_UPDATE_STANDARD.md` and `DEPLOYMENT_GUIDE.md`. Local builds use the
+Docker Sandbox; the current VPS still uses its existing rootless Podman
+Quadlets only to run the PostgreSQL/API runtime.
 
 ---
 
-## 🐳 Remote VPS Build Policy
+## 🐳 Local Sandbox Build + VPS Runtime Deployment
 
-The deployment procedure performs no local build, compilation, or application
-execution. Source is synchronized to the VPS, where the frontend is built in a
-disposable container and the backend image is built for the existing Quadlet.
-The script then starts PostgreSQL, waits for `pg_isready`, restarts the API,
-verifies both user services, and waits up to 60 seconds for the API readiness
-endpoint with curl retries:
+The deployment procedure builds and validates locally inside the Docker Sandbox.
+It transfers the static `out/` export, a `linux/amd64` backend image archive, and
+the demo Quadlet definitions to the VPS. The VPS activation script does not
+compile or build source; it loads the prebuilt image, publishes `web-dist/`,
+starts PostgreSQL, waits for `pg_isready`, restarts the API, verifies both user
+services, and waits up to 60 seconds for the API readiness endpoint with curl
+retries:
 
 The demo VPS is Fedora CoreOS with rootless Podman and user Quadlets. The
 deployment therefore uses `systemctl --user`, `loginctl enable-linger`, and
@@ -230,59 +231,53 @@ Font License 1.1, with its license and provenance record beside the asset.
 `next/font/local` preserves the existing `--font-outfit` variable, so the
 frontend build no longer needs Google Fonts CSS or font data.
 
-Remote deployment still requires network access for `npm ci`, pinned container
-image pulls, and other npm/module/image downloads. To validate the release
-boundary, obtain dependencies and the Node image while networked, then run the
-frontend lint, type-check, and build with network access disabled. The offline
-build must not request Google Fonts or rely on a `next/font/google` import.
+The local sandbox needs network access for `npm ci` and Docker image pulls. The
+release build must not request Google Fonts or rely on a `next/font/google`
+import because Outfit is vendored and loaded with `next/font/local`.
 
 ```bash
-podman run --pull=always --rm --userns=keep-id \
-  -v "/home/jk/bridge-ph/accustandard-demo/source:/workspace:Z" \
-  -v /workspace/node_modules \
-  -v /workspace/.next \
-  -w /workspace \
-docker.io/library/node:24.18-alpine3.24 \
-  sh -lc "npm ci --no-audit --no-fund && npm run build"
+jk-sbx-project ensure
+jk-sbx-project exec npm ci --no-audit --no-fund
+jk-sbx-project exec npm run lint
+jk-sbx-project exec npx tsc --noEmit --incremental false
+jk-sbx-project exec npm run build
 ```
 
 The `build` script uses Next's official `--webpack` opt-out. Next.js 16 uses
-Turbopack by default, but the demo builder is resource-constrained and the
-Turbopack build was killed by the available container memory. Keep this
-fallback until the VPS build host has been sized and verified for Turbopack.
+Turbopack by default, but the current Docker Sandbox resource profile has the
+Webpack path as the verified static-export contract. Revisit this fallback
+after a deliberate sandbox validation confirms the resource and output
+contract.
 
-The frontend builder uses the pinned official
-`docker.io/library/node:24.18-alpine3.24` image. The backend builder uses
+The backend Dockerfile uses the pinned official
 `docker.io/library/golang:1.26.5-alpine3.24`, with
 `docker.io/library/alpine:3.24.1` for the runtime image. The static web image
 uses `docker.io/library/nginx:1.30.4-alpine`, and the demo PostgreSQL Quadlet
-uses `docker.io/library/postgres:17.10-alpine3.24`. Remote builds still use
-`--pull=always` so the pinned manifests are fetched on each deployment; update
-these versions deliberately as part of a reviewed dependency refresh.
+uses `docker.io/library/postgres:17.10-alpine3.24`. Local Docker builds use
+`--pull`; update these versions deliberately as part of a reviewed dependency
+refresh.
 
 npm 11 install-script policy is explicit in `package.json`: only the reviewed
 `unrs-resolver` install script is allowed. Do not replace this with
 `dangerously-allow-all-scripts`.
 
-`--rm` removes the temporary frontend build container and its anonymous
-dependency volumes after it exits. The Go build uses `--layers=false` and
-`--force-rm`; its final runtime image is intentionally retained because the
-Quadlet references it as `localhost/accustandard-bridge-backend:demo`.
-After publishing, the remote deployment trap removes `out/`, `node_modules/`,
-and `.next/` from the synchronized source; `web-dist/` is the published static
-artifact.
+The deployment stages `out/`, the exported backend image archive, and the
+Quadlet files in the temporary `.deploy-demo-release/` directory. That staging
+directory is removed when the deployment script exits; the VPS removes the
+transferred release bundle after successful activation while retaining the
+loaded runtime image and `web-dist/`.
 
 ---
 
 ## ⚡ 1-Command Automated Demo Deployment
 
-To synchronize source, build remotely, publish the static export, install the
+To build locally in the Docker Sandbox, transfer the release bundle, install the
 demo Quadlets, start PostgreSQL, wait for database and API readiness, and
 restart the demo API in **1 single command**:
 
 ```bash
 # Confirm SSH/rsync access before the first deployment
-ssh -p 22 jk@216.75.75.136 'podman --version && systemctl --user --version'
+ssh -p 22 jk@216.75.75.136 'systemctl --user --version'
 rsync --version | head -n 1
 
 # Option A: Run via npm script (recommended)
@@ -292,9 +287,10 @@ npm run deploy:demo
 ./scripts/deploy-demo.sh
 ```
 
-The script must be run from this repository checkout. It transfers source only;
-all frontend and backend compilation occurs on the VPS. After a successful run,
-verify the public site and API from the client machine:
+The script must be run from this repository checkout. It transfers release
+artifacts only; all frontend and backend compilation occurs in the local Docker
+Sandbox. After a successful run, verify the public site and API from the client
+machine:
 
 ```bash
 curl --fail --silent --show-error --location \

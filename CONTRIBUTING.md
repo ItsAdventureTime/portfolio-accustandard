@@ -65,19 +65,19 @@ jk-sbx-project exec npm run build
 For backend validation, run the bounded Go commands in the same sandbox:
 
 ```bash
-jk-sbx-project exec go test ./backend/...
-jk-sbx-project exec go vet ./backend/...
+jk-sbx-project exec sh -lc 'cd backend && go test ./...'
+jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
 ```
 
-The VPS deployment repeats the build remotely through `npm run deploy:demo`,
-publishes `out/`, and removes remote source build artifacts afterward using the
-remote Podman/Quadlet contract. That remote Podman use is not a substitute for
-the local Docker Sandbox.
+The deployment builds the frontend and backend image locally through
+`npm run deploy:demo` inside the Docker Sandbox, publishes `out/` plus the
+image archive and Quadlets to the VPS, and activates the existing
+Podman/Quadlet runtime. The VPS receives no source-build workload; its Podman
+use is limited to the current PostgreSQL/API runtime services.
 
 The production script intentionally runs `next build --webpack`. Next.js 16
-defaults to Turbopack, but the demo builder has constrained memory; use the
-official Webpack opt-out until a remote Turbopack build is verified on a
-sized VPS.
+defaults to Turbopack, but the Webpack static-export path is the currently
+verified build contract; revisit it after a deliberate sandbox validation.
 
 ---
 
