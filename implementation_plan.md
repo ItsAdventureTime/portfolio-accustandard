@@ -115,10 +115,10 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
 ## Verification Plan
 
 ### Automated Verification
-Validation is remote-only for this repository. Do not require or report a
-macOS host Node/npm/Go build. When compilation is needed, run it in a
-  disposable Podman container (`/opt/homebrew/bin/podman run --pull=always --rm`) and remove
-generated `node_modules/`, `.next/`, and `out/` artifacts after publishing.
+Validation is sandbox-only for this repository. Do not require or report a
+macOS host Node/npm/Go build. When compilation is needed, run it through the
+deterministic Docker Sandbox (`jk-sbx-project exec ...`) and keep generated
+`node_modules/`, `.next/`, and `out/` artifacts out of the host checkout.
 `npm run deploy:demo` remains a bash-executable remote workflow; it syncs
 source, builds the static export in a disposable container on the VPS,
 publishes `out/` to `web-dist/`, cleans remote source artifacts, and retains
@@ -146,7 +146,9 @@ rootless Podman user Quadlets (`systemctl --user` and
 ```bash
 bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh \
   scripts/vps-migrate-to-go.sh
-# In disposable Podman only: npm run lint && npm run build
+# In the Docker Sandbox only:
+jk-sbx-project exec npm run lint
+jk-sbx-project exec npm run build
 ```
 
 ### Manual Verification
@@ -253,8 +255,10 @@ PHASE 4: TABLE DECLUTTERING & MODERN PROFESSIONAL STYLING
 --------------------------------------------------------------------------------
 VERIFICATION & HANDOFF CHECKLIST:
 --------------------------------------------------------------------------------
-1. Run lint in disposable Podman and fix syntax or accessibility errors.
-2. Run the static export build in disposable Podman; do not require a host build.
+1. Run lint through `jk-sbx-project exec` and fix syntax or accessibility
+   errors.
+2. Run the static export build through `jk-sbx-project exec`; do not require a
+   host build.
 3. Test role switching between Admin, Sales, GM, Bookkeeper, and Warehouse to ensure smooth, intuitive navigation across all screens.
 ================================================================================
 ```

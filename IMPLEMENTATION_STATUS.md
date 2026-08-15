@@ -425,3 +425,18 @@ This is guidance for the next hardening phase, not a claim of compliance.
   prerendered `/`, `/_not-found`, `/icon.svg`, and `/manifest.json`.
   Browser/device visual QA and full assistive-technology acceptance remain
   operator follow-ups; this entry is not a claim of full WCAG conformance.
+
+### 2026-08-16 project update standard
+
+- Added `PROJECT_UPDATE_STANDARD.md` as the recurring repository workflow for
+  research-before-execution, source-of-truth documentation synchronization,
+  Docker Sandbox validation, local commit boundaries, and authenticated
+  GitHub HTTPS publication through `gh api`.
+- Reconciled active README, contributing, deployment, architecture, security,
+  implementation-plan, UI/accessibility, and GitHub transport guidance with the
+  current Docker Sandbox execution plane. Historical Podman validation entries
+  remain unchanged as historical evidence; remote VPS deployment still uses
+  rootless Podman.
+- Ran `jk-sbx-project ensure` to initialize the project sandbox. This was a
+  documentation-only update; no application build or runtime acceptance claim
+  is made from this entry.

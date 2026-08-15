@@ -47,11 +47,13 @@ QuickBooks Online export queue boundary; it is not a live QBO integration.
 
 ## 🔐 GitHub CLI (`gh`) Remote Synchronization Standard
 
-Follow [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md) for the canonical
-protocol. `gh auth setup-git` configures the authenticated GitHub CLI credential
-helper; branch synchronization then uses the HTTPS remote. Never use SSH
-remotes, SSH keys, `gh ssh-key`, or passkeys for GitHub repository operations.
-VPS deployment transfer is separate and user-run.
+Follow [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) and
+[`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md) for the canonical
+protocol. Local commits use local Git because `gh` has no local commit command;
+remote Git objects and the `main` ref are published through authenticated
+`gh api` calls over HTTPS. Never use SSH remotes, SSH keys, `gh ssh-key`,
+passkeys, or direct `git push` for GitHub repository operations. VPS deployment
+transfer is separate and user-run.
 
 ---
 

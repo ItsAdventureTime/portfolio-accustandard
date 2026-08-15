@@ -135,19 +135,21 @@ podman exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ## 🚀 GitHub CLI (`gh`) Remote Standard
 
-Follow [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md), the canonical
-repository synchronization guide. `gh auth setup-git` configures GitHub CLI's
-credential helper; the subsequent `git push` uses the verified HTTPS remote.
-There is no separate `gh push` command. Never use SSH remotes, SSH keys,
-`gh ssh-key`, or passkeys for GitHub repository operations. VPS deployment
-transfer is a separate user-run SSH/rsync operation.
+Follow [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) for the
+recurring update sequence and [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md)
+for the canonical remote protocol. Local staging and commits use local Git
+because `gh` has no local commit command; remote GitHub publication uses the
+authenticated `gh api` Git Database endpoints over HTTPS. There is no separate
+`gh push` command. Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys, or
+direct `git push` for GitHub repository operations. VPS deployment transfer is a
+separate user-run SSH/rsync operation.
 
 ```bash
 gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
 git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
-git push --set-upstream origin <branch-name>
+git remote get-url origin
 ```
 
 ---
@@ -175,9 +177,10 @@ cd bridge-accustandard
 npm run deploy:demo
 ```
 
-For disposable lint/export validation, use the Podman command in
-`CONTRIBUTING.md`; it copies the repository into an anonymous volume so
-dependencies and generated output do not remain in the checkout.
+For local lint/type-check/export validation, use the Docker Sandbox commands in
+`PROJECT_UPDATE_STANDARD.md` and `CONTRIBUTING.md`; dependencies and generated
+output stay in the sandbox execution plane. The remote demo release still
+builds on the VPS with rootless Podman.
 
 ---
 
@@ -324,16 +327,18 @@ ssh -p 22 jk@216.75.75.136 \
 
 ## 📌 Repository & Development Workflow Policy
 
-0. **Documentation Synchronization Policy:** Update `IMPLEMENTATION_STATUS.md`
+0. **Documentation Synchronization Policy:** Follow
+   [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) and update
+   `IMPLEMENTATION_STATUS.md`
    and every affected source-of-truth document when code, components,
    dependencies, scripts, or design specs change. Do not copy an acceptance
    PASS claim without current evidence.
 1. **GitHub repository synchronization:** Follow
    [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Authenticate and
-   configure Git through `gh`; only the resulting HTTPS remote may be used for
-   branch synchronization. Never use SSH remotes, SSH keys, `gh ssh-key`, or
-   passkeys. The demo deployment separately uses user-run SSH/rsync to transfer
-   source to the VPS.
+   publish remote Git through `gh api` over HTTPS; local commits necessarily
+   use local Git because `gh` has no local commit command. Never use SSH
+   remotes, SSH keys, `gh ssh-key`, passkeys, or direct `git push`. The demo
+   deployment separately uses user-run SSH/rsync to transfer source to the VPS.
 
 ---
 

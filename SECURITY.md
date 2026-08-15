@@ -44,11 +44,13 @@ At **Accustandard Medical and Diagnostic Supplies Corporation**, system security
 
 ### 2. Commit Integrity & Remote Protocol Standards
 - **GitHub repository synchronization:** Follow
-  [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Use `gh` to
-  authenticate/configure Git, then synchronize only through the HTTPS remote.
-  Never use SSH remotes, SSH keys, `gh ssh-key`, or passkeys. HTTPS transport
-  does not replace code review or acceptance evidence. VPS deployment transfer
-  is a separate user-run SSH/rsync operation.
+  [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) and
+  [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Use authenticated
+  `gh api` Git Database calls over HTTPS for remote Git objects and refs. Local
+  staging and commits use local Git because `gh` has no local commit command.
+  Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys, or direct `git push`.
+  HTTPS transport does not replace code review or acceptance evidence. VPS
+  deployment transfer is a separate user-run SSH/rsync operation.
 - **Local working tree:** Preserve and review changes before any remote action.
   A local commit is not evidence that the application passed the acceptance
   matrix.

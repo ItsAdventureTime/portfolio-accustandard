@@ -5,7 +5,9 @@
 
 Thank you for contributing to the **Accustandard Medical ERP Dashboard**. This
 guide outlines development standards, documentation synchronization rules, and
-remote GitHub (`gh` / HTTPS) synchronization guidelines.
+remote GitHub (`gh` / HTTPS) synchronization guidelines. Follow
+[`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) as the normal
+sequence after every project update.
 
 **Source of truth:** `implementation_plan.md` governs UI/UX scope; the
 confirmed acceptance handoff governs business rules; `IMPLEMENTATION_STATUS.md`
@@ -23,10 +25,11 @@ govern operations.
 
 ### Rule 1: GitHub CLI Remote Protocol
 - Follow [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Use `gh` to
-  authenticate and configure Git's credential helper, then synchronize only
-  through the HTTPS remote. Never use SSH remotes, SSH keys, `gh ssh-key`, or
-  passkeys for GitHub repository operations. The demo deployment separately
-  uses user-run SSH/rsync to transfer source to the VPS.
+  authenticate and publish remote Git objects through the GitHub Git Database
+  API over HTTPS. Local staging and commits use local Git because `gh` has no
+  local commit command. Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys,
+  or direct `git push` for GitHub repository operations. The demo deployment
+  separately uses user-run SSH/rsync to transfer source to the VPS.
 - Follow the **Conventional Commits** specification:
   - `feat`: New feature or user capability.
   - `fix`: Bug fix or error resolution.
@@ -40,42 +43,36 @@ gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
 git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
-git push --set-upstream origin <branch-name>
+git remote get-url origin
 ```
 
 ---
 
-## 🐳 Disposable Podman Build Checks
+## Docker Sandbox validation
 
-Validate lint and the static export, when needed, only inside an isolated,
-disposable Podman container. Do not install or compile on the macOS host. The
-anonymous `/workspace` volume keeps dependencies and generated output out of
-the repository:
+Validate lint, type-checking, and the static export inside the deterministic
+Docker Sandbox. Do not install or compile on the macOS host, and do not use
+local Podman for development validation:
 
 ```bash
-/opt/homebrew/bin/podman run --pull=always --rm --userns=keep-id \
-  -v "$(pwd):/src:ro,Z" \
-  -v /workspace \
-  -w /workspace \
-docker.io/library/node:24.18-alpine3.24 \
-  sh -lc 'cp -a /src/. /workspace/ && npm ci && npm run lint && npm run build'
+jk-sbx-project ensure
+jk-sbx-project exec npm ci
+jk-sbx-project exec npm run lint
+jk-sbx-project exec npx tsc --noEmit --incremental false
+jk-sbx-project exec npm run build
 ```
 
-For backend validation, use the same pinned official Go Alpine image used by
-the remote Dockerfile:
+For backend validation, run the bounded Go commands in the same sandbox:
 
 ```bash
-/opt/homebrew/bin/podman run --pull=always --rm --userns=keep-id \
-  -v "$(pwd)/backend:/src:ro,Z" \
-  -v /workspace \
-  -w /workspace \
-  docker.io/library/golang:1.26.5-alpine3.24 \
-  sh -c 'cp -a /src/. /workspace/ && go version && go test ./... && go vet ./...'
+jk-sbx-project exec go test ./backend/...
+jk-sbx-project exec go vet ./backend/...
 ```
 
 The VPS deployment repeats the build remotely through `npm run deploy:demo`,
-publishes `out/`, and removes remote source build artifacts afterward.
-On Linux, `podman` may be used instead of the macOS path above.
+publishes `out/`, and removes remote source build artifacts afterward using the
+remote Podman/Quadlet contract. That remote Podman use is not a substitute for
+the local Docker Sandbox.
 
 The production script intentionally runs `next build --webpack`. Next.js 16
 defaults to Turbopack, but the demo builder has constrained memory; use the
@@ -97,5 +94,5 @@ Deployments currently target **strictly the Demo Environment**:
 When changing workflow code, preserve the single-source API state model,
 role-specific queues, no-self-approval rules, Sales Quote GM-only approval,
 client acceptance evidence gate, and atomic Goods Receipt quantity checks.
-Run frontend checks in disposable Podman and backend checks only when the
-bounded task requires them; do not treat demo-only UI paths as production.
+Run frontend and bounded backend checks in the Docker Sandbox; do not treat
+demo-only UI paths as production.
