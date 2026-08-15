@@ -30,9 +30,9 @@ while networked, then run lint, type-check, and the frontend build with network
 access disabled. That build must succeed without a `next/font/google` import or
 Google Fonts request.
 
-This contract was verified on 2026-08-14 in disposable Podman with
-`--network=none`: lint, TypeScript, and the Webpack static export all passed.
-The remote `npm run deploy:demo` release was not run during that repair.
+The historical 2026-08-14 Podman validation remains recorded in
+`IMPLEMENTATION_STATUS.md`. Current local validation uses the Docker Sandbox;
+the remote `npm run deploy:demo` release still builds on the VPS with Podman.
 
 ## 1. One-time macOS prerequisites
 
@@ -48,11 +48,12 @@ passkeys.
 command -v gh
 command -v rsync
 command -v ssh # VPS deployment transport only; never use for GitHub
-/opt/homebrew/bin/podman version
+command -v jk-sbx-project
+jk-sbx-project status
 ```
 
-Podman is only needed for optional disposable local validation. It is not used
-for the deployment build itself.
+The Docker Sandbox is only for optional local validation. The deployment build
+does not run on macOS; it runs on the VPS with rootless Podman.
 
 Configure GitHub CLI for HTTPS. Never configure an SSH GitHub remote or create
 an SSH key for repository synchronization:
@@ -223,8 +224,10 @@ operations disclosures. Desktop keeps the labeled `More tools` menu button;
 mobile keeps search direct and exposes export, startup import, QBO queue,
 barcode manager, scanner, and PWA installation through one `Operations & tools`
 disclosure. These are client-side role checks in the demo and do not replace
-backend authorization. Validate this UI contract with the standard Podman lint,
-TypeScript, and build commands before release.
+backend authorization. Validate this UI contract with the standard Docker
+Sandbox lint, TypeScript, and build commands before release; see
+`PROJECT_UPDATE_STANDARD.md`. The remote release continues to use Podman on
+the VPS.
 
 ## Demo authorization boundary and preview semantics
 

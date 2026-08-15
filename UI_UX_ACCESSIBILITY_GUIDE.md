@@ -191,8 +191,9 @@ Before merging a visual or interaction change:
 - [ ] Verify role-specific counts and actions against seeded/API data.
 - [ ] Confirm connected, connecting, and offline states are understandable.
 - [ ] Run `git diff --check`.
-- [ ] Run `npm run lint`, `npx tsc --noEmit`, and `npm run build` in disposable
-      Podman; do not retain host `node_modules` or build artifacts.
+- [ ] Run `npm run lint`, `npx tsc --noEmit`, and `npm run build` through
+      `jk-sbx-project exec`; do not retain host `node_modules` or build
+      artifacts. See `PROJECT_UPDATE_STANDARD.md`.
 - [ ] Record limitations in `IMPLEMENTATION_STATUS.md`; lint/build success is
       not a substitute for backend acceptance testing or full WCAG conformance.
 
