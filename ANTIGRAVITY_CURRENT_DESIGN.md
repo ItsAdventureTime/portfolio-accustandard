@@ -73,10 +73,11 @@ The current UI implements a **Light Corporate Medical Theme**:
 
 ### 3.2 Typography & Font Hierarchy
 - **Font Family:** `Outfit`, with `Avenir Next`, `Segoe UI Variable`, and system fallbacks.
-- **Base Body Text:** `1rem` root sizing, line-height `1.5`, color `#0F172A`.
+- **Base Body Text:** `1rem` root sizing, line-height `1.55`, color `#0F172A`.
 - **Table Headers:** `0.8125rem` (13px), `font-weight: 600`, sentence case where space allows, color `#334155`.
-- **Sub-Headlines & Labels:** Medium-weight kicker text (`font-medium text-xs`) with restrained tracking; avoid forced uppercase for long labels.
+- **Sub-Headlines & Labels:** Medium-weight kicker text (`font-medium text-xs`) with restrained tracking; avoid forced uppercase for long labels. Screen `text-sm` renders at 15px, `text-xs` at 13px, and legacy 10–11px labels at 12px.
 - **Headlines:** Semibold slate titles (`text-xl font-semibold text-slate-900`) with weight reserved for hierarchy, not emphasis everywhere.
+- **Emphasis:** Non-heading utility text resolves to regular/medium weight. Prominent information uses the shared `AttentionBox` colored surface (`info`, `success`, `warning`, or `error`) instead of stacked bold text.
 
 ### 3.3 Semantic Status Badges
 Status indicators use rounded badge pills with colored text and subtle 1px borders:
@@ -98,6 +99,7 @@ A key visual signature of the AccuStandard app is the **Rx Pill Badge** used in 
 - **Form Controls:** Minimum touch height `44px`, `border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-600`.
 - **Form Validation:** Native CSS pseudo-classes `:user-invalid` (triggers red border `#DC2626` and rose tint `#FFF1F2`) and `:user-valid` (triggers green border `#16A34A`).
 - **Focus Rings:** `focus-visible` outline set to `2px solid #2563EB` with `2px` offset.
+- **Motion:** `AnimeReveal` uses Anime.js v4 `animate()` for non-essential opacity and transform entry only. `prefers-reduced-motion` skips the effect; tables, totals, and approval/audit state never animate.
 
 ---
 
@@ -245,12 +247,16 @@ changing backend contracts or the role permission model:
 - `globals.css` centralizes the current brand tokens, visible focus rings,
   reduced-motion handling, skeleton states, responsive navigation, and table
   ergonomics.
+- `AttentionBox.tsx` provides the shared SmoothUI-inspired colored emphasis
+  surface used for persistent API status and replenishment rules. `AnimeReveal`
+  provides the small Anime.js entrance cue without changing layout geometry.
 - The shell uses a responsive full-width rail capped at `1680px`, a lighter
   role selector, a tablet-safe mobile-drawer breakpoint, and a single elevated
   scanner action in the mobile bottom navigation.
-- Shared typography now tones down `font-bold`/`font-extrabold` utility use in
-  the workspace so emphasis comes from hierarchy, spacing, and color rather
-  than stacked heavy text weights.
+- Shared typography now tones down non-heading `font-semibold`/`font-bold` /
+  `font-extrabold` / `font-black` utility use in the workspace. Emphasis comes
+  from heading hierarchy, readable type size, and colored surfaces rather than
+  stacked heavy text weights.
 - `next.config.ts` allows `127.0.0.1` to request development-only chunks for
   local browser QA. This option is development-only and does not grant a
   production origin or change API permissions.

@@ -56,7 +56,8 @@ provided AccuStandard wordmark at
 - **Primary Brand Color:** AccuStandard navy (`#17356F`) and royal (`#2C4296`)
 - **Signature Accent:** Rx red (`#B4232F`) for attention states and brand cues
 - **Ergonomics:** Role-tailored action cards, 44px-class touch targets, visible
-  keyboard focus, reduced-motion support, and responsive mobile navigation.
+  keyboard focus, readable 16px screen text, colored attention surfaces,
+  reduced-motion support, and responsive mobile navigation.
 - **Status:** API connectivity is always explicit; offline demo behavior is
   labeled and is never presented as persisted business data.
 
@@ -396,12 +397,18 @@ trusted authentication provider supplies the server-side identity. Financial
 evidence, imports, and approval transitions that remain local are labeled
 `Preview` and must not be treated as persisted records.
 
-The latest UX pass used [SmoothUI](https://github.com/educlopez/smoothui) as a
+The latest UX pass uses [SmoothUI](https://github.com/educlopez/smoothui) as a
 selective React/Tailwind pattern reference while retaining Radix for modal
-semantics. No SmoothUI or Motion dependency was added; the app keeps its CSS
-transition and reduced-motion contract. If Motion is introduced later, follow
-its [accessibility guidance](https://motion.dev/docs/react-accessibility) and
-[`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
+semantics. `AttentionBox` applies the calm responsive surface pattern to
+high-signal status and workflow guidance. [Anime.js](https://animejs.com/)
+4.5.0 is bundled locally through `AnimeReveal` for one non-essential
+opacity/transform entrance cue, with an explicit reduced-motion guard. Follow
+the [Anime.js v4 animation API](https://animejs.com/documentation/animation/)
+when extending it; do not animate audit-sensitive values.
+
+Readable UI text follows the WCAG 2.2 resize-text and reflow expectations:
+screen body text starts at 16px, small utility text is raised, and emphasis is
+carried by a colored surface before heavier type.
 
 ### Modal behavior
 

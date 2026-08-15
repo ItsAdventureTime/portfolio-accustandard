@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { AccessibleModal } from '@/components/common/AccessibleModal';
+import { AttentionBox } from '@/components/common/AttentionBox';
 
 interface InventoryControlProps {
   inventoryList: any[];
@@ -310,18 +311,18 @@ export const InventoryControl: React.FC<InventoryControlProps> = ({
 
       {activeTab === 'REPLENISHMENT' && (
         <div className="space-y-5">
-           <div className="p-4 sm:p-5 bg-amber-50 border border-amber-200/90 rounded-2xl text-xs sm:text-sm text-amber-950 font-medium space-y-2 shadow-2xs">
-              <p className="flex items-center gap-2 text-sm font-semibold text-amber-950 sm:text-base">
-                <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
+          <AttentionBox tone="warning" className="p-4 sm:p-5 rounded-2xl text-xs sm:text-sm font-normal space-y-2">
+            <p className="flex items-center gap-2 text-sm font-semibold text-amber-950 sm:text-base">
+              <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0" />
               Demand-driven replenishment rules (Blueprint section 3)
-              </p>
+            </p>
             <div className="space-y-1 font-normal leading-relaxed text-amber-900">
               <p>Replenishment is triggered by actual available stock, reservations, open customer demand, lead time, and critical levels:</p>
-              <p>&bull; <strong>Class 1 (Core stock)</strong>: Reorder automatically at critical level + 10% safety buffer.</p>
-              <p>&bull; <strong>Class 2 (Controlled)</strong>: Requires demand forecast review before purchase order creation.</p>
-              <p>&bull; <strong>Class 3 (Short-expiry / special)</strong>: Hard-blocked without a linked customer PO to prevent over-stocking.</p>
+              <p>&bull; <span className="font-medium">Class 1 (Core stock)</span>: Reorder automatically at critical level + 10% safety buffer.</p>
+              <p>&bull; <span className="font-medium">Class 2 (Controlled)</span>: Requires demand forecast review before purchase order creation.</p>
+              <p>&bull; <span className="font-medium">Class 3 (Short-expiry / special)</span>: Hard-blocked without a linked customer PO to prevent over-stocking.</p>
             </div>
-          </div>
+          </AttentionBox>
 
           {/* Replenishment Planner Table & Mobile Cards */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">

@@ -404,3 +404,21 @@ This is guidance for the next hardening phase, not a claim of compliance.
 - Podman validation passed after this pass: `npm run lint`,
   `npx tsc --noEmit --incremental false`, `npm run build`, and
   `go test -p=1 ./...`. Browser/device visual QA remains an operator follow-up.
+
+### 2026-08-15 readable typography and motion pass
+
+- Added a shared readable type contract: 16px body baseline, 15px `text-sm`,
+  13px `text-xs`, and 12px legacy 10–11px labels on screen. Non-heading heavy
+  utility weights resolve to medium so hierarchy is not communicated by
+  shouting text. Print output remains outside the screen-only overrides.
+- Added `AttentionBox` for info, success, warning, and error emphasis. The API
+  status and inventory replenishment rules now use a colored surface and a
+  restrained text hierarchy instead of bold-only emphasis.
+- Added Anime.js 4.5.0 and the client-only `AnimeReveal` primitive. It animates
+  only opacity and transform, skips when `prefers-reduced-motion` is active,
+  and is not used for tables, totals, approvals, or audit-sensitive changes.
+  SmoothUI remains a selective pattern reference; Radix continues to own modal
+  semantics and focus behavior.
+- Validation and browser visual QA for this pass are pending until the
+  disposable Podman dependency install and static build complete. This entry is
+  not a claim of full WCAG conformance.
