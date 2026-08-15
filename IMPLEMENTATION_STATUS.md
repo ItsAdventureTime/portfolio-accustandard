@@ -419,6 +419,9 @@ This is guidance for the next hardening phase, not a claim of compliance.
   and is not used for tables, totals, approvals, or audit-sensitive changes.
   SmoothUI remains a selective pattern reference; Radix continues to own modal
   semantics and focus behavior.
-- Validation and browser visual QA for this pass are pending until the
-  disposable Podman dependency install and static build complete. This entry is
-  not a claim of full WCAG conformance.
+- Disposable Podman validation completed after the final edits: `npm run lint`,
+  `npx tsc --noEmit --incremental false`, and `npm run build` with Next.js
+  Webpack and network disabled after dependency installation. The build
+  prerendered `/`, `/_not-found`, `/icon.svg`, and `/manifest.json`.
+  Browser/device visual QA and full assistive-technology acceptance remain
+  operator follow-ups; this entry is not a claim of full WCAG conformance.
