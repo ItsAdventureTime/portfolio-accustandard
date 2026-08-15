@@ -1,7 +1,7 @@
 # AccuStandard UI, UX, and Accessibility Guide
 
 **Status:** Active product guide
-**Updated:** 2026-08-14
+**Updated:** 2026-08-15
 **Scope:** Next.js dashboard shell, overview, shared interaction patterns, and
 future feature-module work
 
@@ -42,9 +42,13 @@ that show a metric without a decision or next action.
 - The overview action center uses one primary priority card with two stacked
   secondary cards. Preserve this hierarchy when adding role-specific actions;
   do not revert to three equal metric tiles.
-- Body copy and labels use regular or medium weight by default. Reserve 600–650
-  weight for headings, active controls, and critical status text; do not use
-  bold weight as a substitute for spacing or hierarchy.
+- Body copy and labels use regular or medium weight by default. Reserve stronger
+  weight for headings; do not use bold weight as a substitute for spacing or
+  hierarchy. Use a colored attention surface when a message needs prominence.
+- The screen UI keeps a 16px body baseline, scales `text-sm` to 15px and
+  `text-xs` to 13px, and keeps legacy 10–11px labels at 12px. Text must reflow
+  at 200% without clipping or loss of function. Print artifacts retain their
+  controlled document styling.
 - Mobile bottom navigation keeps the scanner as the single elevated action and
   uses sentence-case labels with a minimum 44px touch target.
 - The header Operations & tools control follows the WAI-ARIA menu-button
@@ -76,6 +80,9 @@ that show a metric without a decision or next action.
   semantic structures such as tables and timelines for assistive technology.
 - Respect `prefers-reduced-motion`. Motion may clarify state changes but must
   never be required to understand or complete an action.
+- Anime.js is limited to non-essential opacity/transform entrance cues. The
+  shared `AnimeReveal` guard skips animation when reduced motion is requested;
+  no approval, total, table, or audit-sensitive value animates.
 
 ### Modal and popup contract
 
@@ -96,9 +103,9 @@ that show a metric without a decision or next action.
 - Long forms use an internal `modal-body` scroll region and preserve the
   footer action row on narrow screens. Document print preview may use the
   `fullscreen` variant, but its controls still use the same branded tokens.
-- SmoothUI is a visual and motion reference only. Reuse its responsive,
-  deliberate, accessible interaction principles with the existing Radix and
-  CSS stack; do not add a second component framework for a modal.
+- SmoothUI is a selective visual reference. The shared `AttentionBox` uses its
+  responsive surface-and-motion principles while retaining the existing Radix
+  and CSS stack; do not add a second component framework for a modal.
 
 ### Notification contract
 
@@ -134,13 +141,18 @@ and [WAI-ARIA Dialog (Modal) pattern](https://www.w3.org/WAI/ARIA/apg/patterns/d
 - [SmoothUI](https://github.com/educlopez/smoothui) is a selective reference
   for restrained React/Tailwind interaction patterns, not a replacement for
   the existing Radix primitives or a reason to add decorative components.
+- [Anime.js](https://animejs.com/documentation/animation/) is installed as a
+  direct dependency and used only through `AnimeReveal` for a small
+  transform/opacity entrance cue. Use the v4 named `animate` API; do not use
+  the removed v3 global API.
 - If Motion is introduced later, follow its [accessibility guidance](https://motion.dev/docs/react-accessibility)
   and wrap the smallest useful surface with
   [`MotionConfig reducedMotion="user"`](https://motion.dev/docs/react-motion-config).
   Prefer opacity/background feedback; do not animate tables, totals, approval
   controls, or other audit-sensitive values.
-- The current pass uses CSS transitions and the existing reduced-motion media
-  query, so it adds no animation dependency or runtime network requirement.
+- CSS transitions remain the default for controls and the reduced-motion media
+  query remains the CSS fallback. Anime.js is bundled locally, so the UI does
+  not fetch animation code at runtime.
 
 ### Permission and authentication boundary
 
@@ -199,6 +211,10 @@ Before merging a visual or interaction change:
 - [WCAG 2.2: Content on Hover or Focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html)
 - [WCAG 2.2: Target Size (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum)
 - [WCAG 2.2: Focus Appearance](https://www.w3.org/WAI/WCAG22/Understanding/focus-appearance)
+- [WCAG 2.2: Resize Text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text)
+- [WCAG 2.2: Contrast (Minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum)
+- [WCAG 2.2: Animation from Interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions)
+- [Anime.js v4 animation API](https://animejs.com/documentation/animation/)
 
 WCAG 2.2 is the conformance target for new UI work. Automated checks are only
 one part of review; keyboard, responsive, visual, and assistive-technology

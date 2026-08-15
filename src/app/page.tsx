@@ -32,6 +32,8 @@ import { ThreeWayMatchModal } from '@/components/features/purchasing/ThreeWayMat
 import { CollectionAllocationModal } from '@/components/features/finance/CollectionAllocationModal';
 import { StartupImportModal } from '@/components/features/admin/StartupImportModal';
 import { NotificationCenter, useNotificationQueue } from '@/components/common/NotificationCenter';
+import { AnimeReveal } from '@/components/common/AnimeReveal';
+import { AttentionBox } from '@/components/common/AttentionBox';
 import {
   canApproveApprovalStage,
   DEFAULT_ROLE,
@@ -735,19 +737,26 @@ export default function Home() {
 
       {/* Feature Module Workspace Container */}
       <main id="main-content" aria-label="Enterprise Operations Workspace" aria-busy={isHydrating} className="workspace-main flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-7 pb-32 sm:px-6 lg:px-8 lg:pb-10 xl:px-10">
-          <div role="status" aria-live="polite" className="workspace-status mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-            <div className="flex items-center gap-3">
-              <span className={`h-2.5 w-2.5 rounded-full ${isHydrating ? 'animate-pulse bg-amber-500' : apiOnline ? 'bg-emerald-500' : 'bg-[var(--brand-red)]'}`} aria-hidden="true" />
-              <p className="text-sm font-semibold text-slate-800">
-                {isHydrating
-                  ? 'Connecting to the operations API…'
-                  : apiOnline
-                    ? 'Live operations data connected.'
-                    : 'Offline demo mode. Changes stay local and are not persisted.'}
-              </p>
-            </div>
-            <span className="text-xs font-medium text-slate-500">{apiOnline ? 'Server-backed workspace' : 'Local preview data'}</span>
-          </div>
+          <AnimeReveal className="mb-6">
+            <AttentionBox
+              tone={isHydrating ? 'info' : apiOnline ? 'success' : 'warning'}
+              role="status"
+              aria-live="polite"
+              className="workspace-status flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5"
+            >
+              <div className="flex items-center gap-3">
+                <span className={`h-2.5 w-2.5 rounded-full ${isHydrating ? 'animate-pulse bg-amber-500' : apiOnline ? 'bg-emerald-500' : 'bg-[var(--brand-red)]'}`} aria-hidden="true" />
+                <p className="text-sm font-medium text-slate-800">
+                  {isHydrating
+                    ? 'Connecting to the operations API…'
+                    : apiOnline
+                      ? 'Live operations data connected.'
+                      : 'Offline demo mode. Changes stay local and are not persisted.'}
+                </p>
+              </div>
+              <span className="text-xs font-medium text-slate-500">{apiOnline ? 'Server-backed workspace' : 'Local preview data'}</span>
+            </AttentionBox>
+          </AnimeReveal>
           {activeTab === 'overview' && (
             <ExecutiveOverview
               approvalsList={roleScopedData.pendingApprovals}

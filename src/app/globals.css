@@ -96,7 +96,7 @@ body {
     linear-gradient(180deg, #f8fafc 0%, var(--surface-canvas) 24rem);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -310,20 +310,93 @@ textarea:focus-visible {
 
 .section-kicker {
   color: var(--brand-red);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   line-height: 1.2;
   text-transform: uppercase;
 }
 
-.workspace-shell .font-black,
-.workspace-shell .font-extrabold {
-  font-weight: 600;
+/* Readability contract: the application UI uses size and surfaces for
+   emphasis before it uses weight. Keep real headings expressive while
+   making legacy utility text medium-weight and easier to scan. */
+@media screen {
+  .workspace-shell {
+    font-size: 1rem;
+  }
+
+  .workspace-shell :where(.text-sm) {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .workspace-shell :where(.text-xs) {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .workspace-shell :where(.text-\[10px\], .text-\[11px\]) {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .workspace-shell :where(
+    .font-semibold:not(h1, h2, h3, h4, h5, h6),
+    .font-bold:not(h1, h2, h3, h4, h5, h6),
+    .font-extrabold:not(h1, h2, h3, h4, h5, h6),
+    .font-black:not(h1, h2, h3, h4, h5, h6),
+    strong:not(h1, h2, h3, h4, h5, h6),
+    b:not(h1, h2, h3, h4, h5, h6)
+  ) {
+    font-weight: 500;
+  }
 }
 
-.workspace-shell .font-bold {
-  font-weight: 550;
+/* Shared colored emphasis surface. This follows the selective SmoothUI
+   pattern: one calm, responsive surface with a clear color cue, not a wall
+   of bold text or competing filled controls. */
+.attention-box {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.42);
+  border-left-width: 4px;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.84),
+    0 8px 20px -18px rgb(23 53 111 / 0.42);
+  color: var(--text-primary);
+}
+
+.attention-box[data-tone="info"] {
+  border-color: rgb(147 197 253 / 0.72);
+  border-left-color: var(--brand-sapphire);
+  background: rgb(239 246 255 / 0.9);
+}
+
+.attention-box[data-tone="success"] {
+  border-color: rgb(134 239 172 / 0.72);
+  border-left-color: #15803d;
+  background: rgb(240 253 244 / 0.92);
+}
+
+.attention-box[data-tone="warning"] {
+  border-color: rgb(253 230 138 / 0.9);
+  border-left-color: #b45309;
+  background: rgb(255 251 235 / 0.94);
+}
+
+.attention-box[data-tone="error"] {
+  border-color: rgb(252 165 165 / 0.78);
+  border-left-color: var(--brand-red);
+  background: rgb(255 241 242 / 0.94);
+}
+
+.attention-box :where(strong, b) {
+  font-weight: 500;
+}
+
+.anime-reveal {
+  will-change: opacity, transform;
 }
 
 /* Surfaces. Elevation communicates hierarchy; borders stay quiet. */
@@ -798,7 +871,7 @@ textarea:focus-visible {
   max-width: 65ch;
   margin: 0.25rem 0 0;
   color: var(--text-secondary);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
 }
 
@@ -884,15 +957,29 @@ textarea:focus-visible {
 
 /* Legacy child panels can opt into the same shell without having to move
    their workflow markup into a new component. */
-.modal-panel .font-black,
-.modal-panel .font-extrabold,
-.modal-surface .font-black,
-.modal-surface .font-extrabold {
-  font-weight: 600;
+.modal-panel :where(
+  .font-semibold:not(h1, h2, h3, h4, h5, h6),
+  .font-bold:not(h1, h2, h3, h4, h5, h6),
+  .font-extrabold:not(h1, h2, h3, h4, h5, h6),
+  .font-black:not(h1, h2, h3, h4, h5, h6),
+  strong:not(h1, h2, h3, h4, h5, h6),
+  b:not(h1, h2, h3, h4, h5, h6)
+),
+.modal-surface :where(
+  .font-semibold:not(h1, h2, h3, h4, h5, h6),
+  .font-bold:not(h1, h2, h3, h4, h5, h6),
+  .font-extrabold:not(h1, h2, h3, h4, h5, h6),
+  .font-black:not(h1, h2, h3, h4, h5, h6),
+  strong:not(h1, h2, h3, h4, h5, h6),
+  b:not(h1, h2, h3, h4, h5, h6)
+) {
+  font-weight: 500;
 }
 
-.modal-panel .font-bold,
-.modal-surface .font-bold {
+.modal-panel :where(h1, h2, h3, h4, h5, h6).font-black,
+.modal-panel :where(h1, h2, h3, h4, h5, h6).font-extrabold,
+.modal-surface :where(h1, h2, h3, h4, h5, h6).font-black,
+.modal-surface :where(h1, h2, h3, h4, h5, h6).font-extrabold {
   font-weight: 600;
 }
 
@@ -1024,8 +1111,8 @@ textarea:focus-visible {
 
 .notification-toast-title {
   display: block;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
   line-height: 1.25;
 }
 
@@ -1033,7 +1120,7 @@ textarea:focus-visible {
   display: block;
   margin-top: 0.125rem;
   color: var(--text-secondary);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: 1.4;
 }
 
@@ -1045,8 +1132,8 @@ textarea:focus-visible {
   background: rgb(239 243 255 / 0.9);
   padding: 0.35rem 0.65rem;
   color: var(--brand-navy);
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }
 
 .notification-toast-action:hover {
@@ -1217,6 +1304,10 @@ textarea:required:user-valid {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .anime-reveal {
+    will-change: auto;
   }
 }
 
