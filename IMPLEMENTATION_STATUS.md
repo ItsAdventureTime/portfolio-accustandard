@@ -149,6 +149,25 @@ preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
 
 ## Validation record
 
+### 2026-08-22 documentation, framework, and remote audit
+
+- Reviewed the active architecture, deployment, implementation, accessibility,
+  contribution, security, and GitHub HTTPS guides against the checked-in
+  configuration. The frontend remains a Next.js 16 static export with an
+  explicit Webpack build path; the backend module declares Go 1.22.
+- Fetched `origin/main` and confirmed the tracked documentation content matched
+  the remote before this audit record was added. The authenticated `gh` session
+  and `origin` both use HTTPS; repository publication must not require SSH
+  transport or an SSH key.
+- Checked current official guidance: Next.js 16 defaults builds to Turbopack,
+  while the existing `build` script intentionally selects Webpack. Node 20 is
+  end-of-life, so use the current Node 24 LTS line for development even though
+  the package compatibility floor remains `>=20.9` until a separately tested
+  runtime upgrade changes that contract.
+- References: [Next.js static exports](https://nextjs.org/docs/app/guides/static-exports),
+  [Next.js 16 upgrade guide](https://nextjs.org/docs/app/guides/upgrading/version-16),
+  and [Node.js releases](https://nodejs.org/en/about/previous-releases).
+
 Frontend validation for this UI pass must run in the initialized Docker Sandbox;
 macOS host builds are not required. The VPS receives release artifacts and
 activates its existing rootless Podman runtime; it does not compile or build
