@@ -119,7 +119,7 @@ Validation is sandbox-only for this repository. Do not require or report a
 macOS host Node/npm/Go build. When compilation is needed, run it through the
 deterministic Docker Sandbox (`jk-sbx-project exec ...`) and keep generated
 `node_modules/`, `.next/`, and `out/` artifacts out of the host checkout.
-`npm run deploy:demo` remains a bash-executable local-build workflow; it runs
+`npm run deploy:demo` and `npm run deploy:prod` are bash-executable target workflows; each builds with its target base path and transfers a target-specific release. The demo workflow also bundles the Caddy handler and installs it under `/etc/caddy` when remote privileges allow; production handlers remain in the authoritative imported Caddy configuration.
 frontend validation/static export and the target-platform backend image build
 inside the Docker Sandbox, then transfers only release artifacts to the VPS.
 The target VPS is Fedora CoreOS with rootless Podman user Quadlets
@@ -132,7 +132,7 @@ The target VPS is Fedora CoreOS with rootless Podman user Quadlets
   PostgreSQL Quadlet healthcheck reports readiness. `Notify=healthy` does not
   guarantee that the Go HTTP listener is ready, so both VPS scripts use curl
   retries for transient startup failures and wait up to 60 seconds for
-  `/accustandard/demo/api/v1/readiness`; timeout diagnostics include API
+  `/demo/accustandard/api/v1/readiness`; timeout diagnostics include API
   systemd status and the last 100 journal lines before a nonzero exit. The
   reset-state parser
   consumes line-free tokens (`version:17`, `version:16`, `invalid`, or `empty`),

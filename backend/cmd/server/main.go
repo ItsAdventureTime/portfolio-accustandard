@@ -54,7 +54,11 @@ func main() {
 	}))
 
 	// Mount API endpoints under /accustandard/demo/api/v1
-	r.Route("/accustandard/demo/api/v1", func(r chi.Router) {
+	basePath := strings.TrimRight(os.Getenv("ACCUSTANDARD_BASE_PATH"), "/")
+	if basePath == "" {
+		basePath = "/demo/accustandard"
+	}
+	r.Route(basePath+"/api/v1", func(r chi.Router) {
 		handlers.RegisterRoutes(r)
 	})
 

@@ -5,7 +5,7 @@ After=accustandard-db.service
 [Container]
 ContainerName=accustandard-app
 Pod=accustandard-pod.pod
-Image=localhost/accustandard-bridge-dashboard:latest
+Image=localhost/accustandard-bridge-backend:production
 Environment=NODE_ENV=production
 Environment=NEXT_PUBLIC_BASE_PATH=/accustandard
 Environment=DATABASE_URL=postgres://accustandard:accustandardpass@localhost:5432/accustandard_db

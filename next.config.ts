@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 
+const basePath = process.env.ACCUSTANDARD_BASE_PATH || "/demo/accustandard";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'export',
-  basePath: '/accustandard/demo',
+  basePath,
+  env: {
+    NEXT_PUBLIC_ACCUSTANDARD_BASE_PATH: basePath,
+  },
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
   allowedDevOrigins: ['127.0.0.1'],

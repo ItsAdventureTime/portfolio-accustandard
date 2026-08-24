@@ -13,7 +13,10 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "deploy:demo": "bash ./scripts/deploy-demo.sh",
+    "build:demo": "ACCUSTANDARD_BASE_PATH=/demo/accustandard next build --webpack",
+    "build:prod": "ACCUSTANDARD_BASE_PATH=/prod/accustandard next build --webpack",
+    "deploy:demo": "ACCUSTANDARD_DEPLOY_TARGET=demo ACCUSTANDARD_BASE_PATH=/demo/accustandard bash ./scripts/deploy-demo.sh",
+    "deploy:prod": "ACCUSTANDARD_DEPLOY_TARGET=prod ACCUSTANDARD_BASE_PATH=/prod/accustandard bash ./scripts/deploy-demo.sh",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android"

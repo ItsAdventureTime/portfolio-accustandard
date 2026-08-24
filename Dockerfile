@@ -8,7 +8,7 @@ RUN npm run build
 
 # Stage 2: Static export runtime. `output: 'export'` writes `/out`.
 FROM docker.io/library/nginx:1.30.4-alpine AS runner
-COPY --from=builder /app/out /usr/share/nginx/html/accustandard/demo
+COPY --from=builder /app/out /usr/share/nginx/html
 COPY deploy/nginx/static.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3000

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -34,7 +35,13 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Health check endpoint
-	mux.HandleFunc("GET /accustandard/demo/api/v1/health", func(w http.ResponseWriter, r *http.Request) {
+	basePath := strings.TrimRight(os.Getenv("ACCUSTANDARD_BASE_PATH"), "/")
+	if basePath == "" {
+		basePath = "/demo/accustandard"
+	}
+	apiPath := basePath + "/api/v1"
+
+	mux.HandleFunc("GET "+apiPath+"/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		status := HealthStatus{
 			Status:    "OK",
@@ -51,7 +58,7 @@ func main() {
 	})
 
 	// Inventory Endpoint
-	mux.HandleFunc("GET /accustandard/demo/api/v1/inventory", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET "+apiPath+"/inventory", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(APIResponse{
 			Success:   true,
@@ -61,7 +68,7 @@ func main() {
 	})
 
 	// Quotations Endpoint
-	mux.HandleFunc("GET /accustandard/demo/api/v1/quotations", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET "+apiPath+"/quotations", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(APIResponse{
 			Success:   true,
@@ -71,7 +78,7 @@ func main() {
 	})
 
 	// Purchase Orders Endpoint
-	mux.HandleFunc("GET /accustandard/demo/api/v1/purchase-orders", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET "+apiPath+"/purchase-orders", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(APIResponse{
 			Success:   true,
