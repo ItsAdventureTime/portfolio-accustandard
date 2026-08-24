@@ -55,9 +55,6 @@ echo "==> Accustandard ${DEPLOY_TARGET} deployment build started"
 rm -rf -- "${LOCAL_RELEASE}"
 mkdir -p "${LOCAL_RELEASE}/web-dist" "${LOCAL_RELEASE}/quadlets"
 
-if [[ "${DEPLOY_TARGET}" == demo ]]; then
-  ssh -p 22 "${REMOTE}" "sudo -n /usr/local/sbin/accustandard-demo-activate --check"
-fi
 echo "[1/5] Ensuring the Docker Sandbox is ready..."
 jk-sbx-project ensure
 SANDBOX_ROOT="$(jk-sbx-project exec sh -lc 'printf "SANDBOX_ROOT=%s\n" "$(mktemp -d /tmp/accustandard-build.XXXXXX)"' | sed -n 's/^SANDBOX_ROOT=//p' | tail -n 1)"
@@ -106,10 +103,6 @@ rsync -az --delete -e 'ssh -p 22' "${LOCAL_RELEASE}/" "${REMOTE}:${REMOTE_RELEAS
 
 echo "[5/5] Activating the prebuilt release on the VPS..."
 ssh -p 22 "${REMOTE}" "RELEASE_ROOT='${REMOTE_RELEASE}' ACCUSTANDARD_DEPLOY_TARGET='${DEPLOY_TARGET}' ACCUSTANDARD_BASE_PATH='${BASE_PATH}' bash -s" < "${SCRIPT_DIR}/vps-deploy-accustandard.sh"
-if [[ "${DEPLOY_TARGET}" == demo ]]; then
-  ssh -p 22 "${REMOTE}" "test -f '/srv/bridge-ph-accustandard-demo/web-dist/index.html'"
-else
-  ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
-fi
+ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
 DEPLOYMENT_SUCCEEDED=true
 echo "==> Accustandard ${DEPLOY_TARGET} deployment completed"

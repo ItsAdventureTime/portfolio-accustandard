@@ -261,24 +261,17 @@ Do not treat a preview as a posted invoice, verified 3-way match, released RFP,
 or persisted approval. Verify `APP_ENV`, `/readiness`, and the API service
 journal when diagnosing a deployment.
 
-### AccuStandard demo activation boundary
+### AccuStandard rootless Caddy boundary
 
-Install the canonical helper once on the VPS as `root:root`, mode `0750`, and install the canonical handler as `root:root`, mode `0644`:
+Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo, writes `/srv`, or overwrites `/home/jk/caddy/conf/Caddyfile`.
 
-```sh
-sudo install -o root -g root -m 0644 deploy/caddy/accustandard-demo.handlers.Caddyfile /etc/caddy/accustandard-demo.handlers.Caddyfile
-podman exec caddy caddy validate --config /etc/caddy/Caddyfile
-systemctl --user reload caddy.service || systemctl --user restart caddy.service
-```
+One-time user-owned change: discover the actual Caddy container and unit, add `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before the existing static handler, and add the read-only bind mount from `/home/jk/bridge-ph/accustandard-demo/web-dist` to `/srv/bridge-ph-accustandard-demo`.
 
 ```sh
-sudo install -o root -g root -m 0750 scripts/accustandard-demo-activate /usr/local/sbin/accustandard-demo-activate
+podman ps --format '{{.Names}}'
+systemctl --user list-units '*caddy*'
+podman exec <discovered-caddy> caddy validate --config /etc/caddy/Caddyfile
+podman exec <discovered-caddy> caddy reload --config /etc/caddy/Caddyfile
 ```
 
-Allow only the fixed checks/publish operation for `jk`:
-
-```text
-jk ALL=(root) NOPASSWD: /usr/local/sbin/accustandard-demo-activate --check, /usr/local/sbin/accustandard-demo-activate --publish
-```
-
-Run `sudo visudo -cf /etc/sudoers.d/accustandard-demo` after installing that entry. Releases, Quadlets, and PostgreSQL remain under `/home/jk/bridge-ph/accustandard-demo`; only the root helper publishes static files to `/srv/bridge-ph-accustandard-demo/web-dist`. The canonical root-owned handler at `/etc/caddy/accustandard-demo.handlers.Caddyfile` is a privileged bootstrap/change, never copied from a staged release. Import it inside `delegateops.business` before the static fallback, then run `caddy validate` and reload Caddy.
+Do not guess the container or unit name; use discovery output.

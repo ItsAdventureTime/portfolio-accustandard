@@ -434,5 +434,4 @@ status stays persistent in the workspace banner, and interruptive dialogs are
 reserved for responses that require acknowledgment. See the
 [`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md) notification
 
-Deployment note: demo releases and home `web-dist` content stage under `/home/jk/bridge-ph/accustandard-demo`; `/srv/bridge-ph-accustandard-demo/web-dist` is the Caddy static root. Install the canonical handler as root with `sudo install -o root -g root -m 0644 deploy/caddy/accustandard-demo.handlers.Caddyfile /etc/caddy/accustandard-demo.handlers.Caddyfile`, then run `sudo caddy validate --config /etc/caddy/Caddyfile` and `sudo systemctl reload caddy`. The deploy workflow does not install or change the handler; import it inside `delegateops.business` before the static fallback.
-contract for the full behavior and accessibility references.
+Deployment note: demo releases and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. Add the API handler from `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before the static fallback, then validate/reload using discovery-based `podman exec <discovered-caddy> caddy validate/reload` commands. The deploy workflow does not modify Caddy configuration.

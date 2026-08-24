@@ -156,9 +156,6 @@ test -f "${RELEASE_ROOT}/web-dist/index.html"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_APP}"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_DB}"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_POD}"
-if [[ "${DEPLOY_TARGET}" == demo ]]; then
-  sudo -n /usr/local/sbin/accustandard-demo-activate --publish
-fi
 
 stop_demo_services
 
@@ -176,9 +173,7 @@ else
   sed -i "/^\\[Container\\]/a Environment=ACCUSTANDARD_BASE_PATH=${BASE_PATH}" "${APP_QUADLET}"
 fi
 echo '[4/5] Publishing the transferred static export...'
-if [[ "${DEPLOY_TARGET}" != demo ]]; then
-  rsync -a --delete "${RELEASE_ROOT}/web-dist/" "${APP_ROOT}/web-dist/"
-fi
+rsync -a --delete "${RELEASE_ROOT}/web-dist/" "${APP_ROOT}/web-dist/"
 
 echo '[5/5] Starting the demo database and API services...'
 loginctl enable-linger "${USER}" 2>/dev/null || true

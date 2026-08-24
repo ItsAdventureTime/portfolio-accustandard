@@ -1,4 +1,0 @@
-# Import inside delegateops.business before the static fallback.
-handle /demo/accustandard/api/* {
-	reverse_proxy 127.0.0.1:8080
-}
