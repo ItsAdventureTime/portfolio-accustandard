@@ -259,6 +259,24 @@ VERIFICATION & HANDOFF CHECKLIST:
    errors.
 2. Run the static export build through `jk-sbx-project exec`; do not require a
    host build.
+
+### Demo activation permission boundary
+
+Install the helper once as `root:root` mode `0750` at `/usr/local/sbin/accustandard-demo-activate`. Install the canonical handler separately as `root:root` mode `0644`:
+
+```sh
+sudo install -o root -g root -m 0644 deploy/caddy/accustandard-demo.handlers.Caddyfile /etc/caddy/accustandard-demo.handlers.Caddyfile
+podman exec caddy caddy validate --config /etc/caddy/Caddyfile
+systemctl --user reload caddy.service || systemctl --user restart caddy.service
+```
+
+Add this exact sudoers entry for user `jk`:
+
+```text
+jk ALL=(root) NOPASSWD: /usr/local/sbin/accustandard-demo-activate --check, /usr/local/sbin/accustandard-demo-activate --publish
+```
+
+Validate with `visudo -cf`. The helper accepts only `--check` and `--publish`, validates the staged release under `/home/jk/bridge-ph/accustandard-demo` (including non-served home staging content) and publishes static files only to the Caddy root `/srv/bridge-ph-accustandard-demo/web-dist`. The canonical root-owned API handler at `/etc/caddy/accustandard-demo.handlers.Caddyfile` is installed or changed only as a privileged bootstrap operation; import it inside the authoritative `delegateops.business` block before the static fallback, then validate and reload Caddy. `deploy-demo.sh` runs `sudo -n /usr/local/sbin/accustandard-demo-activate --check` over SSH before starting the sandbox build; the VPS activation script invokes `--publish` only after release validation.
 3. Test role switching between Admin, Sales, GM, Bookkeeper, and Warehouse to ensure smooth, intuitive navigation across all screens.
 ================================================================================
 ```

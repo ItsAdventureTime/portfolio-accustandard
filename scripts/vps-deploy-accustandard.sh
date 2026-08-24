@@ -10,7 +10,7 @@ DEPLOY_TARGET="${ACCUSTANDARD_DEPLOY_TARGET:-demo}"
 BASE_PATH="${ACCUSTANDARD_BASE_PATH:-}"
 case "${DEPLOY_TARGET}" in
   demo)
-    APP_ROOT="/srv/bridge-ph-accustandard-demo"
+    APP_ROOT="${HOME}/bridge-ph/accustandard-demo"
     QUADLET_DIR="${HOME}/.config/containers/systemd/bridge-ph/accustandard-demo"
     QUADLET_APP="accustandard-demo-app.container"
     QUADLET_DB="accustandard-demo-db.container"
@@ -25,7 +25,7 @@ case "${DEPLOY_TARGET}" in
     ;;
   prod|production)
     DEPLOY_TARGET=prod
-    APP_ROOT="/srv/bridge-ph-accustandard-prod"
+    APP_ROOT="${HOME}/bridge-ph/accustandard"
     QUADLET_DIR="${HOME}/.config/containers/systemd/bridge-ph/accustandard"
     QUADLET_APP="accustandard-app.container"
     QUADLET_DB="accustandard-db.container"
@@ -156,6 +156,9 @@ test -f "${RELEASE_ROOT}/web-dist/index.html"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_APP}"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_DB}"
 test -f "${RELEASE_ROOT}/quadlets/${QUADLET_POD}"
+if [[ "${DEPLOY_TARGET}" == demo ]]; then
+  sudo -n /usr/local/sbin/accustandard-demo-activate --publish
+fi
 
 stop_demo_services
 
@@ -172,20 +175,10 @@ if grep -q '^Environment=ACCUSTANDARD_BASE_PATH=' "${APP_QUADLET}"; then
 else
   sed -i "/^\\[Container\\]/a Environment=ACCUSTANDARD_BASE_PATH=${BASE_PATH}" "${APP_QUADLET}"
 fi
-if [[ "${DEPLOY_TARGET}" == demo && -f "${RELEASE_ROOT}/accustandard-demo.handlers.Caddyfile" ]]; then
-  CADDY_HANDLER_PATH="${CADDY_HANDLER_PATH:-/etc/caddy/accustandard-demo.handlers.Caddyfile}"
-  CADDY_HANDLER_DIR="$(dirname "${CADDY_HANDLER_PATH}")"
-  if [[ -w "${CADDY_HANDLER_DIR}" ]]; then
-    install -m 0644 "${RELEASE_ROOT}/accustandard-demo.handlers.Caddyfile" "${CADDY_HANDLER_PATH}"
-  elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-    sudo install -m 0644 "${RELEASE_ROOT}/accustandard-demo.handlers.Caddyfile" "${CADDY_HANDLER_PATH}"
-  else
-    echo "Caddy handler not installed; configure ${CADDY_HANDLER_PATH} with appropriate privileges." >&2
-  fi
-fi
-
 echo '[4/5] Publishing the transferred static export...'
-rsync -a --delete "${RELEASE_ROOT}/web-dist/" "${APP_ROOT}/web-dist/"
+if [[ "${DEPLOY_TARGET}" != demo ]]; then
+  rsync -a --delete "${RELEASE_ROOT}/web-dist/" "${APP_ROOT}/web-dist/"
+fi
 
 echo '[5/5] Starting the demo database and API services...'
 loginctl enable-linger "${USER}" 2>/dev/null || true

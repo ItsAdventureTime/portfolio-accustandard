@@ -167,3 +167,8 @@ Products are managed under 3 distinct stock categories:
 
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and current
 validation record.
+
+The demo deployment permission boundary is explicit: `jk` stages releases and
+home `web-dist` content under `/home/jk/bridge-ph/accustandard-demo`; the Caddy
+static root is `/srv/bridge-ph-accustandard-demo/web-dist`. Install the fixed
+handler with `sudo install -o root -g root -m 0644 deploy/caddy/accustandard-demo.handlers.Caddyfile /etc/caddy/accustandard-demo.handlers.Caddyfile`, then run `sudo caddy validate --config /etc/caddy/Caddyfile` and `sudo systemctl reload caddy`. The deploy workflow does not install it; import its API handler inside `delegateops.business` before static fallback handling.

@@ -10,8 +10,8 @@ case "${DEPLOY_TARGET}" in
   *) echo "ACCUSTANDARD_DEPLOY_TARGET must be demo or prod" >&2; exit 2 ;;
 esac
 case "${DEPLOY_TARGET}" in
-  demo) REMOTE_ROOT="/srv/bridge-ph-accustandard-demo" ;;
-  prod) REMOTE_ROOT="/srv/bridge-ph-accustandard-prod" ;;
+  demo) REMOTE_ROOT="/home/jk/bridge-ph/accustandard-demo" ;;
+  prod) REMOTE_ROOT="/home/jk/bridge-ph/accustandard" ;;
 esac
 REMOTE="jk@216.75.75.136"
 REMOTE_RELEASE="${REMOTE_ROOT}/release/${DEPLOY_TARGET}"
@@ -55,6 +55,9 @@ echo "==> Accustandard ${DEPLOY_TARGET} deployment build started"
 rm -rf -- "${LOCAL_RELEASE}"
 mkdir -p "${LOCAL_RELEASE}/web-dist" "${LOCAL_RELEASE}/quadlets"
 
+if [[ "${DEPLOY_TARGET}" == demo ]]; then
+  ssh -p 22 "${REMOTE}" "sudo -n /usr/local/sbin/accustandard-demo-activate --check"
+fi
 echo "[1/5] Ensuring the Docker Sandbox is ready..."
 jk-sbx-project ensure
 SANDBOX_ROOT="$(jk-sbx-project exec sh -lc 'printf "SANDBOX_ROOT=%s\n" "$(mktemp -d /tmp/accustandard-build.XXXXXX)"' | sed -n 's/^SANDBOX_ROOT=//p' | tail -n 1)"
@@ -91,9 +94,6 @@ jk-sbx-project exec env SANDBOX_ROOT="${SANDBOX_ROOT}" TARGET_PLATFORM="${TARGET
 test -f "${LOCAL_RELEASE}/web-dist/index.html"
 test -s "${BACKEND_IMAGE_ARCHIVE}"
 cp -f "${REPO_DIR}"/deploy/quadlets/"${QUADLET_SET}"/* "${LOCAL_RELEASE}/quadlets/"
-if [[ "${DEPLOY_TARGET}" == demo ]]; then
-  cp -f "${REPO_DIR}/deploy/caddy/Caddyfile.snippet" "${LOCAL_RELEASE}/accustandard-demo.handlers.Caddyfile"
-fi
 
 if [[ "${ACCUSTANDARD_DEPLOY_DRY_RUN:-false}" == true ]]; then
   echo "==> Local release staging completed; skipping VPS transfer (dry run)"
@@ -101,11 +101,15 @@ if [[ "${ACCUSTANDARD_DEPLOY_DRY_RUN:-false}" == true ]]; then
 fi
 
 echo "[4/5] Transferring the release bundle to the VPS..."
-ssh -p 22 "${REMOTE}" "mkdir -p '${REMOTE_RELEASE}' '${REMOTE_ROOT}/web-dist' '${REMOTE_ROOT}/postgres-data'"
+ssh -p 22 "${REMOTE}" "mkdir -p '${REMOTE_RELEASE}' '${REMOTE_ROOT}/postgres-data'"
 rsync -az --delete -e 'ssh -p 22' "${LOCAL_RELEASE}/" "${REMOTE}:${REMOTE_RELEASE}/"
 
 echo "[5/5] Activating the prebuilt release on the VPS..."
 ssh -p 22 "${REMOTE}" "RELEASE_ROOT='${REMOTE_RELEASE}' ACCUSTANDARD_DEPLOY_TARGET='${DEPLOY_TARGET}' ACCUSTANDARD_BASE_PATH='${BASE_PATH}' bash -s" < "${SCRIPT_DIR}/vps-deploy-accustandard.sh"
-ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
+if [[ "${DEPLOY_TARGET}" == demo ]]; then
+  ssh -p 22 "${REMOTE}" "test -f '/srv/bridge-ph-accustandard-demo/web-dist/index.html'"
+else
+  ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
+fi
 DEPLOYMENT_SUCCEEDED=true
 echo "==> Accustandard ${DEPLOY_TARGET} deployment completed"

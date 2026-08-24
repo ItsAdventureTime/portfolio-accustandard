@@ -260,3 +260,25 @@ acceptance records, and other flows that do not commit through the Go API.
 Do not treat a preview as a posted invoice, verified 3-way match, released RFP,
 or persisted approval. Verify `APP_ENV`, `/readiness`, and the API service
 journal when diagnosing a deployment.
+
+### AccuStandard demo activation boundary
+
+Install the canonical helper once on the VPS as `root:root`, mode `0750`, and install the canonical handler as `root:root`, mode `0644`:
+
+```sh
+sudo install -o root -g root -m 0644 deploy/caddy/accustandard-demo.handlers.Caddyfile /etc/caddy/accustandard-demo.handlers.Caddyfile
+podman exec caddy caddy validate --config /etc/caddy/Caddyfile
+systemctl --user reload caddy.service || systemctl --user restart caddy.service
+```
+
+```sh
+sudo install -o root -g root -m 0750 scripts/accustandard-demo-activate /usr/local/sbin/accustandard-demo-activate
+```
+
+Allow only the fixed checks/publish operation for `jk`:
+
+```text
+jk ALL=(root) NOPASSWD: /usr/local/sbin/accustandard-demo-activate --check, /usr/local/sbin/accustandard-demo-activate --publish
+```
+
+Run `sudo visudo -cf /etc/sudoers.d/accustandard-demo` after installing that entry. Releases, Quadlets, and PostgreSQL remain under `/home/jk/bridge-ph/accustandard-demo`; only the root helper publishes static files to `/srv/bridge-ph-accustandard-demo/web-dist`. The canonical root-owned handler at `/etc/caddy/accustandard-demo.handlers.Caddyfile` is a privileged bootstrap/change, never copied from a staged release. Import it inside `delegateops.business` before the static fallback, then run `caddy validate` and reload Caddy.
