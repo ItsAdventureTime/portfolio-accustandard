@@ -1,5 +1,28 @@
 # AccuStandard Website and Web-App Deployment Guide
 
+## Sandbox build resources and npm network failures
+
+The deployment script builds in the Docker Sandbox. Its CPU and memory
+allocation affects local build capacity, but it does not cause npm registry
+`ECONNRESET` failures. The private-checkout install uses npm's documented
+registry retry controls and a stable sandbox-private cache under the sandbox
+user's home directory:
+
+```bash
+npm ci --no-audit --no-fund \
+  --cache="$HOME/.cache/accustandard-npm" --prefer-offline \
+  --fetch-retries=5 --fetch-retry-factor=2 \
+  --fetch-retry-mintimeout=5000 --fetch-retry-maxtimeout=30000 \
+  --fetch-timeout=120000
+```
+
+The lockfile and `npm ci` semantics are unchanged. `--prefer-offline` can
+reuse packages already cached by earlier runs in the same sandbox; the retry
+and timeout values
+cover transient registry resets without changing the user's global npm
+configuration. If retries still fail, check the sandbox's outbound network,
+proxy, DNS, or npm registry availability before changing CPU or RAM.
+
 This is the operator guide for the current repository. The supported automated
 release path builds the release locally in the Docker Sandbox, then performs a
 plain artifact deployment to the demo VPS. The VPS does not compile or build

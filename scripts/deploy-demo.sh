@@ -69,7 +69,11 @@ jk-sbx-project exec env SANDBOX_ROOT="${SANDBOX_ROOT}" BASE_PATH="${BASE_PATH}" 
   mkdir -p "$SANDBOX_ROOT/repo"
   rsync -a --delete --exclude=.git --exclude=node_modules --exclude=.next --exclude=out --exclude=.deploy-*-release ./ "$SANDBOX_ROOT/repo/"
   cd "$SANDBOX_ROOT/repo"
-  npm ci --no-audit --no-fund
+  npm ci --no-audit --no-fund \
+    --cache="$HOME/.cache/accustandard-npm" --prefer-offline \
+    --fetch-retries=5 --fetch-retry-factor=2 \
+    --fetch-retry-mintimeout=5000 --fetch-retry-maxtimeout=30000 \
+    --fetch-timeout=120000
   npm run lint
   npx tsc --noEmit --incremental false
   ACCUSTANDARD_BASE_PATH="$BASE_PATH" npm run build
