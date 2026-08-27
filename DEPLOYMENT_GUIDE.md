@@ -144,6 +144,12 @@ VPS, run:
 ACCUSTANDARD_DEPLOY_DRY_RUN=true npm run deploy:demo
 ```
 
+This dry run is local-only: it builds and stages the release in the Docker
+Sandbox and does not inspect or reload the VPS Caddy configuration. A live
+`npm run deploy:demo` performs a Caddyfile validation, host-gateway readiness
+probe, reload, and origin-route preflight before transfer; it cannot edit the
+Caddyfile. Manually applying the routing block is therefore a live prerequisite.
+
 The PostgreSQL demo reset policy is intentionally disposable: legacy or
 incompatible demo data may be removed without a recoverable backup, then
 recreated and seeded through legacy cleanup, compatibility reconciliation,
@@ -171,10 +177,10 @@ From macOS:
 
 ```bash
 curl --fail --silent --show-error --location \
-  https://delegateops.business/accustandard/demo/ >/dev/null
+  https://delegateops.business/demo/accustandard/ >/dev/null
 
 curl --fail --silent --show-error --location \
-  https://delegateops.business/accustandard/demo/api/v1/readiness
+  https://delegateops.business/demo/accustandard/api/v1/readiness
 ```
 
 Expected readiness includes an HTTP success response with the API reporting a
@@ -286,15 +292,66 @@ journal when diagnosing a deployment.
 
 ### AccuStandard rootless Caddy boundary
 
-Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo, writes `/srv`, or overwrites `/home/jk/caddy/conf/Caddyfile`.
+Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo or writes host `/srv`; a live demo release refreshes only its managed Caddy handler and import line.
 
-One-time user-owned change: discover the actual Caddy container and unit, add `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before the existing static handler, and add the read-only bind mount from `/home/jk/bridge-ph/accustandard-demo/web-dist` to `/srv/bridge-ph-accustandard-demo`.
+One-time user-owned change: add the read-only bind mount from
+`/home/jk/bridge-ph/accustandard-demo/web-dist` to
+`/srv/bridge-ph-accustandard-demo`. Each live demo release installs the
+managed routing block from `deploy/caddy/Caddyfile.snippet` before the static
+handler. The block includes the canonical trailing slash redirect and routes
+the API to `host.containers.internal:8080`.
+
+The Caddy Quadlet shown for this host does not declare a shared AccuStandard
+network. Its backend pod publishes port 8080 on the VPS, so Caddy must reach
+the host-published listener through Podman's `host.containers.internal`; do
+not use `127.0.0.1:8080`, which is Caddy's own container loopback. Verify the
+name resolves and the API responds from Caddy's network namespace before
+reloading. If it does not, add the host-gateway mapping to the Caddy Quadlet
+or deliberately place Caddy and the demo pod on a shared user network.
 
 ```sh
 podman ps --format '{{.Names}}'
 systemctl --user list-units '*caddy*'
+grep -F 'BEGIN ACCUSTANDARD_DEMO_ROUTING' /home/jk/caddy/conf/Caddyfile
+podman exec <discovered-caddy> getent hosts host.containers.internal
 podman exec <discovered-caddy> caddy validate --config /etc/caddy/Caddyfile
-podman exec <discovered-caddy> caddy reload --config /etc/caddy/Caddyfile
+systemctl --user reload <discovered-caddy-unit>.service
 ```
 
-Do not guess the container or unit name; use discovery output.
+Do not guess the container or unit name; use discovery output. The deploy
+script refreshes its managed handler and import line in the user-owned
+Caddyfile, validates/reloads Caddy, probes the effective origin routes, and
+stops if any prerequisite is unhealthy.
+
+The live deploy runs the complete Caddy/origin verification. To diagnose it
+manually as the deploy user, validate the actual container configuration, test
+the host-gateway route from Caddy's network namespace, then reload the user
+service:
+
+```sh
+podman exec <discovered-caddy> caddy validate --config /etc/caddy/Caddyfile
+podman exec <discovered-caddy> wget -qO- \
+  http://host.containers.internal:8080/demo/accustandard/api/v1/readiness
+systemctl --user reload <discovered-caddy-unit>.service
+```
+
+Then bypass Bunny at the origin and verify the three externally visible
+contracts (replace the origin address if it changes):
+
+```sh
+ORIGIN=216.75.75.136
+curl --resolve delegateops.business:443:${ORIGIN} -fsS -o /dev/null \
+  -w 'root=%{http_code} location=%{redirect_url}\n' \
+  https://delegateops.business/demo/accustandard
+curl --resolve delegateops.business:443:${ORIGIN} -fsS -o /dev/null \
+  -w 'static=%{http_code}\n' \
+  https://delegateops.business/demo/accustandard/
+curl --resolve delegateops.business:443:${ORIGIN} -fsS -o /dev/null \
+  -w 'readiness=%{http_code}\n' \
+  https://delegateops.business/demo/accustandard/api/v1/readiness
+```
+
+Expected results are `root=308`, `static=200`, and `readiness=200`. Purge the
+explicit `/demo/accustandard/` path in Bunny only after these origin checks
+pass; use the Bunny dashboard or its authenticated purge API, and never put
+the API token in this repository.

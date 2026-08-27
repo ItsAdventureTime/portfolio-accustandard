@@ -84,7 +84,7 @@ verified build contract; revisit it after a deliberate sandbox validation.
 ## 🛰️ Live Demo Target Environment
 
 Deployments currently target **strictly the Demo Environment**:
-- **Live URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Live URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
 - **Demo Web Root:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Demo Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 - **1-Command Deployment:** `npm run deploy:demo` (or `./scripts/deploy-demo.sh`)

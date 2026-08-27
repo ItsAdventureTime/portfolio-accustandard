@@ -83,7 +83,7 @@ assert_postgres_17() {
 }
 
 wait_for_api_readiness() {
-  local readiness_url='http://127.0.0.1:8080/accustandard/demo/api/v1/readiness'
+  local readiness_url='http://127.0.0.1:8080/demo/accustandard/api/v1/readiness'
 
   echo "    Waiting for API readiness (up to 60 seconds)..."
   # The Go process can reset this idempotent GET while binding its listener.

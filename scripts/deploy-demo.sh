@@ -14,6 +14,7 @@ case "${DEPLOY_TARGET}" in
   prod) REMOTE_ROOT="/home/jk/bridge-ph/accustandard" ;;
 esac
 REMOTE="jk@216.75.75.136"
+REMOTE_CADDYFILE="/home/jk/caddy/conf/Caddyfile"
 REMOTE_RELEASE="${REMOTE_ROOT}/release/${DEPLOY_TARGET}"
 LOCAL_RELEASE="${REPO_DIR}/.deploy-${DEPLOY_TARGET}-release"
 SANDBOX_ROOT=""
@@ -101,11 +102,39 @@ if [[ "${ACCUSTANDARD_DEPLOY_DRY_RUN:-false}" == true ]]; then
   exit 0
 fi
 
-echo "[4/5] Transferring the release bundle to the VPS..."
+echo "[4/6] Applying and validating the demo Caddy routes..."
+if [[ "${DEPLOY_TARGET}" == demo ]]; then
+  ssh -p 22 "${REMOTE}" "mkdir -p /home/jk/caddy/conf"
+  ssh -p 22 "${REMOTE}" "cat > /home/jk/caddy/conf/accustandard-demo.handlers.Caddyfile" \
+    < "${REPO_DIR}/deploy/caddy/Caddyfile.snippet"
+  if ! ssh -p 22 "${REMOTE}" 'set -eu
+    caddyfile=/home/jk/caddy/conf/Caddyfile
+    handler="import /etc/caddy/accustandard-demo.handlers.Caddyfile"
+    if ! grep -Fq "$handler" "$caddyfile"; then
+      sed -i "/^[[:space:]]*handle_path \\/demo\\/accustandard\\/\\* {$/i\\
+\\timport /etc/caddy/accustandard-demo.handlers.Caddyfile
+" "$caddyfile"
+    fi
+    podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+    systemctl --user reload caddy.service
+    podman exec caddy wget -qO- http://host.containers.internal:8080/demo/accustandard/api/v1/readiness >/dev/null
+    root_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" --max-redirs 0 https://delegateops.business/demo/accustandard)
+    static_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/)
+    readiness_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/api/v1/readiness)
+    test "$root_status" = 308
+    test "$static_status" = 200
+    test "$readiness_status" = 200
+  '; then
+    echo "Caddy routing validation, reload, host-gateway readiness, or origin route probe failed." >&2
+    exit 1
+  fi
+fi
+
+echo "[5/6] Transferring the release bundle to the VPS..."
 ssh -p 22 "${REMOTE}" "mkdir -p '${REMOTE_RELEASE}' '${REMOTE_ROOT}/postgres-data'"
 rsync -az --delete -e 'ssh -p 22' "${LOCAL_RELEASE}/" "${REMOTE}:${REMOTE_RELEASE}/"
 
-echo "[5/5] Activating the prebuilt release on the VPS..."
+echo "[6/6] Activating the prebuilt release on the VPS..."
 ssh -p 22 "${REMOTE}" "RELEASE_ROOT='${REMOTE_RELEASE}' ACCUSTANDARD_DEPLOY_TARGET='${DEPLOY_TARGET}' ACCUSTANDARD_BASE_PATH='${BASE_PATH}' bash -s" < "${SCRIPT_DIR}/vps-deploy-accustandard.sh"
 ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
 DEPLOYMENT_SUCCEEDED=true

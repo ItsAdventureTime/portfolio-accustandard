@@ -1,6 +1,20 @@
 # Imported by the authoritative delegateops.business Caddyfile.
+# BEGIN ACCUSTANDARD_DEMO_ROUTING
+# Canonicalize the app root before the wildcard static handler.
+@accustandard_demo_root path /demo/accustandard
+redir @accustandard_demo_root /demo/accustandard/ 308
+
 # Demo API handler must precede the static handle_path so the full API path
 # reaches Go unchanged.
 handle /demo/accustandard/api/* {
-	reverse_proxy 127.0.0.1:8080
+	header {
+		>Cache-Control "private, no-store"
+		>CDN-Cache-Control "no-store"
+		>Pragma "no-cache"
+	}
+
+	# Caddy runs in its own rootless container network; this resolves the VPS
+	# host where the demo pod publishes port 8080.
+	reverse_proxy host.containers.internal:8080
 }
+# END ACCUSTANDARD_DEMO_ROUTING

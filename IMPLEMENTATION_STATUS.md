@@ -21,9 +21,9 @@ Where an older document conflicts with the first four, the first four control.
 ## Runtime boundary
 
 - Frontend: Next.js 16 App Router static export from `src/`, served below
-  `/accustandard/demo`.
+  `/demo/accustandard`.
 - Backend: `backend/cmd/server` Go API below
-  `/accustandard/demo/api/v1`.
+  `/demo/accustandard/api/v1`.
 - Database: PostgreSQL 17 through legacy cleanup,
   `backend/migrations/004_reconcile_runtime_columns.sql`, GORM `AutoMigrate`,
   and idempotent demo seed `backend/migrations/002_seed_data.sql`.
@@ -125,7 +125,7 @@ server-backed record, authorization, audit event, and refresh-safe test.
   `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
 - The remote demo deploy explicitly starts the PostgreSQL Quadlet, waits for
   `pg_isready`, restarts the API Quadlet, verifies both user services, and
-  waits up to 60 seconds for `/accustandard/demo/api/v1/readiness` with curl
+  waits up to 60 seconds for `/demo/accustandard/api/v1/readiness` with curl
   retries for transient listener startup failures. `Notify=healthy` gates the
   database/container service, not necessarily the Go HTTP listener. A timeout
   prints API systemd status and the last 100 journal lines before the script

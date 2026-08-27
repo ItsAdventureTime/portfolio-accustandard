@@ -53,7 +53,7 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Mount API endpoints under /accustandard/demo/api/v1
+	// Mount API endpoints under /demo/accustandard/api/v1
 	basePath := strings.TrimRight(os.Getenv("ACCUSTANDARD_BASE_PATH"), "/")
 	if basePath == "" {
 		basePath = "/demo/accustandard"

@@ -18,14 +18,14 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 ```
 [ Client Web Browser ]
        |
-       +---> HTTPS: https://delegateops.business/accustandard/demo
+       +---> HTTPS: https://delegateops.business/demo/accustandard/
                                |
                                v
                [ Rootless Caddy Proxy (caddy.service) ]
                                |
             +------------------+------------------+
             |                                     |
-            v /accustandard/demo/*                v /accustandard/demo/api/*
+            v /demo/accustandard/*                v /demo/accustandard/api/*
 [ Static UI Files (/web-dist) ]          [ Go Backend Service (Port 8080) ]
 (Next.js React SPA)                      (go-chi/v5 + REST Controllers)
                                                   |
@@ -40,12 +40,12 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 
 1. **Frontend**: Next.js App Router (React), Tailwind CSS, Lucide Icons, Radix UI.
    - Build Mode: Static Export (`output: 'export'` in `next.config.ts`).
-   - Base Path: `/accustandard/demo`.
+   - Base Path: `/demo/accustandard`.
 2. **Backend**: Go from the pinned official
    `docker.io/library/golang:1.26.5-alpine3.24` build image
    (`go-chi/chi/v5` router, PostgreSQL driver `pgx/v5` or `gorm`). The
    runtime uses `docker.io/library/alpine:3.24.1`.
-   - REST API Base Path: `/accustandard/demo/api/v1`.
+   - REST API Base Path: `/demo/accustandard/api/v1`.
 3. **Database**: PostgreSQL 17 (`accustandard_demo_db`).
 4. **Containerization**: Podman Quadlet (`~/.config/containers/systemd/bridge-ph/accustandard-demo/`).
 
@@ -54,7 +54,7 @@ operations by `README.md`, `ARCHITECTURE.md`, and `CONTRIBUTING.md`.
 ## 📂 Target Directory & Infrastructure Paths
 
 - **VPS Host**: `jk@216.75.75.136`
-- **Live Demo Site URL**: `https://delegateops.business/accustandard/demo`
+- **Live Demo Site URL**: `https://delegateops.business/demo/accustandard/`
 - **Demo Web Root & Data Path**: `/home/jk/bridge-ph/accustandard-demo/`
   - `/home/jk/bridge-ph/accustandard-demo/web-dist/` (Static UI files)
   - `/home/jk/bridge-ph/accustandard-demo/postgres-data/` (PostgreSQL data volume)

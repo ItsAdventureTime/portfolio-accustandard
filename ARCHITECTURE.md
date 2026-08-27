@@ -95,10 +95,10 @@ activates the existing rootless Podman runtime:
 ```
 [ Internet Client ]
        |
-       v (HTTPS: 443) -> https://delegateops.business/accustandard/demo
+       v (HTTPS: 443) -> https://delegateops.business/demo/accustandard/
 [ Caddy Reverse Proxy (caddy.service) ]
        |
-       v /accustandard/demo
+       v /demo/accustandard
  [ Demo Pod: accustandard-demo-pod ] (localhost:8080 API)
         ^
         | prebuilt image loaded by the VPS activation script
@@ -106,13 +106,13 @@ activates the existing rootless Podman runtime:
 ```
 
 ### Path Specifications
-- **Live Demo URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Live Demo URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
 - **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
 
 ### Quadlet Services (`deploy/quadlets/demo/`)
 - **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 8080 for the Go API.
-- **`accustandard-demo-app.container`**: Go API container loaded from the locally built image and serving `/accustandard/demo/api/v1`.
+- **`accustandard-demo-app.container`**: Go API container loaded from the locally built image and serving `/demo/accustandard/api/v1`.
 - **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
 
 ---

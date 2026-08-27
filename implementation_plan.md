@@ -266,18 +266,26 @@ VERIFICATION & HANDOFF CHECKLIST:
 
 ### Demo rootless Caddy boundary
 
-The deploy user stages releases, Quadlets, PostgreSQL data, and `web-dist` under `/home/jk/bridge-ph/accustandard-demo`; the Caddy container serves the same content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo`. The deployment workflow never uses sudo, writes `/srv`, or overwrites `/home/jk/caddy/conf/Caddyfile`.
+The deploy user stages releases, Quadlets, PostgreSQL data, and `web-dist` under `/home/jk/bridge-ph/accustandard-demo`; the Caddy container serves the same content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo`. The deployment workflow never uses sudo or writes host `/srv`; for demo releases it atomically refreshes only its managed Caddy handler and import line in `/home/jk/caddy/conf/Caddyfile`.
 
-One-time user-owned Caddy change: discover the actual Caddy container and user unit, then add the API handler before the existing static handler in `delegateops.business`:
+Each live demo deployment installs the managed routing block from
+`deploy/caddy/Caddyfile.snippet`, imports it before the static handler in
+`delegateops.business`, validates Caddy, reloads the rootless user service,
+and probes the origin. The block canonicalizes the root URL and routes the API
+through `host.containers.internal:8080` because the supplied Caddy Quadlet does
+not declare a shared AccuStandard network; `127.0.0.1` would be Caddy's
+container loopback.
 
 ```sh
 podman ps --format '{{.Names}}'
 systemctl --user list-units '*caddy*'
-# Add deploy/caddy/Caddyfile.snippet to the authoritative Caddyfile.
 # Bind /home/jk/bridge-ph/accustandard-demo/web-dist read-only
 # to /srv/bridge-ph-accustandard-demo in the Caddy container.
+podman exec <discovered-caddy> getent hosts host.containers.internal
 podman exec <discovered-caddy> caddy validate --config /etc/caddy/Caddyfile
-podman exec <discovered-caddy> caddy reload --config /etc/caddy/Caddyfile
+systemctl --user reload <discovered-caddy-unit>.service
 ```
 
 Do not guess the container name or unit; use the discovery commands above.
+The deploy script installs and checks the required root redirect and API
+handler before transferring a live demo release.

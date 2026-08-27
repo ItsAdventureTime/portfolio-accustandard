@@ -29,7 +29,7 @@ operations. The visual and accessibility rules are maintained in
 
 ## 🌐 Live Demo System URL
 
-- **Live Demo Site:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Live Demo Site:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
 
 This URL is a demo environment only. It is not a production release or proof
 that incomplete backend controls are complete.
@@ -294,9 +294,9 @@ machine:
 
 ```bash
 curl --fail --silent --show-error --location \
-  https://delegateops.business/accustandard/demo/ >/dev/null
+  https://delegateops.business/demo/accustandard/ >/dev/null
 curl --fail --silent --show-error --location \
-  https://delegateops.business/accustandard/demo/api/v1/readiness
+  https://delegateops.business/demo/accustandard/api/v1/readiness
 ```
 
 If the Caddy configuration changed, validate and format it on the VPS before
@@ -311,7 +311,7 @@ ssh -p 22 jk@216.75.75.136 \
 
 ### Infrastructure Path Configuration
 - **VPS Host:** `jk@216.75.75.136`
-- **Live Demo Site URL:** [https://delegateops.business/accustandard/demo](https://delegateops.business/accustandard/demo)
+- **Live Demo Site URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
 - **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
 - **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
 - **Remote Build Source:** `/home/jk/bridge-ph/accustandard-demo/source/`
@@ -344,7 +344,7 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 
 ## 2026 Implementation Baseline
 
-- The browser hydrates operational lists from `/accustandard/demo/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
+- The browser hydrates operational lists from `/demo/accustandard/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
 - Sales Quotes route Sales Officer → Marketing Reviewer → General Manager; DCS is not a Sales Quote approval stage.
 - Goods Receipt over-receiving is hard-blocked, and a fully received PO remains `AWAITING_VENDOR_INVOICE` until the vendor invoice is matched.
 - Desktop navigation uses filtered horizontal links through the full-width shell;
@@ -434,4 +434,4 @@ status stays persistent in the workspace banner, and interruptive dialogs are
 reserved for responses that require acknowledgment. See the
 [`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md) notification
 
-Deployment note: demo releases and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. Add the API handler from `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before the static fallback, then validate/reload using discovery-based `podman exec <discovered-caddy> caddy validate/reload` commands. The deploy workflow does not modify Caddy configuration.
+Deployment note: demo releases and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. Manually add the managed routing block from `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before the static fallback; it redirects `/demo/accustandard` to its canonical trailing-slash URL and proxies the API through `host.containers.internal:8080` because Caddy has no shared AccuStandard network. The live deploy validates/reloads Caddy and probes the origin routes, but never edits the shared Caddyfile.

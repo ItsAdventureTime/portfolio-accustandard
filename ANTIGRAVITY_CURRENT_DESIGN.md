@@ -222,7 +222,7 @@ pre-redesign baseline exhibited the following key weaknesses:
 ## 8. ChatGPT Codex Handoff Requirements
 
 The Phase 2 implementation must preserve these conditions:
-1. **Preserve Business Logic & API Contracts:** All Go backend endpoints (`/accustandard/demo/api/v1/*`), COSO approval rules, and role constraints must remain 100% intact.
+1. **Preserve Business Logic & API Contracts:** All Go backend endpoints (`/demo/accustandard/api/v1/*`), COSO approval rules, and role constraints must remain 100% intact.
 2. **Refactor In-Place:** Maintain Next.js App Router structure in `src/app` and reusable components in `src/components`.
 3. **Execute Design Upgrades:** Implement modern typography (`Outfit` / `Geist` / `Satoshi`), the existing primitive layer, Tailwind v4 design tokens, smooth micro-interactions, responsive mobile bottom sheets, and WCAG 2.2 AA-aligned accessibility.
 
