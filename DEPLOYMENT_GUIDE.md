@@ -146,9 +146,11 @@ ACCUSTANDARD_DEPLOY_DRY_RUN=true npm run deploy:demo
 
 This dry run is local-only: it builds and stages the release in the Docker
 Sandbox and does not inspect or reload the VPS Caddy configuration. A live
-`npm run deploy:demo` performs a Caddyfile validation, host-gateway readiness
-probe, reload, and origin-route preflight before transfer; it cannot edit the
-Caddyfile. Manually applying the routing block is therefore a live prerequisite.
+`npm run deploy:demo` transactionally backs up the user-owned Caddyfile and
+managed handler, activates the bare-root redirect, installs the API handler,
+validates/reloads Caddy, and runs origin-route preflight before transfer. Any
+mutation, validation, reload, or origin-probe failure restores the backups and
+reloads the previous configuration.
 
 The PostgreSQL demo reset policy is intentionally disposable: legacy or
 incompatible demo data may be removed without a recoverable backup, then
@@ -294,12 +296,12 @@ journal when diagnosing a deployment.
 
 Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo or writes host `/srv`; a live demo release refreshes only its managed Caddy handler and import line.
 
-One-time user-owned change: add the read-only bind mount from
+The Caddy Quadlet must provide the read-only bind mount from
 `/home/jk/bridge-ph/accustandard-demo/web-dist` to
 `/srv/bridge-ph-accustandard-demo`. Each live demo release installs the
-managed routing block from `deploy/caddy/Caddyfile.snippet` before the static
-handler. The block includes the canonical trailing slash redirect and routes
-the API to `host.containers.internal:8080`.
+managed API handler from `deploy/caddy/Caddyfile.snippet`, activates the
+canonical bare-root redirect in the shared Caddyfile, and places both before
+the static handler. The API routes to `host.containers.internal:8080`.
 
 The Caddy Quadlet shown for this host does not declare a shared AccuStandard
 network. Its backend pod publishes port 8080 on the VPS, so Caddy must reach
@@ -319,9 +321,9 @@ systemctl --user reload <discovered-caddy-unit>.service
 ```
 
 Do not guess the container or unit name; use discovery output. The deploy
-script refreshes its managed handler and import line in the user-owned
-Caddyfile, validates/reloads Caddy, probes the effective origin routes, and
-stops if any prerequisite is unhealthy.
+script backs up and refreshes its managed handler and import line in the
+user-owned Caddyfile, validates/reloads Caddy, probes the effective origin
+routes, and rolls back if any prerequisite is unhealthy.
 
 The live deploy runs the complete Caddy/origin verification. To diagnose it
 manually as the deploy user, validate the actual container configuration, test
@@ -351,7 +353,8 @@ curl --resolve delegateops.business:443:${ORIGIN} -fsS -o /dev/null \
   https://delegateops.business/demo/accustandard/api/v1/readiness
 ```
 
-Expected results are `root=308`, `static=200`, and `readiness=200`. Purge the
-explicit `/demo/accustandard/` path in Bunny only after these origin checks
-pass; use the Bunny dashboard or its authenticated purge API, and never put
-the API token in this repository.
+Expected results are `root=308`, `static=200`, and `readiness=200`. After the
+deployment, the script checks the public Bunny root without mutating Bunny. If
+the origin is `308` but Bunny still returns `404`, purge both
+`/demo/accustandard` and `/demo/accustandard/` in Bunny, using the dashboard or
+its authenticated purge API; never put the API token in this repository.

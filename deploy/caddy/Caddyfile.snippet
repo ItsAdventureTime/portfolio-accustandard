@@ -1,9 +1,5 @@
 # Imported by the authoritative delegateops.business Caddyfile.
 # BEGIN ACCUSTANDARD_DEMO_ROUTING
-# Canonicalize the app root before the wildcard static handler.
-@accustandard_demo_root path /demo/accustandard
-redir @accustandard_demo_root /demo/accustandard/ 308
-
 # Demo API handler must precede the static handle_path so the full API path
 # reaches Go unchanged.
 handle /demo/accustandard/api/* {

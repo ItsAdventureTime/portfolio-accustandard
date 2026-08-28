@@ -105,27 +105,61 @@ fi
 echo "[4/6] Applying and validating the demo Caddy routes..."
 if [[ "${DEPLOY_TARGET}" == demo ]]; then
   ssh -p 22 "${REMOTE}" "mkdir -p /home/jk/caddy/conf"
-  ssh -p 22 "${REMOTE}" "cat > /home/jk/caddy/conf/accustandard-demo.handlers.Caddyfile" \
+  ssh -p 22 "${REMOTE}" "cat > /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new" \
     < "${REPO_DIR}/deploy/caddy/Caddyfile.snippet"
   if ! ssh -p 22 "${REMOTE}" 'set -eu
     caddyfile=/home/jk/caddy/conf/Caddyfile
+    handler_file=/home/jk/caddy/conf/accustandard-demo.handlers.Caddyfile
     handler="import /etc/caddy/accustandard-demo.handlers.Caddyfile"
+    backup_dir=/home/jk/caddy/conf/.accustandard-demo-backup
+    rollback() {
+      rm -f /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new
+      cp -p "$backup_dir/Caddyfile" "$caddyfile"
+      if test -f "$backup_dir/handler.absent"; then
+        rm -f "$handler_file"
+      else
+        cp -p "$backup_dir/handler" "$handler_file"
+      fi
+      podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1 || true
+      systemctl --user reload caddy.service >/dev/null 2>&1 || true
+    }
+    mkdir -p "$backup_dir"
+    cp -p "$caddyfile" "$backup_dir/Caddyfile"
+    if test -e "$handler_file"; then
+      cp -p "$handler_file" "$backup_dir/handler"
+      rm -f "$backup_dir/handler.absent"
+    else
+      : > "$backup_dir/handler.absent"
+      rm -f "$backup_dir/handler"
+    fi
+    cp -p /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new "$handler_file"
+    rm -f /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new
+    if grep -Eq "^[[:space:]]*#[[:space:]]*redir @accustandard_demo_root" "$caddyfile"; then
+      sed -i -E "s|^[[:space:]]*#[[:space:]]*redir @accustandard_demo_root.*$|\tredir @accustandard_demo_root /demo/accustandard/ 308|" "$caddyfile"
+    elif ! grep -Eq "^[[:space:]]*redir @accustandard_demo_root /demo/accustandard/ 308$" "$caddyfile"; then
+      sed -i "/^[[:space:]]*handle_path \/demo\/accustandard\/\* {$/i\\	redir @accustandard_demo_root /demo/accustandard/ 308\n" "$caddyfile"
+    fi
     if ! grep -Fq "$handler" "$caddyfile"; then
-      sed -i "/^[[:space:]]*handle_path \\/demo\\/accustandard\\/\\* {$/i\\
-\\timport /etc/caddy/accustandard-demo.handlers.Caddyfile
+      sed -i "/^[[:space:]]*handle_path \/demo\/accustandard\/\* {$/i\\
+\timport /etc/caddy/accustandard-demo.handlers.Caddyfile
 " "$caddyfile"
     fi
-    podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-    systemctl --user reload caddy.service
-    podman exec caddy wget -qO- http://host.containers.internal:8080/demo/accustandard/api/v1/readiness >/dev/null
-    root_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" --max-redirs 0 https://delegateops.business/demo/accustandard)
-    static_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/)
-    readiness_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/api/v1/readiness)
-    test "$root_status" = 308
-    test "$static_status" = 200
-    test "$readiness_status" = 200
+    if ! {
+      podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      systemctl --user reload caddy.service
+      podman exec caddy wget -qO- http://host.containers.internal:8080/demo/accustandard/api/v1/readiness >/dev/null
+      root_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" --max-redirs 0 https://delegateops.business/demo/accustandard)
+      static_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/)
+      readiness_status=$(curl --resolve delegateops.business:443:127.0.0.1 -sS -o /dev/null -w "%{http_code}" https://delegateops.business/demo/accustandard/api/v1/readiness)
+      test "$root_status" = 308
+      test "$static_status" = 200
+      test "$readiness_status" = 200
+    }; then
+      rollback
+      exit 1
+    fi
   '; then
-    echo "Caddy routing validation, reload, host-gateway readiness, or origin route probe failed." >&2
+    echo "Caddy route transaction failed; the previous Caddyfile and handler were restored." >&2
     exit 1
   fi
 fi
@@ -137,5 +171,13 @@ rsync -az --delete -e 'ssh -p 22' "${LOCAL_RELEASE}/" "${REMOTE}:${REMOTE_RELEAS
 echo "[6/6] Activating the prebuilt release on the VPS..."
 ssh -p 22 "${REMOTE}" "RELEASE_ROOT='${REMOTE_RELEASE}' ACCUSTANDARD_DEPLOY_TARGET='${DEPLOY_TARGET}' ACCUSTANDARD_BASE_PATH='${BASE_PATH}' bash -s" < "${SCRIPT_DIR}/vps-deploy-accustandard.sh"
 ssh -p 22 "${REMOTE}" "test -f '${REMOTE_ROOT}/web-dist/index.html'"
+if [[ "${DEPLOY_TARGET}" == demo ]]; then
+  public_root_status="$(curl --max-time 15 -sS -o /dev/null -w "%{http_code}" --max-redirs 0 https://delegateops.business/demo/accustandard || printf '000')"
+  if [[ "${public_root_status}" == 404 ]]; then
+    echo "WARNING: direct origin verified 308, but Bunny returned 404 for /demo/accustandard. Purge /demo/accustandard and /demo/accustandard/ in Bunny, then retry the public URL." >&2
+  else
+    echo "Public CDN root check: HTTP ${public_root_status}"
+  fi
+fi
 DEPLOYMENT_SUCCEEDED=true
 echo "==> Accustandard ${DEPLOY_TARGET} deployment completed"

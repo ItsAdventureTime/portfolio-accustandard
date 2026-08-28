@@ -168,4 +168,4 @@ Products are managed under 3 distinct stock categories:
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and current
 validation record.
 
-The demo deployment is rootless: releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. Add the API handler from `deploy/caddy/Caddyfile.snippet` inside `delegateops.business` before static fallback handling. Discover the actual Caddy container/unit, then use `podman exec <discovered-caddy> caddy validate/reload`; deployment does not modify Caddy configuration.
+The demo deployment is rootless: releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. A live demo deployment transactionally manages the API handler/import and bare-root redirect in the user-owned Caddyfile before static fallback handling, then validates/reloads Caddy and probes the origin.
