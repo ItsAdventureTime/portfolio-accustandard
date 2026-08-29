@@ -146,11 +146,10 @@ ACCUSTANDARD_DEPLOY_DRY_RUN=true npm run deploy:demo
 
 This dry run is local-only: it builds and stages the release in the Docker
 Sandbox and does not inspect or reload the VPS Caddy configuration. A live
-`npm run deploy:demo` transactionally backs up the user-owned Caddyfile and
-managed handler, activates the bare-root redirect, installs the API handler,
-validates/reloads Caddy, and runs origin-route preflight before transfer. Any
-mutation, validation, reload, or origin-probe failure restores the backups and
-reloads the previous configuration.
+`npm run deploy:demo` requires the one-time user-owned import below, then
+atomically replaces only the dedicated handler fragment, validates/reloads
+Caddy, and runs origin-route preflight before transfer. It never edits or backs
+up the shared Caddyfile during normal releases.
 
 The PostgreSQL demo reset policy is intentionally disposable: legacy or
 incompatible demo data may be removed without a recoverable backup, then
@@ -294,14 +293,20 @@ journal when diagnosing a deployment.
 
 ### AccuStandard rootless Caddy boundary
 
-Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo or writes host `/srv`; a live demo release refreshes only its managed Caddy handler and import line.
+Demo releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves that content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the Caddy container. The deployment workflow never uses sudo or writes host `/srv`; a live demo release refreshes only its managed Caddy handler fragment. The shared Caddyfile import is a permanent one-time operator-owned prerequisite.
 
 The Caddy Quadlet must provide the read-only bind mount from
 `/home/jk/bridge-ph/accustandard-demo/web-dist` to
-`/srv/bridge-ph-accustandard-demo`. Each live demo release installs the
-managed API handler from `deploy/caddy/Caddyfile.snippet`, activates the
-canonical bare-root redirect in the shared Caddyfile, and places both before
-the static handler. The API routes to `host.containers.internal:8080`.
+`/srv/bridge-ph-accustandard-demo`. Make this one-time edit inside
+`delegateops.business`, immediately before the AccuStandard static handler:
+
+```caddy
+import /etc/caddy/accustandard-demo.handlers.Caddyfile
+```
+
+Each live demo release atomically replaces that dedicated handler file from
+`deploy/caddy/Caddyfile.snippet`; the fragment contains the canonical bare-root
+redirect and API route to `host.containers.internal:8080`.
 
 The Caddy Quadlet shown for this host does not declare a shared AccuStandard
 network. Its backend pod publishes port 8080 on the VPS, so Caddy must reach
@@ -321,9 +326,10 @@ systemctl --user reload <discovered-caddy-unit>.service
 ```
 
 Do not guess the container or unit name; use discovery output. The deploy
-script backs up and refreshes its managed handler and import line in the
-user-owned Caddyfile, validates/reloads Caddy, probes the effective origin
-routes, and rolls back if any prerequisite is unhealthy.
+script requires the import, atomically refreshes its managed handler file,
+validates/reloads Caddy, and probes the effective origin routes. If the import
+is absent it stops with the one-time setup instruction and makes no Caddyfile
+changes.
 
 The live deploy runs the complete Caddy/origin verification. To diagnose it
 manually as the deploy user, validate the actual container configuration, test

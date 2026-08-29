@@ -105,46 +105,43 @@ fi
 echo "[4/6] Applying and validating the demo Caddy routes..."
 if [[ "${DEPLOY_TARGET}" == demo ]]; then
   ssh -p 22 "${REMOTE}" "mkdir -p /home/jk/caddy/conf"
+  if ! ssh -p 22 "${REMOTE}" 'set -eu
+    caddyfile=/home/jk/caddy/conf/Caddyfile
+    handler="import /etc/caddy/accustandard-demo.handlers.Caddyfile"
+    if ! grep -Fq "$handler" "$caddyfile"; then
+      echo "One-time setup required: add import /etc/caddy/accustandard-demo.handlers.Caddyfile inside delegateops.business before the AccuStandard static handler in /home/jk/caddy/conf/Caddyfile, then rerun npm run deploy:demo." >&2
+      exit 1
+    fi
+  '; then
+    echo "Caddy import prerequisite is missing; no Caddyfile changes were made." >&2
+    exit 1
+  fi
   ssh -p 22 "${REMOTE}" "cat > /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new" \
     < "${REPO_DIR}/deploy/caddy/Caddyfile.snippet"
   if ! ssh -p 22 "${REMOTE}" 'set -eu
-    caddyfile=/home/jk/caddy/conf/Caddyfile
     handler_file=/home/jk/caddy/conf/accustandard-demo.handlers.Caddyfile
-    handler="import /etc/caddy/accustandard-demo.handlers.Caddyfile"
-    backup_dir=/home/jk/caddy/conf/.accustandard-demo-backup
+    previous_file=/home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.previous
+    previous_absent=/home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.previous.absent
     rollback() {
       rm -f /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new
-      cp -p "$backup_dir/Caddyfile" "$caddyfile"
-      if test -f "$backup_dir/handler.absent"; then
+      if test -f "$previous_absent"; then
         rm -f "$handler_file"
       else
-        cp -p "$backup_dir/handler" "$handler_file"
+        cp -p "$previous_file" "$handler_file"
       fi
       podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null 2>&1 || true
       systemctl --user reload caddy.service >/dev/null 2>&1 || true
+      rm -f "$previous_file" "$previous_absent"
     }
-    mkdir -p "$backup_dir"
-    cp -p "$caddyfile" "$backup_dir/Caddyfile"
     if test -e "$handler_file"; then
-      cp -p "$handler_file" "$backup_dir/handler"
-      rm -f "$backup_dir/handler.absent"
+      cp -p "$handler_file" "$previous_file"
+      rm -f "$previous_absent"
     else
-      : > "$backup_dir/handler.absent"
-      rm -f "$backup_dir/handler"
-    fi
-    cp -p /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new "$handler_file"
-    rm -f /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new
-    if grep -Eq "^[[:space:]]*#[[:space:]]*redir @accustandard_demo_root" "$caddyfile"; then
-      sed -i -E "s|^[[:space:]]*#[[:space:]]*redir @accustandard_demo_root.*$|\tredir @accustandard_demo_root /demo/accustandard/ 308|" "$caddyfile"
-    elif ! grep -Eq "^[[:space:]]*redir @accustandard_demo_root /demo/accustandard/ 308$" "$caddyfile"; then
-      sed -i "/^[[:space:]]*handle_path \/demo\/accustandard\/\* {$/i\\	redir @accustandard_demo_root /demo/accustandard/ 308\n" "$caddyfile"
-    fi
-    if ! grep -Fq "$handler" "$caddyfile"; then
-      sed -i "/^[[:space:]]*handle_path \/demo\/accustandard\/\* {$/i\\
-\timport /etc/caddy/accustandard-demo.handlers.Caddyfile
-" "$caddyfile"
+      : > "$previous_absent"
+      rm -f "$previous_file"
     fi
     if ! {
+      mv -f /home/jk/caddy/conf/.accustandard-demo.handlers.Caddyfile.new "$handler_file"
       podman exec caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
       systemctl --user reload caddy.service
       podman exec caddy wget -qO- http://host.containers.internal:8080/demo/accustandard/api/v1/readiness >/dev/null
@@ -158,8 +155,9 @@ if [[ "${DEPLOY_TARGET}" == demo ]]; then
       rollback
       exit 1
     fi
+    rm -f "$previous_file" "$previous_absent"
   '; then
-    echo "Caddy route transaction failed; the previous Caddyfile and handler were restored." >&2
+    echo "Caddy validation, reload, host-gateway readiness, or origin route probe failed." >&2
     exit 1
   fi
 fi
