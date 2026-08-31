@@ -34,6 +34,7 @@ source.
 | --- | --- | --- |
 | Demo website and Go API | Automated | `npm run deploy:demo` |
 | Production website and Go API | Not automated yet | Production Quadlets exist, but no production release script is approved |
+| macOS Docker Desktop and Cloudflare Tunnel | Supported demo runtime | [`MACOS_DOCKER_CLOUDFLARE_TUNNEL.md`](MACOS_DOCKER_CLOUDFLARE_TUNNEL.md) |
 | Backblaze object storage | Auxiliary/manual | Native `b2` CLI; see `BACKBLAZE_S3_WORKFLOW.md` |
 
 Backblaze B2 is not the current web host. The demo website is served from the

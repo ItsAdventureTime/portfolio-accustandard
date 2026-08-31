@@ -1,0 +1,67 @@
+name: accustandard
+
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: accustandard_demo_db
+      POSTGRES_USER: accustandard
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U accustandard -d accustandard_demo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  api:
+    platform: linux/arm64
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: demo
+      ACCUSTANDARD_BASE_PATH: /demo/accustandard
+      CORS_ALLOWED_ORIGINS: http://frontend:80
+      DATABASE_HOST: db
+      DATABASE_NAME: accustandard_demo_db
+      DATABASE_USER: accustandard
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    expose:
+      - "8080"
+
+  frontend:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        ACCUSTANDARD_BASE_PATH: /demo/accustandard
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8088:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+volumes:
+  postgres_data:

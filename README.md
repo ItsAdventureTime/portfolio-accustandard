@@ -249,13 +249,13 @@ Webpack path as the verified static-export contract. Revisit this fallback
 after a deliberate sandbox validation confirms the resource and output
 contract.
 
-The backend Dockerfile uses the pinned official
-`docker.io/library/golang:1.26.5-alpine3.24`, with
-`docker.io/library/alpine:3.24.1` for the runtime image. The static web image
-uses `docker.io/library/nginx:1.30.4-alpine`, and the demo PostgreSQL Quadlet
-uses `docker.io/library/postgres:17.10-alpine3.24`. Local Docker builds use
-`--pull`; update these versions deliberately as part of a reviewed dependency
-refresh.
+The Docker Compose and Dockerfile paths intentionally use floating official
+Alpine tags: `golang:alpine`, `alpine:latest`, `node:alpine`, `nginx:alpine`,
+and `postgres:17-alpine`. Rebuild with `--pull` to receive current upstream
+patches. Floating tags improve update freshness but do not provide
+reproducible or auditable builds; record the resolved image digests when a
+release must be repeatable. The legacy VPS Quadlets remain a separate,
+versioned deployment path.
 
 npm 11 install-script policy is explicit in `package.json`: only the reviewed
 `unrs-resolver` install script is allowed. Do not replace this with

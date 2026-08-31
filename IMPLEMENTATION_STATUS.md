@@ -69,7 +69,7 @@ Where an older document conflicts with the first four, the first four control.
 - The frontend build no longer needs Google Fonts CSS or font data. npm registry,
   container-image, and other application/module downloads still require
   deployment network access. The offline-build contract installs dependencies
-  and pulls the pinned image first, then runs the frontend build with network
+  and pulls the current floating image tags first, then runs the frontend build with network
   access disabled and verifies that no `next/font/google` import remains.
 - Purchasing separates Purchase Orders from Receiving Reports, and Inventory
   exposes Class 1/2/3 stock filters plus a critical-stock reorder entry point.
@@ -142,10 +142,12 @@ rewrites. No legacy database backup is retained. The reset helper emits
 line-free state tokens (`version:17`, `version:16`, `invalid`, or `empty`),
 fixing the parser ambiguity that produced values such as `emptyn` while
 preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
-- Container base images are version-pinned for the current demo release:
-  Node `24.18-alpine3.24`, Go `1.26.5-alpine3.24`, Alpine `3.24.1`, Nginx
-  `1.30.4-alpine`, and PostgreSQL `17.10-alpine3.24`. Local Docker release
-  builds use `--pull`; version changes require a reviewed dependency refresh.
+- Compose and Dockerfile base images intentionally use floating official Alpine
+  tags: Node `node:alpine`, Go `golang:alpine`, Alpine `alpine:latest`, Nginx
+  `nginx:alpine`, and PostgreSQL `17-alpine`. Local Docker builds use `--pull`
+  to retrieve current upstream images. Floating tags improve patch freshness
+  but do not provide reproducible builds; record resolved digests when an
+  auditable release is required. The legacy VPS Quadlets remain versioned.
 
 ## Validation record
 
@@ -344,10 +346,11 @@ verification of development-only chunks. Next.js applies this setting only in
 development; it does not expand the production static export or API origin
 policy.
 
-The current container pins follow the official supported release lines: Node
-24.18 LTS, Go 1.26.5, PostgreSQL 17.10, Alpine 3.24.1, and Nginx 1.30.4.
-Refresh these pins deliberately and re-run the disposable build and database
-integration checks when upstream security or maintenance releases change.
+The current macOS Compose/Dockerfile path follows floating official Alpine
+tags so rebuilds can receive upstream maintenance releases. Rebuild with
+`--pull`, then rerun the disposable build and database integration checks when
+upstream images change. The legacy VPS Quadlet path continues to use reviewed
+versioned images.
 The release references are [Node's supported releases](https://nodejs.org/en/about/previous-releases),
 [Go's release history](https://go.dev/doc/devel/release), and
 [PostgreSQL 17.10 release notes](https://www.postgresql.org/docs/17/release-17-10.html).

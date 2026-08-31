@@ -1,0 +1,26 @@
+services:
+  db:
+    environment:
+      POSTGRES_DB: accustandard_prod_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U accustandard -d accustandard_prod_db"]
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+
+  api:
+    environment:
+      APP_ENV: production
+      ACCUSTANDARD_BASE_PATH: /prod/accustandard
+      DATABASE_NAME: accustandard_prod_db
+
+  frontend:
+    build:
+      args:
+        ACCUSTANDARD_BASE_PATH: /prod/accustandard
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_production_password.txt
+
+volumes:
+  postgres_data_prod:

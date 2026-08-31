@@ -144,9 +144,10 @@ The target VPS is Fedora CoreOS with rootless Podman user Quadlets
   rootless `podman unshare` and the PostgreSQL 17 reset policy remain required
   for the current VPS runtime.
 
-  Local Docker image builds use `--pull` with the reviewed pinned images
-  `golang:1.26.5-alpine3.24` and `alpine:3.24.1`; version changes require a
-  dependency review rather than silently following a mutable tag.
+  Local Docker image builds use `--pull` with the intentionally floating
+  official Alpine images `golang:alpine` and `alpine:latest`. Rebuilds can
+  change the resolved digest; record that digest when an auditable release is
+  required.
 
 ```bash
 bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh \

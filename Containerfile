@@ -1,7 +1,7 @@
 # Optional Docker Sandbox static export builder.
-# Keep the Node/Alpine versions explicit for reproducible builds.
+# Use the latest Node/Alpine image on each rebuild.
 
-FROM docker.io/library/node:24.18-alpine3.24 AS builder
+FROM docker.io/library/node:alpine AS builder
 
 WORKDIR /workspace
 
