@@ -84,36 +84,18 @@ boundary. This runtime does not provide a live QuickBooks Online integration.
 
 ---
 
-## 🐳 Containerized Deployment Architecture (Demo Target)
+## Containerized Demo Deployment
 
-Until leadership approves a production release, all releases are deployed
-exclusively to the Demo environment. The Docker Sandbox builds the static
-frontend and target-platform backend image locally. The deployment transfers
-only the release artifacts and Quadlet definitions; the VPS loads the image and
-activates the existing rootless Podman runtime:
+The only active demo target is [https://accustandard.delegateops.business](https://accustandard.delegateops.business). A user manually builds and exports the API and frontend images in the Docker Sandbox, then manually loads them into OrbStack and starts `~/docker/portfolio/accustandard/compose.yaml`. The platform target follows the operator machine: use `linux/arm64` on Apple silicon (`uname -m` returns `arm64`/`aarch64`) and `linux/amd64` on Intel (`x86_64`/`amd64`).
 
 ```
-[ Internet Client ]
-       |
-       v (HTTPS: 443) -> https://delegateops.business/demo/accustandard/
-[ Caddy Reverse Proxy (caddy.service) ]
-       |
-       v /demo/accustandard
- [ Demo Pod: accustandard-demo-pod ] (localhost:8080 API)
-        ^
-        | prebuilt image loaded by the VPS activation script
- [ Docker Sandbox release bundle ] (static export + backend image archive)
+Internet → Cloudflare Tunnel → frontend:80
+                              ├─ cloudflared-network (external)
+                              └─ api → PostgreSQL
+                                 accustandard-network (internal)
 ```
 
-### Path Specifications
-- **Live Demo URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
-- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
-- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-
-### Quadlet Services (`deploy/quadlets/demo/`)
-- **`accustandard-demo-pod.pod`**: Systemd pod unit publishing port 8080 for the Go API.
-- **`accustandard-demo-app.container`**: Go API container loaded from the locally built image and serving `/demo/accustandard/api/v1`.
-- **`accustandard-demo-db.container`**: PostgreSQL container storing demo state records.
+Only the frontend joins the external tunnel network. The API and database remain internal and no service publishes a host port. The Compose runtime has no build instructions. See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for the step-by-step procedure and secret handling.
 
 ---
 
@@ -168,4 +150,7 @@ Products are managed under 3 distinct stock categories:
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and current
 validation record.
 
-The demo deployment is rootless: releases, Quadlets, PostgreSQL data, and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. The user-owned Caddyfile permanently imports `/etc/caddy/accustandard-demo.handlers.Caddyfile` before static fallback handling; each live demo atomically replaces only that dedicated fragment, then validates/reloads Caddy and probes the origin.
+The active demo deployment is the image-only Compose workflow documented in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md). Historical VPS, Caddy, and
+Quadlet files remain in the repository for traceability and are not part of the
+current runtime boundary.

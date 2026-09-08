@@ -2,14 +2,14 @@
   "name": "AccuStandard ERP Dashboard",
   "short_name": "AccuStandard ERP",
   "description": "Control-first medical supply chain and finance workspace.",
-  "start_url": "/demo/accustandard/",
-  "scope": "/demo/accustandard/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f4f7fb",
   "theme_color": "#17356f",
   "icons": [
     {
-      "src": "/demo/accustandard/icon.svg",
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

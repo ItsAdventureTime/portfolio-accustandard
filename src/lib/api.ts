@@ -2,7 +2,7 @@
 
 import { DEFAULT_ROLE, isRole, type Role } from '@/lib/permissions';
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_ACCUSTANDARD_BASE_PATH || '/demo/accustandard'}/api/v1`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_ACCUSTANDARD_BASE_PATH ?? ''}/api/v1`;
 let activeDemoRole: Role = DEFAULT_ROLE;
 
 export function setDemoRole(role: Role) {

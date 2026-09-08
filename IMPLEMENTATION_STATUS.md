@@ -3,6 +3,16 @@
 **Audit date:** 2026-08-14
 **Status:** Demo runtime; not a production acceptance release
 
+### 2026-09-08 manual Compose deployment validation
+
+- Docker Sandbox contract check passed with
+  `jk-sbx-project exec bash scripts/check-demo-deployment-contract.sh`.
+- Docker Sandbox shell syntax check passed for
+  `scripts/check-demo-deployment-contract.sh` and `scripts/deploy-demo.sh`.
+- `git diff --check` passed.
+- No application image build, running-stack test, or public deployment was
+  performed in this validation pass.
+
 This file is the short operational companion to the confirmed developer
 handoff and acceptance-test handoff. It records what the repository actually
 implements so that a visual demo is not mistaken for a completed ERP.
@@ -20,11 +30,12 @@ Where an older document conflicts with the first four, the first four control.
 
 ## Runtime boundary
 
-- Frontend: Next.js 16 App Router static export from `src/`, served below
-  `/demo/accustandard`.
-- Backend: `backend/cmd/server` Go API below
-  `/demo/accustandard/api/v1`.
-- Database: PostgreSQL 17 through legacy cleanup,
+- Frontend: Next.js 16 App Router static export from `src/`, served at the
+  demo root by the image-only Compose frontend.
+- Backend: `backend/cmd/server` Go API at `/api/v1` behind the frontend
+  reverse proxy.
+- Database: PostgreSQL through the floating `postgres:alpine` image, with the
+  current migration baseline tested against PostgreSQL 17, through legacy cleanup,
   `backend/migrations/004_reconcile_runtime_columns.sql`, GORM `AutoMigrate`,
   and idempotent demo seed `backend/migrations/002_seed_data.sql`.
 - Database startup order is PostgreSQL health → legacy cleanup → legacy-column
@@ -121,9 +132,11 @@ server-backed record, authorization, audit event, and refresh-safe test.
   role simulation and the demo header are not substitutes for those controls.
 - QBO behavior in this runtime is a queue/demo stub, not a live QuickBooks
   Online integration.
-- Caddy and the remote deployment script now agree on the static export root:
+- **Historical deployment record (inactive):** Caddy and the former remote
+  deployment script agreed on the static export root
   `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
-- The remote demo deploy explicitly starts the PostgreSQL Quadlet, waits for
+- **Historical deployment record (inactive):** The former remote demo deploy
+  explicitly started the PostgreSQL Quadlet, waited for
   `pg_isready`, restarts the API Quadlet, verifies both user services, and
   waits up to 60 seconds for `/demo/accustandard/api/v1/readiness` with curl
   retries for transient listener startup failures. `Notify=healthy` gates the
@@ -131,7 +144,8 @@ server-backed record, authorization, audit event, and refresh-safe test.
   prints API systemd status and the last 100 journal lines before the script
   exits nonzero. Frontend dependencies/build output remain disposable; the
   backend runtime image is retained by design.
-- The VPS target is Fedora CoreOS with rootless user Quadlets. Deployment stops
+- **Historical deployment record (inactive):** The VPS target was Fedora
+  CoreOS with rootless user Quadlets. Deployment stopped
   active demo services before reloading units, removes a PostgreSQL data
   directory whose major version is not 17 (or an incomplete non-empty
   directory with no `PG_VERSION`), and initializes the approved PostgreSQL 17
@@ -142,14 +156,27 @@ rewrites. No legacy database backup is retained. The reset helper emits
 line-free state tokens (`version:17`, `version:16`, `invalid`, or `empty`),
 fixing the parser ambiguity that produced values such as `emptyn` while
 preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
-- Compose and Dockerfile base images intentionally use floating official Alpine
+- **Historical deployment record (inactive):** The former Compose and
+  Dockerfile paths used floating official Alpine
   tags: Node `node:alpine`, Go `golang:alpine`, Alpine `alpine:latest`, Nginx
   `nginx:alpine`, and PostgreSQL `17-alpine`. Local Docker builds use `--pull`
   to retrieve current upstream images. Floating tags improve patch freshness
   but do not provide reproducible builds; record resolved digests when an
-  auditable release is required. The legacy VPS Quadlets remain versioned.
+  auditable release is required. The legacy VPS Quadlets remain versioned for
+  traceability.
+- The active demo uses the manual image workflow in
+  [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md): Docker Sandbox builds and
+  exports `accustandard-demo-api:latest` and
+  `accustandard-demo-frontend:latest`, and OrbStack runs them with PostgreSQL
+  on the internal `accustandard-network`. No service publishes a host port;
+  only the frontend joins the external `cloudflared-network` with the unique
+  `accustandard-demo-frontend` alias.
+- Active Compose and Dockerfile base images use floating official Alpine tags:
+  Node `node:lts-alpine`, Go `golang:alpine`, Alpine `alpine:latest`, Nginx
+  `nginx:alpine`, and PostgreSQL `postgres:alpine`. Builds use `--pull`;
+  record resolved image digests when a repeatable demo snapshot is required.
 
-## Validation record
+## Historical validation record
 
 ### 2026-08-22 documentation, framework, and remote audit
 

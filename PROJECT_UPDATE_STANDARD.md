@@ -59,13 +59,12 @@ jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
 
 Use `jk-sbx-project run '<compound shell command>'` for a bounded compound
 check, and `jk-sbx-project exec-bg` only for a service that needs to remain
-running. Run `git diff --check` on the host control plane. The remote demo
-release remains a plain artifact deployment: `npm run deploy:demo` builds the
-frontend and backend image locally in the Docker Sandbox, transfers the static
-export/image archive/Quadlets, and activates the existing VPS runtime.
-`Podman` remains a VPS runtime dependency for the current PostgreSQL and API
-Quadlets; it is not used for local builds, compilation, or tests. Removing that
-runtime dependency requires a separate approved PostgreSQL/systemd migration.
+running. Run `git diff --check` on the host control plane. The active demo
+release is a manual image handoff: build and export the frontend and backend in
+the Docker Sandbox, load them into OrbStack, and run the image-only Compose
+project through the `orbstack` context. Follow
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for that procedure. Historical
+VPS/Podman release scripts are retained for traceability and are not active.
 
 Record the exact checks and their result in `IMPLEMENTATION_STATUS.md`. For a
 documentation-only update, say so explicitly and do not imply that a runtime
@@ -96,7 +95,7 @@ Before any remote write, verify the active account and transport:
 gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
-git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
+git remote set-url origin https://github.com/ItsAdventureTime/portfolio-accustandard.git
 git remote get-url origin
 ```
 
@@ -116,15 +115,15 @@ create one commit whose parent is the current remote `main` commit, then patch
 verify it with `gh api`; do not replace this sequence with `git push`.
 
 ```bash
-gh api repos/ItsAdventureTime/bridge-accustandard/git/ref/heads/main
-gh api repos/ItsAdventureTime/bridge-accustandard/git/blobs --method POST \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/ref/heads/main
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/blobs --method POST \
   -F encoding=utf-8 -F content=@<changed-file>
-gh api repos/ItsAdventureTime/bridge-accustandard/git/trees --method POST \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/trees --method POST \
   -f base_tree=<remote-tree-sha> <tree-entry-fields>
-gh api repos/ItsAdventureTime/bridge-accustandard/git/commits --method POST \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/commits --method POST \
   -f message="<commit message>" -f tree=<new-tree-sha> \
   -f parents[]=<remote-commit-sha>
-gh api repos/ItsAdventureTime/bridge-accustandard/git/refs/heads/main \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/refs/heads/main \
   --method PATCH -f sha=<new-commit-sha> -F force=false
 ```
 
@@ -136,9 +135,9 @@ fast-forwardable unless the user explicitly authorizes a force update.
 
 ```bash
 gh auth status --active --hostname github.com
-gh repo view ItsAdventureTime/bridge-accustandard \
+gh repo view ItsAdventureTime/portfolio-accustandard \
   --json nameWithOwner,url,defaultBranchRef
-gh api repos/ItsAdventureTime/bridge-accustandard/git/ref/heads/main \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/ref/heads/main \
   --jq '.object.sha'
 git status --short
 git branch --all --no-color

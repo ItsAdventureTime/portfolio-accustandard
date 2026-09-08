@@ -123,7 +123,9 @@ The frontend install uses a stable sandbox-user npm cache with bounded
 registry retries; npm `ECONNRESET` is a network retry concern, independent of
 sandbox CPU/RAM sizing. The cache stays outside the host checkout and is
 expanded inside the sandbox, so the host user's home is never interpolated.
-`npm run deploy:demo` and `npm run deploy:prod` are bash-executable target workflows; each builds with its target base path and transfers a target-specific release. The demo workflow also bundles the Caddy handler and installs it under `/etc/caddy` when remote privileges allow; production handlers remain in the authoritative imported Caddy configuration.
+  The active demo uses the manual image workflow in `DEPLOYMENT_GUIDE.md`.
+  Older `npm run deploy:demo` and `npm run deploy:prod` commands describe the
+  retired VPS workflow and are retained only as historical implementation notes.
 frontend validation/static export and the target-platform backend image build
 inside the Docker Sandbox, then transfers only release artifacts to the VPS.
 The target VPS is Fedora CoreOS with rootless Podman user Quadlets

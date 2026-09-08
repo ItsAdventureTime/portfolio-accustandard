@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const basePath = process.env.ACCUSTANDARD_BASE_PATH || "/demo/accustandard";
+const basePath = process.env.ACCUSTANDARD_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

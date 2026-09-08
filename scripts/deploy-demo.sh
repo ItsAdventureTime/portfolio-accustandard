@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
+# Demo deployment is retired; production compatibility remains outside this guide.
 set -euo pipefail
+
+if [ "${ACCUSTANDARD_DEPLOY_TARGET:-demo}" = "demo" ]; then
+  echo "The automated VPS demo deployment is retired. Follow DEPLOYMENT_GUIDE.md." >&2
+  exit 2
+fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "${SCRIPT_DIR}")"
