@@ -53,11 +53,8 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	// Mount API endpoints under /demo/accustandard/api/v1
+	// An empty base path serves the public demo from the hostname root.
 	basePath := strings.TrimRight(os.Getenv("ACCUSTANDARD_BASE_PATH"), "/")
-	if basePath == "" {
-		basePath = "/demo/accustandard"
-	}
 	r.Route(basePath+"/api/v1", func(r chi.Router) {
 		handlers.RegisterRoutes(r)
 	})

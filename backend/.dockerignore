@@ -1,0 +1,15 @@
+.git
+.agents
+tmp
+coverage
+*.test
+*.out
+.env
+.env.*
+*.pem
+*.log
+secrets
+release
+*.tar
+*.tgz
+.DS_Store

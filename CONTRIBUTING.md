@@ -28,8 +28,9 @@ govern operations.
   authenticate and publish remote Git objects through the GitHub Git Database
   API over HTTPS. Local staging and commits use local Git because `gh` has no
   local commit command. Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys,
-  or direct `git push` for GitHub repository operations. The demo deployment
-  separately uses user-run SSH/rsync to transfer source to the VPS.
+  or direct `git push` for GitHub repository operations. Follow
+  [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the separate manual demo
+  image workflow.
 - Follow the **Conventional Commits** specification:
   - `feat`: New feature or user capability.
   - `fix`: Bug fix or error resolution.
@@ -42,7 +43,7 @@ govern operations.
 gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
-git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
+git remote set-url origin https://github.com/ItsAdventureTime/portfolio-accustandard.git
 git remote get-url origin
 ```
 
@@ -69,11 +70,10 @@ jk-sbx-project exec sh -lc 'cd backend && go test ./...'
 jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
 ```
 
-The deployment builds the frontend and backend image locally through
-`npm run deploy:demo` inside the Docker Sandbox, publishes `out/` plus the
-image archive and Quadlets to the VPS, and activates the existing
-Podman/Quadlet runtime. The VPS receives no source-build workload; its Podman
-use is limited to the current PostgreSQL/API runtime services.
+The active demo deployment is manual: build and export the two images in the
+Docker Sandbox, load them into OrbStack, and run the image-only Compose project
+through the `orbstack` context. See [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md);
+do not treat the historical release script or VPS runtime as the current path.
 
 The production script intentionally runs `next build --webpack`. Next.js 16
 defaults to Turbopack, but the Webpack static-export path is the currently
@@ -83,11 +83,11 @@ verified build contract; revisit it after a deliberate sandbox validation.
 
 ## 🛰️ Live Demo Target Environment
 
-Deployments currently target **strictly the Demo Environment**:
-- **Live URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
-- **Demo Web Root:** `/home/jk/bridge-ph/accustandard-demo/`
-- **Demo Quadlet Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-- **1-Command Deployment:** `npm run deploy:demo` (or `./scripts/deploy-demo.sh`)
+The active demo is [https://accustandard.delegateops.business](https://accustandard.delegateops.business).
+It uses manually exported API and frontend images, a file-based Compose secret,
+an internal API/database network, and the existing external Cloudflare Tunnel
+network. The complete operator procedure is in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
 ## Workflow Guardrails
 

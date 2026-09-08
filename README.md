@@ -29,7 +29,7 @@ operations. The visual and accessibility rules are maintained in
 
 ## 🌐 Live Demo System URL
 
-- **Live Demo Site:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
+- **Live Demo Site:** [https://accustandard.delegateops.business/](https://accustandard.delegateops.business/)
 
 This URL is a demo environment only. It is not a production release or proof
 that incomplete backend controls are complete.
@@ -119,17 +119,18 @@ role-scoped badges. These UI checks are not an API security boundary.
 
 ---
 
-## 🔒 Caddyfile Formatting & Validation Protocol
+## 🚀 Demo deployment
 
-Before reloading rootless Podman `caddy.service`, always validate and auto-format the `Caddyfile` using official Caddy CLI commands:
+The only active deployment path is the manual image workflow in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md): build and export the API and
+frontend images in the Docker Sandbox, load them into OrbStack, and run the
+image-only Compose project behind the existing Cloudflare Tunnel at
+`https://accustandard.delegateops.business`.
 
-```bash
-# Auto-format Caddyfile in place via rootless Podman
-podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile
-
-# Validate Caddyfile configuration syntax inside container
-podman exec caddy caddy validate --config /etc/caddy/Caddyfile
-```
+There are no automated builds or deployments. Do not use the historical VPS,
+Caddy, Podman Quadlet, SSH, or `npm run deploy:demo` procedures for the active
+demo. The guide documents the required `orbstack` context, file-based Compose
+secret, internal network boundary, and rollback steps.
 
 ---
 
@@ -142,87 +143,26 @@ because `gh` has no local commit command; remote GitHub publication uses the
 authenticated `gh api` Git Database endpoints over HTTPS. There is no separate
 `gh push` command. Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys, or
 direct `git push` for GitHub repository operations. VPS deployment transfer is a
-separate user-run SSH/rsync operation.
+separate historical workflow; current demo deployment is documented in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
 ```bash
 gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
-git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
+git remote set-url origin https://github.com/ItsAdventureTime/portfolio-accustandard.git
 git remote get-url origin
 ```
 
 ---
 
-## 🚀 Quick Start (Remote Demo Deployment)
+## 🐳 Build and runtime boundary
 
-For the complete website/API release procedure, prerequisites, verification,
-diagnostics, Backblaze asset handling, and production boundary, see
-[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
-
-### Prerequisites
-- GitHub CLI (`gh`) authenticated via HTTPS
-- SSH and `rsync` access to the demo VPS
-
-### Deployment command
-
-This repository uses a local-build workflow. The deployment script runs
-dependency installation, lint, TypeScript validation, the Next.js static export,
-and the backend image build inside the Docker Sandbox. It then transfers the
-release artifacts to the VPS; the VPS does not compile or build source.
-
-```bash
-gh repo clone ItsAdventureTime/bridge-accustandard
-cd bridge-accustandard
-npm run deploy:demo
-```
-
-For the full build and artifact contract, use
-`PROJECT_UPDATE_STANDARD.md` and `DEPLOYMENT_GUIDE.md`. Local builds use the
-Docker Sandbox; the current VPS still uses its existing rootless Podman
-Quadlets only to run the PostgreSQL/API runtime.
-
----
-
-## 🐳 Local Sandbox Build + VPS Runtime Deployment
-
-The deployment procedure builds and validates locally inside the Docker Sandbox.
-It transfers the static `out/` export, a `linux/amd64` backend image archive, and
-the demo Quadlet definitions to the VPS. The VPS activation script does not
-compile or build source; it loads the prebuilt image, publishes `web-dist/`,
-starts PostgreSQL, waits for `pg_isready`, restarts the API, verifies both user
-services, and waits up to 60 seconds for the API readiness endpoint with curl
-retries:
-
-The demo VPS is Fedora CoreOS with rootless Podman and user Quadlets. The
-deployment therefore uses `systemctl --user`, `loginctl enable-linger`, and
-`~/.config/containers/systemd/`; the VPS resolves its own `/usr/bin/podman`.
-The database bind mount is labeled for Fedora SELinux, and the deployment
-stops the old demo pod before reloading the updated Quadlets. If the demo
-`PG_VERSION` is not `17`, or the data directory is non-empty without a valid
-`PG_VERSION`, the deployment removes that disposable demo data and initializes
-PostgreSQL 17; no backup is retained, per demo policy. The PostgreSQL Quadlet
-uses a `pg_isready` healthcheck with `Notify=healthy`, so the API service starts
-after the database is accepting connections. API startup then applies the
-runtime schema and idempotent demo seed in this order: legacy cleanup,
-compatibility reconciliation, GORM `AutoMigrate`, then seed SQL.
-Reconciliation preserves values from old `d_csstatus`/`s_idate` aliases in
-canonical `dcs_status`/`si_date` columns before removing the aliases. Seed
-targets must match the default GORM
-pluralized snake_case names derived from the Go models (including
-`inventory_stocks` and `qbo_queue_items`). Because rootless PostgreSQL files may
-be owned by subordinate UID mappings, the reset script inspects and removes
-the demo data directory through `podman unshare`; it does not use recursive
-`:U` ownership rewriting. The state probe emits line-free tokens such as
-`version:17`, `version:16`, `invalid`, and `empty`, preventing command
-substitution from turning a marker into a value such as `emptyn`.
-
-The database Quadlet's `Notify=healthy` gate covers database/container health;
-it does not guarantee that the Go HTTP listener is already accepting requests.
-The VPS scripts therefore retry transient curl startup failures, including a
-connection reset, quietly before failing. On an API readiness timeout they
-print the API unit status and the last 100 journal lines, then exit nonzero;
-the transient retry message is not treated as a deployment failure by itself.
+Use [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the complete manual
+procedure and [`ARCHITECTURE.md`](ARCHITECTURE.md) for the current network
+boundary. The Docker Sandbox builds the two images; OrbStack runs those images
+with PostgreSQL on the internal network. No service publishes a host port, and
+the frontend is the only service attached to `cloudflared-network`.
 
 ### Frontend font and network contract
 
@@ -249,75 +189,19 @@ Webpack path as the verified static-export contract. Revisit this fallback
 after a deliberate sandbox validation confirms the resource and output
 contract.
 
-The Docker Compose and Dockerfile paths intentionally use floating official
-Alpine tags: `golang:alpine`, `alpine:latest`, `node:alpine`, `nginx:alpine`,
-and `postgres:17-alpine`. Rebuild with `--pull` to receive current upstream
-patches. Floating tags improve update freshness but do not provide
-reproducible or auditable builds; record the resolved image digests when a
-release must be repeatable. The legacy VPS Quadlets remain a separate,
-versioned deployment path.
+The Compose and Dockerfile paths intentionally use floating official Alpine
+tags: `golang:alpine`, `alpine:latest`, `node:lts-alpine`, `nginx:alpine`, and
+`postgres:alpine`. Rebuild with `--pull` to receive upstream patches. Floating
+tags improve update freshness but do not provide reproducible builds; record
+resolved image digests when a repeatable demo snapshot matters.
 
 npm 11 install-script policy is explicit in `package.json`: only the reviewed
 `unrs-resolver` install script is allowed. Do not replace this with
 `dangerously-allow-all-scripts`.
 
-The deployment stages `out/`, the exported backend image archive, and the
-Quadlet files in the temporary `.deploy-demo-release/` directory. That staging
-directory is removed when the deployment script exits; the VPS removes the
-transferred release bundle after successful activation while retaining the
-loaded runtime image and `web-dist/`.
-
----
-
-## ⚡ 1-Command Automated Demo Deployment
-
-To build locally in the Docker Sandbox, transfer the release bundle, install the
-demo Quadlets, start PostgreSQL, wait for database and API readiness, and
-restart the demo API in **1 single command**:
-
-```bash
-# Confirm SSH/rsync access before the first deployment
-ssh -p 22 jk@216.75.75.136 'systemctl --user --version'
-rsync --version | head -n 1
-
-# Option A: Run via npm script (recommended)
-npm run deploy:demo
-
-# Option B: Run shell script directly
-./scripts/deploy-demo.sh
-```
-
-The script must be run from this repository checkout. It transfers release
-artifacts only; all frontend and backend compilation occurs in the local Docker
-Sandbox. After a successful run, verify the public site and API from the client
-machine:
-
-```bash
-curl --fail --silent --show-error --location \
-  https://delegateops.business/demo/accustandard/ >/dev/null
-curl --fail --silent --show-error --location \
-  https://delegateops.business/demo/accustandard/api/v1/readiness
-```
-
-If the Caddy configuration changed, validate and format it on the VPS before
-reloading Caddy:
-
-```bash
-ssh -p 22 jk@216.75.75.136 \
-  'podman exec caddy caddy fmt --overwrite /etc/caddy/Caddyfile && \
-   podman exec caddy caddy validate --config /etc/caddy/Caddyfile && \
-   systemctl --user restart caddy.service'
-```
-
-### Infrastructure Path Configuration
-- **VPS Host:** `jk@216.75.75.136`
-- **Live Demo Site URL:** [https://delegateops.business/demo/accustandard/](https://delegateops.business/demo/accustandard/)
-- **GitHub Remote (HTTPS):** `https://github.com/ItsAdventureTime/bridge-accustandard.git`
-- **Demo Web Root Path:** `/home/jk/bridge-ph/accustandard-demo/`
-- **Remote Build Source:** `/home/jk/bridge-ph/accustandard-demo/source/`
-- **Static Export Root:** `/home/jk/bridge-ph/accustandard-demo/web-dist/`
-- **Demo Quadlet Systemd Path:** `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-- **Caddy Service:** `caddy.service` (Rootless Podman Quadlet in `~/.config/containers/systemd/`)
+Historical VPS, Caddy, and Quadlet material remains in the repository for
+traceability and is labeled as historical in the status record. It is not part
+of the active demo workflow.
 
 ---
 
@@ -333,8 +217,7 @@ ssh -p 22 jk@216.75.75.136 \
    [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md). Authenticate and
    publish remote Git through `gh api` over HTTPS; local commits necessarily
    use local Git because `gh` has no local commit command. Never use SSH
-   remotes, SSH keys, `gh ssh-key`, passkeys, or direct `git push`. The demo
-   deployment separately uses user-run SSH/rsync to transfer source to the VPS.
+   remotes, SSH keys, `gh ssh-key`, passkeys, or direct `git push`.
 
 ---
 
@@ -344,7 +227,7 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 
 ## 2026 Implementation Baseline
 
-- The browser hydrates operational lists from `/demo/accustandard/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
+- The browser hydrates operational lists from `/api/v1` and keeps deterministic seed data only as an offline rendering fallback.
 - Sales Quotes route Sales Officer → Marketing Reviewer → General Manager; DCS is not a Sales Quote approval stage.
 - Goods Receipt over-receiving is hard-blocked, and a fully received PO remains `AWAITING_VENDOR_INVOICE` until the vendor invoice is matched.
 - Desktop navigation uses filtered horizontal links through the full-width shell;
@@ -434,4 +317,6 @@ status stays persistent in the workspace banner, and interruptive dialogs are
 reserved for responses that require acknowledgment. See the
 [`UI_UX_ACCESSIBILITY_GUIDE.md`](UI_UX_ACCESSIBILITY_GUIDE.md) notification
 
-Deployment note: demo releases and `web-dist` stage under `/home/jk/bridge-ph/accustandard-demo`; Caddy serves them through a read-only bind mount at `/srv/bridge-ph-accustandard-demo` inside the container. The user-owned Caddyfile permanently imports `/etc/caddy/accustandard-demo.handlers.Caddyfile` before the static fallback; each live deploy atomically replaces only that fragment from `deploy/caddy/Caddyfile.snippet`. The API uses `host.containers.internal:8080` because Caddy has no shared AccuStandard network; validation, reload, origin probes, and public Bunny stale-404 warnings are automated.
+Deployment details, including the image archive handoff, external tunnel
+network, file-based secret, and public readiness checks, live in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).

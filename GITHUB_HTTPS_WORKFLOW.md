@@ -7,11 +7,12 @@ Operational guides should link here instead of redefining the protocol.
 
 - Authenticate with the official GitHub CLI (`gh`) on `github.com`.
 - Use the HTTPS Git remote:
-  `https://github.com/ItsAdventureTime/bridge-accustandard.git`.
+  `https://github.com/ItsAdventureTime/portfolio-accustandard.git`.
 - Never use `git@github.com:...`, `ssh://...`, SSH keys, `gh ssh-key`, or
   passkeys for repository synchronization.
-- VPS deployment transfer is a separate, user-run SSH/rsync operation. This
-  repository workflow never asks Codex to open that connection.
+- Demo runtime deployment is a separate manual image workflow; follow
+  [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) rather than this GitHub
+  synchronization guide.
 
 `gh` does not provide a separate `gh push` command. Local staging and commits
 still use the local Git repository because `gh` has no local commit command.
@@ -25,7 +26,7 @@ the Git Database REST endpoints through `gh api`; do not invoke `git push`.
 gh auth status --active --hostname github.com
 gh config set git_protocol https --host github.com
 gh auth setup-git --hostname github.com
-git remote set-url origin https://github.com/ItsAdventureTime/bridge-accustandard.git
+git remote set-url origin https://github.com/ItsAdventureTime/portfolio-accustandard.git
 git remote get-url origin
 ```
 
@@ -61,18 +62,17 @@ fork with its upstream and is not part of this workflow.
 
 ```bash
 gh auth status --active --hostname github.com
-gh repo view ItsAdventureTime/bridge-accustandard \
+gh repo view ItsAdventureTime/portfolio-accustandard \
   --json nameWithOwner,url,defaultBranchRef
-gh api repos/ItsAdventureTime/bridge-accustandard/git/ref/heads/main \
+gh api repos/ItsAdventureTime/portfolio-accustandard/git/ref/heads/main \
   --jq '.object.sha'
 git status --short
 ```
 
 `gh repo view` must report the expected HTTPS GitHub repository, and
 `gh auth status` must report the active `github.com` account before any remote
-operation. This guide does not authorize VPS deployment transport; the
-separate deployment guide's user-run SSH/rsync transfer remains operationally
-distinct from GitHub synchronization.
+operation. Runtime deployment remains operationally distinct from GitHub
+synchronization and is documented in [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
 ## Official references
 

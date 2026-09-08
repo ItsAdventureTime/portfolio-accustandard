@@ -1,0 +1,75 @@
+name: accustandard-demo
+
+services:
+  db:
+    image: docker.io/library/postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: accustandard_demo
+      POSTGRES_USER: accustandard_demo
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - accustandard-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U accustandard_demo -d accustandard_demo"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  api:
+    image: accustandard-demo-api:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: demo
+      ACCUSTANDARD_BASE_PATH: ""
+      CORS_ALLOWED_ORIGINS: https://accustandard.delegateops.business
+      DATABASE_HOST: db
+      DATABASE_NAME: accustandard_demo
+      DATABASE_USER: accustandard_demo
+      DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    expose:
+      - "8080"
+    networks:
+      - accustandard-network
+
+  frontend:
+    image: accustandard-demo-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - api
+    expose:
+      - "80"
+    networks:
+      accustandard-network: {}
+      cloudflared-network:
+        aliases:
+          - accustandard-demo-frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+volumes:
+  postgres_data:
+
+networks:
+  accustandard-network:
+    internal: true
+  cloudflared-network:
+    external: true
+    name: cloudflared-network
