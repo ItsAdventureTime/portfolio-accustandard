@@ -117,45 +117,22 @@ This plan details a complete UX overhaul that maintains **100% of existing busin
 ### Automated Verification
 Validation is sandbox-only for this repository. Do not require or report a
 macOS host Node/npm/Go build. When compilation is needed, run it through the
-deterministic Docker Sandbox (`jk-sbx-project exec ...`) and keep generated
-`node_modules/`, `.next/`, and `out/` artifacts out of the host checkout. The deployment workflow copies the checkout into a sandbox-private temporary directory, builds there, and copies only the static export and backend image archive into the target release.
-The frontend install uses a stable sandbox-user npm cache with bounded
-registry retries; npm `ECONNRESET` is a network retry concern, independent of
-sandbox CPU/RAM sizing. The cache stays outside the host checkout and is
-expanded inside the sandbox, so the host user's home is never interpolated.
-  The active demo uses the manual image workflow in `DEPLOYMENT_GUIDE.md`.
-  Older `npm run deploy:demo` and `npm run deploy:prod` commands describe the
-  retired VPS workflow and are retained only as historical implementation notes.
-frontend validation/static export and the target-platform backend image build
-inside the Docker Sandbox, then transfers only release artifacts to the VPS.
-The target VPS is Fedora CoreOS with rootless Podman user Quadlets
-(`systemctl --user` and
-  `~/.config/containers/systemd/`); PostgreSQL 17 data is persistent and is
-  updated by GORM and the idempotent seed during deployment. A legacy or
-  incomplete PostgreSQL data directory (different `PG_VERSION`, or non-empty
-  without `PG_VERSION`) is removed for this demo and reinitialized as
-  PostgreSQL 17; no backup is retained. The API starts only after the
-  PostgreSQL Quadlet healthcheck reports readiness. `Notify=healthy` does not
-  guarantee that the Go HTTP listener is ready, so both VPS scripts use curl
-  retries for transient startup failures and wait up to 60 seconds for
-  `/demo/accustandard/api/v1/readiness`; timeout diagnostics include API
-  systemd status and the last 100 journal lines before a nonzero exit. The
-  reset-state parser
-  consumes line-free tokens (`version:17`, `version:16`, `invalid`, or `empty`),
-  preventing command substitution from appending a literal `n` such as `emptyn`;
-  rootless `podman unshare` and the PostgreSQL 17 reset policy remain required
-  for the current VPS runtime.
-
-  Local Docker image builds use `--pull` with the intentionally floating
-  official Alpine images `golang:alpine` and `alpine:latest`. Rebuilds can
-  change the resolved digest; record that digest when an auditable release is
-  required.
+deterministic Docker Sandbox (`jk-sbx-project exec ...`). The Docker Sandbox
+is the execution plane for dependency installation, frontend validation and
+static export, and backend image builds; keep generated artifacts and release
+archives ignored by Git.
+The active demo uses the manual image workflow in
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md): build and export the API and
+frontend images in the Docker Sandbox, load both archives into OrbStack, and
+run the image-only Compose project with `docker --context orbstack compose up
+-d --pull never`. Use the guide's health checks before opening the public URL.
+Older VPS, Podman, and `npm run deploy:demo` material is retained only as
+historical implementation evidence.
 
 ```bash
-bash -n scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh \
-  scripts/vps-migrate-to-go.sh
-# In the Docker Sandbox only:
+jk-sbx-project ensure
 jk-sbx-project exec npm run lint
+jk-sbx-project exec npx tsc --noEmit --incremental false
 jk-sbx-project exec npm run build
 ```
 

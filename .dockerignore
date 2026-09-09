@@ -17,3 +17,12 @@ docker-compose*.yml
 compose*.yml
 *.log
 .DS_Store
+
+# Nested credentials and release artifacts
+**/.env
+**/.env.*
+**/secrets
+**/*.pem
+**/*.key
+**/*.tar
+**/*.tgz

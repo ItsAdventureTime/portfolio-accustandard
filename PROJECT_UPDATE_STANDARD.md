@@ -70,18 +70,6 @@ Record the exact checks and their result in `IMPLEMENTATION_STATUS.md`. For a
 documentation-only update, say so explicitly and do not imply that a runtime
 build was rerun.
 
-The demo release additionally runs:
-
-```bash
-jk-sbx-project exec docker build --pull --provenance=false \
-  --platform linux/amd64 \
-  --tag localhost/accustandard-bridge-backend:demo \
-  --file backend/Dockerfile backend
-jk-sbx-project exec docker save --output \
-  .deploy-demo-release/accustandard-bridge-backend-demo.tar \
-  localhost/accustandard-bridge-backend:demo
-```
-
 ## 5. Commit locally, publish remotely through `gh` over HTTPS
 
 GitHub CLI has no local staging or local-commit command. Local Git is therefore
@@ -105,7 +93,7 @@ Then review and create the local commit with normal local Git commands:
 git status --short
 git diff --check
 git add <changed-files>
-git commit -m "<conventional commit message>"
+git -c commit.gpgSign=false commit -m "<conventional commit message>"
 ```
 
 Publish the resulting tree with the GitHub Git Database REST endpoints through

@@ -1,5 +1,11 @@
 # Go Migration Technical Specification & Architecture Guide
 
+> **Historical deployment notice (2026-09-10):** The VPS, Podman Quadlet,
+> Caddy, and SSH/rsync deployment material in this document is retained as
+> dated architecture and migration evidence. The active demo release uses
+> manual Docker Sandbox image builds and OrbStack image-only Compose; follow
+> [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the current procedure.
+
 > **2026-08-12 runtime reconciliation:** This is a target architecture, not a
 > completion claim. The deployed demo currently uses `backend/cmd/server`,
 > GORM `AutoMigrate`, and `backend/migrations/002_seed_data.sql`; see

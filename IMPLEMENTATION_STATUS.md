@@ -13,6 +13,16 @@
 - No application image build, running-stack test, or public deployment was
   performed in this validation pass.
 
+### 2026-09-10 ignore and documentation validation
+
+- `git check-ignore --no-index -v` confirmed root and nested environment files,
+  secrets, keys, and release archives are ignored while `.env.example` remains
+  allowed.
+- Updated active deployment references to the manual Docker Sandbox and OrbStack
+  image-only Compose procedure in `DEPLOYMENT_GUIDE.md`.
+- `git diff --check` passed. No application build, test, or demo deployment was
+  performed in this documentation-only pass.
+
 This file is the short operational companion to the confirmed developer
 handoff and acceptance-test handoff. It records what the repository actually
 implements so that a visual demo is not mistaken for a completed ERP.

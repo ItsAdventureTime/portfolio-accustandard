@@ -7,7 +7,11 @@
 > **Audit Date:** 2026-08-14
 > **Target Application:** AccuStandard Medical ERP & Supply Chain Dashboard
 > **Brand Owner:** AccuStandard Medical and Diagnostic Supplies Corporation (in partnership with DelegateOps Business Support Services - DOS)
-> **Repository Context:** `ItsAdventureTime/bridge-accustandard`
+> **Repository Context:** `ItsAdventureTime/portfolio-accustandard`
+>
+> **Current deployment:** The active demo uses manual Docker Sandbox image
+> builds and OrbStack image-only Compose. Follow
+> [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the current procedure.
 
 ---
 
@@ -25,7 +29,7 @@ The workspace contains primary sources of truth, operational documentation, and 
 
 | File / Document | Purpose & Scope | Status in Audit |
 | :--- | :--- | :--- |
-| [`README.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/README.md) | Project overview, COSO principles, color tokens, VPS deployment & container execution policy | **Active Source of Truth** |
+| [`README.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/README.md) | Project overview, COSO principles, color tokens, and container execution policy | **Active Source of Truth** |
 | [`ARCHITECTURE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/ARCHITECTURE.md) | Technical system architecture, Go REST API, Next.js frontend, database models | **Active Source of Truth** |
 | [`IMPLEMENTATION_STATUS.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/IMPLEMENTATION_STATUS.md) | Audited boundary, Go backend status, verified vs unverified features | **Active Runtime Record** |
 | [`AccuStandard_Developer_Handoff_UPDATED.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/AccuStandard_Developer_Handoff_UPDATED.md) | Detailed business requirements, approval chains, ROI workbook rules, RBAC permissions | **Active Business Rule Authority** |
@@ -35,7 +39,7 @@ The workspace contains primary sources of truth, operational documentation, and 
 | [`accustandard-erp-lite-blueprint.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/accustandard-erp-lite-blueprint.md) | ERP Lite module definitions and COSO approval steps | **Active Blueprint Reference** |
 | [`GO_MIGRATION_PLAN.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/GO_MIGRATION_PLAN.md) | REST API migration plan from localStorage to Go + PostgreSQL 17 | **Active Architecture Reference** |
 | [`BACKBLAZE_S3_WORKFLOW.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/BACKBLAZE_S3_WORKFLOW.md) | S3 Object storage guidelines (`bridge-ph` bucket) | **Active Infrastructure Guide** |
-| [`DEPLOYMENT_GUIDE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/DEPLOYMENT_GUIDE.md) | Single-command deployment protocol (`npm run deploy:demo`) | **Active Deployment Guide** |
+| [`DEPLOYMENT_GUIDE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/DEPLOYMENT_GUIDE.md) | Manual Docker Sandbox image build and OrbStack image-only Compose protocol | **Active Deployment Guide** |
 | [`UI_UX_ACCESSIBILITY_GUIDE.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/UI_UX_ACCESSIBILITY_GUIDE.md) | Current visual, interaction, keyboard, and accessibility rules | **Active UI/UX Guide** |
 | [`llm-interface-design-context-prompt.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/llm-interface-design-context-prompt.md) | Legacy LLM context prompt | *Historical / Secondary* |
 | [`llm_ui_context_prompt_framework.md`](file:///Users/jk.deguzman/dev/accustandard-bridge-dashboard/llm_ui_context_prompt_framework.md) | Legacy UI prompt framework | *Historical / Secondary* |

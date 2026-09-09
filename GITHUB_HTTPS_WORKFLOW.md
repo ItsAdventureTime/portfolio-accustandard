@@ -39,7 +39,7 @@ register an SSH key.
 ```bash
 git status --short
 git add <changed-files>
-git commit -m "<conventional commit message>"
+git -c commit.gpgSign=false commit -m "<conventional commit message>"
 gh auth status --active --hostname github.com
 ```
 

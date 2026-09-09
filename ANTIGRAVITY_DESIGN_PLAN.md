@@ -7,7 +7,11 @@
 > **Execution Ready For:** ChatGPT Codex / Senior Frontend Engineer Handoff
 > **Skill Guidelines Applied:** `/redesign-existing-projects` + Modern Web Guidance (`Base UI` / `Radix UI`, Tailwind CSS v4, WCAG 2.2 AA)
 > **Date:** 2026-08-14
-> **Target Repository:** `ItsAdventureTime/bridge-accustandard`
+> **Target Repository:** `ItsAdventureTime/portfolio-accustandard`
+>
+> **Current deployment:** The active demo uses manual Docker Sandbox image
+> builds and OrbStack image-only Compose. Follow
+> [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the current procedure.
 >
 > **Delivery note:** The shell and overview redesign baseline is implemented.
 > See `IMPLEMENTATION_STATUS.md` and `UI_UX_ACCESSIBILITY_GUIDE.md` for the
@@ -272,16 +276,19 @@ feature-module roadmap:
    - Upgrade Overview (`src/components/features/overview`), Inventory (`src/components/features/inventory`), Quotations (`src/components/features/quotations`), Purchasing (`src/components/features/purchasing`), Finance/SOA (`src/components/features/soa`), and Admin (`src/components/features/admin`).
 
 5. **Phase 2.5: Verification & Quality Assurance — current pass**
-   - `npm run lint`, `npx tsc --noEmit`, and `npm run build` run in the pinned
-     `node:24.18-alpine3.24` Podman environment. The release font contract also
+   - `npm run lint`, `npx tsc --noEmit`, and `npm run build` run in the
+     deterministic Docker Sandbox. The release font contract also
      requires a network-disabled frontend build after dependencies and the
      image have been obtained; it must not request Google Fonts. npm registry,
      container-image, and other module/image downloads still require deployment
      network access. Backend authorization, authenticated deployment, and full
      accessibility assistive-technology testing remain release prerequisites.
-   - The 2026-08-14 repair verified that contract with `--network=none`:
-     lint, TypeScript, and the Webpack static export passed using the vendored
-     Outfit asset. `npm run deploy:demo` remains an operator-run remote step.
+   - Dated evidence from 2026-08-14 records that contract verified with
+     `--network=none`: lint, TypeScript, and the Webpack static export passed
+     using the vendored Outfit asset. The active demo deployment now follows
+     [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md): export both images in the
+     Docker Sandbox, load them into OrbStack, and run image-only Compose with
+     `--pull never`.
 
    - The focused 2026-08-14 action pass keeps one prominent action per module,
      uses restrained supporting and attention treatments, and exposes rare
