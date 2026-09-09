@@ -13,7 +13,6 @@ release
 *.tar
 *.tgz
 .DS_Store
-
 # Nested credentials and release artifacts
 **/.env
 **/.env.*
