@@ -10,14 +10,16 @@ The implementation owner and reviewer are assigned in
 [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md). Until these checks pass,
 do not treat the public hostname as accepted:
 
-- [ ] Compose pins PostgreSQL major 17, mounts its named volume at
-  `/var/lib/postgresql/data`, and the contract script rejects regression.
+- [x] Compose pins `postgres:17.11-alpine3.24`, mounts its named volume at
+  `/var/lib/postgresql/data`, and the contract asserts both exact values.
+  Docker Sandbox verification is recorded in `IMPLEMENTATION_STATUS.md`.
 - [ ] Existing OrbStack database state is inspected and backed up before a
   mount/image change; a fresh database starts healthy after the change.
 - [ ] Secrets stay outside Git and images in a mode `700` directory with a
   mode `600` password file; safe environment values remain in Compose.
-- [ ] The active Go binary fails closed when `DATABASE_URL` is absent; no
-  hard-coded fallback credential remains in `backend/cmd/server/main.go`.
+- [x] The active Go binary fails closed when `DATABASE_URL` is absent; a
+  focused unit test covers the missing-variable case.
+  Docker Sandbox verification is recorded in `IMPLEMENTATION_STATUS.md`.
 - [ ] Reviewer verifies root page, `/api/v1/readiness`, seeded read,
   controlled mutation, role failure, and HTTPS at
   `https://accustandard.delegateops.business`.

@@ -27,12 +27,12 @@ operations. The visual and accessibility rules are maintained in
 
 ---
 
-## 🌐 Live Demo System URL
+## 🌐 Demo Target URL
 
-- **Live Demo Site:** [https://accustandard.delegateops.business/](https://accustandard.delegateops.business/)
+- **Demo target (not acceptance verified):** [https://accustandard.delegateops.business/](https://accustandard.delegateops.business/)
 
-This URL is a demo environment only. It is not a production release or proof
-that incomplete backend controls are complete.
+This target is for synthetic demo data only. It is not a production release or
+evidence that the public runtime is currently available or accepted.
 
 ---
 
@@ -127,11 +127,12 @@ frontend images in the Docker Sandbox, load them into OrbStack, and run the
 image-only Compose project behind the existing Cloudflare Tunnel at
 `https://accustandard.delegateops.business`.
 
-The demo is pending the PostgreSQL 17 image/volume repair and independent
-acceptance in [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md). Do not assume
-the public URL is live or that the current Compose file is safe for existing
-database data. The assessment of Workers, R2, D1, Hyperdrive, KV, and
-Containers is in
+The Compose contract pins PostgreSQL to `17.11-alpine3.24` and mounts
+`postgres_data` at `/var/lib/postgresql/data`. Independent runtime and public
+acceptance are still pending. Do not attach an existing database volume until
+its version, data path, and backup are reviewed under
+[`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md). The assessment of Workers, R2,
+D1, Hyperdrive, KV, and Containers is in
 [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
 
 There are no automated builds or deployments. Do not use the historical VPS,
@@ -196,8 +197,8 @@ Webpack path as the verified static-export contract. Revisit this fallback
 after a deliberate sandbox validation confirms the resource and output
 contract.
 
-The current Compose file still uses the floating `postgres:alpine` tag. The
-active handoff requires PostgreSQL major 17 to be pinned before launch. The
+Compose pins PostgreSQL to `17.11-alpine3.24` and mounts its named volume at
+`/var/lib/postgresql/data`, the official PostgreSQL 17 data directory. The
 Dockerfiles use floating `golang:alpine`, `alpine:latest`, `node:lts-alpine`,
 and `nginx:alpine` tags. Rebuild with `--pull` for upstream patches and record
 resolved image digests when a repeatable demo snapshot matters.
@@ -249,7 +250,7 @@ Demo objects use the `accustandard/demo/` prefix and production objects use
 security, and naming rules.
 
 The repository is in an incremental migration, not yet a complete acceptance
-release. The deployed runtime is the Go API in `backend/cmd/server` plus the
+release. The intended runtime is the Go API in `backend/cmd/server` plus the
 Next.js static export; obsolete prototype server/schema artifacts have been
 removed and are not part of the demo runtime.
 
@@ -267,7 +268,8 @@ runtime boundary and validation record.
 The acceptance matrix in
 `AccuStandard_Developer_Correction_and_Acceptance_Test_Handoff.md` is retained
 as a historical contract and explicitly marked **UNVERIFIED** pending a
-deployed Go/PostgreSQL test run.
+running Go/PostgreSQL runtime test. The focused Go unit test does not constitute
+runtime acceptance.
 
 ### Action hierarchy and mobile operations
 

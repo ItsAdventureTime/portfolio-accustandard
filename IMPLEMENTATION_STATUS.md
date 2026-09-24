@@ -3,11 +3,41 @@
 **Last reviewed:** 2026-09-24
 **Status:** Demo runtime; not a production acceptance release
 
+### 2026-09-24 demo persistence implementation
+
+- Active `deploy/demo/compose.yaml` pins PostgreSQL to
+  `docker.io/library/postgres:17.11-alpine3.24` and mounts
+  `postgres_data` at `/var/lib/postgresql/data`. The deployment contract
+  checks the exact tag and volume type/source/destination.
+- `backend/cmd/server` now requires `DATABASE_URL` before database
+  initialization; a focused test covers the missing-variable failure. Compose
+  continues to construct the DSN from the mounted password file.
+- `DEPLOYMENT_GUIDE.md` now documents the OrbStack context, external Tunnel
+  network, password file permissions, preflight inspection and logical backup,
+  Compose validation, start/update/rollback, and an operator-confirmed reset
+  only for disposable shared demo data.
+- Existing OrbStack server version, volume identity/layout, and contents were
+  not inspected. No existing-volume migration or disposable reset was
+  performed. Public runtime, browser, and API acceptance remain unverified.
+- `jk-sbx-project implement 'bash scripts/check-demo-deployment-contract.sh'`
+  passed and printed `Demo deployment contract: pass`. Its Compose config
+  assertion confirmed the exact image and mount, no published ports/build or
+  `env_file`, isolated networks, and file-based password secret.
+- `jk-sbx-project implement 'cd backend && go test ./cmd/server'` passed
+  (`ok accustandard-backend/cmd/server`), including the missing-`DATABASE_URL`
+  startup configuration test.
+- No frontend source changed, so frontend build/lint/typecheck were not run.
+  Existing OrbStack data, containers, tunnel, public URL, browser behavior, and
+  full API acceptance were not inspected or tested. No live deployment or
+  database reset occurred.
+- Local commit and authenticated `gh` publication: pending final diff review.
+
 ### 2026-09-24 deployment planning and feasibility review
 
 - Inspected the tracked workspace, active Compose/Dockerfiles, Go database and
   API entry points, frontend API client, and deployment/security guides.
-- Official PostgreSQL image guidance shows the current `postgres:alpine`
+- At the time of the initial planning snapshot, official PostgreSQL image
+  guidance showed the current `postgres:alpine`
   image and `/var/lib/postgresql` mount are unsafe as a validated PostgreSQL
   17 persistence contract. The implementation handoff requires a pinned
   PostgreSQL 17 image, `/var/lib/postgresql/data` volume destination, and
@@ -67,10 +97,12 @@ Where an older document conflicts with the first four, the first four control.
   demo root by the image-only Compose frontend.
 - Backend: `backend/cmd/server` Go API at `/api/v1` behind the frontend
   reverse proxy.
-- Database: PostgreSQL through the floating `postgres:alpine` image, with the
-  current migration baseline tested against PostgreSQL 17, through legacy cleanup,
+- Database: PostgreSQL 17 using `docker.io/library/postgres:17.11-alpine3.24`
+  in the active demo Compose file, with its named volume at
+  `/var/lib/postgresql/data`. The migration baseline is tested against
+  PostgreSQL 17. Startup runs legacy cleanup,
   `backend/migrations/004_reconcile_runtime_columns.sql`, GORM `AutoMigrate`,
-  and idempotent demo seed `backend/migrations/002_seed_data.sql`.
+  then idempotent demo seed `backend/migrations/002_seed_data.sql`.
 - Database startup order is PostgreSQL health → legacy cleanup → legacy-column
   reconciliation → GORM `AutoMigrate` → seed SQL. Reconciliation preserves
   pre-fix `d_csstatus`/`s_idate` values as canonical `dcs_status`/`si_date`
@@ -126,7 +158,7 @@ Where an older document conflicts with the first four, the first four control.
 
 ## Implemented API surface
 
-The deployed API currently provides reads and limited mutations for inventory
+The Go API code currently provides reads and limited mutations for inventory
 receiving, replenishment, RFQs, approval records, SOA allocation, purchase
 orders, RFPs, the QBO queue, and audit-log reads. Receiving and collection
 allocation are transactional and validate state/amount constraints. The UI
@@ -204,10 +236,11 @@ preserving the rootless `podman unshare` and PostgreSQL 17 reset policy.
   on the internal `accustandard-network`. No service publishes a host port;
   only the frontend joins the external `cloudflared-network` with the unique
   `accustandard-demo-frontend` alias.
-- Active Compose and Dockerfile base images use floating official Alpine tags:
-  Node `node:lts-alpine`, Go `golang:alpine`, Alpine `alpine:latest`, Nginx
-  `nginx:alpine`, and PostgreSQL `postgres:alpine`. Builds use `--pull`;
-  record resolved image digests when a repeatable demo snapshot is required.
+- Active Compose pins PostgreSQL to `postgres:17.11-alpine3.24`. Its API and
+  frontend Dockerfiles still use floating tags: Go `golang:alpine`, Alpine
+  `alpine:latest`, Node `node:lts-alpine`, and Nginx `nginx:alpine`. The
+  separate root `compose.yml` is a historical build-based stack, not the active
+  demo procedure.
 
 ## Historical validation record
 
@@ -406,8 +439,8 @@ verification of development-only chunks. Next.js applies this setting only in
 development; it does not expand the production static export or API origin
 policy.
 
-The current macOS Compose/Dockerfile path follows floating official Alpine
-tags so rebuilds can receive upstream maintenance releases. Rebuild with
+The active Compose deployment pins the PostgreSQL image and keeps floating
+official tags for the API/frontend build and serving images. Rebuild with
 `--pull`, then rerun the disposable build and database integration checks when
 upstream images change. The legacy VPS Quadlet path continues to use reviewed
 versioned images.

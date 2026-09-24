@@ -1,10 +1,10 @@
 # Active handoff: portfolio demo deployment
 
-ACTIVE_ROLE: planner/reviewer (GPT 6 Sol, High)
-NEXT_OWNER: implementation agent (GPT 6 Luna, High; manually triggered by user)
+ACTIVE_ROLE: implementation agent (GPT 6 Luna, High)
+NEXT_OWNER: planner/reviewer (GPT 6 Sol, High; manually triggered by user)
 IMPLEMENTATION_OWNER: implementation agent (GPT 6 Luna, High)
 REVIEW_OWNER: planner/reviewer (GPT 6 Sol, High)
-STATUS: ready for implementation; deployment and public acceptance not yet verified
+STATUS: implementation complete; independent runtime and public acceptance pending
 CAPABILITY: implementation agent may edit code and active docs and run focused Docker Sandbox checks; planner/reviewer owns independent acceptance
 PUSH: commit locally and synchronize intended files to `main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
 DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during implementation; prepare the manual operator guide and return for review
@@ -26,7 +26,7 @@ Worker project today. The selected Compose path still requires manual image
 build/export in `jk-sbx-project implement`, followed by manual image load and
 startup in OrbStack. Never claim Git pushes deploy this Compose stack.
 
-## Evidence and current risk
+## Baseline evidence before implementation
 
 - `deploy/demo/compose.yaml` already isolates API/database on
   `accustandard-network`, gives only frontend a `cloudflared-network` alias,
@@ -36,22 +36,24 @@ startup in OrbStack. Never claim Git pushes deploy this Compose stack.
   `docker/demo-nginx.conf` proxies that path to the Go API.
 - `backend/internal/db/db.go` uses the PostgreSQL GORM driver and runs startup
   SQL. The current migration contract is validated against PostgreSQL 17.
-- `backend/cmd/server/main.go` still supplies a hard-coded fallback PostgreSQL
-  DSN when `DATABASE_URL` is absent. The Compose entrypoint normally constructs
-  `DATABASE_URL` from the mounted secret, but the executable should fail closed
-  if it is missing. The unrelated `backend/main.go` is a historical stub; the
-  active image builds `./cmd/server`.
-- The active Compose file uses `postgres:alpine` and mounts the named volume at
-  `/var/lib/postgresql`. The contract script currently approves that choice.
-  Docker's official image guide states PostgreSQL 17 and below need a volume at
-  `/var/lib/postgresql/data`; PostgreSQL 18 and above changed `PGDATA` and the
-  volume layout. The floating major version and mount are a data-retention
-  risk. [Official image guidance](https://hub.docker.com/_/postgres).
+- `backend/cmd/server/main.go` requires `DATABASE_URL` and fails before
+  database initialization when it is absent. Compose still constructs the DSN
+  from the mounted password file. The focused Go test and sandbox check passed
+  as recorded in the implementation progress below. The unrelated
+  `backend/main.go` is a historical stub; the active image builds `./cmd/server`.
+- Active `deploy/demo/compose.yaml` now pins
+  `docker.io/library/postgres:17.11-alpine3.24` and mounts `postgres_data` at
+  `/var/lib/postgresql/data`. The contract now asserts the exact image and
+  destination. The root `compose.yml` is a historical, separate build-based
+  stack and is not the active demo workflow. Docker's official guidance says
+  PostgreSQL 17 and below use `/var/lib/postgresql/data`; PostgreSQL 18+ changed
+  the layout. [Official image guidance](https://hub.docker.com/_/postgres).
 - The API's `X-Demo-Role` header is forgeable by every public visitor. Use
   synthetic data only. A UI reset does not restore the shared database.
-- `jk-sbx-project inspect 'bash scripts/check-demo-deployment-contract.sh'`
-  passed on 2026-09-24 against committed HEAD. This checks configuration only;
-  it did not build images, start the stack, or verify the public URL.
+- Before implementation, `jk-sbx-project inspect
+  'bash scripts/check-demo-deployment-contract.sh'` passed against committed
+  HEAD, but accepted the unsafe image/mount. The updated implementation-lane
+  run and its limited scope are recorded below.
 
 ## Implementation slices
 
@@ -89,6 +91,48 @@ startup in OrbStack. Never claim Git pushes deploy this Compose stack.
    `git diff --check` and inspect the staged diff for secrets. If the only code
    change is Compose/contract, do not run an unrelated full browser suite.
    Commit only intended files and publish with `gh` per repository policy.
+
+## Implementation progress (2026-09-24)
+
+- Confirmed the worktree is on `main` and has pre-existing untracked
+  `.agents/` and `skills-lock.json`; these are user data and are excluded from
+  this change.
+- Slice 1 implementation is complete. Use the fully versioned official image tag
+  `docker.io/library/postgres:17.11-alpine3.24` and mount the named volume at
+  `/var/lib/postgresql/data`. Docker's current official image guidance says
+  PostgreSQL 17 and below use that data path; PostgreSQL 18+ changed layout.
+- Existing OrbStack server version, volume identity/layout, and data have not
+  been inspected. Do not attach the new mount to an existing volume until its
+  owner has made and verified a logical backup and a reviewer has accepted a
+  tested migration or an explicitly disposable reset.
+- Next.js official static export guidance was checked through Context7; this
+  pass does not change frontend code or its `output: 'export'` configuration.
+- Runtime deployment, public URL checks, and changes to the live tunnel or
+  OrbStack stack are outside this implementation pass.
+- Slice 1 implementation is complete: active Compose tag/mount and contract
+  assertions are updated; the operator guide now requires recording database
+  version, configured image, data directory, and named/anonymous mount details,
+  and a nonempty, listable logical backup before existing-volume changes.
+- Slice 2 implementation is complete: the manual guide covers the `orbstack`
+  context, external tunnel network, external password file permissions,
+  Compose validation, start/update/rollback, same-origin root/API routing, and
+  an explicitly destructive reset for confirmed disposable demo data. The
+  Go missing-`DATABASE_URL` unit test is included.
+- Slice 3 active docs are synchronized. Implementation-proximate validation
+  passed in Docker Sandbox on 2026-09-24:
+  `jk-sbx-project implement 'bash scripts/check-demo-deployment-contract.sh'`
+  printed `Demo deployment contract: pass`; this ran `docker compose config
+  --format json` and checked the exact image and volume source/type/destination,
+  no host ports/build/env file, network isolation, and file-based credentials.
+- `jk-sbx-project implement 'cd backend && go test ./cmd/server'` returned
+  `ok accustandard-backend/cmd/server`, including the missing-
+  `DATABASE_URL` startup configuration test.
+- No frontend source changed, so the static build/lint/typecheck were not run.
+  The existing OrbStack volume/server was not inspected; no image was loaded,
+  container was started, database backup/reset performed, tunnel changed, or
+  public/browser/API acceptance attempted.
+- Local commit and authenticated `gh` publication remain pending until the
+  final diff and staged paths are checked.
 
 ## Return packet for reviewer
 

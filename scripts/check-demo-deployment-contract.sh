@@ -24,7 +24,7 @@ services = config["services"]
 assert set(services) == {"db", "api", "frontend"}
 
 expected_images = {
-    "db": "docker.io/library/postgres:alpine",
+    "db": "docker.io/library/postgres:17.11-alpine3.24",
     "api": "accustandard-demo-api:latest",
     "frontend": "accustandard-demo-frontend:latest",
 }
@@ -33,6 +33,12 @@ for name, image in expected_images.items():
     assert service.get("image") == image, (name, service.get("image"))
     for forbidden in ("ports", "build", "env_file"):
         assert forbidden not in service, (name, forbidden)
+
+db_volumes = services["db"].get("volumes", [])
+assert len(db_volumes) == 1, db_volumes
+assert db_volumes[0].get("type") == "volume", db_volumes
+assert db_volumes[0].get("source") == "postgres_data", db_volumes
+assert db_volumes[0].get("target") == "/var/lib/postgresql/data", db_volumes
 
 assert set(services["db"]["networks"]) == {"accustandard-network"}
 assert set(services["api"]["networks"]) == {"accustandard-network"}
@@ -54,6 +60,14 @@ assert all_aliases == ["accustandard-demo-frontend"], all_aliases
 assert set(config["secrets"]) == {"postgres_password"}
 assert config["secrets"]["postgres_password"]["file"].endswith(
     "/secrets/postgres_password.txt"
+)
+assert "contract-only-secret" not in json.dumps(config)
+for service_name in ("db", "api"):
+    environment = services[service_name].get("environment", {})
+    assert "POSTGRES_PASSWORD" not in environment, environment
+    assert "DATABASE_PASSWORD" not in environment, environment
+assert services["db"]["environment"]["POSTGRES_PASSWORD_FILE"] == (
+    "/run/secrets/postgres_password"
 )
 PY
 

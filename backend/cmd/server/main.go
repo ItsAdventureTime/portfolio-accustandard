@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -20,13 +21,13 @@ func main() {
 		port = "8080"
 	}
 
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		dsn = "postgres://accustandard:accustandardpass@localhost:5432/accustandard_demo_db?sslmode=disable"
+	dsn, err := requiredDatabaseURL()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Printf("==> Accustandard Go Backend initializing (Port: %s)...", port)
-	_, err := db.InitDB(dsn)
+	_, err = db.InitDB(dsn)
 	if err != nil {
 		log.Fatalf("! Database init failed: %v", err)
 	}
@@ -69,4 +70,12 @@ func main() {
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatalf("Server stopped unexpectedly: %v", err)
 	}
+}
+
+func requiredDatabaseURL() (string, error) {
+	dsn := strings.TrimSpace(os.Getenv("DATABASE_URL"))
+	if dsn == "" {
+		return "", errors.New("DATABASE_URL is required")
+	}
+	return dsn, nil
 }

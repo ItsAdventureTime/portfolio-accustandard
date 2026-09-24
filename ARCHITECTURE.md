@@ -86,11 +86,13 @@ boundary. This runtime does not provide a live QuickBooks Online integration.
 
 ## Containerized Demo Deployment
 
-The only active demo target is [https://accustandard.delegateops.business](https://accustandard.delegateops.business). A user manually builds and exports the API and frontend images in the Docker Sandbox, then manually loads them into OrbStack and starts `~/docker/portfolio/accustandard/compose.yaml`. The platform target follows the operator machine: use `linux/arm64` on Apple silicon (`uname -m` returns `arm64`/`aarch64`) and `linux/amd64` on Intel (`x86_64`/`amd64`).
+The only active demo target is [https://accustandard.delegateops.business/](https://accustandard.delegateops.business/); public availability and acceptance are not verified. A user manually builds and exports the API and frontend images in Docker Sandbox, then manually loads them into OrbStack and starts `~/docker/portfolio/accustandard/compose.yaml`. The platform target follows the operator machine: use `linux/arm64` on Apple silicon (`uname -m` returns `arm64`/`aarch64`) and `linux/amd64` on Intel (`x86_64`/`amd64`).
 
-This target has not passed public acceptance. The current floating PostgreSQL
-image and volume destination require the repair in
-[`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md) before launch. Binding R2,
+This target has not passed public acceptance. Compose pins
+`postgres:17.11-alpine3.24` and mounts its named volume at
+`/var/lib/postgresql/data`; this does not establish compatibility with an
+existing OrbStack volume, which must be inspected and backed up before use.
+Binding R2,
 D1, Hyperdrive, KV, or Containers to a new Worker is a separate migration;
 see [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
 
@@ -102,6 +104,9 @@ Internet → Cloudflare Tunnel → frontend:80
 ```
 
 Only the frontend joins the external tunnel network. The API and database remain internal and no service publishes a host port. The Compose runtime has no build instructions. See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for the step-by-step procedure and secret handling.
+
+The static frontend is served at `/` and calls the API at the same origin under
+`/api/v1`; Nginx proxies that path to the Go service.
 
 ---
 

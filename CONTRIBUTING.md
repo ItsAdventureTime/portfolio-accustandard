@@ -84,12 +84,17 @@ verified build contract; revisit it after a deliberate sandbox validation.
 
 ---
 
-## 🛰️ Live Demo Target Environment
+## 🛰️ Demo Target Environment
 
-The active demo is [https://accustandard.delegateops.business](https://accustandard.delegateops.business).
-It uses manually exported API and frontend images, a file-based Compose secret,
-an internal API/database network, and the existing external Cloudflare Tunnel
-network. The complete operator procedure is in
+The demo target is
+[https://accustandard.delegateops.business/](https://accustandard.delegateops.business/).
+Public availability and acceptance are not verified. Build and export the API
+and frontend images in Docker Sandbox, then load and run them in OrbStack. The
+active Compose file uses PostgreSQL `17.11-alpine3.24`, a named volume at
+`/var/lib/postgresql/data`, a file-based secret, an internal API/database
+network, and the existing external Cloudflare Tunnel network. Inspect and back
+up any existing database volume before changing the Compose configuration. The
+complete operator procedure is in
 [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
 ## Workflow Guardrails

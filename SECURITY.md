@@ -25,20 +25,21 @@ mounts the PostgreSQL password from a local file; its directory must be mode
 no `.env` file is required. See [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md)
 for the pre-launch persistence and acceptance gates.
 
-The Go service defaults to an explicit origin allowlist and disables credential
-sharing. The active demo uses same-origin Nginx routing; production must set
-`CORS_ALLOWED_ORIGINS` deliberately and add authenticated sessions or OIDC
-before handling real company data.
+The Go service requires `DATABASE_URL` at startup and has no fallback
+credential. Its Compose entrypoint builds the DSN from the mounted password
+file. The Go service defaults to an explicit origin allowlist and disables
+credential sharing. The active demo uses same-origin Nginx routing. Production
+must set `CORS_ALLOWED_ORIGINS` deliberately and add authenticated sessions or
+OIDC before handling real company data.
 
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and the
 acceptance claims that remain unverified.
 
-The active Compose stack reads its disposable demo password from a mounted
-file. Its entrypoint constructs `DATABASE_URL` from that file. The Go binary
-still has a hard-coded fallback DSN when that variable is absent; the active
-handoff requires removing it before launch. The historical Quadlet's fixture
-credentials must never be reused. Production must inject rotated database
-secrets through an external secret source before the service is deployable.
+The active Compose stack reads its demo password from a mounted local file
+outside Git and the image. Keep the containing directory mode `700` and file
+mode `600`. The historical Quadlet's fixture credentials must never be reused.
+Production must inject rotated database secrets through an external secret
+source before the service is deployable.
 
 At **Accustandard Medical and Diagnostic Supplies Corporation**, system security, commit verification, and fraud control are core engineering requirements.
 
