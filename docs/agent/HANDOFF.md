@@ -194,6 +194,39 @@ checks, and revision handoffs. The user will manually trigger each agent.
   directly and test the missing/unreadable-file behavior. Public DNS,
   OrbStack state, browser acceptance, and rollback remain pending.
 
+## Operator startup attempt (2026-09-25)
+
+- The user now requests floating Alpine images and the Compose services started
+  in OrbStack outside Docker Sandbox. This overrides the previous request to
+  keep image tags fully pinned, but does not authorize replacing an unknown
+  database volume or skipping the existing-database preflight.
+- Current official PostgreSQL guidance lists 18.6 as the newest supported
+  minor release. The floating `18-alpine` tag follows PostgreSQL 18 while
+  receiving minor and Alpine updates. PostgreSQL 18 changes the official image
+  data layout; the volume must target `/var/lib/postgresql`, with the default
+  `PGDATA` under `/var/lib/postgresql/18/docker`. Sources:
+  [version support](https://www.postgresql.org/support/versioning/) and
+  [official image guidance](https://hub.docker.com/_/postgres).
+- The active Compose contract and migration checks are still validated for
+  PostgreSQL 17. Do not change the image or mount until the existing OrbStack
+  server version and every mount are inspected and a logical backup is
+  verified. A PostgreSQL 17 volume requires a tested dump/restore into a new
+  PostgreSQL 18 volume, or an explicit operator decision that its data is
+  disposable.
+- Read-only host inspection (`docker context show`, `docker ps -a`, and
+  `docker volume ls`) was rejected by the execution policy, including when
+  requested through the elevated shell path. The `jk-sbx-project` CLI confirms
+  its Docker daemon and containers are sandbox-private. No OrbStack container,
+  image, volume, or tunnel was inspected or changed; no Compose service was
+  started. Do not run OrbStack workloads inside the project sandbox.
+- Next action: the operator must run the existing-database preflight in
+  `DEPLOYMENT_GUIDE.md` from a host terminal connected to the `orbstack`
+  context, verify the dump, and provide its PostgreSQL version, image, data
+  directory, and mount details. Then update the Compose contract for the
+  approved floating image and volume layout, validate PostgreSQL 18, and start
+  the stack from that host terminal. The frontend container alias remains
+  `accustandard-demo-frontend` for the operator's Cloudflare route.
+
 ### Next implementation/operator pass
 
 1. Inspect the existing OrbStack database container and every mount using

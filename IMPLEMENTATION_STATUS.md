@@ -3,6 +3,26 @@
 **Last reviewed:** 2026-09-25
 **Status:** Demo runtime; not a production acceptance release
 
+### 2026-09-25 OrbStack startup gate
+
+- The user requested floating Alpine images and an OrbStack startup outside
+  Docker Sandbox. The current implementation still validates PostgreSQL 17;
+  official guidance lists PostgreSQL 18.6 as the newest supported minor and
+  changes the data-volume layout for PostgreSQL 18. The applicable floating
+  tag is `18-alpine`, with its data volume mounted at `/var/lib/postgresql`.
+- The existing OrbStack database and volumes could not be inspected: host
+  Docker commands were rejected by the execution policy, including the
+  elevated shell path. The project sandbox uses a separate Docker daemon and is
+  not a valid substitute for the requested OrbStack inspection.
+- No image, Compose file, volume, tunnel, or running container was changed.
+  Startup remains blocked until the operator verifies the existing database
+  image/version, data directory, every mount, and a logical backup per
+  `DEPLOYMENT_GUIDE.md`. If it is PostgreSQL 17, PostgreSQL 18 needs a tested
+  dump/restore or an explicit disposable-data decision before startup.
+- The frontend network alias prepared for the user's Cloudflare route is
+  `accustandard-demo-frontend`; the user must add that service to the existing
+  tunnel after the stack is safely started.
+
 ### 2026-09-25 deployment preparation
 
 - Generated a random PostgreSQL password in the local
