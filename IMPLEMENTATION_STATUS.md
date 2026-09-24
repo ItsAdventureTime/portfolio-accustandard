@@ -3,6 +3,23 @@
 **Last reviewed:** 2026-09-25
 **Status:** Demo runtime; not a production acceptance release
 
+### 2026-09-25 read-only OrbStack review
+
+- `docker context show` returned `orbstack`. Host inspection succeeded in this
+  review, superseding the earlier execution-policy blocker. No AccuStandard
+  container or Compose-labeled named volume was found. Four anonymous volumes
+  exist; one belongs to the running Docuseal database, while three have no
+  current container mount and remain unidentified. No volume was altered.
+- The existing `cloudflared` container is running on
+  `cloudflared-network`. The AccuStandard frontend is not running. Queries to
+  `1.1.1.1` returned no A or CNAME record for
+  `accustandard.delegateops.business`.
+- The checked-in Compose file and deployment contract still target pinned
+  PostgreSQL 17. The requested floating PostgreSQL 18 tag and data mount
+  remain an implementation task. The existing PostgreSQL 17 sandbox results
+  cannot be used as PostgreSQL 18 acceptance evidence. No host startup,
+  backup, migration, reset, or public browser check occurred.
+
 ### 2026-09-25 OrbStack startup gate
 
 - The user requested floating Alpine images and an OrbStack startup outside

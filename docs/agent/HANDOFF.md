@@ -1,10 +1,10 @@
 # Active handoff: portfolio demo deployment
 
-ACTIVE_ROLE: planner/reviewer (GPT 6 Sol, Medium)
+ACTIVE_ROLE: planner/reviewer/tester/validator (GPT 6 Sol, High)
 NEXT_OWNER: implementation agent (GPT 6 Luna, High; manually triggered by user)
 IMPLEMENTATION_OWNER: implementation agent (GPT 6 Luna, High)
-REVIEW_OWNER: planner/reviewer (GPT 6 Sol, Medium)
-STATUS: independent sandbox acceptance passed; OrbStack and public acceptance pending
+REVIEW_OWNER: planner/reviewer/tester/validator (GPT 6 Sol, High)
+STATUS: PostgreSQL 17 sandbox acceptance passed; requested PostgreSQL 18 change, OrbStack startup, and public acceptance pending
 CAPABILITY: implementation agent may edit code and active docs and run focused Docker Sandbox checks; planner/reviewer owns independent acceptance
 PUSH: commit on local `main` and synchronize intended files only to remote `refs/heads/main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
 DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during implementation; prepare the manual operator guide and return for review
@@ -14,7 +14,9 @@ DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during
 Make the existing image-only Docker Compose demo safe to run on the user's Mac
 mini M1 with OrbStack and the already-running `cloudflared` container. Keep the
 public hostname `https://accustandard.delegateops.business`. Use the existing
-Next.js static export, Nginx same-origin API proxy, Go API, and PostgreSQL 17.
+Next.js static export, Nginx same-origin API proxy, and Go API. The checked-in
+Compose file still uses PostgreSQL 17. The later operator request for floating
+`18-alpine` needs a separate implementation and validation pass.
 The Cloudflare service assessment is in
 [`CLOUDFLARE_FEASIBILITY.md`](CLOUDFLARE_FEASIBILITY.md). No R2, D1,
 Hyperdrive, KV, Cloudflare Containers, or new Worker is required for this demo.
@@ -143,7 +145,7 @@ startup in OrbStack. Never claim Git pushes deploy this Compose stack.
 
 Report changed commit SHA, remote SHA, exact commands/results, chosen
 PostgreSQL tag and mount, existing-volume migration decision, documentation
-paths, and anything not tested. Then hand control to GPT 6 Sol (Medium) for
+paths, and anything not tested. Then hand control to GPT 6 Sol (High) for
 independent Docker Sandbox validation, rendered/browser checks, public URL
 checks, and revision handoffs. The user will manually trigger each agent.
 
@@ -196,6 +198,9 @@ checks, and revision handoffs. The user will manually trigger each agent.
 
 ## Operator startup attempt (2026-09-25)
 
+This is the earlier attempt. The read-only host inspection below supersedes
+its claim that Docker inspection is blocked.
+
 - The user now requests floating Alpine images and the Compose services started
   in OrbStack outside Docker Sandbox. This overrides the previous request to
   keep image tags fully pinned, but does not authorize replacing an unknown
@@ -227,25 +232,61 @@ checks, and revision handoffs. The user will manually trigger each agent.
   the stack from that host terminal. The frontend container alias remains
   `accustandard-demo-frontend` for the operator's Cloudflare route.
 
+## Current review and host preflight (2026-09-25)
+
+- `docker context show` returned `orbstack`. Read-only host Docker commands
+  succeeded during this review. The earlier execution-policy rejection is
+  historical. `docker ps -a` showed no AccuStandard container, and the
+  `accustandard-demo` Compose label filter returned none.
+- No AccuStandard-labeled named volume appeared in the volume list or labels.
+  Four anonymous volumes remain. One is mounted by the unrelated Docuseal
+  database; the other three have no current container mount. Their contents
+  and former owners were not examined. Do not delete or reuse them.
+- The existing `cloudflared` container is running and joined to
+  `cloudflared-network`. The frontend alias is absent because the demo stack
+  has not started. Public DNS queries to `1.1.1.1` still returned no A or
+  CNAME answer for `accustandard.delegateops.business`.
+- Current `deploy/demo/compose.yaml` and its contract still require pinned
+  PostgreSQL 17 and `/var/lib/postgresql/data`. The PostgreSQL 18 request has
+  not been implemented or tested. Previous PostgreSQL 17 sandbox results do
+  not establish PostgreSQL 18 compatibility. No host database was backed up,
+  reset, migrated, or started during this review.
+- The local password file is still mode `600` inside a mode `700` directory.
+  Git ignores it, and the current GitHub tree contains no secret or release
+  path. For a newly confirmed database, the existing generated password can
+  be copied into the deployment directory. Any older database requires its
+  original matching password.
+
 ### Next implementation/operator pass
 
-1. Inspect the existing OrbStack database container and every mount using
-   `DEPLOYMENT_GUIDE.md`; make and verify a logical backup. If version or
-   layout differs, return a tested restore plan or an explicit disposable
-   reset decision before attaching the new mount.
-2. Check the existing Cloudflare Tunnel [route and DNS](https://developers.cloudflare.com/tunnel/concepts/routing/) for
+1. Confirm whether any previous AccuStandard deployment or backup exists.
+   No AccuStandard container or named volume was found in the 2026-09-25
+   read-only inspection, but three unattached anonymous volumes remain
+   unidentified. If an existing database is found, inspect its image,
+   version, data directory, and every mount; make and verify a logical backup.
+   If none exists, record the fresh-install decision without changing other
+   projects' volumes.
+2. Implementation owner: change the active Compose image to floating
+   `docker.io/library/postgres:18-alpine` and the data mount to
+   `/var/lib/postgresql`. Update the deployment contract and active guides;
+   validate a fresh PostgreSQL 18 volume in Docker Sandbox, including API
+   readiness, a seeded read, a synthetic write, and role rejection. If an
+   older database exists, test dump/restore into a new 18 volume or obtain
+   the operator's explicit disposable-data decision before host startup.
+3. Check the existing Cloudflare Tunnel [route and DNS](https://developers.cloudflare.com/tunnel/concepts/routing/) for
    `accustandard.delegateops.business`; restore the intended proxied record
    and frontend network attachment through the operator's normal procedure.
    Do not start a second tunnel.
-3. After the operator launches the pinned image pair, repeat public root/API,
+4. After the operator launches the updated image pair, repeat public root/API,
    role/read/write, browser/mobile, cache, and rollback acceptance. Record
    actual commands and results in `IMPLEMENTATION_STATUS.md` and update gates.
 
 ## Acceptance owned by reviewer
 
-- Contract rejects floating/wrong PostgreSQL major and mount; Compose config
+- Contract accepts requested `18-alpine` and PostgreSQL 18 mount, rejects
+  wrong major/mount, and Compose config
   shows no `build`, `ports`, `env_file`, or cleartext password.
-- Fresh PostgreSQL 17 volume becomes healthy, API `/api/v1/readiness` reports
+- Fresh PostgreSQL 18 volume becomes healthy, API `/api/v1/readiness` reports
   ready, frontend `/healthz` reports healthy, and the root page loads.
 - At least one seeded read and one controlled mutation work through the
   public same-origin API; a missing/invalid demo role returns 401. Verify

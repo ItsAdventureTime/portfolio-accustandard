@@ -13,6 +13,12 @@ PostgreSQL to `17.11-alpine3.24` and mounts its named volume at
 not establish compatibility with data in any existing volume. The public URL
 and running stack have not been verified by this implementation pass.
 
+The latest operator request calls for floating `postgres:18-alpine`. That
+change is still pending: the checked-in Compose file and contract use
+PostgreSQL 17. Use the commands below only for the checked-in 17 configuration.
+Before launching the requested 18 configuration, have the implementation owner
+update and validate Compose, its contract, and this guide.
+
 ## Deployment order
 
 1. Inspect and back up any existing database before changing its image or
@@ -136,6 +142,22 @@ Cloudflare account owner must sign in and make any required dashboard changes;
 do not put a tunnel token or API key in this repository.
 
 ## Existing database preflight
+
+On 2026-09-25, a read-only OrbStack check found no AccuStandard container or
+named volume. It found three unattached anonymous volumes whose former owners
+are unknown. Check your old deployment directory and backups before declaring
+this a fresh install. Do not delete or reuse those volumes to make room.
+
+```sh
+docker --context orbstack ps -a --filter label=com.docker.compose.project=accustandard-demo
+docker --context orbstack volume ls
+ls -ld ~/docker/portfolio/accustandard 2>/dev/null || true
+```
+
+If you find an earlier AccuStandard database, use its original password file
+and follow the backup procedure below. If there is no earlier database, record
+that decision and use the generated password for the new volume. Do not treat
+another project's PostgreSQL volume as AccuStandard data.
 
 Before changing an existing Compose deployment, inspect its server version,
 configured image, data directory, and every named or anonymous volume mount.
