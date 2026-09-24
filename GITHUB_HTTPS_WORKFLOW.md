@@ -14,6 +14,13 @@ Operational guides should link here instead of redefining the protocol.
   [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) rather than this GitHub
   synchronization guide.
 
+## Required branch
+
+Use local `main` for project commits and publish only to remote
+`refs/heads/main`. Check `git branch --show-current` before staging. Do not
+switch to or create another branch for this workflow. Preserve any existing
+other branch refs; this rule selects the target for new work and publication.
+
 `gh` does not provide a separate `gh push` command. Local staging and commits
 still use the local Git repository because `gh` has no local commit command.
 All GitHub-side inspection and remote publication for this project must use the
@@ -37,6 +44,7 @@ register an SSH key.
 ## Commit locally and publish through `gh api`
 
 ```bash
+test "$(git branch --show-current)" = main
 git status --short
 git add <changed-files>
 git -c commit.gpgSign=false commit -m "<conventional commit message>"
@@ -49,8 +57,8 @@ After the local commit, publish the tree through `gh api` in this order:
 2. Upload changed files as Git blobs.
 3. Create a tree based on the remote tree, replacing changed paths with the
    uploaded blob SHAs.
-4. Create one commit with the remote commit as its parent.
-5. Patch `refs/heads/main` to the new commit SHA with `force=false`.
+4. Create one commit with the current remote `main` commit as its parent.
+5. Patch only `refs/heads/main` to the new commit SHA with `force=false`.
 
 The complete command contract and verification checklist are in
 [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md). `gh pr create` is

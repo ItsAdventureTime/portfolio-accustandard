@@ -31,6 +31,8 @@ govern operations.
   or direct `git push` for GitHub repository operations. Follow
   [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md) for the separate manual demo
   image workflow.
+- Make project commits on local `main` and publish only to GitHub `main`
+  (`refs/heads/main`).
 - Follow the **Conventional Commits** specification:
   - `feat`: New feature or user capability.
   - `fix`: Bug fix or error resolution.

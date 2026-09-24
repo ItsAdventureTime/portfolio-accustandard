@@ -6,7 +6,7 @@ IMPLEMENTATION_OWNER: implementation agent (GPT 6 Luna, High)
 REVIEW_OWNER: planner/reviewer (GPT 6 Sol, High)
 STATUS: implementation complete; independent runtime and public acceptance pending
 CAPABILITY: implementation agent may edit code and active docs and run focused Docker Sandbox checks; planner/reviewer owns independent acceptance
-PUSH: commit locally and synchronize intended files to `main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
+PUSH: commit on local `main` and synchronize intended files only to remote `refs/heads/main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
 DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during implementation; prepare the manual operator guide and return for review
 
 ## Outcome and decision

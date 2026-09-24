@@ -147,8 +147,9 @@ secret, internal network boundary, and rollback steps.
 Follow [`PROJECT_UPDATE_STANDARD.md`](PROJECT_UPDATE_STANDARD.md) for the
 recurring update sequence and [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md)
 for the canonical remote protocol. Local staging and commits use local Git
-because `gh` has no local commit command; remote GitHub publication uses the
-authenticated `gh api` Git Database endpoints over HTTPS. There is no separate
+because `gh` has no local commit command. Make project commits on local `main`
+and publish only to remote `main` (`refs/heads/main`). Remote publication uses
+the authenticated `gh api` Git Database endpoints over HTTPS. There is no separate
 `gh push` command. Never use SSH remotes, SSH keys, `gh ssh-key`, passkeys, or
 direct `git push` for GitHub repository operations. VPS deployment transfer is a
 separate historical workflow; current demo deployment is documented in

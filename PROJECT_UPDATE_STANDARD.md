@@ -21,6 +21,9 @@ deployment, or documentation revision in this project.
   source-of-truth guide affected by the task before making changes.
 - Preserve existing user work, historical status records, `.agents/`, and
   `skills-lock.json` unless the user explicitly asks to change them.
+- Use local `main` for project commits and publish only to remote
+  `refs/heads/main`. Check `git branch --show-current` before staging; do not
+  switch to or create another branch for project work.
 - Use LeanCTX project context first (`ctx_compose`, then `ctx_read`,
   `ctx_search`, or `ctx_shell`) and inspect the current branch, remote, and
   worktree before synchronization.
@@ -93,6 +96,7 @@ git remote get-url origin
 Then review and create the local commit with normal local Git commands:
 
 ```bash
+test "$(git branch --show-current)" = main
 git status --short
 git diff --check
 git add <changed-files>
@@ -100,10 +104,11 @@ git -c commit.gpgSign=false commit -m "<conventional commit message>"
 ```
 
 Publish the resulting tree with the GitHub Git Database REST endpoints through
-`gh api`: upload changed blobs, create a tree from the current `main` tree,
-create one commit whose parent is the current remote `main` commit, then patch
-`refs/heads/main` to the new commit SHA. Keep the remote update on `main` and
-verify it with `gh api`; do not replace this sequence with `git push`.
+`gh api`: upload changed blobs, create a tree from the current remote `main`
+tree, create one commit whose parent is the current remote `main` commit, then
+patch only `refs/heads/main` to the new commit SHA. Keep local commits on
+`main`, verify the remote `main` ref with `gh api`, and do not replace this
+sequence with `git push`.
 
 ```bash
 gh api repos/ItsAdventureTime/portfolio-accustandard/git/ref/heads/main

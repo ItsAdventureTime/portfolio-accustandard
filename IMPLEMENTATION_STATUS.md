@@ -3,6 +3,12 @@
 **Last reviewed:** 2026-09-24
 **Status:** Demo runtime; not a production acceptance release
 
+### 2026-09-24 Git branch target
+
+- Project commits use local `main`; GitHub publication targets only
+  `refs/heads/main` through authenticated `gh api` over HTTPS. Existing other
+  branch refs are preserved and are not targets for new project work.
+
 ### 2026-09-24 demo persistence implementation
 
 - Active `deploy/demo/compose.yaml` pins PostgreSQL to
