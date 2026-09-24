@@ -27,6 +27,11 @@ yarn-error.log*
 /secrets/
 /release/
 /deploy/demo/secrets/
+/deploy/demo/*.dump
+
+# Local agent setup
+/.agents/
+/skills-lock.json
 
 # local env files
 .env*.local

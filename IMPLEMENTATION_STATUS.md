@@ -1,7 +1,29 @@
 # AccuStandard implementation status
 
-**Last reviewed:** 2026-09-24
+**Last reviewed:** 2026-09-25
 **Status:** Demo runtime; not a production acceptance release
+
+### 2026-09-25 deployment preparation
+
+- Generated a random PostgreSQL password in the local
+  `deploy/demo/secrets/postgres_password.txt` file. The directory is mode
+  `700`, the file is mode `600`, and Git ignores it. The secret value was not
+  committed or printed. Compose already mounts this file at
+  `/run/secrets/postgres_password` for the database and API.
+- Added explicit ignore entries for local agent setup and demo dump files.
+  `DEPLOYMENT_GUIDE.md` now explains how to copy the existing secret for a
+  fresh deployment without replacing an older database's matching password.
+  No OrbStack or Cloudflare configuration was changed. The API entrypoint
+  currently reads the mounted file and exports a password-bearing
+  `DATABASE_URL` to the Go process; the next implementation pass should move
+  file reading into Go if the secret must stay out of process environment.
+
+### 2026-09-24 independent sandbox review
+
+- `jk-sbx-project validate 'bash scripts/check-demo-deployment-contract.sh && cd backend && go test ./cmd/server'` passed. Contract mutation checks rejected both `postgres:alpine` and the wrong `/var/lib/postgresql` mount.
+- Isolated ARM64 API and frontend image builds passed. Next.js 16.3.0 compiled, completed TypeScript, and exported five static pages. A fresh PostgreSQL 17.11 volume became healthy. Through the frontend proxy, `/healthz`, `/`, and `/api/v1/readiness` succeeded; seeded inventory returned four records; missing/invalid roles returned 401; a synthetic RFQ was created and read back. Validation containers and volumes were removed.
+- Public `curl` failed before HTTP with `Could not resolve host: accustandard.delegateops.business`. Local DNS and `1.1.1.1` returned no A or CNAME answer. Public HTTPS, browser, cache, and tunnel behavior remain unverified.
+- Existing OrbStack volume, image, and tunnel state were not inspected or changed. No live backup, migration, reset, deployment, or rollback was performed. The pre-launch gate remains closed pending operator inspection and public DNS repair. Details and next-owner instructions are in `docs/agent/HANDOFF.md`.
 
 ### 2026-09-24 Git branch target
 

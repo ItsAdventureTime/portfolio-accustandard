@@ -1,9 +1,10 @@
 # Demo deployment guide
 
-This is the only active deployment path for the demo target at
+This guide is the active deployment path for the demo target at
 [https://accustandard.delegateops.business/](https://accustandard.delegateops.business/).
-It uses synthetic seeded data and is not a production release. Public
-acceptance is not verified. Nothing compiles, builds, or deploys automatically.
+The app uses synthetic seeded data. Public DNS did not resolve during the
+2026-09-24 review, so the public site has not passed acceptance. Builds and
+deployment are manual.
 
 **Pre-launch gate:** Follow [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md)
 and [`GATES.md`](GATES.md) before starting this stack. Compose pins
@@ -12,9 +13,20 @@ PostgreSQL to `17.11-alpine3.24` and mounts its named volume at
 not establish compatibility with data in any existing volume. The public URL
 and running stack have not been verified by this implementation pass.
 
-Build API and frontend images in Docker Sandbox, export them, and manually
-load and run them in OrbStack. The existing Cloudflare Tunnel is the only
-public entry point.
+## Deployment order
+
+1. Inspect and back up any existing database before changing its image or
+   volume mount. Skip that preflight only when this is a fresh installation.
+2. Build and export the API and frontend images in Docker Sandbox.
+3. Copy the Compose file, image archives, and local password file to the
+   deployment directory. Keep an existing database password unchanged.
+4. Load the images in OrbStack, start Compose, and run the local checks.
+5. Confirm the existing Cloudflare Tunnel route, repair the hostname's DNS record,
+   then run the public checks. Finish browser and rollback acceptance before
+   calling the demo ready.
+
+The commands below follow that order. The existing Cloudflare Tunnel is the
+only public entry point.
 
 ## What runs where
 
@@ -33,9 +45,11 @@ internal `accustandard-network`. No service publishes a host port, and
 [`deploy/demo/compose.yaml`](deploy/demo/compose.yaml) contains images only;
 it has no `build:` instructions.
 
-The Compose secret is a local file created once under the deployment
-directory. It is mounted at runtime, never written to an image, `.env` file,
-macOS Keychain, or Git. Safe environment values stay in `compose.yaml`.
+Compose reads the password from `deploy/demo/secrets/postgres_password.txt`
+in this checkout, or from `secrets/postgres_password.txt` beside the copied
+Compose file. Docker mounts it at `/run/secrets/postgres_password` for the
+database and API. The file stays outside Git and the images. Safe environment
+values stay in `compose.yaml`.
 This demo does not need R2 because the application uses its checked-in static
 assets and seeded demo data. The full Cloudflare option assessment is in
 [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
@@ -49,6 +63,25 @@ Verify these prerequisites on macOS:
    the external `cloudflared-network`.
 3. `jk-sbx-project` is available for Docker Sandbox work.
 4. `docker`, `openssl`, and this repository checkout are available.
+5. The checkout's `deploy/demo/secrets/` directory is mode `700`, and its
+   `postgres_password.txt` file is mode `600`. The password is generated once
+   and ignored by Git. If you cloned the repository elsewhere, create it with
+   the command below before copying deployment files:
+
+```sh
+install -d -m 700 deploy/demo/secrets
+if [ ! -e deploy/demo/secrets/postgres_password.txt ]; then
+  umask 077
+  openssl rand -hex 32 > deploy/demo/secrets/postgres_password.txt
+fi
+chmod 700 deploy/demo/secrets
+chmod 600 deploy/demo/secrets/postgres_password.txt
+test -s deploy/demo/secrets/postgres_password.txt
+```
+
+Keep this file private. The generated password is for a new database volume.
+Keep a separate secure backup of it. An existing database needs its original
+matching password file.
 
 Check `docker context inspect orbstack` and confirm the running `cloudflared`
 container uses that same Docker engine. Its existing Compose project must
@@ -97,6 +130,10 @@ the hostname's proxied DNS CNAME targets this tunnel's
 `<tunnel-uuid>.cfargotunnel.com` address and that no existing route for this
 hostname will be displaced accidentally. The tunnel dashboard may create the
 record when the route is saved; inspect DNS rather than adding a duplicate.
+The hostname had no public A or CNAME answer in the 2026-09-24 review. Check
+the route and DNS again before expecting the public checks to pass. The
+Cloudflare account owner must sign in and make any required dashboard changes;
+do not put a tunnel token or API key in this repository.
 
 ## Existing database preflight
 
@@ -205,16 +242,20 @@ cp deploy/demo/compose.yaml ~/docker/portfolio/accustandard/compose.yaml
 cp release/accustandard-demo-*.tar ~/docker/portfolio/accustandard/
 ```
 
-Create the database password only if this is the first run. Keeping the same
-file preserves access to the existing PostgreSQL volume across restarts:
+Copy the generated password into the deployment directory on a fresh install.
+If the destination file exists, leave it in place. First confirm that it is
+the password for the database volume found in the preflight. Do not overwrite
+it with the newly generated checkout file:
 
 ```sh
-if [ ! -f ~/docker/portfolio/accustandard/secrets/postgres_password.txt ]; then
-  umask 077
-  openssl rand -hex 32 > ~/docker/portfolio/accustandard/secrets/postgres_password.txt
+if [ ! -e ~/docker/portfolio/accustandard/secrets/postgres_password.txt ]; then
+  test -s deploy/demo/secrets/postgres_password.txt
+  install -m 600 deploy/demo/secrets/postgres_password.txt \
+    ~/docker/portfolio/accustandard/secrets/postgres_password.txt
 fi
 chmod 700 ~/docker/portfolio/accustandard/secrets
 chmod 600 ~/docker/portfolio/accustandard/secrets/postgres_password.txt
+test -s ~/docker/portfolio/accustandard/secrets/postgres_password.txt
 ```
 
 Load the archives and start the image-only Compose project through the explicit
@@ -243,6 +284,12 @@ curl --fail --silent --show-error https://accustandard.delegateops.business/ >/d
 curl --fail --silent --show-error \
   https://accustandard.delegateops.business/api/v1/readiness
 ```
+
+If `curl` reports `Could not resolve host`, inspect the published tunnel route
+and its Cloudflare DNS record. The [Cloudflare routing guide](https://developers.cloudflare.com/tunnel/concepts/routing/)
+shows the expected CNAME to `<tunnel-uuid>.cfargotunnel.com`. Then repeat the
+public checks. Test a seeded read, a synthetic write, role rejection, desktop
+and mobile rendering, and the rollback path before marking the demo accepted.
 
 On first startup, the API applies the runtime schema and idempotent demo seed
 after PostgreSQL becomes available. Existing demo edits remain in the volume;

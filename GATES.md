@@ -16,7 +16,9 @@ do not treat the public hostname as accepted:
 - [ ] Existing OrbStack database state is inspected and backed up before a
   mount/image change; a fresh database starts healthy after the change.
 - [ ] Secrets stay outside Git and images in a mode `700` directory with a
-  mode `600` password file; safe environment values remain in Compose.
+  mode `600` password file; safe environment values remain in Compose. The
+  checkout file was generated and ignored on 2026-09-25. Verify the copied
+  deployment file and image contents before closing this gate.
 - [x] The active Go binary fails closed when `DATABASE_URL` is absent; a
   focused unit test covers the missing-variable case.
   Docker Sandbox verification is recorded in `IMPLEMENTATION_STATUS.md`.

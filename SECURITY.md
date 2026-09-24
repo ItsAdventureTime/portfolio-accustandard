@@ -38,6 +38,13 @@ acceptance claims that remain unverified.
 The active Compose stack reads its demo password from a mounted local file
 outside Git and the image. Keep the containing directory mode `700` and file
 mode `600`. The historical Quadlet's fixture credentials must never be reused.
+The checkout's generated file is `deploy/demo/secrets/postgres_password.txt`.
+It is ignored by Git and is only suitable for a new database volume. Keep the
+matching original secret when working with an existing volume. The frontend
+Docker build context excludes secret directories. The API entrypoint currently
+exports a password-bearing `DATABASE_URL` to the Go process after reading the
+file secret. Restrict access to that container and its process environment;
+move file reading into Go before requiring an environment-free secret path.
 Production must inject rotated database secrets through an external secret
 source before the service is deployable.
 

@@ -128,12 +128,20 @@ image-only Compose project behind the existing Cloudflare Tunnel at
 `https://accustandard.delegateops.business`.
 
 The Compose contract pins PostgreSQL to `17.11-alpine3.24` and mounts
-`postgres_data` at `/var/lib/postgresql/data`. Independent runtime and public
-acceptance are still pending. Do not attach an existing database volume until
+`postgres_data` at `/var/lib/postgresql/data`. The private sandbox checks
+passed; OrbStack and public acceptance are still pending. Do not attach an
+existing database volume until
 its version, data path, and backup are reviewed under
 [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md). The assessment of Workers, R2,
 D1, Hyperdrive, KV, and Containers is in
 [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
+
+The deployment guide gives the full sequence for OrbStack and the existing
+Cloudflare Tunnel. A random PostgreSQL password is kept in the ignored
+`deploy/demo/secrets/` folder on this checkout. Copy it to the deployment
+directory for a fresh database. Keep the original password when an existing
+volume is in use. Public DNS did not resolve during the 2026-09-24 review, so
+the target URL is not yet accepted.
 
 There are no automated builds or deployments. Do not use the historical VPS,
 Caddy, Podman Quadlet, SSH, or `npm run deploy:demo` procedures for the active

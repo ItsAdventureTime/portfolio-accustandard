@@ -1,10 +1,10 @@
 # Active handoff: portfolio demo deployment
 
-ACTIVE_ROLE: implementation agent (GPT 6 Luna, High)
-NEXT_OWNER: planner/reviewer (GPT 6 Sol, High; manually triggered by user)
+ACTIVE_ROLE: planner/reviewer (GPT 6 Sol, Medium)
+NEXT_OWNER: implementation agent (GPT 6 Luna, High; manually triggered by user)
 IMPLEMENTATION_OWNER: implementation agent (GPT 6 Luna, High)
-REVIEW_OWNER: planner/reviewer (GPT 6 Sol, High)
-STATUS: implementation complete; independent runtime and public acceptance pending
+REVIEW_OWNER: planner/reviewer (GPT 6 Sol, Medium)
+STATUS: independent sandbox acceptance passed; OrbStack and public acceptance pending
 CAPABILITY: implementation agent may edit code and active docs and run focused Docker Sandbox checks; planner/reviewer owns independent acceptance
 PUSH: commit on local `main` and synchronize intended files only to remote `refs/heads/main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
 DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during implementation; prepare the manual operator guide and return for review
@@ -143,9 +143,70 @@ startup in OrbStack. Never claim Git pushes deploy this Compose stack.
 
 Report changed commit SHA, remote SHA, exact commands/results, chosen
 PostgreSQL tag and mount, existing-volume migration decision, documentation
-paths, and anything not tested. Then hand control to GPT 6 Sol (High) for
+paths, and anything not tested. Then hand control to GPT 6 Sol (Medium) for
 independent Docker Sandbox validation, rendered/browser checks, public URL
 checks, and revision handoffs. The user will manually trigger each agent.
+
+## Independent review (2026-09-24)
+
+- Reviewed local `main` at `df9259ad71b7ecfd287571df1d85679955ac216c`.
+  GitHub `refs/heads/main` was
+  `6f4bb4db3696bce14b97f90fa73c3d588c6da012`; both commits have tree
+  `e28e925312beef7673c2d69b129c0b6fe2fe6dc2`. The differing commit
+  SHAs come from the separate `gh api` publication.
+- Independent `jk-sbx-project validate` passed the deployment contract and
+  `go test ./cmd/server`. Two negative checks confirmed that the contract
+  rejects `postgres:alpine` and `/var/lib/postgresql`.
+- In the validation sandbox, built ARM64 API/frontend images from committed
+  source. Next.js 16.3.0 compiled, finished TypeScript, and exported five
+  static pages. A fresh PostgreSQL `17.11-alpine3.24` volume became healthy;
+  frontend `/healthz` returned `ok`, API `/api/v1/readiness` returned
+  `{"db":"connected","status":"ready"}`, and the frontend root returned
+  HTTP success. The same-origin API returned four seeded inventory records,
+  rejected missing and invalid `X-Demo-Role` with HTTP 401, and accepted then
+  returned a synthetic RFQ through Nginx. Validation containers and volumes
+  were removed afterward. This does not test the existing OrbStack engine.
+- Public `curl` to the root and `/api/v1/readiness` failed with
+  `Could not resolve host: accustandard.delegateops.business`. Local DNS and
+  `1.1.1.1` returned no A or CNAME record for that hostname. No public HTTP,
+  HTTPS, browser, cache, or tunnel acceptance can be claimed. The site was
+  also inaccessible through the web fetch tool.
+- Existing OrbStack database/image/volume state remains unknown. No backup,
+  migration, reset, image load, tunnel change, live startup, or rollback was
+  performed. Keep the pre-launch gate closed until the operator inspects the
+  existing volume and verifies its backup before any mount change.
+
+## Reviewer follow-up (2026-09-25)
+
+- Generated `deploy/demo/secrets/postgres_password.txt` with 32 random bytes
+  encoded as a 64-character hex password for a fresh database. Modes are
+  `700`/`600`. Compose already consumes this local file as a file secret; its
+  value was not displayed or added to Git. The frontend Docker build context
+  excludes secret directories.
+- `.gitignore` now explicitly excludes the local agent setup files and demo
+  dump files alongside the existing secret and release exclusions. The public
+  deployment guide explains how to copy the secret, how to preserve an
+  existing database password, and how to repair the unresolved hostname.
+- `backend/docker-entrypoint.sh` reads the mounted secret and exports a
+  password-bearing `DATABASE_URL` to the Go process. Keep container access
+  restricted. If the requirement is to keep passwords out of process
+  environment, change the Go startup path to read `DATABASE_PASSWORD_FILE`
+  directly and test the missing/unreadable-file behavior. Public DNS,
+  OrbStack state, browser acceptance, and rollback remain pending.
+
+### Next implementation/operator pass
+
+1. Inspect the existing OrbStack database container and every mount using
+   `DEPLOYMENT_GUIDE.md`; make and verify a logical backup. If version or
+   layout differs, return a tested restore plan or an explicit disposable
+   reset decision before attaching the new mount.
+2. Check the existing Cloudflare Tunnel [route and DNS](https://developers.cloudflare.com/tunnel/concepts/routing/) for
+   `accustandard.delegateops.business`; restore the intended proxied record
+   and frontend network attachment through the operator's normal procedure.
+   Do not start a second tunnel.
+3. After the operator launches the pinned image pair, repeat public root/API,
+   role/read/write, browser/mobile, cache, and rollback acceptance. Record
+   actual commands and results in `IMPLEMENTATION_STATUS.md` and update gates.
 
 ## Acceptance owned by reviewer
 
