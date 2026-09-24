@@ -30,7 +30,8 @@
   Existing OrbStack data, containers, tunnel, public URL, browser behavior, and
   full API acceptance were not inspected or tested. No live deployment or
   database reset occurred.
-- Local commit and authenticated `gh` publication: pending final diff review.
+- Local commit and authenticated `gh` publication to `main` are complete. The
+  final local and remote commit SHAs are in the implementation return packet.
 
 ### 2026-09-24 deployment planning and feasibility review
 

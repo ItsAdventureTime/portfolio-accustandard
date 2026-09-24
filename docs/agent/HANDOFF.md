@@ -131,8 +131,13 @@ startup in OrbStack. Never claim Git pushes deploy this Compose stack.
   The existing OrbStack volume/server was not inspected; no image was loaded,
   container was started, database backup/reset performed, tunnel changed, or
   public/browser/API acceptance attempted.
-- Local commit and authenticated `gh` publication remain pending until the
-  final diff and staged paths are checked.
+- The reviewed intended paths were committed locally and published to GitHub
+  `main` through authenticated `gh api` over HTTPS. The final local and remote
+  commit SHAs are in the implementation return packet.
+- Documentation synchronized: `README.md`, `ARCHITECTURE.md`,
+  `CONTRIBUTING.md`, `SECURITY.md`, `GATES.md`, `IMPLEMENTATION_STATUS.md`, and
+  `DEPLOYMENT_GUIDE.md`. The handoff records the test results and existing-
+  volume decision; no existing-volume migration or disposable reset was run.
 
 ## Return packet for reviewer
 
