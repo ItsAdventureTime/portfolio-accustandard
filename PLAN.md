@@ -1,6 +1,8 @@
-# Rootless deployment repair plan
+# Portfolio demo deployment plan
 
-1. Map the actual rootless Caddy and Quadlet ownership paths; remove the incorrect root-publisher boundary.
-2. Update deployment scripts so the user-owned Caddy configuration and static export are activated through the existing user services.
-3. Update guides and run a no-remote demo dry run.
-4. Independently review the diff for unnecessary complexity, then record all gate evidence.
+The active deployment decision and implementation sequence are in
+[`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md). Use the existing macOS OrbStack
+Compose and Cloudflare Tunnel path for the portfolio demo. Review
+[`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md)
+before proposing a Workers migration. The earlier rootless VPS repair plan is
+historical and does not govern this demo.

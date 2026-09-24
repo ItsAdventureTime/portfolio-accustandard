@@ -1,7 +1,30 @@
 # AccuStandard implementation status
 
-**Audit date:** 2026-08-14
+**Last reviewed:** 2026-09-24
 **Status:** Demo runtime; not a production acceptance release
+
+### 2026-09-24 deployment planning and feasibility review
+
+- Inspected the tracked workspace, active Compose/Dockerfiles, Go database and
+  API entry points, frontend API client, and deployment/security guides.
+- Official PostgreSQL image guidance shows the current `postgres:alpine`
+  image and `/var/lib/postgresql` mount are unsafe as a validated PostgreSQL
+  17 persistence contract. The implementation handoff requires a pinned
+  PostgreSQL 17 image, `/var/lib/postgresql/data` volume destination, and
+  existing-volume preflight before any change.
+- Official Cloudflare documentation confirms Workers Git builds and R2, D1,
+  Hyperdrive, KV, and Containers bindings are possible, but current Go and
+  PostgreSQL behavior does not move by configuration alone. The chosen demo
+  remains the OrbStack Compose plus existing Tunnel route.
+- `jk-sbx-project inspect 'bash scripts/check-demo-deployment-contract.sh'`
+  passed against committed HEAD. Its current assertions still accept the
+  unsafe PostgreSQL contract. No image build, running-stack test, public URL
+  verification, Cloudflare account change, or deployment was performed.
+- Local documentation checks found no missing relative Markdown links in the
+  touched guides, and `bash -n` accepted all `sh` blocks in
+  `DEPLOYMENT_GUIDE.md`. `git diff --check` passed for tracked edits.
+- Planning decision and agent roles are in `docs/agent/HANDOFF.md`; option
+  analysis is in `docs/agent/CLOUDFLARE_FEASIBILITY.md`.
 
 ### 2026-09-08 manual Compose deployment validation
 

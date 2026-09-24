@@ -57,23 +57,26 @@ local Podman for development validation:
 
 ```bash
 jk-sbx-project ensure
-jk-sbx-project exec npm ci
-jk-sbx-project exec npm run lint
-jk-sbx-project exec npx tsc --noEmit --incremental false
-jk-sbx-project exec npm run build
+jk-sbx-project implement 'npm ci'
+jk-sbx-project implement 'npm run lint'
+jk-sbx-project implement 'npx tsc --noEmit --incremental false'
+jk-sbx-project implement 'npm run build'
 ```
 
 For backend validation, run the bounded Go commands in the same sandbox:
 
 ```bash
-jk-sbx-project exec sh -lc 'cd backend && go test ./...'
-jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
+jk-sbx-project implement 'cd backend && go test ./...'
+jk-sbx-project implement 'cd backend && go vet ./...'
 ```
 
 The active demo deployment is manual: build and export the two images in the
 Docker Sandbox, load them into OrbStack, and run the image-only Compose project
 through the `orbstack` context. See [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md);
 do not treat the historical release script or VPS runtime as the current path.
+The pre-launch implementation and independent acceptance gates are in
+[`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md). Plan and option evidence is
+in [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
 
 The production script intentionally runs `next build --webpack`. Next.js 16
 defaults to Turbopack, but the Webpack static-export path is the currently

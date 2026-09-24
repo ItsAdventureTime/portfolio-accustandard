@@ -17,19 +17,28 @@ configured. Attachment authorization, idempotency, and immutable audit
 guarantees remain incomplete. Do not expose the demo database or handle real
 company data.
 
+The planned public portfolio demo therefore uses synthetic data only. Anyone
+who can send a valid `X-Demo-Role` value can mutate its shared demo database.
+The UI reset does not restore database contents. The active OrbStack guide
+mounts the PostgreSQL password from a local file; its directory must be mode
+`700` and its file mode `600`. Non-secret configuration stays in Compose and
+no `.env` file is required. See [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md)
+for the pre-launch persistence and acceptance gates.
+
 The Go service defaults to an explicit origin allowlist and disables credential
-sharing. Production deployment must set `CORS_ALLOWED_ORIGINS` deliberately,
-use same-origin Caddy routing where possible, and add authenticated sessions or
-OIDC before handling real company data.
+sharing. The active demo uses same-origin Nginx routing; production must set
+`CORS_ALLOWED_ORIGINS` deliberately and add authenticated sessions or OIDC
+before handling real company data.
 
 See `IMPLEMENTATION_STATUS.md` for the audited runtime boundary and the
 acceptance claims that remain unverified.
 
-The backend image intentionally does not contain a `DATABASE_URL` default.
-The demo Quadlet supplies a disposable demo-only connection string at runtime;
-those fixture credentials must never be reused for production. Production
-must inject rotated database secrets through an external secret source before
-the service is considered deployable.
+The active Compose stack reads its disposable demo password from a mounted
+file. Its entrypoint constructs `DATABASE_URL` from that file. The Go binary
+still has a hard-coded fallback DSN when that variable is absent; the active
+handoff requires removing it before launch. The historical Quadlet's fixture
+credentials must never be reused. Production must inject rotated database
+secrets through an external secret source before the service is deployable.
 
 At **Accustandard Medical and Diagnostic Supplies Corporation**, system security, commit verification, and fraud control are core engineering requirements.
 

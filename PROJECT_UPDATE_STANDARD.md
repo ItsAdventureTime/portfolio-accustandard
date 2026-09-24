@@ -49,17 +49,20 @@ macOS host, and do not use local Podman for development validation.
 
 ```bash
 jk-sbx-project ensure
-jk-sbx-project exec npm ci
-jk-sbx-project exec npm run lint
-jk-sbx-project exec npx tsc --noEmit --incremental false
-jk-sbx-project exec npm run build
-jk-sbx-project exec sh -lc 'cd backend && go test ./...'
-jk-sbx-project exec sh -lc 'cd backend && go vet ./...'
+jk-sbx-project implement 'npm ci'
+jk-sbx-project implement 'npm run lint'
+jk-sbx-project implement 'npx tsc --noEmit --incremental false'
+jk-sbx-project implement 'npm run build'
+jk-sbx-project implement 'cd backend && go test ./...'
+jk-sbx-project implement 'cd backend && go vet ./...'
 ```
 
-Use `jk-sbx-project run '<compound shell command>'` for a bounded compound
-check, and `jk-sbx-project exec-bg` only for a service that needs to remain
-running. Run `git diff --check` on the host control plane. The active demo
+Use `jk-sbx-project inspect` for planning against committed HEAD,
+`jk-sbx-project implement` for implementation and focused checks against the
+primary worktree, and `jk-sbx-project validate` for independent review against
+a private clone of committed HEAD. Bootstrap dependencies from the lockfile
+inside that review clone when needed. Use the `-bg` form only for a required
+background service. Run `git diff --check` on the host control plane. The active demo
 release is a manual image handoff: build and export the frontend and backend in
 the Docker Sandbox, load them into OrbStack, and run the image-only Compose
 project through the `orbstack` context. Follow

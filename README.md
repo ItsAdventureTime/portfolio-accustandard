@@ -127,6 +127,13 @@ frontend images in the Docker Sandbox, load them into OrbStack, and run the
 image-only Compose project behind the existing Cloudflare Tunnel at
 `https://accustandard.delegateops.business`.
 
+The demo is pending the PostgreSQL 17 image/volume repair and independent
+acceptance in [`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md). Do not assume
+the public URL is live or that the current Compose file is safe for existing
+database data. The assessment of Workers, R2, D1, Hyperdrive, KV, and
+Containers is in
+[`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
+
 There are no automated builds or deployments. Do not use the historical VPS,
 Caddy, Podman Quadlet, SSH, or `npm run deploy:demo` procedures for the active
 demo. The guide documents the required `orbstack` context, file-based Compose
@@ -177,10 +184,10 @@ import because Outfit is vendored and loaded with `next/font/local`.
 
 ```bash
 jk-sbx-project ensure
-jk-sbx-project exec npm ci --no-audit --no-fund
-jk-sbx-project exec npm run lint
-jk-sbx-project exec npx tsc --noEmit --incremental false
-jk-sbx-project exec npm run build
+jk-sbx-project implement 'npm ci --no-audit --no-fund'
+jk-sbx-project implement 'npm run lint'
+jk-sbx-project implement 'npx tsc --noEmit --incremental false'
+jk-sbx-project implement 'npm run build'
 ```
 
 The `build` script uses Next's official `--webpack` opt-out. Next.js 16 uses
@@ -189,10 +196,10 @@ Webpack path as the verified static-export contract. Revisit this fallback
 after a deliberate sandbox validation confirms the resource and output
 contract.
 
-The Compose and Dockerfile paths intentionally use floating official Alpine
-tags: `golang:alpine`, `alpine:latest`, `node:lts-alpine`, `nginx:alpine`, and
-`postgres:alpine`. Rebuild with `--pull` to receive upstream patches. Floating
-tags improve update freshness but do not provide reproducible builds; record
+The current Compose file still uses the floating `postgres:alpine` tag. The
+active handoff requires PostgreSQL major 17 to be pinned before launch. The
+Dockerfiles use floating `golang:alpine`, `alpine:latest`, `node:lts-alpine`,
+and `nginx:alpine` tags. Rebuild with `--pull` for upstream patches and record
 resolved image digests when a repeatable demo snapshot matters.
 
 npm 11 install-script policy is explicit in `package.json`: only the reviewed

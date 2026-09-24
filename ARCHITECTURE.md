@@ -88,6 +88,12 @@ boundary. This runtime does not provide a live QuickBooks Online integration.
 
 The only active demo target is [https://accustandard.delegateops.business](https://accustandard.delegateops.business). A user manually builds and exports the API and frontend images in the Docker Sandbox, then manually loads them into OrbStack and starts `~/docker/portfolio/accustandard/compose.yaml`. The platform target follows the operator machine: use `linux/arm64` on Apple silicon (`uname -m` returns `arm64`/`aarch64`) and `linux/amd64` on Intel (`x86_64`/`amd64`).
 
+This target has not passed public acceptance. The current floating PostgreSQL
+image and volume destination require the repair in
+[`docs/agent/HANDOFF.md`](docs/agent/HANDOFF.md) before launch. Binding R2,
+D1, Hyperdrive, KV, or Containers to a new Worker is a separate migration;
+see [`docs/agent/CLOUDFLARE_FEASIBILITY.md`](docs/agent/CLOUDFLARE_FEASIBILITY.md).
+
 ```
 Internet → Cloudflare Tunnel → frontend:80
                               ├─ cloudflared-network (external)
