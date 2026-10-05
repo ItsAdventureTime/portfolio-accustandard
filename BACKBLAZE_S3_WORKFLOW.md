@@ -5,7 +5,7 @@ operator workflow is Backblaze's native `b2` command-line tool, not AWS CLI.
 The existing bucket is:
 
 ```text
-Bucket: bridge-ph
+Bucket: accounting-firm
 ```
 
 Use environment-specific object-key prefixes inside that bucket:
@@ -27,8 +27,8 @@ exports, and shell history. Use separate, prefix-restricted application keys:
 
 | Key | Bucket restriction | File-name prefix |
 | --- | --- | --- |
-| Demo operator | `bridge-ph` | `accustandard/demo/` |
-| Production operator | `bridge-ph` | `accustandard/` |
+| Demo operator | `accounting-firm` | `accustandard/demo/` |
+| Production operator | `accounting-firm` | `accustandard/` |
 
 Grant each key only the capabilities required for its workflow. The key used
 with the commands below must include `listBuckets` so the CLI can resolve the
@@ -69,7 +69,7 @@ demo or production:
 b2 bucket list
 ```
 
-The output must include `bridge-ph` before continuing.
+The output must include `accounting-firm` before continuing.
 
 ### 2. Sync a directory to an environment prefix
 
@@ -78,10 +78,10 @@ non-destructive: do not add `--delete` by default.
 
 ```bash
 # Demo: authorize the demo key first
-b2 sync ./release-assets/ b2://bridge-ph/accustandard/demo/
+b2 sync ./release-assets/ b2://accounting-firm/accustandard/demo/
 
 # Production: authorize the production key first and use reviewed assets
-b2 sync ./release-assets/ b2://bridge-ph/accustandard/
+b2 sync ./release-assets/ b2://accounting-firm/accustandard/
 ```
 
 Only add `--delete` after reviewing the source as a complete mirror of that
@@ -95,11 +95,11 @@ The object key has no leading slash:
 
 ```bash
 # Demo example
-b2 file upload bridge-ph ./release-assets/logo.svg \
+b2 file upload accounting-firm ./release-assets/logo.svg \
   accustandard/demo/assets/logo.svg
 
 # Production example
-b2 file upload bridge-ph ./release-assets/logo.svg \
+b2 file upload accounting-firm ./release-assets/logo.svg \
   accustandard/assets/logo.svg
 ```
 
@@ -110,12 +110,12 @@ a top-level check and `--recursive` for all objects below the prefix:
 
 ```bash
 # Demo: authorize the demo key first
-b2 ls b2://bridge-ph/accustandard/demo/
-b2 ls --recursive b2://bridge-ph/accustandard/demo/
+b2 ls b2://accounting-firm/accustandard/demo/
+b2 ls --recursive b2://accounting-firm/accustandard/demo/
 
 # Production: authorize the production key first
-b2 ls b2://bridge-ph/accustandard/
-b2 ls --recursive b2://bridge-ph/accustandard/
+b2 ls b2://accounting-firm/accustandard/
+b2 ls --recursive b2://accounting-firm/accustandard/
 ```
 
 Confirm that every listed object has the expected environment prefix and that
@@ -132,7 +132,7 @@ valid for the target prefix:
 AWS_ACCESS_KEY_ID=<Backblaze application key ID>
 AWS_SECRET_ACCESS_KEY=<Backblaze application key>
 AWS_ENDPOINT_URL_S3=https://s3.<region>.backblazeb2.com
-S3_BUCKET=bridge-ph
+S3_BUCKET=accounting-firm
 S3_PREFIX=accustandard/demo/
 ```
 

@@ -109,7 +109,7 @@ role-scoped badges. These UI checks are not an API security boundary.
 
 | User Role | Permitted Modules | Approval Level | Restricted Actions |
 | :--- | :--- | :--- | :--- |
-| **Admin (Bridge)** | All 7 Modules | All Stages | None (Full Access) |
+| **Admin (Accounting Firm)** | All 7 Modules | All Stages | None (Full Access) |
 | **Chairman (DCS)** | All 7 Modules | All Stages | None (Full Access) |
 | **General Manager** | All 7 Modules | Stage 1 & Stage 2 (GM) | Stage 3 DCS Chairman Approval |
 | **Bookkeeper** | Overview, SOA, Purchasing, RFP | View Only | Modifying Inventory & Quotations |
@@ -252,7 +252,7 @@ Copyright © 2026 **Accustandard Medical and Diagnostic Supplies Corporation** &
 
 ## 2026 Repository Audit Status
 
-Object storage, when needed, uses the existing Backblaze bucket `bridge-ph`.
+Object storage, when needed, uses the existing Backblaze bucket `accounting-firm`.
 Demo objects use the `accustandard/demo/` prefix and production objects use
 `accustandard/`; these are object-key prefixes, not additional buckets. See
 [`BACKBLAZE_S3_WORKFLOW.md`](BACKBLAZE_S3_WORKFLOW.md) for endpoint, key

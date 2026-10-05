@@ -24,13 +24,19 @@ services = config["services"]
 assert set(services) == {"db", "api", "frontend"}
 
 expected_images = {
-    "db": "docker.io/library/postgres:17.11-alpine3.24",
+    "db": "docker.io/library/postgres:17-alpine",
     "api": "accustandard-demo-api:latest",
     "frontend": "accustandard-demo-frontend:latest",
+}
+expected_containers = {
+    "db": "accustandard-portfolio_db",
+    "api": "accustandard-portfolio_api",
+    "frontend": "accustandard-portfolio_frontend",
 }
 for name, image in expected_images.items():
     service = services[name]
     assert service.get("image") == image, (name, service.get("image"))
+    assert service.get("container_name") == expected_containers[name], (name, service.get("container_name"))
     for forbidden in ("ports", "build", "env_file"):
         assert forbidden not in service, (name, forbidden)
 

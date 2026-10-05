@@ -246,7 +246,7 @@ VERIFICATION & HANDOFF CHECKLIST:
 
 ### Demo rootless Caddy boundary
 
-The deploy user stages releases, Quadlets, PostgreSQL data, and `web-dist` under `/home/jk/bridge-ph/accustandard-demo`; the Caddy container serves the same content through a read-only bind mount at `/srv/bridge-ph-accustandard-demo`. The deployment workflow never uses sudo or writes host `/srv`; for demo releases it atomically refreshes only its managed Caddy handler and import line in `/home/jk/caddy/conf/Caddyfile`.
+The deploy user stages releases, Quadlets, PostgreSQL data, and `web-dist` under `/home/jk/accounting-firm/accustandard-demo`; the Caddy container serves the same content through a read-only bind mount at `/srv/accounting-firm-accustandard-demo`. The deployment workflow never uses sudo or writes host `/srv`; for demo releases it atomically refreshes only its managed Caddy handler and import line in `/home/jk/caddy/conf/Caddyfile`.
 
 Each live demo deployment installs the managed routing block from
 `deploy/caddy/Caddyfile.snippet`, imports it before the static handler in
@@ -259,8 +259,8 @@ container loopback.
 ```sh
 podman ps --format '{{.Names}}'
 systemctl --user list-units '*caddy*'
-# Bind /home/jk/bridge-ph/accustandard-demo/web-dist read-only
-# to /srv/bridge-ph-accustandard-demo in the Caddy container.
+# Bind /home/jk/accounting-firm/accustandard-demo/web-dist read-only
+# to /srv/accounting-firm-accustandard-demo in the Caddy container.
 podman exec <discovered-caddy> getent hosts host.containers.internal
 podman exec <discovered-caddy> caddy validate --config /etc/caddy/Caddyfile
 systemctl --user reload <discovered-caddy-unit>.service

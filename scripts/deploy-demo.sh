@@ -16,8 +16,8 @@ case "${DEPLOY_TARGET}" in
   *) echo "ACCUSTANDARD_DEPLOY_TARGET must be demo or prod" >&2; exit 2 ;;
 esac
 case "${DEPLOY_TARGET}" in
-  demo) REMOTE_ROOT="/home/jk/bridge-ph/accustandard-demo" ;;
-  prod) REMOTE_ROOT="/home/jk/bridge-ph/accustandard" ;;
+  demo) REMOTE_ROOT="/home/jk/accounting-firm/accustandard-demo" ;;
+  prod) REMOTE_ROOT="/home/jk/accounting-firm/accustandard" ;;
 esac
 REMOTE="jk@216.75.75.136"
 REMOTE_CADDYFILE="/home/jk/caddy/conf/Caddyfile"

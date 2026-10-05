@@ -37,7 +37,7 @@ do not treat the public hostname as accepted:
 ## Historical VPS/Podman gates
 
 - [ ] The deployment no longer references `/srv`, `sudo`, or the root-owned publisher.
-  CHECK: rg -n '/srv/bridge-ph-accustandard|sudo|accustandard-demo-activate' scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh
+  CHECK: rg -n '/srv/accounting-firm-accustandard|sudo|accustandard-demo-activate' scripts/deploy-demo.sh scripts/vps-deploy-accustandard.sh
   EXPECT: no matches
   EVIDENCE: checked 2026-08-25; see command above
 

@@ -32,7 +32,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
   1. **Remote GitHub Sync:** Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official
      GitHub CLI (`gh`) to authenticate/configure Git, then synchronize only
      through the authenticated HTTPS remote
-     (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Never use
+     (`https://github.com/ItsAdventureTime/portfolio-accustandard.git`). Never use
      SSH remotes, SSH keys, `gh ssh-key`, or passkeys. Demo VPS transfer is a
      separate user-run SSH/rsync operation.
 
@@ -40,7 +40,7 @@ Accustandard requires a single integrated ERP web application to serve as its op
 
 ## 👥 Supported Roles
 
-- **Admin (Bridge):** System configuration and audited overrides
+- **Admin (Accounting Firm):** System configuration and audited overrides
 - **Chairman / DCS:** Final corporate approval
 - **General Manager (Karen):** Operational approvals
 - **Bookkeeper (Aila):** Ledger view and SOA management

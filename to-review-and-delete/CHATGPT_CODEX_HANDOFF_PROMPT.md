@@ -142,14 +142,14 @@ Enforce the following non-negotiable business rules across both backend API and 
 ## 🚀 PART 4: CONTAINERIZATION, DEPLOYMENT & GIT PROTOCOL
 
 1. **Podman Quadlet Deployment:**
-   - Quadlet files: `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
-   - Data & web root: `/home/jk/bridge-ph/accustandard-demo/`
+   - Quadlet files: `/home/jk/.config/containers/systemd/accounting-firm/accustandard-demo/`
+   - Data & web root: `/home/jk/accounting-firm/accustandard-demo/`
    - Automated build & deploy script: `./scripts/deploy-demo.sh` (`npm run deploy:demo`).
   2. **Git & Remote HTTPS Protocol:**
       - Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official GitHub CLI (`gh`) to
         authenticate/configure Git, then synchronize only through the
         authenticated HTTPS remote
-        (`https://github.com/ItsAdventureTime/bridge-accustandard.git`). Never
+        (`https://github.com/ItsAdventureTime/portfolio-accustandard.git`). Never
         use SSH remotes, SSH keys, `gh ssh-key`, or passkeys. Demo VPS transfer
         is a separate user-run SSH/rsync operation.
  3. **Documentation Sync:** Update the applicable source-of-truth document and every affected operational guide whenever code or design changes. Keep historical prompts and transcripts explicitly non-authoritative rather than copying stale instructions into them.

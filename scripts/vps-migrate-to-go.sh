@@ -3,15 +3,15 @@
 # Accustandard Medical ERP — VPS runtime migration compatibility helper
 # Release builds now happen locally in the Docker Sandbox.
 # Target Host: jk@216.75.75.136
-# Target Directory: /home/jk/bridge-ph/accustandard-demo/
+# Target Directory: /home/jk/accounting-firm/accustandard-demo/
 # ==============================================================================
 
 set -euo pipefail
 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
-DEMO_ROOT="/home/jk/bridge-ph/accustandard-demo"
-QUADLET_DIR="/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo"
+DEMO_ROOT="/home/jk/accounting-firm/accustandard-demo"
+QUADLET_DIR="/home/jk/.config/containers/systemd/accounting-firm/accustandard-demo"
 POSTGRES_DATA_DIR="$DEMO_ROOT/postgres-data"
 
 stop_demo_services() {

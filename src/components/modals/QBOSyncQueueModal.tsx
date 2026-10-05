@@ -137,7 +137,7 @@ export const QBOSyncQueueModal: React.FC<QBOSyncQueueModalProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600 font-bold">
-          <span>Bridge Internal Control Handoff Engine v4.2 · Direct QBO API future scope</span>
+          <span>Accounting Firm Internal Control Handoff Engine v4.2 · Direct QBO API future scope</span>
           <button
             onClick={onClose}
             className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs sm:text-sm rounded-2xl transition cursor-pointer"

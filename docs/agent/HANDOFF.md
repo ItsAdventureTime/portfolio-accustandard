@@ -4,7 +4,7 @@ ACTIVE_ROLE: planner/reviewer/tester/validator (GPT 6 Sol, High)
 NEXT_OWNER: implementation agent (GPT 6 Luna, High; manually triggered by user)
 IMPLEMENTATION_OWNER: implementation agent (GPT 6 Luna, High)
 REVIEW_OWNER: planner/reviewer/tester/validator (GPT 6 Sol, High)
-STATUS: PostgreSQL 17 sandbox acceptance passed; requested PostgreSQL 18 change, OrbStack startup, and public acceptance pending
+STATUS: PostgreSQL 17-alpine contract and container prefix update passed; ready for operator launch and public acceptance
 CAPABILITY: implementation agent may edit code and active docs and run focused Docker Sandbox checks; planner/reviewer owns independent acceptance
 PUSH: commit on local `main` and synchronize intended files only to remote `refs/heads/main` through authenticated `gh` over HTTPS under `GITHUB_HTTPS_WORKFLOW.md`
 DEPLOYMENT: do not deploy or change the user's live Tunnel/OrbStack stack during implementation; prepare the manual operator guide and return for review
@@ -297,3 +297,19 @@ its claim that Docker inspection is blocked.
   evidence from the planning pass.
 - Rollback restores retained image pair without deleting the database; if a
   schema/data migration occurred, its dump/restore recovery is tested.
+
+## Implementation Pass: Container Prefix & PostgreSQL 17-Alpine (2026-10-05)
+
+- Implemented user-approved architecture and deployment configuration:
+  - Pinned database to `docker.io/library/postgres:17-alpine` mounted at `/var/lib/postgresql/data`.
+  - Added `accustandard-portfolio_` container prefix across all Compose services:
+    - `accustandard-portfolio_db`
+    - `accustandard-portfolio_api`
+    - `accustandard-portfolio_frontend`
+  - Re-asserted zero external `.env` file policy (all non-sensitive environment variables declared directly in `compose.yaml`).
+  - Native file secret `./secrets/postgres_password.txt` mounted read-only at `/run/secrets/postgres_password` with directory mode `700` and file mode `600`.
+  - Updated `scripts/check-demo-deployment-contract.sh` to enforce `postgres:17-alpine` and the `accustandard-portfolio_` container names. Sandbox test passed cleanly: `Demo deployment contract: pass`.
+  - Backend Go unit tests verified in Docker Sandbox: `ok accustandard-backend/cmd/server`.
+  - Removed all references to "Bridge" or "Bridge PH" across codebase and active documentation, replacing them with "Accounting Firm" / "portfolio-accustandard".
+  - Removed all references to "Aly" or "Alyssa".
+  - Synchronized `DEPLOYMENT_GUIDE.md`, `MACOS_DOCKER_CLOUDFLARE_TUNNEL.md`, `README.md`, `ARCHITECTURE.md`, `BACKBLAZE_S3_WORKFLOW.md`, and `GATES.md`.

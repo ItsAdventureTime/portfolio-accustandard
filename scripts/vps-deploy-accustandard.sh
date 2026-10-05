@@ -10,8 +10,8 @@ DEPLOY_TARGET="${ACCUSTANDARD_DEPLOY_TARGET:-demo}"
 BASE_PATH="${ACCUSTANDARD_BASE_PATH:-}"
 case "${DEPLOY_TARGET}" in
   demo)
-    APP_ROOT="${HOME}/bridge-ph/accustandard-demo"
-    QUADLET_DIR="${HOME}/.config/containers/systemd/bridge-ph/accustandard-demo"
+    APP_ROOT="${HOME}/accounting-firm/accustandard-demo"
+    QUADLET_DIR="${HOME}/.config/containers/systemd/accounting-firm/accustandard-demo"
     QUADLET_APP="accustandard-demo-app.container"
     QUADLET_DB="accustandard-demo-db.container"
     QUADLET_POD="accustandard-demo-pod.pod"
@@ -25,8 +25,8 @@ case "${DEPLOY_TARGET}" in
     ;;
   prod|production)
     DEPLOY_TARGET=prod
-    APP_ROOT="${HOME}/bridge-ph/accustandard"
-    QUADLET_DIR="${HOME}/.config/containers/systemd/bridge-ph/accustandard"
+    APP_ROOT="${HOME}/accounting-firm/accustandard"
+    QUADLET_DIR="${HOME}/.config/containers/systemd/accounting-firm/accustandard"
     QUADLET_APP="accustandard-app.container"
     QUADLET_DB="accustandard-db.container"
     QUADLET_POD="accustandard-pod.pod"

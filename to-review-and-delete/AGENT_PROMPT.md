@@ -24,7 +24,7 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
 1. **GitHub Remote HTTPS Synchronization Policy**:
    - Follow `GITHUB_HTTPS_WORKFLOW.md`. Use official GitHub CLI (`gh`) to
      authenticate/configure Git, then push only through the HTTPS remote
-     `https://github.com/ItsAdventureTime/bridge-accustandard.git`.
+     `https://github.com/ItsAdventureTime/portfolio-accustandard.git`.
    - Never use SSH remotes, SSH keys, `gh ssh-key`, or passkeys for GitHub
      repository operations. Demo VPS transfer is a separate user-run
      SSH/rsync operation.
@@ -42,9 +42,9 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
 
 3. **Containerization & Quadlets**:
    - Place all Quadlet unit files for the Demo environment strictly in:
-     `/home/jk/.config/containers/systemd/bridge-ph/accustandard-demo/`
+     `/home/jk/.config/containers/systemd/accounting-firm/accustandard-demo/`
    - Store all data, config, and web dist files on the VPS strictly in:
-     `/home/jk/bridge-ph/accustandard-demo/`
+     `/home/jk/accounting-firm/accustandard-demo/`
 
 4. **Deployment Scripts**:
    - Provide `./scripts/vps-migrate-to-go.sh` to initialize the Go backend container and database migration on the VPS.
@@ -52,7 +52,7 @@ You are an expert Go backend engineer, frontend specialist, and DevOps engineer.
      - Performs no local build, compilation, or application execution.
      - Synchronizes source to the VPS, where the frontend is built in `podman run --rm`.
      - Runs VPS deployment and service reload steps non-interactively over SSH.
-     - Syncs static export files to `/home/jk/bridge-ph/accustandard-demo/web-dist/`.
+     - Syncs static export files to `/home/jk/accounting-firm/accustandard-demo/web-dist/`.
 ```
 
 ## Current Acceptance Corrections (2026-08-12)

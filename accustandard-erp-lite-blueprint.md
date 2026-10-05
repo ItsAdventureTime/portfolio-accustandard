@@ -87,7 +87,7 @@ last attempt, and any actionable error. Direct QBO API posting is future scope.
 | Warehouse | Goods receipt, pick/release, count | Physical quantities and batch data | Change prices/costs, create/approve PO |
 | GM | — | Commercial, PO, payment approvals | Alter submitted source data |
 | President/DCS | — | Final approval/disbursement | Modify audit history |
-| BRIDGE Admin/Auditor | Configuration, controlled reversals | Exceptions and audit | Perform undocumented deletion |
+| Accounting Firm Admin/Auditor | Configuration, controlled reversals | Exceptions and audit | Perform undocumented deletion |
 
 ## Status model
 

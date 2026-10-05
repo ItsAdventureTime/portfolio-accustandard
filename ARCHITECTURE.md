@@ -8,7 +8,7 @@ governs current runtime status; `README.md`, this document, and
 `CONTRIBUTING.md` govern operations.
 
 When object storage is needed, use the existing Backblaze B2 bucket
-`bridge-ph`: `accustandard/demo/` for demo and `accustandard/` for production.
+`accounting-firm`: `accustandard/demo/` for demo and `accustandard/` for production.
 These are key prefixes; credentials remain server-side. The primary operator
 path uses Backblaze's native `b2` CLI; optional S3 interoperability is
 documented in [`BACKBLAZE_S3_WORKFLOW.md`](BACKBLAZE_S3_WORKFLOW.md).

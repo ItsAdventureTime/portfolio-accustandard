@@ -258,7 +258,7 @@ export const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
           <div className="h-0.5 bg-red-600 w-full" style={{ backgroundColor: '#dc2626' }} />
         </div>
         <p className="text-[10px] text-center text-slate-500 font-mono">
-          Accustandard Medical &amp; Diagnostic Supplies Corp. &bull; Official Quotation Document &bull; Generated via ERP Bridge
+          Accustandard Medical &amp; Diagnostic Supplies Corp. &bull; Official Quotation Document &bull; Generated via Accounting Firm ERP
         </p>
       </div>
     </div>

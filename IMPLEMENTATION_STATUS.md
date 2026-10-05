@@ -1,7 +1,19 @@
 # AccuStandard implementation status
 
-**Last reviewed:** 2026-09-25
-**Status:** Demo runtime; not a production acceptance release
+**Last reviewed:** 2026-10-05
+**Status:** Demo runtime; deployment contract, container naming, and documentation updated
+
+### 2026-10-05 deployment configuration and naming standardization
+
+- Updated database image to `docker.io/library/postgres:17-alpine` per user directive, maintaining the tested `/var/lib/postgresql/data` volume contract.
+- Added `accustandard-portfolio_` container prefix across all Compose services (`accustandard-portfolio_db`, `accustandard-portfolio_api`, `accustandard-portfolio_frontend`).
+- Enforced zero `.env` file policy; all non-sensitive variables are declared inline within `compose.yaml`.
+- Verified native file secrets mounted at `/run/secrets/postgres_password` with directory mode `700` and file mode `600`.
+- Automated deployment contract verified in Docker Sandbox: `scripts/check-demo-deployment-contract.sh` passed.
+- Go backend unit tests verified in Docker Sandbox: `go test ./cmd/server` passed.
+- Removed all references to "Bridge", "Bridge PH", "Aly", and "Alyssa" across codebase, UI templates, and active documentation.
+- Rewrote and updated `DEPLOYMENT_GUIDE.md` and `MACOS_DOCKER_CLOUDFLARE_TUNNEL.md` with complete Mac mini OrbStack and Cloudflare Tunnel instructions.
+
 
 ### 2026-09-25 read-only OrbStack review
 

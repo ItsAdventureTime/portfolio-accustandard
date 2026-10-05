@@ -175,7 +175,7 @@ transfer source or perform compilation on the VPS.
 Remote repository synchronization follows
 [`GITHUB_HTTPS_WORKFLOW.md`](GITHUB_HTTPS_WORKFLOW.md): the active GitHub CLI
 account is authenticated on `github.com`, the Git protocol is `https`, and the
-origin is `https://github.com/ItsAdventureTime/bridge-accustandard.git`. GitHub
+origin is `https://github.com/ItsAdventureTime/portfolio-accustandard.git`. GitHub
 CLI has no separate `gh push` command. Local commits use local Git because
 GitHub CLI has no local commit command; remote Git objects and the `main` ref
 are published with authenticated `gh api` Git Database calls over HTTPS.

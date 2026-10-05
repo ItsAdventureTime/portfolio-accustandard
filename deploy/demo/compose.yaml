@@ -2,7 +2,8 @@ name: accustandard-demo
 
 services:
   db:
-    image: docker.io/library/postgres:17.11-alpine3.24
+    container_name: accustandard-portfolio_db
+    image: docker.io/library/postgres:17-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: accustandard_demo
@@ -22,6 +23,7 @@ services:
       start_period: 10s
 
   api:
+    container_name: accustandard-portfolio_api
     image: accustandard-demo-api:latest
     restart: unless-stopped
     depends_on:
@@ -43,6 +45,7 @@ services:
       - accustandard-network
 
   frontend:
+    container_name: accustandard-portfolio_frontend
     image: accustandard-demo-frontend:latest
     restart: unless-stopped
     depends_on:
